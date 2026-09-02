@@ -1,0 +1,12 @@
+[project]
+name = "nomenclature-matcher"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["openai>=1.0", "pydantic>=2.0", "pydantic-settings>=2.0", "qdrant-client>=1.10"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
