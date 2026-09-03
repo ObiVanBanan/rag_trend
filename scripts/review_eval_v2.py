@@ -20,13 +20,21 @@ from nomenclature_matcher.review_state import (
     set_candidate_grade,
     set_query_cursor,
 )
+from nomenclature_matcher.eval_v2_ground_truth import query_has_accept
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES_PATH = ROOT / "data" / "eval_v2_review_candidates.json"
 REVIEW_STATE_PATH = ROOT / "data" / "eval_v2_human_review.json"
+EXPANDED_CANDIDATES_PATH = ROOT / "data" / "eval_v2_retrieval_miss_candidates.json"
+EXPANDED_REVIEW_STATE_PATH = ROOT / "data" / "eval_v2_retrieval_miss_human_review.json"
 LABELS_PATH = ROOT / "data" / "eval_labels_v2.json"
-FILTER_MODES = ["Неразмеченные", "Все", "Сомнительные", "Пропущенные", "Подходящие", "Отклонённые"]
+WORKFLOWS = {
+    "Базовый review": (CANDIDATES_PATH, REVIEW_STATE_PATH),
+    "Expanded retrieval-miss review": (EXPANDED_CANDIDATES_PATH, EXPANDED_REVIEW_STATE_PATH),
+}
+CANDIDATE_VIEW_MODES = ["Все кандидаты", "Только ACCEPT"]
+QUERY_FILTER_MODES = ["Все", "Неразмеченные", "Сомнительные", "Пропущенные", "Подходящие", "Отклонённые", "Queries с ACCEPT"]
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -37,16 +45,16 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def load_payloads() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-    candidates = _read_json(CANDIDATES_PATH)
+def load_payloads(candidates_path: Path, review_state_path: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    candidates = _read_json(candidates_path)
     labels = _read_json(LABELS_PATH) if LABELS_PATH.exists() else {}
     review_state = initialize_review_state(query["id"] for query in candidates["queries"])
-    if REVIEW_STATE_PATH.exists():
-        loaded_state = load_review_state(REVIEW_STATE_PATH)
+    if review_state_path.exists():
+        loaded_state = load_review_state(review_state_path)
         review_state["version"] = loaded_state.get("version", review_state["version"])
         review_state["queries"].update(loaded_state.get("queries", {}))
     else:
-        save_review_state(REVIEW_STATE_PATH, review_state)
+        save_review_state(review_state_path, review_state)
     return candidates, labels, review_state
 
 
@@ -78,12 +86,7 @@ def _lookup_technical_property(technical_properties: dict[str, Any], names: tupl
     return "—"
 
 
-def render_query_progress(
-    query_item: dict[str, Any],
-    query_state: dict[str, Any],
-    review_state: dict[str, Any],
-    total_candidates: int,
-) -> None:
+def render_query_progress(query_item: dict[str, Any], query_state: dict[str, Any], review_state: dict[str, Any], total_candidates: int) -> None:
     current_progress = get_query_progress(query_state, total_candidates=len(query_item["candidates"]))
     total_reviewed_candidates = sum(len(query_state_item.get("candidate_grades", {})) for query_state_item in review_state["queries"].values())
 
@@ -107,6 +110,7 @@ def filter_query_ids(candidates_payload: dict[str, Any], review_state: dict[str,
         final_status = query_state.get("final_status")
         candidate_grades = query_state.get("candidate_grades", {})
         has_unsure = any(item.get("grade") == "UNSURE" for item in candidate_grades.values())
+        has_accept = query_has_accept(query_state)
         is_unreviewed = not query_state.get("completed", False) and final_status is None
 
         if mode == "Все":
@@ -121,7 +125,29 @@ def filter_query_ids(candidates_payload: dict[str, Any], review_state: dict[str,
             result.append(query_id)
         elif mode == "Отклонённые" and final_status == "NOT_FOUND":
             result.append(query_id)
+        elif mode == "Queries с ACCEPT" and has_accept:
+            result.append(query_id)
     return result
+
+
+def build_visible_candidates(
+    candidates: list[dict[str, Any]],
+    query_state: dict[str, Any],
+    mode: str,
+) -> list[tuple[int, dict[str, Any]]]:
+    if mode == "Только ACCEPT":
+        accepted_ids = {str(candidate_id) for candidate_id in query_state.get("candidate_grades", {}) if query_state.get("candidate_grades", {}).get(str(candidate_id), {}).get("grade") == "ACCEPT"}
+        return [(index, candidate) for index, candidate in enumerate(candidates) if str(candidate["ld_id"]) in accepted_ids]
+    return list(enumerate(candidates))
+
+
+def resolve_visible_candidate_index(visible_candidates: list[tuple[int, dict[str, Any]]], cursor_index: int) -> int | None:
+    if not visible_candidates:
+        return None
+    for position, (full_index, _) in enumerate(visible_candidates):
+        if full_index >= cursor_index:
+            return position
+    return 0
 
 
 def render_query_text(query_item: dict[str, Any]) -> None:
@@ -206,10 +232,11 @@ def save_candidate_grade(
     comment: str,
     candidates: list[dict[str, Any]],
     current_index: int,
+    review_state_path: Path,
 ) -> dict[str, Any]:
     updated = set_candidate_grade(review_state, query_id, candidate["ld_id"], grade, comment=comment)
     updated = move_cursor_to_next_unreviewed(updated, query_id, candidates, current_index)
-    save_review_state(REVIEW_STATE_PATH, updated)
+    save_review_state(review_state_path, updated)
     return updated
 
 
@@ -222,6 +249,7 @@ def render_query_finalization(
     labels: dict[str, Any],
     query_item: dict[str, Any],
     query_state: dict[str, Any],
+    review_state_path: Path,
 ) -> None:
     query_id = query_item["id"]
     st.subheader("Завершение query")
@@ -240,7 +268,7 @@ def render_query_finalization(
             st.write(f"acceptable_ld_ids: {accepted_ids}")
         if st.button("Переоткрыть query", use_container_width=True):
             updated = reopen_query(review_state, query_id)
-            save_review_state(REVIEW_STATE_PATH, updated)
+            save_review_state(review_state_path, updated)
             update_query_label_from_state(updated, labels, query_id)
             st.rerun()
         return
@@ -282,7 +310,7 @@ def render_query_finalization(
             comment=final_comment,
             total_candidates=total_candidates,
         )
-        save_review_state(REVIEW_STATE_PATH, updated)
+        save_review_state(review_state_path, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
     if action_cols[1].button("❌ NOT_FOUND", use_container_width=True, disabled=not_found_disabled):
@@ -294,7 +322,7 @@ def render_query_finalization(
             confirmed=True,
             total_candidates=total_candidates,
         )
-        save_review_state(REVIEW_STATE_PATH, updated)
+        save_review_state(review_state_path, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
     if action_cols[2].button("⚠️ RETRIEVAL_MISS", use_container_width=True, disabled=retrieval_miss_disabled):
@@ -305,12 +333,12 @@ def render_query_finalization(
             comment=final_comment,
             total_candidates=total_candidates,
         )
-        save_review_state(REVIEW_STATE_PATH, updated)
+        save_review_state(review_state_path, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
     if action_cols[3].button("⏸ UNREVIEWED", use_container_width=True):
         updated = finalize_query(review_state, query_id, "UNREVIEWED", comment=final_comment)
-        save_review_state(REVIEW_STATE_PATH, updated)
+        save_review_state(review_state_path, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
 
@@ -318,31 +346,44 @@ def render_query_finalization(
 def render_navigation(
     review_state: dict[str, Any],
     query_id: str,
-    candidates: list[dict[str, Any]],
-    current_index: int,
+    visible_candidates: list[tuple[int, dict[str, Any]]],
+    current_position: int,
+    review_state_path: Path,
 ) -> None:
+    if not visible_candidates:
+        return
     nav_cols = st.columns(2)
-    if nav_cols[0].button("← предыдущий кандидат", use_container_width=True, disabled=current_index <= 0):
-        updated = set_query_cursor(review_state, query_id, current_index - 1)
-        save_review_state(REVIEW_STATE_PATH, updated)
+    previous_position = (current_position - 1) % len(visible_candidates)
+    next_position = (current_position + 1) % len(visible_candidates)
+    if nav_cols[0].button("← предыдущий кандидат", use_container_width=True, disabled=len(visible_candidates) <= 1):
+        updated = set_query_cursor(review_state, query_id, visible_candidates[previous_position][0])
+        save_review_state(review_state_path, updated)
         st.rerun()
-    if nav_cols[1].button("следующий кандидат →", use_container_width=True, disabled=current_index >= len(candidates) - 1):
-        updated = set_query_cursor(review_state, query_id, current_index + 1)
-        save_review_state(REVIEW_STATE_PATH, updated)
+    if nav_cols[1].button("следующий кандидат →", use_container_width=True, disabled=len(visible_candidates) <= 1):
+        updated = set_query_cursor(review_state, query_id, visible_candidates[next_position][0])
+        save_review_state(review_state_path, updated)
         st.rerun()
 
 
 def main() -> None:
     st.set_page_config(page_title="Eval V2 Human Review", layout="wide")
-    candidates_payload, labels, review_state = load_payloads()
+    workflow_name = st.sidebar.selectbox("Workflow", list(WORKFLOWS))
+    candidates_path, review_state_path = WORKFLOWS[workflow_name]
+    if not candidates_path.exists():
+        st.error(f"Не найден файл кандидатов: {candidates_path}")
+        st.stop()
+
+    candidates_payload, labels, review_state = load_payloads(candidates_path, review_state_path)
 
     query_ids = [query["id"] for query in candidates_payload["queries"]]
     query_by_id = {query["id"]: query for query in candidates_payload["queries"]}
 
     st.title("Eval V2 Human Review")
+    st.caption(f"Workflow: {workflow_name}")
 
-    mode = st.sidebar.selectbox("Фильтр", FILTER_MODES, index=0)
-    filtered_ids = filter_query_ids(candidates_payload, review_state, mode)
+    query_filter_mode = st.sidebar.selectbox("Фильтр запросов", QUERY_FILTER_MODES, index=0)
+    candidate_view_mode = st.sidebar.selectbox("Просмотр кандидатов", CANDIDATE_VIEW_MODES, index=0)
+    filtered_ids = filter_query_ids(candidates_payload, review_state, query_filter_mode)
     if not filtered_ids:
         filtered_ids = query_ids
 
@@ -354,7 +395,7 @@ def main() -> None:
     current_index = min(query_state.get("cursor_index", 0), max(len(candidates) - 1, 0)) if candidates else 0
     if query_state.get("cursor_index", 0) != current_index:
         review_state = set_query_cursor(review_state, current_query_id, current_index)
-        save_review_state(REVIEW_STATE_PATH, review_state)
+        save_review_state(review_state_path, review_state)
         st.rerun()
         return
 
@@ -362,14 +403,19 @@ def main() -> None:
     render_query_progress(query_item, query_state, review_state, total_candidates)
     render_query_text(query_item)
 
+    visible_candidates = build_visible_candidates(candidates, query_state, candidate_view_mode)
+    visible_candidate_position = resolve_visible_candidate_index(visible_candidates, current_index)
+
     if not candidates:
         st.warning("У query нет кандидатов для ревью.")
+    elif visible_candidate_position is None:
+        st.warning("В выбранном режиме нет кандидатов для показа.")
     else:
-        candidate = candidates[current_index]
-        st.caption(f"Кандидат {current_index + 1} / {len(candidates)}")
+        candidate_full_index, candidate = visible_candidates[visible_candidate_position]
+        st.caption(f"Кандидат {candidate_full_index + 1} / {len(candidates)}")
         render_candidate_card(candidate, query_state)
 
-        comment_key = f"candidate-comment::{current_query_id}::{candidate['ld_id']}"
+        comment_key = f"{workflow_name}::candidate-comment::{current_query_id}::{candidate['ld_id']}"
         existing_comment = query_state.get("candidate_grades", {}).get(str(candidate["ld_id"]), {}).get("comment", "")
         if comment_key not in st.session_state:
             st.session_state[comment_key] = existing_comment
@@ -385,7 +431,8 @@ def main() -> None:
                 "ACCEPT",
                 candidate_comment,
                 candidates,
-                current_index,
+                candidate_full_index,
+                review_state_path,
             )
             st.rerun()
         if action_cols[1].button("❌ Не подходит", use_container_width=True, disabled=candidate_buttons_disabled):
@@ -396,7 +443,8 @@ def main() -> None:
                 "REJECT",
                 candidate_comment,
                 candidates,
-                current_index,
+                candidate_full_index,
+                review_state_path,
             )
             st.rerun()
         if action_cols[2].button("⚠️ Сомневаюсь", use_container_width=True, disabled=candidate_buttons_disabled):
@@ -407,7 +455,8 @@ def main() -> None:
                 "UNSURE",
                 candidate_comment,
                 candidates,
-                current_index,
+                candidate_full_index,
+                review_state_path,
             )
             st.rerun()
         if action_cols[3].button("⏭ Пропустить", use_container_width=True, disabled=candidate_buttons_disabled):
@@ -418,14 +467,21 @@ def main() -> None:
                 "SKIP",
                 candidate_comment,
                 candidates,
-                current_index,
+                candidate_full_index,
+                review_state_path,
             )
             st.rerun()
 
-        render_navigation(review_state, current_query_id, candidates, current_index)
+        render_navigation(review_state, current_query_id, visible_candidates, visible_candidate_position, review_state_path)
 
-    updated_review_state = load_review_state(REVIEW_STATE_PATH)
-    render_query_finalization(updated_review_state, labels, query_item, updated_review_state["queries"][current_query_id])
+    updated_review_state = load_review_state(review_state_path)
+    render_query_finalization(
+        updated_review_state,
+        labels,
+        query_item,
+        updated_review_state["queries"][current_query_id],
+        review_state_path,
+    )
 
     current_progress = get_query_progress(updated_review_state["queries"][current_query_id], total_candidates=len(candidates))
     st.write(

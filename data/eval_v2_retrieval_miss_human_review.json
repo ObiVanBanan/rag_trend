@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "queries": {
+    "v2_q01": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "v2_q07": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "v2_q09": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    }
+  }
+}

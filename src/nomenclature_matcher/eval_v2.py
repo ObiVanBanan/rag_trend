@@ -72,14 +72,14 @@ def _init_review_candidate(candidate) -> dict:
     }
 
 
-def merge_review_candidates(dense_candidates, bm25_candidates, hybrid_candidates) -> list[dict]:
+def merge_review_candidates(dense_candidates, bm25_candidates, hybrid_candidates, max_per_source: int = 10) -> list[dict]:
     merged: dict[int, dict] = {}
     for source_name, candidates, rank_field, score_field in (
         ("dense", dense_candidates, "dense_rank", "dense_score"),
         ("bm25", bm25_candidates, "bm25_rank", "bm25_score"),
         ("hybrid", hybrid_candidates, "hybrid_rank", "rrf_score"),
     ):
-        for rank, candidate in enumerate(candidates[:10], 1):
+        for rank, candidate in enumerate(candidates[:max_per_source], 1):
             row = merged.setdefault(candidate.ld_id, _init_review_candidate(candidate))
             row["article"] = row["article"] or candidate.article
             row["name"] = row["name"] or candidate.name
