@@ -3,7 +3,7 @@
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded ground-truth review required before golden finalization."
+    "human_comment": "No strict match in base or expanded TOP100 review; requires full-catalog check before NOT_FOUND can be verified."
   },
   "v2_q02": {
     "label_status": "VERIFIED",
@@ -15,7 +15,7 @@
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded review has not produced a verified strict match."
+    "human_comment": "No strict match in base or expanded TOP100 review; requires full-catalog check before NOT_FOUND can be verified."
   },
   "v2_q04": {
     "label_status": "VERIFIED",
@@ -27,7 +27,7 @@
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded ground-truth review required."
+    "human_comment": "No strict DN100 PN16 butterfly analogue in expanded TOP100 review; requires full-catalog check before NOT_FOUND can be verified."
   },
   "v2_q06": {
     "label_status": "VERIFIED",
@@ -39,7 +39,7 @@
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded review has not produced a verified strict match."
+    "human_comment": "No strict PND compression DN32 PN16 ball-valve match in expanded TOP100 review; requires full-catalog check."
   },
   "v2_q08": {
     "label_status": "VERIFIED",
@@ -48,21 +48,21 @@
     "human_comment": "Strict golden uses straight-layout brass DN25 male-female ball valves; angular execution excluded."
   },
   "v2_q09": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded review recovered strict candidate 17889 but expanded pool is not fully reviewed yet."
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [17889],
+    "expected_status": "MATCHED",
+    "human_comment": "Strict match recovered only in expanded review: brass ball valve DN20 PN40 with internal/external threaded execution. Base retrieval missed it."
   },
   "v2_q10": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded ground-truth review required."
+    "human_comment": "No strict steel coupling/threaded DN32 PN25 match in expanded TOP100 review; requires full-catalog check before NOT_FOUND can be verified."
   },
   "v2_q11": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": "Base retrieval miss; expanded ground-truth review required."
+    "human_comment": "No strict DN50 PN80/8 MPa flanged manual match with mating-flange kit in expanded TOP100 review; requires full-catalog check before NOT_FOUND can be verified."
   }
 }
