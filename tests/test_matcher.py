@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 from nomenclature_matcher.matcher import NomenclatureMatcher
+from nomenclature_matcher.models import SearchCandidate
 
 
 class Embedder:
@@ -21,6 +22,16 @@ class Reranker:
         if self.error:
             raise self.error
         return self.result
+
+
+class HybridRetriever:
+    def __init__(self, candidates):
+        self.candidates = candidates
+        self.calls = []
+
+    def search(self, query, limit):
+        self.calls.append((query, limit))
+        return self.candidates
 
 
 def hit(score):
@@ -66,3 +77,34 @@ def test_match_one_with_rerank_handles_invalid_json_or_timeout():
     result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank("query")
     assert result.status == "RERANK_FAILED"
     assert result.candidates
+    assert result.ld_product is None
+
+
+def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [
+        SearchCandidate(
+            ld_id=1,
+            name="A",
+            article="A1",
+            score=0.01,
+            dense_score=0.9,
+            dense_rank=1,
+            bm25_score=1.2,
+            bm25_rank=2,
+            rrf_score=0.03,
+            retrieval_sources=["dense", "bm25"],
+            search_text="DN: 25",
+        )
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
+    result = matcher.match_one_hybrid_with_rerank("  query  ")
+    assert result.status == "MATCHED"
+    assert result.candidates[0].rrf_score == 0.03
+    assert result.selected[0].vector_score == 0.03

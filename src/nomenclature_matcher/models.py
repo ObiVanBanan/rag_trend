@@ -28,6 +28,27 @@ class SearchCandidate:
     url: str | None = None
     properties: list[dict[str, Any]] | None = None
     search_text: str | None = None
+    dense_score: float | None = None
+    dense_rank: int | None = None
+    bm25_score: float | None = None
+    bm25_rank: int | None = None
+    rrf_score: float | None = None
+    retrieval_sources: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BM25Candidate:
+    ld_id: int
+    name: str
+    article: str | None
+    bm25_score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
 
 
 @dataclass

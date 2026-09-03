@@ -1,0 +1,74 @@
+{
+  "q01": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q02": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q03": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q04": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q05": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q06": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q07": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q08": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q09": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q10": {
+    "retrieval_success": null,
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": ""
+  },
+  "q11": {
+    "retrieval_success": [
+      1715,
+      199,
+      1005,
+      155,
+      197
+    ],
+    "reranker_success": null,
+    "human_grade": null,
+    "human_comment": "Допустимы латунные резьбовые краны DN25"
+  }
+}

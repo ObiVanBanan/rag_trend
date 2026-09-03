@@ -27,10 +27,16 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     embedding_dimension: int = 1536
     dense_batch_size: int = 32
+    embedding_max_retries: int = 3
+    embedding_retry_sleep_seconds: float = 0.25
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com/v1"
     deepseek_model: str = "deepseek-v4-flash"
     deepseek_timeout_seconds: float = 20
+    hybrid_dense_limit: int = 50
+    hybrid_bm25_limit: int = 50
+    hybrid_rerank_limit: int = 20
+    rrf_k: int = 60
     rerank_candidate_limit: int = 20
     rerank_result_limit: int = 3
     match_top_k: int = 5

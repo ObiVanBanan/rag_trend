@@ -77,3 +77,29 @@ def test_rerank_timeout_raises():
     reranker = DeepSeekReranker(settings(), client=FakeClient(error=TimeoutError("timeout")))
     with pytest.raises(TimeoutError):
         reranker.rerank("query", candidates())
+
+
+def test_build_prompt_includes_hybrid_retrieval_signals():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{}"))
+    prompt = reranker._build_prompt(
+        "query",
+        [
+            SearchCandidate(
+                ld_id=1,
+                name="A",
+                article="A1",
+                score=0.03,
+                dense_score=0.9,
+                dense_rank=2,
+                bm25_score=1.7,
+                bm25_rank=1,
+                rrf_score=0.03125,
+                retrieval_sources=["dense", "bm25"],
+                search_text="DN: 25",
+            )
+        ],
+    )
+    assert "dense_rank: 2" in prompt
+    assert "bm25_rank: 1" in prompt
+    assert "rrf_score: 0.031250" in prompt
+    assert "retrieval_sources: dense, bm25" in prompt

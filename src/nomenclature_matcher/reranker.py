@@ -43,10 +43,12 @@ vector similarity score.
 
 6. Vector score — только вспомогательный сигнал.
 
-7. Если ни один кандидат достаточно не соответствует
+7. Retrieval scores, ranks и RRF — только вспомогательные сигналы.
+
+8. Если ни один кандидат достаточно не соответствует
 запросу, верни NOT_FOUND.
 
-8. Не выбирай кандидатов, которых нет во входном списке.
+9. Не выбирай кандидатов, которых нет во входном списке.
 
 Ответь только JSON без markdown.
 """
@@ -66,6 +68,7 @@ class DeepSeekReranker:
             model=self.settings.deepseek_model,
             temperature=0,
             response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
             messages=[
                 {"role": "system", "content": RERANKER_SYSTEM_PROMPT},
                 {"role": "user", "content": self._build_prompt(query, candidates)},
@@ -77,6 +80,11 @@ class DeepSeekReranker:
     def _build_prompt(self, query: str, candidates: list[SearchCandidate]) -> str:
         blocks = [f"QUERY:\n{query}", "", "CANDIDATES:"]
         for index, candidate in enumerate(candidates, 1):
+            dense_rank = candidate.dense_rank if candidate.dense_rank is not None else "-"
+            dense_score = f"{candidate.dense_score:.4f}" if candidate.dense_score is not None else "-"
+            bm25_rank = candidate.bm25_rank if candidate.bm25_rank is not None else "-"
+            bm25_score = f"{candidate.bm25_score:.4f}" if candidate.bm25_score is not None else "-"
+            rrf_score = f"{candidate.rrf_score:.6f}" if candidate.rrf_score is not None else "-"
             blocks.extend(
                 [
                     "",
@@ -86,6 +94,12 @@ class DeepSeekReranker:
                     f"article: {candidate.article or ''}",
                     f"name: {candidate.name}",
                     f"vector_score: {candidate.score:.4f}",
+                    f"dense_rank: {dense_rank}",
+                    f"dense_score: {dense_score}",
+                    f"bm25_rank: {bm25_rank}",
+                    f"bm25_score: {bm25_score}",
+                    f"rrf_score: {rrf_score}",
+                    f"retrieval_sources: {', '.join(candidate.retrieval_sources) or '-'}",
                     "",
                     "Характеристики:",
                     candidate.search_text or candidate.name,
