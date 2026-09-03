@@ -14,6 +14,8 @@ REVIEW_PROPERTY_NAMES = {
     "Тип резьбы",
     "Тип прохода",
     "Серия",
+    "Температура рабочей среды, °С",
+    "Температура окружающей среды, °С",
 }
 
 
@@ -96,7 +98,7 @@ def merge_review_candidates(dense_candidates, bm25_candidates, hybrid_candidates
             if source_name not in row["retrieval_sources"]:
                 row["retrieval_sources"].append(source_name)
 
-    def sort_key(item: dict) -> tuple[int, int, int, int, int]:
+    def sort_key(item: dict) -> tuple[int, int, int, int, int, int]:
         hybrid_rank = item["hybrid_rank"] or 999
         dense_rank = item["dense_rank"] or 999
         bm25_rank = item["bm25_rank"] or 999

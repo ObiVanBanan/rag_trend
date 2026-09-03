@@ -28,19 +28,10 @@
     "human_comment": "Тут мало конкретики, я бы этот запрос не брал в работу"
   },
   "q04": {
-    "label_status": "VERIFIED",
-    "acceptable_ld_ids": [
-      2592,
-      2591,
-      693,
-      848,
-      847,
-      849,
-      2556,
-      4242
-    ],
-    "expected_status": "MATCHED",
-    "human_comment": "Human verified from data/моя_разметка.md"
+    "label_status": "UNREVIEWED",
+    "acceptable_ld_ids": [],
+    "expected_status": null,
+    "human_comment": "Needs human re-review: explicit межфланцевый DN150 PN16 must not accept flange/welded, DN250 or PN25 variants"
   },
   "q05": {
     "label_status": "UNREVIEWED",

@@ -3,7 +3,12 @@ from pathlib import Path
 
 from nomenclature_matcher.documents import LDProduct
 from nomenclature_matcher.eval_utils import classify_error_type, recall_at_20, reranker_accuracy
-from nomenclature_matcher.eval_v2 import build_v2_label_template, merge_review_candidates, summarize_v2_diagnostics
+from nomenclature_matcher.eval_v2 import (
+    build_v2_label_template,
+    merge_review_candidates,
+    select_review_properties,
+    summarize_v2_diagnostics,
+)
 from nomenclature_matcher.models import SearchCandidate
 
 
@@ -74,6 +79,24 @@ def test_review_candidate_pool_deduplicates_by_ld_id():
     assert row["technical_properties"]["Тип продукта"] == ["Кран шаровой"]
     assert row["technical_properties"]["Материал корпуса"] == ["Латунь"]
     assert row["technical_properties"]["Присоединение"] == ["Фланцевое"]
+
+
+def test_temperature_property_is_kept_in_review_properties():
+    properties = [
+        {"name": "Температура рабочей среды, °С", "values": ["-40…200"]},
+        {"name": "Вес, кг", "values": ["12"]},
+    ]
+
+    assert select_review_properties(properties) == {"Температура рабочей среды, °С": ["-40…200"]}
+
+
+def test_old_q04_is_unreviewed_in_trusted_baseline():
+    labels = json.loads(Path("data/eval_labels.json").read_text(encoding="utf-8"))
+    q04 = labels["q04"]
+
+    assert q04["label_status"] == "UNREVIEWED"
+    assert q04["acceptable_ld_ids"] == []
+    assert q04["expected_status"] is None
 
 
 def test_unreviewed_queries_do_not_affect_metrics():
