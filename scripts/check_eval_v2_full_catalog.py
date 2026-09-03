@@ -88,12 +88,16 @@ def _q01(view: dict[str, Any]) -> bool:
 
 def _q03(view: dict[str, Any]) -> bool:
     text = view["text"]
+    weld_neck_semantics = (
+        _has_any(text, "воротник", "приварной встык", "приварной в стык", "butt weld", "weld neck", "тип 11")
+        or re.search(r"\b(?:фланец\s*)?11\s*[-–—]", text) is not None
+    )
     return (
         _dn_is(view, 65)
         and _pn_is(view, 1.6)
         and "флан" in text
         and "09г2с" in text
-        and _has_any(text, "воротник", "приварной встык", "приварной в стык", "butt weld", "weld neck")
+        and weld_neck_semantics
     )
 
 
