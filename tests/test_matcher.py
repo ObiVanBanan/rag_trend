@@ -12,8 +12,19 @@ class Store:
     def search(self, vector, limit): self.calls += 1; return self.hits
 
 
+class Reranker:
+    def __init__(self, result=None, error=None):
+        self.result = result
+        self.error = error
+
+    def rerank(self, query, candidates):
+        if self.error:
+            raise self.error
+        return self.result
+
+
 def hit(score):
-    return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A"})
+    return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
 
 
 def test_match_threshold_and_empty():
@@ -40,3 +51,18 @@ def test_empty_qdrant_result():
     result = NomenclatureMatcher(Embedder(), Store([]), settings).match_one("query")
     assert result.status == "NOT_FOUND"
 
+
+def test_match_one_with_rerank_selects_llm_candidate():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(result=rerank_result)).match_one_with_rerank("query")
+    assert result.status == "MATCHED"
+    assert result.selected[0].llm_confidence == 0.93
+    assert result.selected[0].reason == "best"
+
+
+def test_match_one_with_rerank_handles_invalid_json_or_timeout():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank("query")
+    assert result.status == "RERANK_FAILED"
+    assert result.candidates
