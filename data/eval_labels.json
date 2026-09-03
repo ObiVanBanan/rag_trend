@@ -1,27 +1,46 @@
 {
   "q01": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [
+      18783,
+      18787,
+      18840
+    ],
+    "expected_status": "MATCHED",
+    "human_comment": "Human verified from data/моя_разметка.md"
   },
   "q02": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [
+      193,
+      2240,
+      232,
+      2911,
+      2839
+    ],
+    "expected_status": "MATCHED",
+    "human_comment": "Human verified from data/моя_разметка.md"
   },
   "q03": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Тут мало конкретики, я бы этот запрос не брал в работу"
   },
   "q04": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [
+      2592,
+      2591,
+      693,
+      848,
+      847,
+      849,
+      2556,
+      4242
+    ],
+    "expected_status": "MATCHED",
+    "human_comment": "Human verified from data/моя_разметка.md"
   },
   "q05": {
     "label_status": "UNREVIEWED",
@@ -36,16 +55,27 @@
     "human_comment": ""
   },
   "q07": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [
+      19345,
+      19343,
+      19344,
+      19342,
+      19348,
+      19347
+    ],
+    "expected_status": "MATCHED",
+    "human_comment": "Human verified from data/моя_разметка.md"
   },
   "q08": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [
+      16622,
+      15077,
+      16427
+    ],
+    "expected_status": "MATCHED",
+    "human_comment": "Human verified from data/моя_разметка.md"
   },
   "q09": {
     "label_status": "UNREVIEWED",
@@ -60,9 +90,9 @@
     "human_comment": ""
   },
   "q11": {
-    "label_status": "VERIFIED",
-    "acceptable_ld_ids": [1715],
-    "expected_status": "MATCHED",
-    "human_comment": "Verified manually: допустимы латунные резьбовые краны DN25"
+    "label_status": "UNREVIEWED",
+    "acceptable_ld_ids": [],
+    "expected_status": null,
+    "human_comment": "LD 47.336.15 наиболее подходящий из TOP-20, но у него накидная гайка, а не чистая муфта/муфта"
   }
 }
