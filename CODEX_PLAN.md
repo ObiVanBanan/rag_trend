@@ -1,488 +1,613 @@
-# CODEX PLAN — Harden autonomous Codex loop V2
+# CODEX PLAN — RAG Wave 1: technical lexical normalization experiment
 
 ## Goal
 
-Create a hardened replacement for the autonomous Codex worker without modifying the currently running/protected `scripts/codex_loop.py`.
+Stop working on the autonomous Codex-loop hardening for now. The user explicitly deferred that work.
 
-The current worker protects `scripts/codex_loop.py`, so this plan MUST be executable by the current loop. Implement the replacement as:
+Move back to the actual nomenclature RAG and run the first evidence-based retrieval improvement experiment.
 
-- `scripts/codex_loop_v2.py`
-- tests in `tests/test_codex_loop_v2.py`
+The known concrete retrieval failure is `v2_q09`:
 
-Do **not** modify production retrieval, Eval V2 retrieval logic, reranker logic, human review data, or golden labels in this wave.
+```text
+Кран шаровый латунь 11б27п1 Ду20 вр/нр Ру40, в помещении, внутренняя/наружная резьба
+```
 
-After this wave is reviewed and approved, the user will switch the worker process from `scripts/codex_loop.py` to `scripts/codex_loop_v2.py` once. Future plans will continue to use `CODEX_PLAN.md`.
+Strict golden match recovered only in expanded review:
+
+```text
+ld_id = 17889
+Кран шаровой латунный LD Pride 47.20.В-Н.Б Ду 20 Ру 40 ...
+```
+
+The current lexical pipeline tokenizes technical equivalents differently:
+
+```text
+query:    Ду20 / Ру40 / ВР / НР
+catalog:  DN 20 / PN 4,0 / Внутренняя / Наружная
+```
+
+Current `tokenize()` treats these as unrelated tokens. This wave tests whether a small deterministic technical-token augmentation fixes this class of failure.
+
+This is an **eval-only experiment**. Do NOT modify production BM25/Hybrid behavior in this wave.
 
 ---
 
-## Why this wave exists
+# Scope rules
 
-The current loop has several correctness/safety problems that are unacceptable for an unattended worker.
+## Do
 
-### P1 — push failure can strand an unpushed local commit
+- use `data/eval_queries_v2.json`;
+- use `data/eval_labels_v2.json`;
+- evaluate only queries with:
+  - `label_status == VERIFIED`
+  - `expected_status == MATCHED`;
+- build an offline BM25 baseline from `ld_products_full_nomenclature.csv`;
+- compare current tokenization vs experimental technical normalization;
+- generate a deterministic report under `data/`;
+- add unit/regression tests.
 
-Current failure path can be:
+## Do NOT
 
-```text
-Codex edits files
-→ verify passes
-→ git commit succeeds
-→ git push fails
-→ exception
-→ rollback = git reset --hard HEAD
+- modify `scripts/codex_loop.py`;
+- create or modify `scripts/codex_loop_v2.py`;
+- change Qdrant/dense retrieval;
+- change production `BM25Store` behavior;
+- change `HybridRetriever`;
+- change RRF settings;
+- change the DeepSeek reranker;
+- change human-review state;
+- change `data/eval_labels_v2.json`;
+- finalize the unresolved NOT_FOUND queries;
+- add an LLM query parser;
+- add StructuredQuery;
+- add hard filtering/rule-engine logic to production.
+
+The unresolved NOT_FOUND ground-truth work does not block this wave because this experiment measures retrieval only on the currently VERIFIED MATCHED queries.
+
+---
+
+# Why start here
+
+Current production BM25 is intentionally simple:
+
+```python
+query_tokens = tokenize(query)
 ```
 
-After `git commit`, `HEAD` already points to the new local Codex commit, so `reset --hard HEAD` does not roll anything back.
+and document tokens come from:
 
-On the next iteration the local branch can remain ahead of origin. The plan may look already satisfied locally and be marked completed without the remote ever receiving the commit.
+```python
+tokenize(build_lexical_text(product))
+```
 
-### P1 — `os.kill(pid, 0)` is unsafe on Windows
+This is good architecture, but technical notation aliases are currently disconnected.
 
-Do not use `os.kill(pid, 0)` as a process-liveness probe on Windows.
+Examples that should have shared lexical evidence:
 
-The replacement lock must be a real OS-level exclusive lock that is released automatically when the worker exits/crashes. Do not emulate liveness by sending signal 0 on Windows.
+```text
+Ду20        <-> DN 20
+Ру40        <-> PN 4,0 / 4.0 МПа
+Ру16        <-> PN 1,6 / 1.6 МПа
+ВР          <-> внутренняя резьба
+НР          <-> наружная резьба
+фланцевый   <-> фланцевое
+муфтовый    <-> резьбовое
+шаровый     <-> шаровой
+```
 
-### P1/P2 — Git invariants are prompt-only today
-
-The prompt tells Codex not to run Git operations, but the harness must not trust that instruction as an invariant.
-
-The outer worker must detect if Codex changed:
-
-- current branch;
-- `HEAD` commit;
-- protected plan/runner files.
-
-A Codex-created local commit must never be treated as a clean successful run.
-
-### P2 — diff budget is checked only before outer verification
-
-Outer verification can itself create or modify files after the first budget check. The worker currently stages everything afterwards.
-
-The final change set must be checked again after verification and before commit.
+Do not solve this with synonym expansion from an LLM. Use deterministic canonical technical tokens.
 
 ---
 
 # Required implementation
 
-## 1. Create `scripts/codex_loop_v2.py`
+## 1. Add an eval-only technical lexical normalizer
 
-Start from the current `scripts/codex_loop.py` behavior, but implement the fixes below.
-
-Do not import the old runner and do not modify it.
-
-Keep the same normal CLI shape where reasonable:
-
-```bash
-python scripts/codex_loop_v2.py --plan CODEX_PLAN.md
-```
-
-Default branch remains `main`.
-Default polling interval remains 300 seconds.
-Default outer verification remains:
-
-```bash
-python -m pytest -q
-```
-
-State/log files may remain under `.git/codex-loop/`, but avoid corrupting an active V1 worker state. Prefer a separate runtime directory such as:
+Create:
 
 ```text
-.git/codex-loop-v2/
+src/nomenclature_matcher/eval_lexical_normalization.py
 ```
 
----
+This module must NOT be wired into production code in this wave.
 
-## 2. Implement a real cross-platform process lock
-
-Do not use `os.kill(pid, 0)` on Windows.
-
-Use an OS-level exclusive file lock held for the lifetime of the worker process.
-
-Recommended stdlib approach:
-
-- POSIX: `fcntl.flock(..., LOCK_EX | LOCK_NB)`
-- Windows: `msvcrt.locking(..., LK_NBLCK, 1)` or another safe stdlib/ctypes file-lock implementation that does not signal/terminate the target process.
-
-Requirements:
-
-- first worker acquires lock;
-- second worker immediately fails with a clear `LoopError` / exit code 2;
-- lock is automatically released by the OS when the process exits/crashes;
-- stale PID files must not permanently block the worker;
-- no `os.kill(pid, 0)` on Windows;
-- do not solve this by simply deleting an existing lock file before taking the lock.
-
-Keep the open file descriptor/handle alive until shutdown.
-
----
-
-## 3. Make rollback baseline-aware
-
-At the start of each execution attempt, after checkout/pull/fetch has completed, record:
+Expose something equivalent to:
 
 ```python
-base_commit = git rev-parse HEAD
-base_branch = current branch
+def technical_lexical_tokens(text: str) -> list[str]:
+    ...
 ```
 
-Replace generic `rollback()` behavior with something equivalent to:
+The returned tokens must contain:
+
+1. all current raw tokens from `documents.tokenize(text)`;
+2. additional canonical technical tokens derived deterministically from the text.
+
+This is **augmentation**, not replacement. Raw lexical evidence must remain available.
+
+### Required canonical groups
+
+Implement at least the following.
+
+### DN
+
+Equivalent examples:
 
 ```text
-rollback_to(base_commit)
-    git reset --hard <base_commit>
-    git clean -fd
+Ду20
+Ду 20
+DN20
+DN 20
 ```
 
-Every failure after the attempt starts must restore the repository to the recorded `base_commit`, not to the current `HEAD`.
-
-This includes failures from:
-
-- Codex timeout;
-- invalid result JSON;
-- Codex reports blocked after making changes;
-- diff budget;
-- verification;
-- commit;
-- push;
-- remote verification.
-
-### Push-failure acceptance case
-
-Simulate:
+must add:
 
 ```text
-base A
-Codex change
-commit B
-push fails
+dn_20
 ```
 
-After failure:
+Do the same generically for numeric DN values.
+
+### PN / nominal pressure
+
+Canonicalize common Russian/catalog notation to nominal-pressure class tokens.
+
+Required equivalences:
 
 ```text
-HEAD == A
-working tree clean
-plan is NOT marked complete
+Ру16
+PN16
+1,6 МПа
+1.6 MPa
+PN 1,6        # catalog field currently stores MPa-like value
 ```
 
-The next loop iteration must be able to retry from origin cleanly.
+must share a canonical token such as:
+
+```text
+pn_16
+```
+
+And:
+
+```text
+Ру40
+PN40
+4,0 МПа
+4.0 MPa
+PN 4,0
+```
+
+must share:
+
+```text
+pn_40
+```
+
+Do not hardcode only 16 and 40. Implement a small generic parser/converter.
+
+Be conservative around malformed numbers.
+
+### Thread direction
+
+Required aliases:
+
+```text
+ВР
+внутренняя резьба
+Тип резьбы: Внутренняя
+```
+
+add:
+
+```text
+thread_internal
+```
+
+And:
+
+```text
+НР
+наружная резьба
+Тип резьбы: Наружная
+```
+
+add:
+
+```text
+thread_external
+```
+
+Combined forms such as:
+
+```text
+ВР/НР
+В-Н
+Внутренняя/Наружная
+```
+
+should add both tokens when the meaning is clear.
+
+Do **not** interpret generic location wording like `наружный (в колодце)` as an external thread.
+
+### Joining type
+
+Add conservative canonical aliases:
+
+```text
+фланцевый / фланцевое     -> join_flanged
+межфланцевый               -> join_wafer
+муфтовый / резьбовое       -> join_threaded
+приварной / приварное      -> join_welded
+компрессионный / обжимной  -> join_compression
+```
+
+`межфланцевый` must NOT also become ordinary `join_flanged` merely because the word contains `фланц`.
+
+### Ball-valve morphology
+
+When text clearly contains a ball valve phrase, normalize:
+
+```text
+кран шаровый
+кран шаровой
+```
+
+to an additional token such as:
+
+```text
+product_ball_valve
+```
+
+Do not build a broad product taxonomy in this wave.
+
+### Material warning
+
+Do **not** infer body material from arbitrary morphology such as the word `стальной` anywhere in the string.
+
+We already saw the false-positive pattern:
+
+```text
+Кран шаровой латунный ... рычаг стальной
+```
+
+This must never become `material_steel` just because the lever is steel.
+
+It is acceptable to skip material canonicalization entirely in this wave.
 
 ---
 
-## 4. Enforce branch and HEAD invariants after Codex
+## 2. Add an experimental BM25 implementation/helper
 
-The prompt is not sufficient protection.
+Do not modify production `BM25Store`.
 
-Immediately after `run_codex()` and before accepting `clean()` as success, verify:
-
-```text
-current branch == configured branch
-HEAD == base_commit
-```
-
-If Codex changed branch or created/reset/amended a commit:
-
-- treat the attempt as failed;
-- rollback to `base_commit`;
-- do not mark plan completed;
-- do not push anything.
-
-Also perform the invariant check again before creating the outer harness commit.
-
-### Important regression case
-
-If Codex illegally runs `git commit` and leaves a clean working tree, the worker MUST NOT execute this logic:
+Create an eval-only helper, either in the same module or a separate module such as:
 
 ```text
-clean tree → plan already satisfied → mark completed
+src/nomenclature_matcher/eval_bm25.py
 ```
 
-It must detect `HEAD != base_commit` and fail/rollback instead.
+It should build BM25 over the exact same products and exact same `build_lexical_text(product)` documents, but tokenize both corpus and query with:
+
+```python
+technical_lexical_tokens(...)
+```
+
+The experiment must otherwise stay comparable to current BM25:
+
+- same product set;
+- same BM25 implementation/parameters;
+- positive-score-only results;
+- same ranking semantics.
+
+Do not add field boosts, filters or hand-tuned score bonuses in this wave.
 
 ---
 
-## 5. Protect the plan and the V2 runner dynamically
+## 3. Add a V2 offline BM25 experiment script
 
-The new worker must protect:
-
-- configured plan path, normally `CODEX_PLAN.md`;
-- its own script path (`scripts/codex_loop_v2.py`).
-
-Do not hardcode protection only for `scripts/codex_loop.py`.
-
-Derive the runner path from `__file__` relative to the repository when possible.
-
-After Codex returns:
-
-- restore protected tracked files from `base_commit`/HEAD baseline;
-- verify they are unchanged.
-
-Do this again after outer verification before commit, because verification can also modify files.
-
----
-
-## 6. Re-check diff budget after verification
-
-Required sequence:
+Create:
 
 ```text
-Codex finished
-→ restore protected files
-→ Git invariant check
-→ diff budget check #1
-→ outer verification
-→ restore protected files again
-→ Git invariant check again
-→ diff budget check #2
-→ commit
-→ push
+scripts/eval_v2_bm25_normalization.py
 ```
 
-The second diff-budget check is mandatory.
+This script must require no OpenAI, DeepSeek, Qdrant or network access.
 
-Do not stage/commit files created by verification if they make the final diff exceed configured limits.
+Inputs:
 
-### Binary/untracked sanity
-
-Current line counting treats a binary file as approximately one line. Add a conservative byte-size guard for untracked files so a huge binary artifact cannot bypass `max_diff_lines` trivially.
-
-A simple additional CLI/config limit such as `--max-untracked-bytes` is acceptable.
-
-Keep defaults conservative but practical for this repository.
-
----
-
-## 7. Make remote publication verifiable
-
-Use explicit push semantics, for example:
-
-```bash
-git push origin HEAD:main
+```text
+ld_products_full_nomenclature.csv
+data/eval_queries_v2.json
+data/eval_labels_v2.json
 ```
 
-using the configured branch rather than assuming current implicit state.
+Evaluate only VERIFIED MATCHED queries.
 
-After successful push:
+For every query run:
 
-1. fetch the configured branch;
-2. read `origin/<branch>` SHA;
-3. verify it equals the local committed SHA;
-4. only then write `completed_plan_hash` to state.
+```text
+A. current BM25Store, limit=100
+B. experimental normalized BM25, limit=100
+```
 
-If push or remote confirmation fails:
+For both variants record:
 
-- rollback local repo to `base_commit`;
-- register failure;
-- do not mark the plan completed.
+- acceptable LD IDs;
+- first relevant rank;
+- relevant IDs found in TOP100;
+- hit@1;
+- hit@3;
+- hit@5;
+- hit@10;
+- hit@20;
+- hit@50;
+- hit@100;
+- top 20 candidate IDs/names with score.
 
-The state machine must never claim completion before remote publication is confirmed.
+Also record for each query:
 
----
+```text
+rank_delta = current_first_relevant_rank - normalized_first_relevant_rank
+```
 
-## 8. Handle unexpected local branch state conservatively
-
-Before executing a plan, after fetching origin, compare local configured branch HEAD with `origin/<branch>`.
-
-The worker is intended for a dedicated clone, but do not silently delete unexplained local commits.
-
-If the local branch is ahead/diverged before a new attempt:
-
-- stop that iteration with a clear error;
-- do not mark plan blocked/completed;
-- do not silently reset user/manual commits.
-
-It is acceptable to require manual recovery for a pre-existing divergent dedicated clone.
-
-Normal clean synchronized state should continue automatically.
+Use `null` cleanly when there is no hit in TOP100.
 
 ---
 
-## 9. Keep service-secret behavior conservative
+## 4. Produce aggregate comparison metrics
 
-Preserve the useful existing protections:
+Output:
 
-- do not leak service env variables into outer verification;
-- preserve `.env` bytes around Codex execution;
-- reject non-empty sensitive service keys in `.env` unless explicitly allowed;
-- network remains disabled by default;
-- Codex uses `workspace-write` and `approval_policy=never`.
+```text
+data/eval_v2_bm25_normalization_results.json
+```
 
-Do not broaden permissions or network access in this wave.
+Include at minimum:
+
+```text
+verified_matched_queries
+current_bm25:
+  recall_at_1
+  recall_at_3
+  recall_at_5
+  recall_at_10
+  recall_at_20
+  recall_at_50
+  recall_at_100
+normalized_bm25:
+  same metrics
+queries_improved
+queries_unchanged
+queries_worsened
+```
+
+Also include a clear dedicated q09 diagnostic:
+
+```text
+v2_q09:
+  golden_ids
+  current_first_relevant_rank
+  normalized_first_relevant_rank
+  current_hit_at_20
+  normalized_hit_at_20
+```
+
+Print a concise console summary too.
+
+---
+
+## 5. Keep the comparison honest
+
+The experiment must not special-case query IDs or golden LD IDs during ranking.
+
+Forbidden examples:
+
+```python
+if query_id == "v2_q09": ...
+if ld_id == 17889: score += ...
+```
+
+Golden IDs may only be used **after ranking** to calculate metrics.
+
+The normalizer must operate on text, not Eval IDs.
 
 ---
 
 # Tests
 
-Create `tests/test_codex_loop_v2.py`.
-
-Tests must not invoke real Codex, real GitHub, or network.
-Use temporary repositories and/or monkeypatch/subprocess stubs.
-
-At minimum cover the following.
-
-## Test 1 — Windows lock does not use `os.kill(pid, 0)`
-
-Exercise/mock the Windows lock path.
-
-Acceptance:
-
-- no call that can terminate another process;
-- second lock acquisition fails cleanly while first is held.
-
-## Test 2 — lock releases after close
-
-Acquire lock, release/close it, then acquire it again successfully.
-
-## Test 3 — push failure restores baseline
-
-Scenario:
+Add focused tests, for example:
 
 ```text
-base A
-changes
-outer commit B
-push failure
+tests/test_eval_lexical_normalization.py
 ```
 
-Acceptance:
+At minimum cover:
+
+## DN aliases
 
 ```text
-HEAD == A
-working tree clean
-completed_plan_hash not set
+Ду20 -> dn_20
+DN 20 -> dn_20
 ```
 
-## Test 4 — Codex-created commit is rejected
+## PN aliases
 
-Simulate Codex changing `HEAD` while leaving the tree clean.
+```text
+Ру16 -> pn_16
+PN16 -> pn_16
+1,6 МПа -> pn_16
+PN 1,6 -> pn_16
 
-Acceptance:
+Ру40 -> pn_40
+4,0 МПа -> pn_40
+PN 4,0 -> pn_40
+```
 
-- attempt fails;
-- reset to base commit;
-- plan is not marked complete.
+## Thread aliases
 
-## Test 5 — Codex branch switch is rejected
+```text
+ВР/НР -> thread_internal + thread_external
+Внутренняя/Наружная -> both
+```
 
-Simulate current branch changing during Codex execution.
+and verify:
 
-Acceptance:
+```text
+наружный (в колодце)
+```
 
-- attempt fails and rolls back/recover safely;
-- no push.
+does NOT by itself add `thread_external`.
 
-## Test 6 — verification side-effect is included in final budget
+## Joining aliases
 
-Make the verification stub create an extra untracked file after budget check #1.
+Verify:
 
-Acceptance:
+```text
+фланцевый -> join_flanged
+межфланцевый -> join_wafer
+```
 
-- budget check #2 sees it;
-- over-budget change is not committed.
+and `межфланцевый` does not accidentally become `join_flanged`.
 
-## Test 7 — huge untracked binary is rejected by byte guard
+## Product morphology
 
-A large binary file must not count as only one harmless line and pass all budgets.
+```text
+кран шаровый
+кран шаровой
+```
 
-## Test 8 — completion requires remote SHA confirmation
+must share `product_ball_valve`.
 
-Simulate local commit SHA `B` and remote still at `A` after attempted push/confirmation.
+## Material false positive regression
 
-Acceptance:
+For:
 
-- plan is not marked complete.
+```text
+Кран шаровой латунный LD Pride Ду32 Ру25 рычаг стальной
+```
 
-Then simulate remote SHA `B`.
+the normalizer must not manufacture a steel-body/material token.
 
-Acceptance:
+## Raw-token preservation
 
-- completion state may be written.
+All tokens from current `documents.tokenize(text)` must still be present in the augmented token list.
 
-## Test 9 — plan outside repository is rejected
+## Ranking regression fixture
 
-Keep the existing path traversal/symlink escape protection.
+Build a tiny synthetic corpus where a query using:
 
-## Test 10 — protected V2 runner and plan cannot be committed as task output
+```text
+Ду20 Ру40 ВР/НР
+```
 
-Simulate changes to both files during Codex/verification.
+must rank a document containing:
 
-Acceptance:
+```text
+DN 20
+PN 4,0
+Тип резьбы: Внутренняя/Наружная
+```
 
-- they are restored before final commit;
-- final diff does not include them.
+above technically contradictory distractors after normalization.
+
+Do not use real network/services in tests.
 
 ---
 
 # Validation
 
-Run at least:
+Run:
 
 ```bash
 python -m pytest -q
 ```
 
-If useful also run:
+Then run the offline experiment:
 
 ```bash
-python scripts/codex_loop_v2.py --help
+python scripts/eval_v2_bm25_normalization.py
 ```
 
-Do not start a real long-running loop as part of tests.
-Do not invoke real Codex.
-Do not push manually; the outer V1 harness owns publication for this plan.
+The experiment is local/offline and should work without service credentials.
+
+Commit the generated result:
+
+```text
+data/eval_v2_bm25_normalization_results.json
+```
+
+Do not hand-edit the result.
 
 ---
 
-# Files expected to change
+# Acceptance criteria
 
-Expected:
+This wave is considered technically successful if all are true:
+
+1. production retrieval code is unchanged;
+2. current BM25 baseline is measured from the real catalog;
+3. experimental normalized BM25 is measured on the same real catalog;
+4. no VERIFIED MATCHED query that currently hits BM25@20 becomes a miss at @20;
+5. normalized BM25 Recall@20 is >= current BM25 Recall@20;
+6. `v2_q09` improves materially;
+7. target success for q09 is:
 
 ```text
-scripts/codex_loop_v2.py
-tests/test_codex_loop_v2.py
+normalized_first_relevant_rank <= 20
 ```
 
-Optional only if genuinely needed:
+If q09 does not reach TOP20, do NOT keep adding ad-hoc aliases in the same wave. Preserve the result and report that the experiment was insufficient.
+
+This is an experiment. Even if all metrics improve, **do not promote the normalizer into production BM25 in this commit**.
+
+---
+
+# Expected files
+
+Expected new files:
 
 ```text
-README.md
+src/nomenclature_matcher/eval_lexical_normalization.py
+src/nomenclature_matcher/eval_bm25.py          # optional if split is cleaner
+scripts/eval_v2_bm25_normalization.py
+tests/test_eval_lexical_normalization.py
+data/eval_v2_bm25_normalization_results.json
 ```
+
+`CODEX_PLAN.md` is protected by the loop and must not be modified by Codex.
 
 Do not modify:
 
 ```text
 scripts/codex_loop.py
-CODEX_PLAN.md
+src/nomenclature_matcher/bm25_store.py
+src/nomenclature_matcher/hybrid_retriever.py
+src/nomenclature_matcher/settings.py
+data/eval_labels_v2.json
 data/eval_v2_human_review.json
 data/eval_v2_retrieval_miss_human_review.json
-data/eval_labels_v2.json
-src/nomenclature_matcher/*
 ```
-
-Do not regenerate Eval artifacts in this wave.
 
 ---
 
 # Definition of Done
 
-This wave is complete only when all are true:
+- deterministic technical token augmentation exists;
+- raw tokens are preserved;
+- DN/PN/thread/joining aliases are covered by tests;
+- material false-positive regression is covered;
+- current vs normalized BM25 are evaluated offline on all VERIFIED MATCHED Eval V2 queries;
+- q09 diagnostic is explicit;
+- result JSON is generated by the script;
+- pytest passes;
+- no production retrieval change is made;
+- no Codex-loop work is performed.
 
-- `scripts/codex_loop_v2.py` exists;
-- old `scripts/codex_loop.py` is unchanged;
-- Windows lock does not use `os.kill(pid, 0)`;
-- lock is exclusive and automatically releasable;
-- failures after a local commit reset to the recorded base commit;
-- Codex-created Git commits/branch changes are detected and rejected;
-- diff budget runs before and after verification;
-- huge untracked binaries have a byte-size guard;
-- protected plan + V2 runner cannot leak into an autonomous task commit;
-- successful push is confirmed by remote SHA before state is marked complete;
-- pre-existing local ahead/diverged state is not silently destroyed;
-- regression tests cover the listed cases;
-- `python -m pytest -q` passes;
-- no production retrieval or Eval semantics changed.
+STOP after this experiment. The next wave will be chosen from the measured result:
 
-STOP after this hardening wave. Do not start retrieval tuning or full-catalog label finalization in the same commit.
+- promote lexical normalization to production if it clearly wins;
+- otherwise investigate another retrieval layer (dense text construction / candidate limits / fusion) based on evidence.
 
 ---
 
@@ -491,10 +616,10 @@ STOP after this hardening wave. Do not start retrieval tuning or full-catalog la
 Return only:
 
 1. changed files;
-2. lock implementation summary;
-3. rollback/push-failure behavior;
-4. Git invariant enforcement summary;
-5. post-verification diff-budget behavior;
-6. pytest result;
-7. confirmation old `scripts/codex_loop.py` was not modified;
-8. any blocker if present.
+2. pytest result;
+3. current BM25 Recall@20;
+4. normalized BM25 Recall@20;
+5. q09 current first relevant rank;
+6. q09 normalized first relevant rank;
+7. whether any VERIFIED MATCHED query regressed at @20;
+8. conclusion: `PROMISING` or `INSUFFICIENT`.
