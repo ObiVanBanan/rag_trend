@@ -97,8 +97,9 @@ def main():
     for item in queries:
         query = item["query"]
         label = labels.get(item["id"], {})
-        acceptable_ld_ids = label.get("acceptable_ld_ids", [])
-        expected_status = label.get("expected_status", "MATCHED")
+        label_status = label.get("label_status", "UNREVIEWED")
+        expected_status = label.get("expected_status") if label_status == "VERIFIED" else None
+        acceptable_ld_ids = label.get("acceptable_ld_ids", []) if label_status == "VERIFIED" else []
 
         dense_top20 = matcher._search_candidates(query, settings.hybrid_rerank_limit)
         bm25_top20 = hybrid_retriever.search_bm25(query, settings.hybrid_rerank_limit)
@@ -110,27 +111,36 @@ def main():
         hybrid_ids = [candidate.ld_id for candidate in hybrid_top20[:20]]
         selected_ids = [selected.ld_id for selected in deepseek_result.selected]
 
-        dense_hit = has_overlap(dense_ids, acceptable_ld_ids)
-        bm25_hit = has_overlap(bm25_ids, acceptable_ld_ids)
-        hybrid_hit = has_overlap(hybrid_ids, acceptable_ld_ids)
-        reranker_success = (
-            has_overlap(selected_ids, acceptable_ld_ids)
-            if expected_status == "MATCHED"
-            else deepseek_result.status == "NOT_FOUND"
-        )
-        error_type = classify_error_type(
-            expected_status=expected_status,
-            dense_hit=dense_hit,
-            bm25_hit=bm25_hit,
-            hybrid_hit=hybrid_hit,
-            reranker_success=reranker_success,
-            deepseek_status=deepseek_result.status,
-        )
+        if label_status == "VERIFIED":
+            dense_hit = has_overlap(dense_ids, acceptable_ld_ids)
+            bm25_hit = has_overlap(bm25_ids, acceptable_ld_ids)
+            hybrid_hit = has_overlap(hybrid_ids, acceptable_ld_ids)
+            reranker_success = (
+                has_overlap(selected_ids, acceptable_ld_ids)
+                if expected_status == "MATCHED"
+                else deepseek_result.status == "NOT_FOUND"
+            )
+            error_type = classify_error_type(
+                label_status=label_status,
+                expected_status=expected_status,
+                dense_hit=dense_hit,
+                bm25_hit=bm25_hit,
+                hybrid_hit=hybrid_hit,
+                reranker_success=reranker_success,
+                deepseek_status=deepseek_result.status,
+            )
+        else:
+            dense_hit = None
+            bm25_hit = None
+            hybrid_hit = None
+            reranker_success = None
+            error_type = "UNREVIEWED"
 
         results.append(
             {
                 "id": item["id"],
                 "query": query,
+                "label_status": label_status,
                 "expected_status": expected_status,
                 "acceptable_ld_ids": acceptable_ld_ids,
                 "dense_top20": _candidate_rows(dense_top20, "dense_score"),
@@ -154,8 +164,18 @@ def main():
 
     metrics = {
         "queries": len(results),
-        "expected_matched": sum(1 for item in results if item["expected_status"] == "MATCHED"),
-        "expected_not_found": sum(1 for item in results if item["expected_status"] == "NOT_FOUND"),
+        "verified_queries": sum(1 for item in results if item["label_status"] == "VERIFIED"),
+        "unreviewed_queries": sum(1 for item in results if item["label_status"] != "VERIFIED"),
+        "expected_matched": sum(
+            1
+            for item in results
+            if item["label_status"] == "VERIFIED" and item["expected_status"] == "MATCHED"
+        ),
+        "expected_not_found": sum(
+            1
+            for item in results
+            if item["label_status"] == "VERIFIED" and item["expected_status"] == "NOT_FOUND"
+        ),
         "dense_recall_at_20": recall_at_20(results, "dense_top20"),
         "bm25_recall_at_20": recall_at_20(results, "bm25_top20"),
         "hybrid_recall_at_20": recall_at_20(results, "hybrid_top20"),
@@ -181,6 +201,8 @@ def main():
 
     print(f"Saved eval results to {results_path}")
     print(f"Queries: {metrics['queries']}")
+    print(f"Verified: {metrics['verified_queries']}")
+    print(f"Unreviewed: {metrics['unreviewed_queries']}")
     print(f"Expected MATCHED: {metrics['expected_matched']}")
     print(f"Expected NOT_FOUND: {metrics['expected_not_found']}")
     print(
@@ -211,10 +233,10 @@ def main():
     for error_type in [
         "HYBRID_RETRIEVAL_FAIL",
         "RERANKER_FAIL",
-        "DENSE_RETRIEVAL_FAIL",
-        "BM25_RETRIEVAL_FAIL",
+        "RERANKER_ERROR",
         "CORRECT_NOT_FOUND",
         "WRONG_NOT_FOUND",
+        "UNREVIEWED",
         "OK",
     ]:
         print(f"- {error_type}: {metrics['error_counts'].get(error_type, 0)}")
