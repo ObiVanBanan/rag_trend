@@ -129,6 +129,31 @@ def get_reviewed_candidate_count(query_state: dict[str, Any]) -> int:
     return len(query_state.get("candidate_grades", {}))
 
 
+def _candidate_id_set(candidate_ids: Iterable[int | str] | None) -> set[str]:
+    if candidate_ids is None:
+        return set()
+    return {str(candidate_id) for candidate_id in candidate_ids}
+
+
+def get_reviewed_candidate_count_for_ids(query_state: dict[str, Any], candidate_ids: Iterable[int | str]) -> int:
+    allowed_ids = _candidate_id_set(candidate_ids)
+    if not allowed_ids:
+        return 0
+    grades = query_state.get("candidate_grades", {})
+    return sum(1 for candidate_id in grades if candidate_id in allowed_ids)
+
+
+def get_accepted_candidate_ids_for_ids(query_state: dict[str, Any], candidate_ids: Iterable[int | str]) -> list[int]:
+    allowed_ids = _candidate_id_set(candidate_ids)
+    if not allowed_ids:
+        return []
+    accepted: list[int] = []
+    for candidate_id, grade_info in query_state.get("candidate_grades", {}).items():
+        if candidate_id in allowed_ids and grade_info.get("grade") == "ACCEPT":
+            accepted.append(int(candidate_id))
+    return sorted(accepted)
+
+
 def get_query_progress(query_state: dict[str, Any], total_candidates: int | None = None) -> dict[str, int | str | bool | None]:
     grades = query_state.get("candidate_grades", {})
     counts = {grade: 0 for grade in VALID_CANDIDATE_GRADES}
@@ -159,6 +184,7 @@ def finalize_query(
     comment: str = "",
     confirmed: bool = False,
     total_candidates: int | None = None,
+    candidate_ids: Iterable[int | str] | None = None,
 ) -> dict[str, Any]:
     if final_status not in VALID_FINAL_STATUSES:
         raise ValueError(f"Unsupported final status: {final_status}")
@@ -168,20 +194,29 @@ def finalize_query(
     if query_state.get("completed", False):
         raise ValueError("Completed query cannot be finalized again; reopen it first")
 
-    reviewed_candidates = get_reviewed_candidate_count(query_state)
-    if total_candidates is not None and reviewed_candidates < total_candidates and final_status in {
+    reviewed_candidates = (
+        get_reviewed_candidate_count_for_ids(query_state, candidate_ids)
+        if candidate_ids is not None
+        else get_reviewed_candidate_count(query_state)
+    )
+    candidate_total = len({str(candidate_id) for candidate_id in candidate_ids}) if candidate_ids is not None else total_candidates
+    if candidate_total is not None and reviewed_candidates < candidate_total and final_status in {
         "MATCHED",
         "NOT_FOUND",
         "RETRIEVAL_MISS",
     }:
         raise ValueError(
-            f"All candidates must be reviewed before finalization: {reviewed_candidates} / {total_candidates}"
+            f"All candidates must be reviewed before finalization: {reviewed_candidates} / {candidate_total}"
         )
 
-    if final_status == "MATCHED" and not get_accepted_candidate_ids(query_state):
+    accepted_ids = (
+        get_accepted_candidate_ids_for_ids(query_state, candidate_ids)
+        if candidate_ids is not None
+        else get_accepted_candidate_ids(query_state)
+    )
+    if final_status == "MATCHED" and not accepted_ids:
         raise ValueError("MATCHED finalization requires at least one ACCEPT candidate")
     if final_status in {"NOT_FOUND", "RETRIEVAL_MISS"}:
-        accepted_ids = get_accepted_candidate_ids(query_state)
         if accepted_ids:
             raise ValueError(f"{final_status} finalization is incompatible with ACCEPT candidates")
         if final_status == "NOT_FOUND" and not confirmed:
@@ -202,7 +237,10 @@ def reopen_query(state: dict[str, Any], query_id: str) -> dict[str, Any]:
     return copied
 
 
-def build_v2_label_entry(query_state: dict[str, Any]) -> dict[str, Any] | None:
+def build_v2_label_entry(
+    query_state: dict[str, Any],
+    candidate_ids: Iterable[int | str] | None = None,
+) -> dict[str, Any] | None:
     final_status = query_state.get("final_status")
     if not query_state.get("completed", False):
         return None
@@ -210,9 +248,14 @@ def build_v2_label_entry(query_state: dict[str, Any]) -> dict[str, Any] | None:
         return None
     if final_status not in {"MATCHED", "NOT_FOUND"}:
         return None
+    acceptable_ld_ids = (
+        get_accepted_candidate_ids_for_ids(query_state, candidate_ids)
+        if candidate_ids is not None
+        else get_accepted_candidate_ids(query_state)
+    )
     return {
         "label_status": "VERIFIED",
-        "acceptable_ld_ids": get_accepted_candidate_ids(query_state) if final_status == "MATCHED" else [],
+        "acceptable_ld_ids": acceptable_ld_ids if final_status == "MATCHED" else [],
         "expected_status": final_status,
         "human_comment": query_state.get("final_comment", "") or "",
     }
@@ -222,10 +265,11 @@ def apply_review_state_to_labels(
     labels: dict[str, Any],
     query_id: str,
     review_state: dict[str, Any],
+    candidate_ids: Iterable[int | str] | None = None,
 ) -> dict[str, Any]:
     copied = copy.deepcopy(labels)
     query_state = review_state["queries"][str(query_id)]
-    entry = build_v2_label_entry(query_state)
+    entry = build_v2_label_entry(query_state, candidate_ids=candidate_ids)
     if entry is None:
         copied[str(query_id)] = {
             "label_status": "UNREVIEWED",

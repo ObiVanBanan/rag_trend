@@ -12,7 +12,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from nomenclature_matcher.review_state import (
     apply_review_state_to_labels,
     finalize_query,
-    get_query_progress,
+    get_accepted_candidate_ids_for_ids,
+    get_reviewed_candidate_count_for_ids,
     initialize_review_state,
     load_review_state,
     reopen_query,
@@ -20,7 +21,6 @@ from nomenclature_matcher.review_state import (
     set_candidate_grade,
     set_query_cursor,
 )
-from nomenclature_matcher.eval_v2_ground_truth import query_has_accept
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,8 +58,13 @@ def load_payloads(candidates_path: Path, review_state_path: Path) -> tuple[dict[
     return candidates, labels, review_state
 
 
-def save_labels_for_query(review_state: dict[str, Any], labels: dict[str, Any], query_id: str) -> None:
-    updated = apply_review_state_to_labels(labels, query_id, review_state)
+def save_labels_for_query(
+    review_state: dict[str, Any],
+    labels: dict[str, Any],
+    query_id: str,
+    candidate_ids: list[int] | None = None,
+) -> None:
+    updated = apply_review_state_to_labels(labels, query_id, review_state, candidate_ids=candidate_ids)
     _write_json(LABELS_PATH, updated)
 
 
@@ -86,13 +91,37 @@ def _lookup_technical_property(technical_properties: dict[str, Any], names: tupl
     return "—"
 
 
-def render_query_progress(query_item: dict[str, Any], query_state: dict[str, Any], review_state: dict[str, Any], total_candidates: int) -> None:
-    current_progress = get_query_progress(query_state, total_candidates=len(query_item["candidates"]))
-    total_reviewed_candidates = sum(len(query_state_item.get("candidate_grades", {})) for query_state_item in review_state["queries"].values())
+def _current_pool_grade_summary(query_state: dict[str, Any], candidate_ids: list[int]) -> dict[str, int]:
+    allowed_ids = {str(candidate_id) for candidate_id in candidate_ids}
+    summary = {"accepted": 0, "rejected": 0, "unsure": 0, "skipped": 0, "reviewed_candidates": 0}
+    for candidate_id, grade_info in query_state.get("candidate_grades", {}).items():
+        if candidate_id not in allowed_ids:
+            continue
+        grade = grade_info.get("grade")
+        summary["reviewed_candidates"] += 1
+        if grade == "ACCEPT":
+            summary["accepted"] += 1
+        elif grade == "REJECT":
+            summary["rejected"] += 1
+        elif grade == "UNSURE":
+            summary["unsure"] += 1
+        elif grade == "SKIP":
+            summary["skipped"] += 1
+    return summary
+
+
+def render_query_progress(
+    query_item: dict[str, Any],
+    query_state: dict[str, Any],
+    total_reviewed_candidates: int,
+    total_candidates: int,
+) -> dict[str, int]:
+    current_candidate_ids = [candidate["ld_id"] for candidate in query_item["candidates"]]
+    current_progress = _current_pool_grade_summary(query_state, current_candidate_ids)
 
     st.subheader("Прогресс")
     progress_cols = st.columns(4)
-    progress_cols[0].metric("Текущий query", f"{current_progress['reviewed_candidates']} / {current_progress['total_candidates']}")
+    progress_cols[0].metric("Текущий query", f"{current_progress['reviewed_candidates']} / {len(current_candidate_ids)}")
     progress_cols[1].metric("Все queries", f"{total_reviewed_candidates} / {total_candidates}")
     progress_cols[2].metric("ACCEPT", current_progress["accepted"])
     progress_cols[3].metric("REJECT", current_progress["rejected"])
@@ -100,6 +129,7 @@ def render_query_progress(query_item: dict[str, Any], query_state: dict[str, Any
     detail_cols = st.columns(2)
     detail_cols[0].metric("UNSURE", current_progress["unsure"])
     detail_cols[1].metric("SKIP", current_progress["skipped"])
+    return current_progress
 
 
 def filter_query_ids(candidates_payload: dict[str, Any], review_state: dict[str, Any], mode: str) -> list[str]:
@@ -110,7 +140,8 @@ def filter_query_ids(candidates_payload: dict[str, Any], review_state: dict[str,
         final_status = query_state.get("final_status")
         candidate_grades = query_state.get("candidate_grades", {})
         has_unsure = any(item.get("grade") == "UNSURE" for item in candidate_grades.values())
-        has_accept = query_has_accept(query_state)
+        current_candidate_ids = [candidate["ld_id"] for candidate in query.get("candidates", [])]
+        has_accept = bool(get_accepted_candidate_ids_for_ids(query_state, current_candidate_ids))
         is_unreviewed = not query_state.get("completed", False) and final_status is None
 
         if mode == "Все":
@@ -240,8 +271,13 @@ def save_candidate_grade(
     return updated
 
 
-def update_query_label_from_state(review_state: dict[str, Any], labels: dict[str, Any], query_id: str) -> None:
-    save_labels_for_query(review_state, labels, query_id)
+def update_query_label_from_state(
+    review_state: dict[str, Any],
+    labels: dict[str, Any],
+    query_id: str,
+    candidate_ids: list[int] | None = None,
+) -> None:
+    save_labels_for_query(review_state, labels, query_id, candidate_ids=candidate_ids)
 
 
 def render_query_finalization(
@@ -253,13 +289,10 @@ def render_query_finalization(
 ) -> None:
     query_id = query_item["id"]
     st.subheader("Завершение query")
-    accepted_ids = [
-        candidate["ld_id"]
-        for candidate in query_item["candidates"]
-        if query_state.get("candidate_grades", {}).get(str(candidate["ld_id"]), {}).get("grade") == "ACCEPT"
-    ]
-    reviewed_candidates = len(query_state.get("candidate_grades", {}))
-    total_candidates = len(query_item["candidates"])
+    current_candidate_ids = [candidate["ld_id"] for candidate in query_item["candidates"]]
+    accepted_ids = get_accepted_candidate_ids_for_ids(query_state, current_candidate_ids)
+    reviewed_candidates = get_reviewed_candidate_count_for_ids(query_state, current_candidate_ids)
+    total_candidates = len(current_candidate_ids)
 
     status_text = query_state.get("final_status") or "UNREVIEWED"
     if query_state.get("completed", False):
@@ -269,7 +302,7 @@ def render_query_finalization(
         if st.button("Переоткрыть query", use_container_width=True):
             updated = reopen_query(review_state, query_id)
             save_review_state(review_state_path, updated)
-            update_query_label_from_state(updated, labels, query_id)
+            update_query_label_from_state(updated, labels, query_id, current_candidate_ids)
             st.rerun()
         return
 
@@ -308,10 +341,10 @@ def render_query_finalization(
             query_id,
             "MATCHED",
             comment=final_comment,
-            total_candidates=total_candidates,
+            candidate_ids=current_candidate_ids,
         )
         save_review_state(review_state_path, updated)
-        update_query_label_from_state(updated, labels, query_id)
+        update_query_label_from_state(updated, labels, query_id, current_candidate_ids)
         st.rerun()
     if action_cols[1].button("❌ NOT_FOUND", use_container_width=True, disabled=not_found_disabled):
         updated = finalize_query(
@@ -320,10 +353,10 @@ def render_query_finalization(
             "NOT_FOUND",
             comment=final_comment,
             confirmed=True,
-            total_candidates=total_candidates,
+            candidate_ids=current_candidate_ids,
         )
         save_review_state(review_state_path, updated)
-        update_query_label_from_state(updated, labels, query_id)
+        update_query_label_from_state(updated, labels, query_id, current_candidate_ids)
         st.rerun()
     if action_cols[2].button("⚠️ RETRIEVAL_MISS", use_container_width=True, disabled=retrieval_miss_disabled):
         updated = finalize_query(
@@ -331,15 +364,15 @@ def render_query_finalization(
             query_id,
             "RETRIEVAL_MISS",
             comment=final_comment,
-            total_candidates=total_candidates,
+            candidate_ids=current_candidate_ids,
         )
         save_review_state(review_state_path, updated)
-        update_query_label_from_state(updated, labels, query_id)
+        update_query_label_from_state(updated, labels, query_id, current_candidate_ids)
         st.rerun()
     if action_cols[3].button("⏸ UNREVIEWED", use_container_width=True):
         updated = finalize_query(review_state, query_id, "UNREVIEWED", comment=final_comment)
         save_review_state(review_state_path, updated)
-        update_query_label_from_state(updated, labels, query_id)
+        update_query_label_from_state(updated, labels, query_id, current_candidate_ids)
         st.rerun()
 
 
@@ -390,6 +423,7 @@ def main() -> None:
     current_query_id = st.sidebar.selectbox("Query", filtered_ids, format_func=lambda query_id: query_label(query_by_id[query_id]))
     query_item = query_by_id[current_query_id]
     query_state = review_state["queries"][current_query_id]
+    current_candidate_ids = [candidate["ld_id"] for candidate in query_item["candidates"]]
 
     candidates = query_item["candidates"]
     current_index = min(query_state.get("cursor_index", 0), max(len(candidates) - 1, 0)) if candidates else 0
@@ -400,7 +434,14 @@ def main() -> None:
         return
 
     total_candidates = sum(len(query["candidates"]) for query in candidates_payload["queries"])
-    render_query_progress(query_item, query_state, review_state, total_candidates)
+    total_reviewed_candidates = sum(
+        get_reviewed_candidate_count_for_ids(
+            review_state["queries"].get(query_data["id"], {}),
+            [candidate["ld_id"] for candidate in query_data["candidates"]],
+        )
+        for query_data in candidates_payload["queries"]
+    )
+    current_progress = render_query_progress(query_item, query_state, total_reviewed_candidates, total_candidates)
     render_query_text(query_item)
 
     visible_candidates = build_visible_candidates(candidates, query_state, candidate_view_mode)
@@ -483,11 +524,14 @@ def main() -> None:
         review_state_path,
     )
 
-    current_progress = get_query_progress(updated_review_state["queries"][current_query_id], total_candidates=len(candidates))
+    current_accept_ids = get_accepted_candidate_ids_for_ids(
+        updated_review_state["queries"][current_query_id],
+        [candidate["ld_id"] for candidate in candidates],
+    )
     st.write(
-        f"Status: {current_progress['final_status']} | "
-        f"Completed: {current_progress['completed']} | "
-        f"Accepted IDs: {[candidate_id for candidate_id, item in updated_review_state['queries'][current_query_id].get('candidate_grades', {}).items() if item.get('grade') == 'ACCEPT']}"
+        f"Status: {updated_review_state['queries'][current_query_id].get('final_status') or 'UNREVIEWED'} | "
+        f"Completed: {updated_review_state['queries'][current_query_id].get('completed', False)} | "
+        f"Accepted IDs: {current_accept_ids}"
     )
 
 

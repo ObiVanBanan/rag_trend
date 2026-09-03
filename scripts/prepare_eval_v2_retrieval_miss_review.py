@@ -40,7 +40,6 @@ def main() -> int:
         review_state,
         lambda query, limit: matcher._search_candidates(query, limit),
         lambda query, limit: hybrid_retriever.search_bm25(query, limit),
-        lambda query, limit: hybrid_retriever.search(query, limit),
         max_per_source=100,
     )
     OUTPUT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -23,9 +23,9 @@ def test_select_queries_for_expanded_review_requires_full_review_and_no_accept()
     review_state = set_candidate_grade(review_state, "q2", 4, "REJECT")
     review_state = set_candidate_grade(review_state, "q3", 5, "REJECT")
 
-    assert query_is_ready_for_expanded_review(review_state["queries"]["q1"], 2) is True
-    assert query_is_ready_for_expanded_review(review_state["queries"]["q2"], 2) is False
-    assert query_is_ready_for_expanded_review(review_state["queries"]["q3"], 2) is False
+    assert query_is_ready_for_expanded_review(review_state["queries"]["q1"], [1, 2]) is True
+    assert query_is_ready_for_expanded_review(review_state["queries"]["q2"], [3, 4]) is False
+    assert query_is_ready_for_expanded_review(review_state["queries"]["q3"], [5, 6]) is False
     assert select_queries_for_expanded_review(candidates_payload, review_state) == ["q1"]
 
 
@@ -49,10 +49,9 @@ def test_build_expanded_review_query_excludes_base_reviewed_ids_and_preserves_ra
         ]
     )
 
-    hybrid_candidates = [shared_bm25]
     query_item = {"id": "q1", "query": "query"}
 
-    report = build_expanded_review_query(query_item, {1, 2}, dense_candidates, bm25_candidates, hybrid_candidates, max_per_source=100)
+    report = build_expanded_review_query(query_item, {1, 2}, dense_candidates, bm25_candidates, max_per_source=100)
 
     assert report["source"] == EXPANDED_RETRIEVAL_MISS_SOURCE
     assert all(candidate["ld_id"] not in {1, 2} for candidate in report["candidates"])
