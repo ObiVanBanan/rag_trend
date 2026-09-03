@@ -63,10 +63,13 @@ class SelectedMatch:
     candidate_id: int
     article: str | None
     name: str
-    vector_score: float
     llm_confidence: float | None
     reason: str
     ld_id: int
+    vector_score: float | None = None
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
     dn: Any = None
     pn: Any = None
     joining_type: str | None = None

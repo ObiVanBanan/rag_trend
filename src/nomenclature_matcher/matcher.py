@@ -34,7 +34,60 @@ class NomenclatureMatcher:
 
     @staticmethod
     def _selected_vector_score(candidate: SearchCandidate) -> float:
-        return candidate.rrf_score if candidate.rrf_score is not None else candidate.score
+        if candidate.rrf_score is not None:
+            return candidate.rrf_score
+        if candidate.dense_score is not None:
+            return candidate.dense_score
+        return candidate.score
+
+    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            vector_score=self._selected_vector_score(candidate),
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+        )
+
+    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+            )
+        selected = []
+        for item in rerank_result.selected:
+            candidate = candidates[item.candidate_id - 1]
+            selected.append(self._build_selected_match(candidate, item))
+        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+        return MatchResult(
+            query=query,
+            status=rerank_result.status,
+            score=best.score if best else None,
+            ld_product=best if rerank_result.status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=rerank_result.reason,
+        )
 
     def match_one(self, query: str) -> MatchResult:
         query = self._normalize_query(query)
@@ -50,49 +103,7 @@ class NomenclatureMatcher:
         if not query:
             return MatchResult(query=query, status="NOT_FOUND")
         candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
-        if not candidates:
-            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
-        if self.reranker is None:
-            raise ValueError("Reranker is not configured")
-        try:
-            rerank_result = self.reranker.rerank(query, candidates)
-        except Exception as exc:
-            return MatchResult(
-                query=query,
-                status="RERANK_FAILED",
-                score=candidates[0].score,
-                ld_product=None,
-                candidates=candidates,
-                reason=str(exc),
-            )
-        selected = []
-        for item in rerank_result.selected:
-            candidate = candidates[item.candidate_id - 1]
-            selected.append(
-                SelectedMatch(
-                    candidate_id=item.candidate_id,
-                    article=candidate.article,
-                    name=candidate.name,
-                    vector_score=self._selected_vector_score(candidate),
-                    llm_confidence=item.confidence,
-                    reason=item.reason,
-                    ld_id=candidate.ld_id,
-                    dn=candidate.dn,
-                    pn=candidate.pn,
-                    joining_type=candidate.joining_type,
-                    url=candidate.url,
-                )
-            )
-        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
-        return MatchResult(
-            query=query,
-            status=rerank_result.status,
-            score=best.score if best else None,
-            ld_product=best if rerank_result.status == "MATCHED" else None,
-            candidates=candidates,
-            selected=selected,
-            reason=rerank_result.reason,
-        )
+        return self.rerank_candidates(query, candidates)
 
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
         query = self._normalize_query(query)
@@ -101,49 +112,7 @@ class NomenclatureMatcher:
         if self.hybrid_retriever is None:
             raise ValueError("Hybrid retriever is not configured")
         candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
-        if not candidates:
-            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
-        if self.reranker is None:
-            raise ValueError("Reranker is not configured")
-        try:
-            rerank_result = self.reranker.rerank(query, candidates)
-        except Exception as exc:
-            return MatchResult(
-                query=query,
-                status="RERANK_FAILED",
-                score=candidates[0].score,
-                ld_product=None,
-                candidates=candidates,
-                reason=str(exc),
-            )
-        selected = []
-        for item in rerank_result.selected:
-            candidate = candidates[item.candidate_id - 1]
-            selected.append(
-                SelectedMatch(
-                    candidate_id=item.candidate_id,
-                    article=candidate.article,
-                    name=candidate.name,
-                    vector_score=self._selected_vector_score(candidate),
-                    llm_confidence=item.confidence,
-                    reason=item.reason,
-                    ld_id=candidate.ld_id,
-                    dn=candidate.dn,
-                    pn=candidate.pn,
-                    joining_type=candidate.joining_type,
-                    url=candidate.url,
-                )
-            )
-        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
-        return MatchResult(
-            query=query,
-            status=rerank_result.status,
-            score=best.score if best else None,
-            ld_product=best if rerank_result.status == "MATCHED" else None,
-            candidates=candidates,
-            selected=selected,
-            reason=rerank_result.reason,
-        )
+        return self.rerank_candidates(query, candidates)
 
     def match_many(self, queries: list[str]) -> list[MatchResult]:
         cache = {q: self.match_one(q) for q in dict.fromkeys(queries) if q.strip()}

@@ -38,17 +38,12 @@ RERANKER_SYSTEM_PROMPT = """Ты выполняешь техническое с�
 Если запрос обычный, предпочитай обычное исполнение
 специализированному при прочих равных.
 
-5. Не выбирай товар только потому, что у него высокий
-vector similarity score.
+5. Dense score, BM25 score, ranks и RRF — только вспомогательные сигналы.
 
-6. Vector score — только вспомогательный сигнал.
-
-7. Retrieval scores, ranks и RRF — только вспомогательные сигналы.
-
-8. Если ни один кандидат достаточно не соответствует
+6. Если ни один кандидат достаточно не соответствует
 запросу, верни NOT_FOUND.
 
-9. Не выбирай кандидатов, которых нет во входном списке.
+7. Не выбирай кандидатов, которых нет во входном списке.
 
 Ответь только JSON без markdown.
 """
@@ -93,7 +88,6 @@ class DeepSeekReranker:
                     f"ld_id: {candidate.ld_id}",
                     f"article: {candidate.article or ''}",
                     f"name: {candidate.name}",
-                    f"vector_score: {candidate.score:.4f}",
                     f"dense_rank: {dense_rank}",
                     f"dense_score: {dense_score}",
                     f"bm25_rank: {bm25_rank}",

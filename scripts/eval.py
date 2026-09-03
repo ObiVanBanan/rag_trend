@@ -40,7 +40,7 @@ def main():
         dense_top20 = matcher._search_candidates(query, settings.hybrid_rerank_limit)
         bm25_top20 = hybrid_retriever.search_bm25(query, settings.hybrid_rerank_limit)
         hybrid_top20 = hybrid_retriever.search(query, settings.hybrid_rerank_limit)
-        result = matcher.match_one_hybrid_with_rerank(query)
+        result = matcher.rerank_candidates(query, hybrid_top20)
         label = labels.get(item["id"], {})
         results.append(
             {
@@ -90,10 +90,13 @@ def main():
                     "status": result.status,
                     "selected": [
                         {
+                            "ld_id": selected.ld_id,
                             "candidate_id": selected.candidate_id,
                             "article": selected.article,
                             "name": selected.name,
-                            "vector_score": selected.vector_score,
+                            "dense_score": selected.dense_score,
+                            "bm25_score": selected.bm25_score,
+                            "rrf_score": selected.rrf_score,
                             "llm_confidence": selected.llm_confidence,
                             "reason": selected.reason,
                         }
@@ -110,8 +113,9 @@ def main():
             }
         )
 
+    labeled = [item for item in results if isinstance(item["labels"].get("retrieval_success"), list) and item["labels"]["retrieval_success"]]
+
     def recall_at_20(key: str) -> float | None:
-        labeled = [item for item in results if isinstance(item["labels"].get("retrieval_success"), list) and item["labels"]["retrieval_success"]]
         if not labeled:
             return None
         hits = 0
@@ -122,17 +126,22 @@ def main():
                 hits += 1
         return hits / len(labeled)
 
+    def reranker_success_rate() -> float | None:
+        if not labeled:
+            return None
+        hits = 0
+        for item in labeled:
+            expected = set(item["labels"]["retrieval_success"])
+            selected_ids = {selected["ld_id"] for selected in item["deepseek_result"]["selected"]}
+            if expected & selected_ids:
+                hits += 1
+        return hits / len(labeled)
+
     metrics = {
         "dense_recall_at_20": recall_at_20("dense_top20"),
         "bm25_recall_at_20": recall_at_20("bm25_top20"),
         "hybrid_recall_at_20": recall_at_20("hybrid_top20"),
-        "deepseek_match_rate": (
-            None
-            if not [item for item in results if item["labels"].get("retrieval_success") is not None]
-            else sum(1 for item in results if item["deepseek_result"]["status"] == "MATCHED") / len(
-                [item for item in results if item["labels"].get("retrieval_success") is not None]
-            )
-        ),
+        "reranker_success_rate": reranker_success_rate(),
     }
 
     results_path.write_text(

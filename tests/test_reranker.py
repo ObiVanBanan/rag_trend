@@ -100,6 +100,7 @@ def test_build_prompt_includes_hybrid_retrieval_signals():
         ],
     )
     assert "dense_rank: 2" in prompt
+    assert "vector_score:" not in prompt
     assert "bm25_rank: 1" in prompt
     assert "rrf_score: 0.031250" in prompt
     assert "retrieval_sources: dense, bm25" in prompt

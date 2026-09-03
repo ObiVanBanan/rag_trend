@@ -60,4 +60,9 @@ if args.mode != "dense":
     if result.reason:
         print(f"reason: {result.reason}")
     for item in result.selected:
-        print(f"\n{item.candidate_id}.\ncandidate_id: {item.candidate_id}\narticle: {item.article}\nname: {item.name}\nvector_score: {item.vector_score}\nllm_confidence: {item.llm_confidence}\n\nreason:\n{item.reason}")
+        print(
+            f"\n{item.candidate_id}.\ncandidate_id: {item.candidate_id}\nld_id: {item.ld_id}\narticle: {item.article}\nname: {item.name}"
+            f"\ndense_score: {item.dense_score if item.dense_score is not None else '-'}"
+            f"\nbm25_score: {item.bm25_score if item.bm25_score is not None else '-'}"
+            f"\nrrf_score: {item.rrf_score if item.rrf_score is not None else '-'}\nllm_confidence: {item.llm_confidence}\n\nreason:\n{item.reason}"
+        )
