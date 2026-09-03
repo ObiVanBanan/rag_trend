@@ -59,3 +59,54 @@ def test_build_expanded_review_query_excludes_base_reviewed_ids_and_preserves_ra
     assert shared["dense_rank"] == 50
     assert shared["bm25_rank"] == 3
     assert shared["human_grade"] is None
+
+
+def test_build_expanded_review_query_keeps_candidates_outside_hybrid_top_100():
+    dense_candidates = [
+        SearchCandidate(ld_id=1000 + index, name=f"D{index}", article=f"DA{index}", score=1.0 / index, dense_score=1.0 / index, retrieval_sources=["dense"])
+        for index in range(1, 5)
+    ]
+    dense_candidates.append(SearchCandidate(ld_id=3, name="C", article="C", score=0.9, dense_score=0.9, retrieval_sources=["dense"]))
+    dense_candidates.extend(
+        SearchCandidate(ld_id=2000 + index, name=f"D{index}", article=f"DA{index}", score=1.0 / (index + 4), dense_score=1.0 / (index + 4), retrieval_sources=["dense"])
+        for index in range(5, 80)
+    )
+    dense_candidates.append(SearchCandidate(ld_id=1, name="A", article="A", score=0.1, dense_score=0.1, retrieval_sources=["dense"]))
+
+    bm25_candidates = [
+        SearchCandidate(ld_id=3000 + index, name=f"B{index}", article=f"BA{index}", score=1.0 / index, bm25_score=1.0 / index, retrieval_sources=["bm25"])
+        for index in range(1, 6)
+    ]
+    bm25_candidates.append(SearchCandidate(ld_id=3, name="C", article="C", score=0.8, bm25_score=0.8, retrieval_sources=["bm25"]))
+    bm25_candidates.extend(
+        SearchCandidate(ld_id=4000 + index, name=f"B{index}", article=f"BA{index}", score=1.0 / (index + 5), bm25_score=1.0 / (index + 5), retrieval_sources=["bm25"])
+        for index in range(6, 70)
+    )
+    bm25_candidates.append(SearchCandidate(ld_id=2, name="B", article="B", score=0.2, bm25_score=0.2, retrieval_sources=["bm25"]))
+
+    report = build_expanded_review_query({"id": "q1", "query": "query"}, set(), dense_candidates, bm25_candidates, max_per_source=100, rrf_k=60)
+
+    candidate_a = next(candidate for candidate in report["candidates"] if candidate["ld_id"] == 1)
+    candidate_b = next(candidate for candidate in report["candidates"] if candidate["ld_id"] == 2)
+    candidate_c = next(candidate for candidate in report["candidates"] if candidate["ld_id"] == 3)
+
+    assert candidate_a["dense_rank"] > 50
+    assert candidate_b["bm25_rank"] > 50
+    assert candidate_c["hybrid_rank"] == 1
+    assert candidate_c["rrf_score"] == (1 / 65) + (1 / 66)
+
+
+def test_expanded_review_union_is_not_truncated_to_100():
+    dense_candidates = [
+        SearchCandidate(ld_id=index, name=f"D{index}", article=f"DA{index}", score=1.0 / index, dense_score=1.0 / index, dense_rank=index, retrieval_sources=["dense"])
+        for index in range(1, 101)
+    ]
+    bm25_candidates = [
+        SearchCandidate(ld_id=100 + index, name=f"B{index}", article=f"BA{index}", score=1.0 / index, bm25_score=1.0 / index, bm25_rank=index, retrieval_sources=["bm25"])
+        for index in range(1, 101)
+    ]
+
+    report = build_expanded_review_query({"id": "q1", "query": "query"}, set(), dense_candidates, bm25_candidates, max_per_source=100, rrf_k=60)
+
+    assert len(report["candidates"]) == 200
+    assert sum(1 for candidate in report["candidates"] if candidate["hybrid_rank"] is not None) == 100

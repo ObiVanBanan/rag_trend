@@ -91,6 +91,10 @@ def _lookup_technical_property(technical_properties: dict[str, Any], names: tupl
     return "—"
 
 
+def workflow_session_key(workflow_name: str, key_name: str, query_id: str) -> str:
+    return f"{workflow_name}::{key_name}::{query_id}"
+
+
 def _current_pool_grade_summary(query_state: dict[str, Any], candidate_ids: list[int]) -> dict[str, int]:
     allowed_ids = {str(candidate_id) for candidate_id in candidate_ids}
     summary = {"accepted": 0, "rejected": 0, "unsure": 0, "skipped": 0, "reviewed_candidates": 0}
@@ -310,7 +314,7 @@ def render_query_finalization(
         st.warning("У этого query нет кандидатов.")
         return
 
-    final_comment_key = f"query-comment::{query_id}"
+    final_comment_key = workflow_session_key(workflow_name, "query-comment", query_id)
     if final_comment_key not in st.session_state:
         st.session_state[final_comment_key] = query_state.get("final_comment", "")
     final_comment = st.text_area("Комментарий", key=final_comment_key, height=90)
@@ -321,7 +325,7 @@ def render_query_finalization(
     if not accepted_ids:
         st.caption("Для MATCHED нужен хотя бы один ACCEPT.")
 
-    not_found_confirm_key = f"not-found-confirm::{query_id}"
+    not_found_confirm_key = workflow_session_key(workflow_name, "not-found-confirm", query_id)
     if not_found_confirm_key not in st.session_state:
         st.session_state[not_found_confirm_key] = False
     not_found_confirm = st.checkbox(

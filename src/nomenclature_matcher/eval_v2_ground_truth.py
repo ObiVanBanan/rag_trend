@@ -97,9 +97,20 @@ def build_expanded_hybrid_candidates(
             item["ld_id"],
         ),
     )
-    for index, candidate in enumerate(ranked, 1):
+    for index, candidate in enumerate(ranked[:max_per_source], 1):
         candidate["hybrid_rank"] = index
-    return ranked[:max_per_source]
+    return sorted(
+        ranked,
+        key=lambda item: (
+            item["hybrid_rank"] is None,
+            item["hybrid_rank"] if item["hybrid_rank"] is not None else 10**9,
+            min(
+                item["dense_rank"] if item["dense_rank"] is not None else 10**9,
+                item["bm25_rank"] if item["bm25_rank"] is not None else 10**9,
+            ),
+            item["ld_id"],
+        ),
+    )
 
 
 def build_expanded_review_query(
@@ -108,8 +119,14 @@ def build_expanded_review_query(
     dense_candidates,
     bm25_candidates,
     max_per_source: int = 100,
+    rrf_k: int = 60,
 ) -> dict[str, Any]:
-    merged = build_expanded_hybrid_candidates(dense_candidates, bm25_candidates, max_per_source=max_per_source)
+    merged = build_expanded_hybrid_candidates(
+        dense_candidates,
+        bm25_candidates,
+        max_per_source=max_per_source,
+        rrf_k=rrf_k,
+    )
     filtered_candidates = [candidate for candidate in merged if int(candidate["ld_id"]) not in base_reviewed_ids]
     return {
         "id": query_item["id"],
@@ -125,6 +142,7 @@ def build_expanded_review_report(
     dense_search_fn,
     bm25_search_fn,
     max_per_source: int = 100,
+    rrf_k: int = 60,
 ) -> dict[str, Any]:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -145,6 +163,7 @@ def build_expanded_review_report(
                 dense_candidates,
                 bm25_candidates,
                 max_per_source=max_per_source,
+                rrf_k=rrf_k,
             )
         )
     return report

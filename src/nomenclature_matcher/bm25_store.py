@@ -59,26 +59,23 @@ class BM25Store:
         scores = self.model.get_scores(query_tokens)
         ranked = sorted(enumerate(scores), key=lambda item: item[1], reverse=True)[:limit]
         results: list[BM25Candidate] = []
-        fallback: list[BM25Candidate] = []
         for index, score in ranked:
+            if score <= 0:
+                continue
             product = self.products[index]
-            candidate = BM25Candidate(
-                ld_id=product.id,
-                name=product.name,
-                article=product.article,
-                bm25_score=float(score),
-                price=product.price,
-                dn=product.dn,
-                pn=product.pn,
-                joining_type=product.joining_type,
-                url=product.url,
-                properties=product.properties if isinstance(product.properties, list) else None,
-                search_text=self.search_texts[index],
+            results.append(
+                BM25Candidate(
+                    ld_id=product.id,
+                    name=product.name,
+                    article=product.article,
+                    bm25_score=float(score),
+                    price=product.price,
+                    dn=product.dn,
+                    pn=product.pn,
+                    joining_type=product.joining_type,
+                    url=product.url,
+                    properties=product.properties if isinstance(product.properties, list) else None,
+                    search_text=self.search_texts[index],
+                )
             )
-            if score > 0:
-                results.append(candidate)
-            else:
-                fallback.append(candidate)
-        if len(results) < limit:
-            results.extend(fallback[: limit - len(results)])
         return results

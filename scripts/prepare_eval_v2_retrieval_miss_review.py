@@ -41,6 +41,7 @@ def main() -> int:
         lambda query, limit: matcher._search_candidates(query, limit),
         lambda query, limit: hybrid_retriever.search_bm25(query, limit),
         max_per_source=100,
+        rrf_k=settings.rrf_k,
     )
     OUTPUT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Saved expanded retrieval-miss candidates to {OUTPUT_PATH}")

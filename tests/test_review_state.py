@@ -9,6 +9,7 @@ from nomenclature_matcher.review_state import (
     build_v2_label_entry,
     finalize_query,
     get_accepted_candidate_ids,
+    get_reviewed_candidate_count_for_ids,
     get_query_progress,
     initialize_review_state,
     load_review_state,
@@ -17,6 +18,7 @@ from nomenclature_matcher.review_state import (
     set_candidate_grade,
     set_query_cursor,
 )
+from scripts.review_eval_v2 import workflow_session_key
 
 
 def test_candidate_grades_are_persisted_and_replaced():
@@ -67,6 +69,33 @@ def test_completed_query_is_read_only():
         set_candidate_grade(state, "q1", 10, "REJECT")
     with pytest.raises(ValueError, match="Completed query cannot be finalized again"):
         finalize_query(state, "q1", "UNREVIEWED")
+
+
+def test_current_pool_safety_ignores_stale_grades():
+    state = initialize_review_state(["q1"])
+    state = set_candidate_grade(state, "q1", 1, "REJECT")
+    state = set_candidate_grade(state, "q1", 2, "ACCEPT")
+
+    current_ids = [101, 102]
+    query_state = state["queries"]["q1"]
+
+    assert get_reviewed_candidate_count_for_ids(query_state, current_ids) == 0
+
+    with pytest.raises(ValueError, match="All candidates must be reviewed before finalization: 0 / 2"):
+        finalize_query(state, "q1", "MATCHED", candidate_ids=current_ids)
+    with pytest.raises(ValueError, match="All candidates must be reviewed before finalization: 0 / 2"):
+        finalize_query(state, "q1", "NOT_FOUND", confirmed=True, candidate_ids=current_ids)
+    with pytest.raises(ValueError, match="All candidates must be reviewed before finalization: 0 / 2"):
+        finalize_query(state, "q1", "RETRIEVAL_MISS", candidate_ids=current_ids)
+
+    state = set_candidate_grade(state, "q1", 101, "REJECT")
+    state = set_candidate_grade(state, "q1", 102, "SKIP")
+    assert get_reviewed_candidate_count_for_ids(state["queries"]["q1"], current_ids) == 2
+
+
+def test_workflow_session_keys_are_namespaced():
+    assert workflow_session_key("Base review", "query-comment", "q01") != workflow_session_key("Expanded review", "query-comment", "q01")
+    assert workflow_session_key("Base review", "not-found-confirm", "q01") != workflow_session_key("Expanded review", "not-found-confirm", "q01")
 
 
 def test_not_found_requires_confirmation_and_no_accepts():
