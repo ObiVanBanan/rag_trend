@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "purpose": "Second-review proposals only. Do not treat this file as golden labels automatically.",
+  "policy": {
+    "STRICT_ACCEPT": "Use for retrieval metrics: all explicit technical properties match semantically and there is no material contradiction.",
+    "BUSINESS_ALTERNATIVE": "Likely usable engineering substitute, but execution differs enough that it should not broaden strict golden labels without human confirmation.",
+    "UNSURE": "Record contains conflicting/insufficient product semantics; requires human decision.",
+    "REJECT": "Explicit technical contradiction."
+  },
+  "base_review": {
+    "v2_q01": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL"
+    },
+    "v2_q02": {
+      "strict_accept_ids": [19254, 171],
+      "business_alternative_ids": [],
+      "unsure_ids": [],
+      "note": "Keep strict golden on flat DN100 PN16 steel-20 flanges; material substitutions such as 09G2S/12X18N10T are intentionally excluded from strict eval."
+    },
+    "v2_q03": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL",
+      "note": "19027 matches DN65/PN16/09G2S but is a flat flange, not weld-neck/butt-weld."
+    },
+    "v2_q04": {
+      "strict_accept_ids": [16427, 760, 2058, 15077, 17247, 15424],
+      "business_alternative_ids": [],
+      "unsure_ids": [2006, 17244, 1129],
+      "note": "The UNSURE Regula records are named as ball valves but catalog technical_properties identify variants as regulating valves. Human should decide whether Regula belongs in strict golden. h-90 is not inferred."
+    },
+    "v2_q05": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL",
+      "obvious_missing_reject_ids": [19163],
+      "note": "19163 is a DN200 butterfly valve while query requires DN100."
+    },
+    "v2_q06": {
+      "strict_accept_ids": [232, 2201, 16747],
+      "business_alternative_ids": [2911, 740],
+      "unsure_ids": [],
+      "note": "2911 adds a gearbox; 740 is prepared for electric actuator. Core steel/DN80/PN16/flanged requirements match, but these unusual control executions are kept out of strict golden pending human confirmation."
+    },
+    "v2_q07": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL"
+    },
+    "v2_q08": {
+      "strict_accept_ids": [3909, 17896, 2371, 17856],
+      "business_alternative_ids": [17598],
+      "unsure_ids": [],
+      "note": "17598 is an angular valve. It matches brass/DN25/male-female threading but is an unusual execution versus the generic query, so keep it outside strict golden unless accepted by business policy."
+    },
+    "v2_q09": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL"
+    },
+    "v2_q10": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL",
+      "obvious_missing_reject_ids": [5211, 6529, 18481],
+      "note": "5211 and 18481 are brass; 6529 is steel but welded PN40, while query requires steel coupling/threaded PN25."
+    },
+    "v2_q11": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_BASE_POOL",
+      "obvious_missing_reject_ids": [16361],
+      "note": "16361 is DN50 flanged manual with flange kit but PN40 (4 MPa), not required PN80 (8 MPa)."
+    }
+  },
+  "expanded_review": {
+    "v2_q01": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_EXPANDED_POOL",
+      "confidence": "HIGH",
+      "note": "Expanded pool contains no gate-valve candidate matching the requested wedge gate valve DN100 PN16."
+    },
+    "v2_q03": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_EXPANDED_POOL",
+      "confidence": "HIGH",
+      "note": "Expanded search finds DN65/PN16 flanges, but no verified weld-neck/butt-weld 09G2S DN65 PN16 candidate."
+    },
+    "v2_q07": {
+      "strict_accept_ids": [],
+      "status": "NO_STRICT_MATCH_IN_EXPANDED_POOL",
+      "confidence": "HIGH",
+      "note": "No PND/polyethylene compression ball-valve candidate is present in the expanded pool."
+    },
+    "v2_q09": {
+      "strict_accept_ids": [17889],
+      "business_alternative_ids": [17538, 17537, 17541],
+      "unsure_ids": [],
+      "note": "17889 is a straight brass ball valve DN20 PN40 with internal/external threading and is suitable as the strict LD analogue. 17538/17537 are angular executions; 17541 additionally uses a union-nut style connection, so keep them outside strict golden pending business confirmation."
+    }
+  },
+  "recommended_human_checks": [
+    {
+      "query_id": "v2_q04",
+      "candidate_ids": [2006, 17244, 1129],
+      "question": "Should Regula variants whose name says ball valve but product type says regulating valve count as strict analogues?"
+    },
+    {
+      "query_id": "v2_q06",
+      "candidate_ids": [2911, 740],
+      "question": "Should gearbox / electric-actuator-ready executions be accepted into strict golden when control method was not explicitly requested?"
+    },
+    {
+      "query_id": "v2_q08",
+      "candidate_ids": [17598],
+      "question": "Should an angular DN25 brass male-female ball valve count as strict equivalent for a generic straight-layout query?"
+    },
+    {
+      "query_id": "v2_q09",
+      "candidate_ids": [17538, 17537, 17541],
+      "question": "Should angular / union-nut DN20 PN40 brass variants be accepted as business alternatives only, or also strict equivalents?"
+    }
+  ]
+}
