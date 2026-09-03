@@ -6,6 +6,7 @@ dependencies = ["openai>=1.0", "pydantic>=2.0", "pydantic-settings>=2.0", "qdran
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+review = ["streamlit>=1.40"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
