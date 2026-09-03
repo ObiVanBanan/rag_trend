@@ -3,66 +3,66 @@
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded ground-truth review required before golden finalization."
   },
   "v2_q02": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [19254, 171],
+    "expected_status": "MATCHED",
+    "human_comment": "Strict golden: flat DN100 PN16 steel-20 flanges only; material substitutions excluded."
   },
   "v2_q03": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded review has not produced a verified strict match."
   },
   "v2_q04": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [16427, 760, 2058, 15077, 17247, 15424],
+    "expected_status": "MATCHED",
+    "human_comment": "Strict golden excludes Regula variants with conflicting regulating-valve semantics."
   },
   "v2_q05": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded ground-truth review required."
   },
   "v2_q06": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [232, 2201, 16747],
+    "expected_status": "MATCHED",
+    "human_comment": "Strict golden uses ordinary manual steel DN80 PN16 flanged executions; gearbox/actuator-ready variants excluded."
   },
   "v2_q07": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded review has not produced a verified strict match."
   },
   "v2_q08": {
-    "label_status": "UNREVIEWED",
-    "acceptable_ld_ids": [],
-    "expected_status": null,
-    "human_comment": ""
+    "label_status": "VERIFIED",
+    "acceptable_ld_ids": [3909, 17896, 2371, 17856],
+    "expected_status": "MATCHED",
+    "human_comment": "Strict golden uses straight-layout brass DN25 male-female ball valves; angular execution excluded."
   },
   "v2_q09": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded review recovered strict candidate 17889 but expanded pool is not fully reviewed yet."
   },
   "v2_q10": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded ground-truth review required."
   },
   "v2_q11": {
     "label_status": "UNREVIEWED",
     "acceptable_ld_ids": [],
     "expected_status": null,
-    "human_comment": ""
+    "human_comment": "Base retrieval miss; expanded ground-truth review required."
   }
 }
