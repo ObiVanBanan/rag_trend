@@ -23,7 +23,24 @@
       "cursor_index": 0
     },
     "v2_q09": {
-      "candidate_grades": {},
+      "candidate_grades": {
+        "17889": {
+          "grade": "ACCEPT",
+          "comment": "STRICT_ACCEPT: brass ball valve DN20 PN40 with internal/external threading."
+        },
+        "17538": {
+          "grade": "REJECT",
+          "comment": "Business alternative only: angular execution excluded from strict golden."
+        },
+        "17537": {
+          "grade": "REJECT",
+          "comment": "Business alternative only: angular execution excluded from strict golden."
+        },
+        "17541": {
+          "grade": "REJECT",
+          "comment": "Business alternative only: angular/union-nut execution excluded from strict golden."
+        }
+      },
       "final_status": null,
       "final_comment": "",
       "completed": false,
