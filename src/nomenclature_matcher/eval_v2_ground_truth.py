@@ -99,6 +99,8 @@ def build_expanded_hybrid_candidates(
     )
     for index, candidate in enumerate(ranked[:max_per_source], 1):
         candidate["hybrid_rank"] = index
+        if "hybrid" not in candidate["retrieval_sources"]:
+            candidate["retrieval_sources"].append("hybrid")
     return sorted(
         ranked,
         key=lambda item: (

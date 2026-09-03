@@ -1,9 +1,11 @@
+import inspect
 import json
 from pathlib import Path
 
 import pytest
 
 from scripts.review_eval_v2 import next_unreviewed_candidate_index
+from scripts.review_eval_v2 import render_query_finalization
 from nomenclature_matcher.review_state import (
     apply_review_state_to_labels,
     build_v2_label_entry,
@@ -96,6 +98,10 @@ def test_current_pool_safety_ignores_stale_grades():
 def test_workflow_session_keys_are_namespaced():
     assert workflow_session_key("Base review", "query-comment", "q01") != workflow_session_key("Expanded review", "query-comment", "q01")
     assert workflow_session_key("Base review", "not-found-confirm", "q01") != workflow_session_key("Expanded review", "not-found-confirm", "q01")
+
+
+def test_render_query_finalization_requires_workflow_name_argument():
+    assert "workflow_name" in inspect.signature(render_query_finalization).parameters
 
 
 def test_not_found_requires_confirmation_and_no_accepts():

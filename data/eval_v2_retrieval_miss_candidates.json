@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-03T16:17:52.980278Z",
+  "generated_at": "2026-09-03T16:27:05.297136Z",
   "source": "expanded_retrieval_miss_review",
   "queries": [
     {
@@ -21,7 +21,8 @@
           "bm25_score": 23.23514096258072,
           "rrf_score": 0.016129032258064516,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -58,7 +59,8 @@
           "rrf_score": 0.01602077001013171,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -112,7 +114,8 @@
           "bm25_score": 23.180469679113372,
           "rrf_score": 0.015873015873015872,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -148,7 +151,8 @@
           "bm25_score": 23.059171426390865,
           "rrf_score": 0.014705882352941176,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -184,7 +188,8 @@
           "bm25_score": 23.059171426390865,
           "rrf_score": 0.014492753623188406,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -223,7 +228,8 @@
           "bm25_score": 23.00742298963929,
           "rrf_score": 0.014285714285714285,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -262,7 +268,8 @@
           "bm25_score": null,
           "rrf_score": 0.014084507042253521,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -307,7 +314,8 @@
           "bm25_score": 22.93803403634164,
           "rrf_score": 0.014084507042253521,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -352,7 +360,8 @@
           "bm25_score": null,
           "rrf_score": 0.013888888888888888,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -397,7 +406,8 @@
           "bm25_score": 22.8859173843288,
           "rrf_score": 0.013888888888888888,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -436,7 +446,8 @@
           "bm25_score": null,
           "rrf_score": 0.0136986301369863,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -481,7 +492,8 @@
           "bm25_score": 22.8859173843288,
           "rrf_score": 0.0136986301369863,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -517,7 +529,8 @@
           "bm25_score": null,
           "rrf_score": 0.013513513513513514,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -562,7 +575,8 @@
           "bm25_score": 22.823445090112774,
           "rrf_score": 0.013513513513513514,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -601,7 +615,8 @@
           "bm25_score": null,
           "rrf_score": 0.013333333333333334,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -646,7 +661,8 @@
           "bm25_score": 22.823445090112774,
           "rrf_score": 0.013333333333333334,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -685,7 +701,8 @@
           "bm25_score": null,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -730,7 +747,8 @@
           "bm25_score": 22.823445090112774,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -769,7 +787,8 @@
           "bm25_score": null,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -814,7 +833,8 @@
           "bm25_score": 22.715315141077493,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -850,7 +870,8 @@
           "bm25_score": null,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -898,7 +919,8 @@
           "bm25_score": 22.715315141077493,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -934,7 +956,8 @@
           "bm25_score": null,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -979,7 +1002,8 @@
           "bm25_score": 22.715315141077493,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1018,7 +1042,8 @@
           "bm25_score": null,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1063,7 +1088,8 @@
           "bm25_score": 22.54730300999073,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1102,7 +1128,8 @@
           "bm25_score": null,
           "rrf_score": 0.012345679012345678,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1147,7 +1174,8 @@
           "bm25_score": 22.54730300999073,
           "rrf_score": 0.012345679012345678,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1195,7 +1223,8 @@
           "bm25_score": null,
           "rrf_score": 0.012195121951219513,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1240,7 +1269,8 @@
           "bm25_score": 22.54730300999073,
           "rrf_score": 0.012195121951219513,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1276,7 +1306,8 @@
           "bm25_score": null,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1321,7 +1352,8 @@
           "bm25_score": 22.38182123358455,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1357,7 +1389,8 @@
           "bm25_score": null,
           "rrf_score": 0.011904761904761904,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1402,7 +1435,8 @@
           "bm25_score": 22.38182123358455,
           "rrf_score": 0.011904761904761904,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1441,7 +1475,8 @@
           "bm25_score": null,
           "rrf_score": 0.011764705882352941,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1486,7 +1521,8 @@
           "bm25_score": 22.218811907808583,
           "rrf_score": 0.011764705882352941,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1534,7 +1570,8 @@
           "bm25_score": null,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1579,7 +1616,8 @@
           "bm25_score": 22.218811907808583,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1615,7 +1653,8 @@
           "bm25_score": null,
           "rrf_score": 0.011494252873563218,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1660,7 +1699,8 @@
           "bm25_score": 22.176057045940734,
           "rrf_score": 0.011494252873563218,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1708,7 +1748,8 @@
           "bm25_score": null,
           "rrf_score": 0.011363636363636364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1753,7 +1794,8 @@
           "bm25_score": null,
           "rrf_score": 0.011235955056179775,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1798,7 +1840,8 @@
           "bm25_score": 22.09174810615069,
           "rrf_score": 0.011235955056179775,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1846,7 +1889,8 @@
           "bm25_score": null,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1891,7 +1935,8 @@
           "bm25_score": 22.05821890988772,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1927,7 +1972,8 @@
           "bm25_score": null,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -1972,7 +2018,8 @@
           "bm25_score": 22.05821890988772,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2008,7 +2055,8 @@
           "bm25_score": null,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2053,7 +2101,8 @@
           "bm25_score": 22.05821890988772,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2089,7 +2138,8 @@
           "bm25_score": null,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2143,7 +2193,8 @@
           "bm25_score": 22.05821890988772,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2179,7 +2230,8 @@
           "bm25_score": null,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2230,7 +2282,8 @@
           "bm25_score": 22.05821890988772,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2281,7 +2334,8 @@
           "bm25_score": null,
           "rrf_score": 0.010526315789473684,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2326,7 +2380,8 @@
           "bm25_score": 22.05821890988772,
           "rrf_score": 0.010526315789473684,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Номинальное давление, МПа": [
@@ -2362,7 +2417,8 @@
           "bm25_score": null,
           "rrf_score": 0.010416666666666666,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2407,7 +2463,8 @@
           "bm25_score": 22.05611622639271,
           "rrf_score": 0.010416666666666666,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2443,7 +2500,8 @@
           "bm25_score": null,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2488,7 +2546,8 @@
           "bm25_score": 22.041532992732435,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2536,7 +2595,8 @@
           "bm25_score": null,
           "rrf_score": 0.01020408163265306,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2581,7 +2641,8 @@
           "bm25_score": 22.015994296275817,
           "rrf_score": 0.01020408163265306,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2626,7 +2687,8 @@
           "bm25_score": null,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2671,7 +2733,8 @@
           "bm25_score": 21.899987829538297,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2716,7 +2779,8 @@
           "bm25_score": null,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2761,7 +2825,8 @@
           "bm25_score": 21.899987829538297,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2806,7 +2871,8 @@
           "bm25_score": null,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2851,7 +2917,8 @@
           "bm25_score": 21.899987829538297,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2896,7 +2963,8 @@
           "bm25_score": null,
           "rrf_score": 0.00980392156862745,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2941,7 +3009,8 @@
           "bm25_score": 21.824305455834264,
           "rrf_score": 0.00980392156862745,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -2992,7 +3061,8 @@
           "bm25_score": null,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3037,7 +3107,8 @@
           "bm25_score": 21.782102980790206,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3076,7 +3147,8 @@
           "bm25_score": null,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3121,7 +3193,8 @@
           "bm25_score": 21.744065903374725,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3175,7 +3248,8 @@
           "bm25_score": null,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3220,7 +3294,8 @@
           "bm25_score": 21.744065903374725,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3274,7 +3349,8 @@
           "bm25_score": null,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3319,7 +3395,8 @@
           "bm25_score": 21.744065903374725,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3355,7 +3432,8 @@
           "bm25_score": null,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3400,7 +3478,8 @@
           "bm25_score": 21.744065903374725,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3436,7 +3515,8 @@
           "bm25_score": null,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3481,7 +3561,8 @@
           "bm25_score": 21.744065903374725,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3529,7 +3610,8 @@
           "bm25_score": null,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3583,7 +3665,8 @@
           "bm25_score": 21.744065903374725,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -3631,7 +3714,8 @@
           "bm25_score": null,
           "rrf_score": 0.00909090909090909,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8460,7 +8544,8 @@
           "rrf_score": 0.0251661918328585,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8497,7 +8582,8 @@
           "rrf_score": 0.0251414204902577,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8534,7 +8620,8 @@
           "rrf_score": 0.024827586206896554,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8571,7 +8658,8 @@
           "rrf_score": 0.024652147610405323,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8608,7 +8696,8 @@
           "rrf_score": 0.021395881006864986,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8645,7 +8734,8 @@
           "rrf_score": 0.021286031042128603,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8682,7 +8772,8 @@
           "rrf_score": 0.021195236534469572,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8719,7 +8810,8 @@
           "rrf_score": 0.020976764199655766,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8756,7 +8848,8 @@
           "rrf_score": 0.020065635255508675,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8793,7 +8886,8 @@
           "rrf_score": 0.01985062893081761,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8830,7 +8924,8 @@
           "rrf_score": 0.019615384615384618,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8867,7 +8962,8 @@
           "rrf_score": 0.018575851393188854,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8904,7 +9000,8 @@
           "rrf_score": 0.018506493506493506,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8941,7 +9038,8 @@
           "rrf_score": 0.018216318785578747,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -8978,7 +9076,8 @@
           "rrf_score": 0.018055555555555554,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9015,7 +9114,8 @@
           "rrf_score": 0.017992711812936532,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9052,7 +9152,8 @@
           "rrf_score": 0.017346938775510204,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9089,7 +9190,8 @@
           "rrf_score": 0.01710063335679099,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9126,7 +9228,8 @@
           "rrf_score": 0.016945516945516943,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9163,7 +9266,8 @@
           "rrf_score": 0.016936572199730094,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9200,7 +9304,8 @@
           "rrf_score": 0.0167457805907173,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9237,7 +9342,8 @@
           "rrf_score": 0.016339869281045753,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9274,7 +9380,8 @@
           "rrf_score": 0.016216565447732267,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9311,7 +9418,8 @@
           "rrf_score": 0.016004097048844507,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9348,7 +9456,8 @@
           "rrf_score": 0.01563920712856883,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9385,7 +9494,8 @@
           "rrf_score": 0.015152384778740743,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9422,7 +9532,8 @@
           "rrf_score": 0.015136054421768706,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9458,7 +9569,8 @@
           "bm25_score": 17.699127159361712,
           "rrf_score": 0.014925373134328358,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9504,7 +9616,8 @@
           "rrf_score": 0.014723330816524646,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9541,7 +9654,8 @@
           "rrf_score": 0.014601253052989274,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9578,7 +9692,8 @@
           "rrf_score": 0.01459931798806479,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9615,7 +9730,8 @@
           "rrf_score": 0.01444672131147541,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9651,7 +9767,8 @@
           "bm25_score": null,
           "rrf_score": 0.014084507042253521,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9672,7 +9789,8 @@
           "rrf_score": 0.013922895962360172,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9709,7 +9827,8 @@
           "rrf_score": 0.013437950937950938,
           "retrieval_sources": [
             "dense",
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9745,7 +9864,8 @@
           "bm25_score": null,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9765,7 +9885,8 @@
           "bm25_score": null,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9785,7 +9906,8 @@
           "bm25_score": null,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9805,7 +9927,8 @@
           "bm25_score": null,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9825,7 +9948,8 @@
           "bm25_score": null,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9845,7 +9969,8 @@
           "bm25_score": 15.785025324652926,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9881,7 +10006,8 @@
           "bm25_score": null,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -9901,7 +10027,8 @@
           "bm25_score": null,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9937,7 +10064,8 @@
           "bm25_score": 14.581909330243679,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -9976,7 +10104,8 @@
           "bm25_score": null,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10012,7 +10141,8 @@
           "bm25_score": 13.463431389844706,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10048,7 +10178,8 @@
           "bm25_score": 13.246159159675388,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10102,7 +10233,8 @@
           "bm25_score": null,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10138,7 +10270,8 @@
           "bm25_score": 13.065785888019116,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10180,7 +10313,8 @@
           "bm25_score": null,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10216,7 +10350,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10252,7 +10387,8 @@
           "bm25_score": null,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10288,7 +10424,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10324,7 +10461,8 @@
           "bm25_score": null,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10360,7 +10498,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10396,7 +10535,8 @@
           "bm25_score": null,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10432,7 +10572,8 @@
           "bm25_score": null,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10468,7 +10609,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10504,7 +10646,8 @@
           "bm25_score": null,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10540,7 +10683,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10576,7 +10720,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10612,7 +10757,8 @@
           "bm25_score": null,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10648,7 +10794,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10684,7 +10831,8 @@
           "bm25_score": 12.946127081293618,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10720,7 +10868,8 @@
           "bm25_score": null,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {},
           "human_grade": null,
@@ -10740,7 +10889,8 @@
           "bm25_score": 12.91709714150295,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10788,7 +10938,8 @@
           "bm25_score": null,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10824,7 +10975,8 @@
           "bm25_score": 12.76155690735426,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10869,7 +11021,8 @@
           "bm25_score": 12.758789908110648,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10923,7 +11076,8 @@
           "bm25_score": 12.758789908110648,
           "rrf_score": 0.00909090909090909,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -10977,7 +11131,8 @@
           "bm25_score": 12.663314551398663,
           "rrf_score": 0.009009009009009009,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11022,7 +11177,8 @@
           "bm25_score": 12.663314551398663,
           "rrf_score": 0.008928571428571428,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11067,7 +11223,8 @@
           "bm25_score": 12.663314551398663,
           "rrf_score": 0.008849557522123894,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11112,7 +11269,8 @@
           "bm25_score": 12.663314551398663,
           "rrf_score": 0.008771929824561403,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11157,7 +11315,8 @@
           "bm25_score": null,
           "rrf_score": 0.008695652173913044,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11193,7 +11352,8 @@
           "bm25_score": 12.663314551398663,
           "rrf_score": 0.008695652173913044,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11238,7 +11398,8 @@
           "bm25_score": null,
           "rrf_score": 0.008620689655172414,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -11274,7 +11435,8 @@
           "bm25_score": 12.663314551398663,
           "rrf_score": 0.008620689655172414,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13470,7 +13632,8 @@
           "bm25_score": 11.707262292687613,
           "rrf_score": 0.014705882352941176,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13500,7 +13663,8 @@
           "bm25_score": 11.707262292687613,
           "rrf_score": 0.014492753623188406,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13530,7 +13694,8 @@
           "bm25_score": 10.936641353912627,
           "rrf_score": 0.014285714285714285,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13575,7 +13740,8 @@
           "bm25_score": null,
           "rrf_score": 0.014084507042253521,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13629,7 +13795,8 @@
           "bm25_score": 10.560567998192642,
           "rrf_score": 0.014084507042253521,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13674,7 +13841,8 @@
           "bm25_score": null,
           "rrf_score": 0.013888888888888888,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13728,7 +13896,8 @@
           "bm25_score": 10.560567998192642,
           "rrf_score": 0.013888888888888888,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13773,7 +13942,8 @@
           "bm25_score": null,
           "rrf_score": 0.0136986301369863,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13827,7 +13997,8 @@
           "bm25_score": 10.560567998192642,
           "rrf_score": 0.0136986301369863,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13872,7 +14043,8 @@
           "bm25_score": null,
           "rrf_score": 0.013513513513513514,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13926,7 +14098,8 @@
           "bm25_score": 10.446415312705085,
           "rrf_score": 0.013513513513513514,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -13974,7 +14147,8 @@
           "bm25_score": null,
           "rrf_score": 0.013333333333333334,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14028,7 +14202,8 @@
           "bm25_score": 10.446415312705085,
           "rrf_score": 0.013333333333333334,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14076,7 +14251,8 @@
           "bm25_score": null,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14130,7 +14306,8 @@
           "bm25_score": 10.446415312705085,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14178,7 +14355,8 @@
           "bm25_score": null,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14232,7 +14410,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14283,7 +14462,8 @@
           "bm25_score": null,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14319,7 +14499,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14370,7 +14551,8 @@
           "bm25_score": null,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14424,7 +14606,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14475,7 +14658,8 @@
           "bm25_score": null,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14529,7 +14713,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14580,7 +14765,8 @@
           "bm25_score": null,
           "rrf_score": 0.012345679012345678,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14634,7 +14820,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.012345679012345678,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14685,7 +14872,8 @@
           "bm25_score": null,
           "rrf_score": 0.012195121951219513,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14739,7 +14927,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.012195121951219513,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14790,7 +14979,8 @@
           "bm25_score": null,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14844,7 +15034,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14895,7 +15086,8 @@
           "bm25_score": null,
           "rrf_score": 0.011904761904761904,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -14949,7 +15141,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.011904761904761904,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15000,7 +15193,8 @@
           "bm25_score": null,
           "rrf_score": 0.011764705882352941,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15054,7 +15248,8 @@
           "bm25_score": 10.334834140958783,
           "rrf_score": 0.011764705882352941,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15105,7 +15300,8 @@
           "bm25_score": null,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15159,7 +15355,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15210,7 +15407,8 @@
           "bm25_score": null,
           "rrf_score": 0.011494252873563218,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15264,7 +15462,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.011494252873563218,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15315,7 +15514,8 @@
           "bm25_score": null,
           "rrf_score": 0.011363636363636364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15369,7 +15569,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.011363636363636364,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15420,7 +15621,8 @@
           "bm25_score": null,
           "rrf_score": 0.011235955056179775,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15474,7 +15676,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.011235955056179775,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15525,7 +15728,8 @@
           "bm25_score": null,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15579,7 +15783,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15630,7 +15835,8 @@
           "bm25_score": null,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15684,7 +15890,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15735,7 +15942,8 @@
           "bm25_score": null,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15789,7 +15997,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15840,7 +16049,8 @@
           "bm25_score": null,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15894,7 +16104,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15945,7 +16156,8 @@
           "bm25_score": null,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -15999,7 +16211,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16050,7 +16263,8 @@
           "bm25_score": null,
           "rrf_score": 0.010526315789473684,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16104,7 +16318,8 @@
           "bm25_score": 10.279979443930925,
           "rrf_score": 0.010526315789473684,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16155,7 +16370,8 @@
           "bm25_score": null,
           "rrf_score": 0.010416666666666666,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16209,7 +16425,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.010416666666666666,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16260,7 +16477,8 @@
           "bm25_score": null,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16314,7 +16532,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16365,7 +16584,8 @@
           "bm25_score": null,
           "rrf_score": 0.01020408163265306,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16419,7 +16639,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.01020408163265306,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16470,7 +16691,8 @@
           "bm25_score": null,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16524,7 +16746,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16575,7 +16798,8 @@
           "bm25_score": null,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16629,7 +16853,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16680,7 +16905,8 @@
           "bm25_score": null,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16716,7 +16942,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16767,7 +16994,8 @@
           "bm25_score": null,
           "rrf_score": 0.00980392156862745,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16821,7 +17049,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.00980392156862745,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16872,7 +17101,8 @@
           "bm25_score": null,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16926,7 +17156,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -16977,7 +17208,8 @@
           "bm25_score": null,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17031,7 +17263,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17082,7 +17315,8 @@
           "bm25_score": null,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17136,7 +17370,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17187,7 +17422,8 @@
           "bm25_score": null,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17241,7 +17477,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17292,7 +17529,8 @@
           "bm25_score": null,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17346,7 +17584,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17397,7 +17636,8 @@
           "bm25_score": null,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17451,7 +17691,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17502,7 +17743,8 @@
           "bm25_score": null,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17556,7 +17798,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17607,7 +17850,8 @@
           "bm25_score": null,
           "rrf_score": 0.00909090909090909,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -17661,7 +17905,8 @@
           "bm25_score": 10.225734069963583,
           "rrf_score": 0.00909090909090909,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -22882,7 +23127,8 @@
           "bm25_score": 21.606416064883664,
           "rrf_score": 0.015873015873015872,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -22927,7 +23173,8 @@
           "bm25_score": null,
           "rrf_score": 0.014084507042253521,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -22975,7 +23222,8 @@
           "bm25_score": null,
           "rrf_score": 0.013888888888888888,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23023,7 +23271,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.013888888888888888,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23068,7 +23317,8 @@
           "bm25_score": null,
           "rrf_score": 0.0136986301369863,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23116,7 +23366,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.0136986301369863,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23161,7 +23412,8 @@
           "bm25_score": null,
           "rrf_score": 0.013513513513513514,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23206,7 +23458,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.013513513513513514,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23251,7 +23504,8 @@
           "bm25_score": null,
           "rrf_score": 0.013333333333333334,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23296,7 +23550,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.013333333333333334,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23341,7 +23596,8 @@
           "bm25_score": null,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23395,7 +23651,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.013157894736842105,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23440,7 +23697,8 @@
           "bm25_score": null,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23488,7 +23746,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.012987012987012988,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23533,7 +23792,8 @@
           "bm25_score": null,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23581,7 +23841,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.01282051282051282,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23626,7 +23887,8 @@
           "bm25_score": null,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23680,7 +23942,8 @@
           "bm25_score": 20.59816962032,
           "rrf_score": 0.012658227848101266,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23725,7 +23988,8 @@
           "bm25_score": null,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23770,7 +24034,8 @@
           "bm25_score": 20.45063455669652,
           "rrf_score": 0.0125,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23815,7 +24080,8 @@
           "bm25_score": null,
           "rrf_score": 0.012345679012345678,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23851,7 +24117,8 @@
           "bm25_score": 20.45063455669652,
           "rrf_score": 0.012345679012345678,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23896,7 +24163,8 @@
           "bm25_score": null,
           "rrf_score": 0.012195121951219513,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23941,7 +24209,8 @@
           "bm25_score": 20.33311423657057,
           "rrf_score": 0.012195121951219513,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -23983,7 +24252,8 @@
           "bm25_score": null,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24031,7 +24301,8 @@
           "bm25_score": 20.305225965212067,
           "rrf_score": 0.012048192771084338,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24076,7 +24347,8 @@
           "bm25_score": null,
           "rrf_score": 0.011904761904761904,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24118,7 +24390,8 @@
           "bm25_score": 20.305225965212067,
           "rrf_score": 0.011904761904761904,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24163,7 +24436,8 @@
           "bm25_score": null,
           "rrf_score": 0.011764705882352941,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24217,7 +24491,8 @@
           "bm25_score": 20.196242053372945,
           "rrf_score": 0.011764705882352941,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24262,7 +24537,8 @@
           "bm25_score": null,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24307,7 +24583,8 @@
           "bm25_score": 20.18916873001673,
           "rrf_score": 0.011627906976744186,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24355,7 +24632,8 @@
           "bm25_score": null,
           "rrf_score": 0.011494252873563218,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24400,7 +24678,8 @@
           "bm25_score": 20.18916873001673,
           "rrf_score": 0.011494252873563218,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24448,7 +24727,8 @@
           "bm25_score": null,
           "rrf_score": 0.011363636363636364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24502,7 +24782,8 @@
           "bm25_score": 20.08289772780879,
           "rrf_score": 0.011363636363636364,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24547,7 +24828,8 @@
           "bm25_score": null,
           "rrf_score": 0.011235955056179775,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24601,7 +24883,8 @@
           "bm25_score": 20.08289772780879,
           "rrf_score": 0.011235955056179775,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24646,7 +24929,8 @@
           "bm25_score": null,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24697,7 +24981,8 @@
           "bm25_score": 20.0591542357899,
           "rrf_score": 0.011111111111111112,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24742,7 +25027,8 @@
           "bm25_score": null,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24787,7 +25073,8 @@
           "bm25_score": 19.94574870687461,
           "rrf_score": 0.01098901098901099,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24832,7 +25119,8 @@
           "bm25_score": null,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24877,7 +25165,8 @@
           "bm25_score": 19.94574870687461,
           "rrf_score": 0.010869565217391304,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24922,7 +25211,8 @@
           "bm25_score": null,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -24970,7 +25260,8 @@
           "bm25_score": 19.92397202952759,
           "rrf_score": 0.010752688172043012,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25015,7 +25306,8 @@
           "bm25_score": null,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25051,7 +25343,8 @@
           "bm25_score": 19.810516855300754,
           "rrf_score": 0.010638297872340425,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25096,7 +25389,8 @@
           "bm25_score": null,
           "rrf_score": 0.010526315789473684,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25141,7 +25435,8 @@
           "bm25_score": 19.810516855300754,
           "rrf_score": 0.010526315789473684,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25186,7 +25481,8 @@
           "bm25_score": null,
           "rrf_score": 0.010416666666666666,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25234,7 +25530,8 @@
           "bm25_score": 19.7906548854204,
           "rrf_score": 0.010416666666666666,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25279,7 +25576,8 @@
           "bm25_score": null,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25324,7 +25622,8 @@
           "bm25_score": 19.67716117846137,
           "rrf_score": 0.010309278350515464,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25369,7 +25668,8 @@
           "bm25_score": null,
           "rrf_score": 0.01020408163265306,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25423,7 +25723,8 @@
           "bm25_score": 19.67716117846137,
           "rrf_score": 0.01020408163265306,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25468,7 +25769,8 @@
           "bm25_score": null,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25507,7 +25809,8 @@
           "bm25_score": 19.287958791986718,
           "rrf_score": 0.010101010101010102,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25552,7 +25855,8 @@
           "bm25_score": null,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25591,7 +25895,8 @@
           "bm25_score": 19.102402769395983,
           "rrf_score": 0.01,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25642,7 +25947,8 @@
           "bm25_score": null,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25687,7 +25993,8 @@
           "bm25_score": 18.91610534019137,
           "rrf_score": 0.009900990099009901,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25738,7 +26045,8 @@
           "bm25_score": null,
           "rrf_score": 0.00980392156862745,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25786,7 +26094,8 @@
           "bm25_score": 18.852323373218645,
           "rrf_score": 0.00980392156862745,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25837,7 +26146,8 @@
           "bm25_score": null,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25891,7 +26201,8 @@
           "bm25_score": 18.68775727118182,
           "rrf_score": 0.009708737864077669,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25942,7 +26253,8 @@
           "bm25_score": null,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -25987,7 +26299,8 @@
           "bm25_score": 18.46509335064159,
           "rrf_score": 0.009615384615384616,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26038,7 +26351,8 @@
           "bm25_score": null,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26083,7 +26397,8 @@
           "bm25_score": 18.4558895899065,
           "rrf_score": 0.009523809523809525,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26128,7 +26443,8 @@
           "bm25_score": null,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26182,7 +26498,8 @@
           "bm25_score": 18.4558895899065,
           "rrf_score": 0.009433962264150943,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26227,7 +26544,8 @@
           "bm25_score": null,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Номинальное давление, МПа": [
@@ -26260,7 +26578,8 @@
           "bm25_score": 18.31786202167973,
           "rrf_score": 0.009345794392523364,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26305,7 +26624,8 @@
           "bm25_score": null,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26359,7 +26679,8 @@
           "bm25_score": 18.31786202167973,
           "rrf_score": 0.009259259259259259,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26404,7 +26725,8 @@
           "bm25_score": null,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26452,7 +26774,8 @@
           "bm25_score": 18.048008736078913,
           "rrf_score": 0.009174311926605505,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26497,7 +26820,8 @@
           "bm25_score": null,
           "rrf_score": 0.00909090909090909,
           "retrieval_sources": [
-            "dense"
+            "dense",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [
@@ -26551,7 +26875,8 @@
           "bm25_score": 18.048008736078913,
           "rrf_score": 0.00909090909090909,
           "retrieval_sources": [
-            "bm25"
+            "bm25",
+            "hybrid"
           ],
           "technical_properties": {
             "Материал корпуса": [

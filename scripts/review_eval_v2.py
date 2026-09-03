@@ -287,6 +287,7 @@ def update_query_label_from_state(
 def render_query_finalization(
     review_state: dict[str, Any],
     labels: dict[str, Any],
+    workflow_name: str,
     query_item: dict[str, Any],
     query_state: dict[str, Any],
     review_state_path: Path,
@@ -523,6 +524,7 @@ def main() -> None:
     render_query_finalization(
         updated_review_state,
         labels,
+        workflow_name,
         query_item,
         updated_review_state["queries"][current_query_id],
         review_state_path,

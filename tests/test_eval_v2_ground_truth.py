@@ -94,6 +94,7 @@ def test_build_expanded_review_query_keeps_candidates_outside_hybrid_top_100():
     assert candidate_b["bm25_rank"] > 50
     assert candidate_c["hybrid_rank"] == 1
     assert candidate_c["rrf_score"] == (1 / 65) + (1 / 66)
+    assert "hybrid" in candidate_c["retrieval_sources"]
 
 
 def test_expanded_review_union_is_not_truncated_to_100():
