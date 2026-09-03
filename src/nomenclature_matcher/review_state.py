@@ -102,6 +102,8 @@ def set_candidate_grade(
         raise ValueError(f"Unsupported candidate grade: {grade}")
     copied = ensure_query_state(state, query_id)
     query_state = copied["queries"][str(query_id)]
+    if query_state.get("completed", False):
+        raise ValueError("Completed query is read-only; reopen it before changing candidate grades")
     query_state["candidate_grades"][str(candidate_id)] = {
         "grade": grade,
         "comment": comment or "",
@@ -121,6 +123,10 @@ def get_accepted_candidate_ids(query_state: dict[str, Any]) -> list[int]:
         if grade_info.get("grade") == "ACCEPT":
             accepted.append(int(candidate_id))
     return sorted(accepted)
+
+
+def get_reviewed_candidate_count(query_state: dict[str, Any]) -> int:
+    return len(query_state.get("candidate_grades", {}))
 
 
 def get_query_progress(query_state: dict[str, Any], total_candidates: int | None = None) -> dict[str, int | str | bool | None]:
@@ -151,14 +157,35 @@ def finalize_query(
     final_status: str,
     *,
     comment: str = "",
+    confirmed: bool = False,
+    total_candidates: int | None = None,
 ) -> dict[str, Any]:
     if final_status not in VALID_FINAL_STATUSES:
         raise ValueError(f"Unsupported final status: {final_status}")
 
     copied = ensure_query_state(state, query_id)
     query_state = copied["queries"][str(query_id)]
+    if query_state.get("completed", False):
+        raise ValueError("Completed query cannot be finalized again; reopen it first")
+
+    reviewed_candidates = get_reviewed_candidate_count(query_state)
+    if total_candidates is not None and reviewed_candidates < total_candidates and final_status in {
+        "MATCHED",
+        "NOT_FOUND",
+        "RETRIEVAL_MISS",
+    }:
+        raise ValueError(
+            f"All candidates must be reviewed before finalization: {reviewed_candidates} / {total_candidates}"
+        )
+
     if final_status == "MATCHED" and not get_accepted_candidate_ids(query_state):
         raise ValueError("MATCHED finalization requires at least one ACCEPT candidate")
+    if final_status in {"NOT_FOUND", "RETRIEVAL_MISS"}:
+        accepted_ids = get_accepted_candidate_ids(query_state)
+        if accepted_ids:
+            raise ValueError(f"{final_status} finalization is incompatible with ACCEPT candidates")
+        if final_status == "NOT_FOUND" and not confirmed:
+            raise ValueError("NOT_FOUND finalization requires explicit confirmation")
 
     query_state["final_status"] = final_status
     query_state["final_comment"] = comment or ""

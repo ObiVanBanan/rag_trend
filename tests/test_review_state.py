@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.review_eval_v2 import next_unreviewed_candidate_index
 from nomenclature_matcher.review_state import (
     apply_review_state_to_labels,
     build_v2_label_entry,
@@ -57,17 +58,68 @@ def test_finalize_matched_requires_at_least_one_accept():
     assert get_accepted_candidate_ids(query_state) == [10]
 
 
-def test_not_found_requires_confirmation():
+def test_completed_query_is_read_only():
+    state = initialize_review_state(["q1"])
+    state = set_candidate_grade(state, "q1", 10, "ACCEPT")
+    state = finalize_query(state, "q1", "MATCHED", total_candidates=1)
+
+    with pytest.raises(ValueError, match="Completed query is read-only"):
+        set_candidate_grade(state, "q1", 10, "REJECT")
+    with pytest.raises(ValueError, match="Completed query cannot be finalized again"):
+        finalize_query(state, "q1", "UNREVIEWED")
+
+
+def test_not_found_requires_confirmation_and_no_accepts():
     state = initialize_review_state(["q1"])
 
-    state = finalize_query(state, "q1", "NOT_FOUND", comment="no match")
+    with pytest.raises(ValueError, match="NOT_FOUND finalization requires explicit confirmation"):
+        finalize_query(state, "q1", "NOT_FOUND", total_candidates=0)
+
+    state = finalize_query(state, "q1", "NOT_FOUND", comment="no match", confirmed=True, total_candidates=0)
     assert state["queries"]["q1"]["final_status"] == "NOT_FOUND"
     assert state["queries"]["q1"]["completed"] is True
+
+    state = initialize_review_state(["q1"])
+    state = set_candidate_grade(state, "q1", 10, "ACCEPT")
+
+    with pytest.raises(ValueError, match="NOT_FOUND finalization is incompatible with ACCEPT candidates"):
+        finalize_query(state, "q1", "NOT_FOUND", confirmed=True, total_candidates=1)
+
+
+def test_retrieval_miss_requires_no_accepts_and_full_review():
+    state = initialize_review_state(["q1"])
+
+    with pytest.raises(ValueError, match="All candidates must be reviewed before finalization: 0 / 2"):
+        finalize_query(state, "q1", "RETRIEVAL_MISS", total_candidates=2)
+
+    state = set_candidate_grade(state, "q1", 10, "REJECT")
+    state = set_candidate_grade(state, "q1", 11, "SKIP")
+    state = finalize_query(state, "q1", "RETRIEVAL_MISS", comment="none", total_candidates=2)
+    assert state["queries"]["q1"]["final_status"] == "RETRIEVAL_MISS"
+
+    state = initialize_review_state(["q1"])
+    state = set_candidate_grade(state, "q1", 10, "ACCEPT")
+    state = set_candidate_grade(state, "q1", 11, "REJECT")
+
+    with pytest.raises(ValueError, match="RETRIEVAL_MISS finalization is incompatible with ACCEPT candidates"):
+        finalize_query(state, "q1", "RETRIEVAL_MISS", total_candidates=2)
+
+
+def test_matched_requires_full_review_before_finalization():
+    state = initialize_review_state(["q1"])
+    state = set_candidate_grade(state, "q1", 10, "ACCEPT")
+
+    with pytest.raises(ValueError, match="All candidates must be reviewed before finalization: 1 / 2"):
+        finalize_query(state, "q1", "MATCHED", total_candidates=2)
+
+    state = set_candidate_grade(state, "q1", 11, "REJECT")
+    state = finalize_query(state, "q1", "MATCHED", total_candidates=2)
+    assert state["queries"]["q1"]["final_status"] == "MATCHED"
 
 
 def test_retrieval_miss_does_not_create_label_entry():
     state = initialize_review_state(["q1"])
-    state = finalize_query(state, "q1", "RETRIEVAL_MISS", comment="none")
+    state = finalize_query(state, "q1", "RETRIEVAL_MISS", comment="none", total_candidates=0)
 
     assert build_v2_label_entry(state["queries"]["q1"]) is None
 
@@ -94,6 +146,22 @@ def test_apply_review_state_to_labels_restores_unreviewed_when_reopened():
     assert updated["q1"]["expected_status"] is None
     assert updated["q1"]["acceptable_ld_ids"] == []
     assert state["queries"]["q1"]["final_status"] is None
+
+
+def test_next_unreviewed_candidate_wraps_around_and_stops():
+    candidates = [{"ld_id": idx} for idx in range(5)]
+    query_state = initialize_review_state(["q1"])["queries"]["q1"]
+    query_state["candidate_grades"] = {
+        "0": {"grade": "REJECT", "comment": ""},
+        "2": {"grade": "ACCEPT", "comment": ""},
+        "3": {"grade": "SKIP", "comment": ""},
+        "4": {"grade": "UNSURE", "comment": ""},
+    }
+
+    assert next_unreviewed_candidate_index(candidates, query_state, 4) == 1
+
+    query_state["candidate_grades"]["1"] = {"grade": "REJECT", "comment": ""}
+    assert next_unreviewed_candidate_index(candidates, query_state, 4) == 4
 
 
 def test_review_state_round_trips_through_disk(tmp_path: Path):

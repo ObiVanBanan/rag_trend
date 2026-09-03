@@ -174,14 +174,22 @@ def render_candidate_card(candidate: dict[str, Any], query_state: dict[str, Any]
     current_grade = candidate_grades.get(str(candidate["ld_id"]))
     if current_grade:
         st.info(f"Текущая оценка: {current_grade['grade']}")
+    if query_state.get("completed", False):
+        st.caption("Query завершён, редактирование кандидата заблокировано. Используйте 'Переоткрыть query' для изменения.")
 
 
 def next_unreviewed_candidate_index(candidates: list[dict[str, Any]], query_state: dict[str, Any], current_index: int) -> int:
+    if not candidates:
+        return 0
+    current_index = max(0, min(current_index, len(candidates) - 1))
     graded_ids = set(query_state.get("candidate_grades", {}))
     for index in range(current_index + 1, len(candidates)):
         if str(candidates[index]["ld_id"]) not in graded_ids:
             return index
-    return min(current_index, max(len(candidates) - 1, 0))
+    for index in range(0, current_index + 1):
+        if str(candidates[index]["ld_id"]) not in graded_ids:
+            return index
+    return current_index
 
 
 def move_cursor_to_next_unreviewed(review_state: dict[str, Any], query_id: str, candidates: list[dict[str, Any]], current_index: int) -> dict[str, Any]:
@@ -217,44 +225,86 @@ def render_query_finalization(
 ) -> None:
     query_id = query_item["id"]
     st.subheader("Завершение query")
-
-    final_comment_key = f"query-comment::{query_id}"
-    if final_comment_key not in st.session_state:
-        st.session_state[final_comment_key] = query_state.get("final_comment", "")
-    final_comment = st.text_area("Комментарий", key=final_comment_key, height=90)
-
     accepted_ids = [
         candidate["ld_id"]
         for candidate in query_item["candidates"]
         if query_state.get("candidate_grades", {}).get(str(candidate["ld_id"]), {}).get("grade") == "ACCEPT"
     ]
+    reviewed_candidates = len(query_state.get("candidate_grades", {}))
+    total_candidates = len(query_item["candidates"])
 
     status_text = query_state.get("final_status") or "UNREVIEWED"
     if query_state.get("completed", False):
         st.info(f"Текущий статус query: {status_text}")
         if status_text == "MATCHED":
             st.write(f"acceptable_ld_ids: {accepted_ids}")
+        if st.button("Переоткрыть query", use_container_width=True):
+            updated = reopen_query(review_state, query_id)
+            save_review_state(REVIEW_STATE_PATH, updated)
+            update_query_label_from_state(updated, labels, query_id)
+            st.rerun()
+        return
 
     if not query_item["candidates"]:
         st.warning("У этого query нет кандидатов.")
         return
 
+    final_comment_key = f"query-comment::{query_id}"
+    if final_comment_key not in st.session_state:
+        st.session_state[final_comment_key] = query_state.get("final_comment", "")
+    final_comment = st.text_area("Комментарий", key=final_comment_key, height=90)
+
+    if reviewed_candidates < total_candidates:
+        st.warning(f"Для финализации нужно просмотреть всех кандидатов: {reviewed_candidates} / {total_candidates}.")
+
     if not accepted_ids:
         st.caption("Для MATCHED нужен хотя бы один ACCEPT.")
 
+    not_found_confirm_key = f"not-found-confirm::{query_id}"
+    if not_found_confirm_key not in st.session_state:
+        st.session_state[not_found_confirm_key] = False
+    not_found_confirm = st.checkbox(
+        "Подтверждаю, что подходящего товара действительно нет во всём каталоге LD, а не только среди показанных retrieval-кандидатов.",
+        key=not_found_confirm_key,
+    )
+    st.caption("Если товар может существовать в LD, но его нет среди показанных кандидатов — выбирай RETRIEVAL_MISS.")
+
     action_cols = st.columns(4)
-    if action_cols[0].button("✅ Подтвердить MATCHED", use_container_width=True, disabled=not accepted_ids):
-        updated = finalize_query(review_state, query_id, "MATCHED", comment=final_comment)
+    matched_disabled = reviewed_candidates < total_candidates or not accepted_ids
+    not_found_disabled = reviewed_candidates < total_candidates or bool(accepted_ids) or not not_found_confirm
+    retrieval_miss_disabled = reviewed_candidates < total_candidates or bool(accepted_ids)
+
+    if action_cols[0].button("✅ Подтвердить MATCHED", use_container_width=True, disabled=matched_disabled):
+        updated = finalize_query(
+            review_state,
+            query_id,
+            "MATCHED",
+            comment=final_comment,
+            total_candidates=total_candidates,
+        )
         save_review_state(REVIEW_STATE_PATH, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
-    if action_cols[1].button("❌ NOT_FOUND", use_container_width=True):
-        updated = finalize_query(review_state, query_id, "NOT_FOUND", comment=final_comment)
+    if action_cols[1].button("❌ NOT_FOUND", use_container_width=True, disabled=not_found_disabled):
+        updated = finalize_query(
+            review_state,
+            query_id,
+            "NOT_FOUND",
+            comment=final_comment,
+            confirmed=True,
+            total_candidates=total_candidates,
+        )
         save_review_state(REVIEW_STATE_PATH, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
-    if action_cols[2].button("⚠️ RETRIEVAL_MISS", use_container_width=True):
-        updated = finalize_query(review_state, query_id, "RETRIEVAL_MISS", comment=final_comment)
+    if action_cols[2].button("⚠️ RETRIEVAL_MISS", use_container_width=True, disabled=retrieval_miss_disabled):
+        updated = finalize_query(
+            review_state,
+            query_id,
+            "RETRIEVAL_MISS",
+            comment=final_comment,
+            total_candidates=total_candidates,
+        )
         save_review_state(REVIEW_STATE_PATH, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
@@ -263,12 +313,6 @@ def render_query_finalization(
         save_review_state(REVIEW_STATE_PATH, updated)
         update_query_label_from_state(updated, labels, query_id)
         st.rerun()
-
-    if query_state.get("completed", False):
-        if st.button("Переоткрыть query", use_container_width=True):
-            updated = reopen_query(review_state, query_id)
-            save_review_state(REVIEW_STATE_PATH, updated)
-            st.rerun()
 
 
 def render_navigation(
@@ -329,10 +373,11 @@ def main() -> None:
         existing_comment = query_state.get("candidate_grades", {}).get(str(candidate["ld_id"]), {}).get("comment", "")
         if comment_key not in st.session_state:
             st.session_state[comment_key] = existing_comment
-        candidate_comment = st.text_area("Комментарий", key=comment_key, height=70)
+        candidate_comment = st.text_area("Комментарий", key=comment_key, height=70, disabled=query_state.get("completed", False))
 
         action_cols = st.columns(4)
-        if action_cols[0].button("✅ Подходит", use_container_width=True):
+        candidate_buttons_disabled = query_state.get("completed", False)
+        if action_cols[0].button("✅ Подходит", use_container_width=True, disabled=candidate_buttons_disabled):
             review_state = save_candidate_grade(
                 review_state,
                 current_query_id,
@@ -343,7 +388,7 @@ def main() -> None:
                 current_index,
             )
             st.rerun()
-        if action_cols[1].button("❌ Не подходит", use_container_width=True):
+        if action_cols[1].button("❌ Не подходит", use_container_width=True, disabled=candidate_buttons_disabled):
             review_state = save_candidate_grade(
                 review_state,
                 current_query_id,
@@ -354,7 +399,7 @@ def main() -> None:
                 current_index,
             )
             st.rerun()
-        if action_cols[2].button("⚠️ Сомневаюсь", use_container_width=True):
+        if action_cols[2].button("⚠️ Сомневаюсь", use_container_width=True, disabled=candidate_buttons_disabled):
             review_state = save_candidate_grade(
                 review_state,
                 current_query_id,
@@ -365,7 +410,7 @@ def main() -> None:
                 current_index,
             )
             st.rerun()
-        if action_cols[3].button("⏭ Пропустить", use_container_width=True):
+        if action_cols[3].button("⏭ Пропустить", use_container_width=True, disabled=candidate_buttons_disabled):
             review_state = save_candidate_grade(
                 review_state,
                 current_query_id,
