@@ -32,14 +32,6 @@ class NomenclatureMatcher:
             for index, hit in enumerate(hits, 1)
         ]
 
-    @staticmethod
-    def _selected_vector_score(candidate: SearchCandidate) -> float:
-        if candidate.rrf_score is not None:
-            return candidate.rrf_score
-        if candidate.dense_score is not None:
-            return candidate.dense_score
-        return candidate.score
-
     def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
         return SelectedMatch(
             candidate_id=item.candidate_id,
@@ -48,7 +40,6 @@ class NomenclatureMatcher:
             llm_confidence=item.confidence,
             reason=item.reason,
             ld_id=candidate.ld_id,
-            vector_score=self._selected_vector_score(candidate),
             dense_score=candidate.dense_score,
             bm25_score=candidate.bm25_score,
             rrf_score=candidate.rrf_score,

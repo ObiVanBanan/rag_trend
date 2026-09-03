@@ -66,7 +66,6 @@ class SelectedMatch:
     llm_confidence: float | None
     reason: str
     ld_id: int
-    vector_score: float | None = None
     dense_score: float | None = None
     bm25_score: float | None = None
     rrf_score: float | None = None

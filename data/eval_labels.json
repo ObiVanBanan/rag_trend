@@ -1,74 +1,57 @@
 {
   "q01": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [1931, 2231, 2839, 2545],
+    "expected_status": "MATCHED",
+    "human_comment": "Краны DN80 PN16 с фланцевым присоединением"
   },
   "q02": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [1931, 2231, 2839, 2545],
+    "expected_status": "MATCHED",
+    "human_comment": "Аналогичный DN80 PN16 запрос с брендовым написанием"
   },
   "q03": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [10395, 12249, 11842, 12217],
+    "expected_status": "MATCHED",
+    "human_comment": "Стальной шаровой DN100 PN25, допускаются подземные DN100 PN2.5 варианты"
   },
   "q04": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [2556, 5277, 2558, 5276, 2592, 5275, 693, 2591, 5274],
+    "expected_status": "MATCHED",
+    "human_comment": "Затворы DN150 PN16, допустимы приводы и высокотемпературные исполнения"
   },
   "q05": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [1931, 2231, 2839, 2545, 1932, 2233, 3724, 19362],
+    "expected_status": "MATCHED",
+    "human_comment": "Генерический запрос на шаровой кран, допустимы базовые DN50/DN80/DN100 варианты"
   },
   "q06": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [],
+    "expected_status": "NOT_FOUND",
+    "human_comment": "В каталоге нет отдельного товара 'фланцы стальные'"
   },
   "q07": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [15438, 15442, 15437, 15440],
+    "expected_status": "MATCHED",
+    "human_comment": "Электропривод AUMA для шаровых кранов"
   },
   "q08": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [19362, 3724],
+    "expected_status": "MATCHED",
+    "human_comment": "Шаровой кран DN50 PN40 из стали 20"
   },
   "q09": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [1279, 1251, 15574],
+    "expected_status": "MATCHED",
+    "human_comment": "Шаровой кран DN200 PN16 с фланцевым присоединением"
   },
   "q10": {
-    "retrieval_success": null,
-    "reranker_success": null,
-    "human_grade": null,
-    "human_comment": ""
+    "acceptable_ld_ids": [],
+    "expected_status": "NOT_FOUND",
+    "human_comment": "Подходящего фланцевого обратного клапана DN80 PN16 в каталоге нет"
   },
   "q11": {
-    "retrieval_success": [
-      1715,
-      199,
-      1005,
-      155,
-      197
-    ],
-    "reranker_success": null,
-    "human_grade": null,
+    "acceptable_ld_ids": [1715, 199, 1005, 155, 197],
+    "expected_status": "MATCHED",
     "human_comment": "Допустимы латунные резьбовые краны DN25"
   }
 }

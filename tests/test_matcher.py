@@ -107,7 +107,7 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
     result = matcher.match_one_hybrid_with_rerank("  query  ")
     assert result.status == "MATCHED"
     assert result.candidates[0].rrf_score == 0.03
-    assert result.selected[0].vector_score == 0.03
     assert result.selected[0].dense_score == 0.9
     assert result.selected[0].bm25_score == 1.2
     assert result.selected[0].rrf_score == 0.03
+    assert not hasattr(result.selected[0], "vector_score")
