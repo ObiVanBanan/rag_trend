@@ -60,10 +60,7 @@ def test_finalize_matched_requires_at_least_one_accept():
 def test_not_found_requires_confirmation():
     state = initialize_review_state(["q1"])
 
-    with pytest.raises(ValueError, match="NOT_FOUND finalization requires explicit confirmation"):
-        finalize_query(state, "q1", "NOT_FOUND")
-
-    state = finalize_query(state, "q1", "NOT_FOUND", confirmed=True, comment="no match")
+    state = finalize_query(state, "q1", "NOT_FOUND", comment="no match")
     assert state["queries"]["q1"]["final_status"] == "NOT_FOUND"
     assert state["queries"]["q1"]["completed"] is True
 
@@ -73,6 +70,16 @@ def test_retrieval_miss_does_not_create_label_entry():
     state = finalize_query(state, "q1", "RETRIEVAL_MISS", comment="none")
 
     assert build_v2_label_entry(state["queries"]["q1"]) is None
+
+
+def test_unreviewed_finalization_does_not_create_label_entry():
+    state = initialize_review_state(["q1"])
+    state = finalize_query(state, "q1", "UNREVIEWED", comment="not sure")
+
+    query_state = state["queries"]["q1"]
+    assert query_state["completed"] is True
+    assert query_state["final_status"] == "UNREVIEWED"
+    assert build_v2_label_entry(query_state) is None
 
 
 def test_apply_review_state_to_labels_restores_unreviewed_when_reopened():
@@ -86,6 +93,7 @@ def test_apply_review_state_to_labels_restores_unreviewed_when_reopened():
     assert updated["q1"]["label_status"] == "UNREVIEWED"
     assert updated["q1"]["expected_status"] is None
     assert updated["q1"]["acceptable_ld_ids"] == []
+    assert state["queries"]["q1"]["final_status"] is None
 
 
 def test_review_state_round_trips_through_disk(tmp_path: Path):

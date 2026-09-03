@@ -11,13 +11,13 @@ from typing import Any
 
 STATE_VERSION = 1
 VALID_CANDIDATE_GRADES = {"ACCEPT", "REJECT", "UNSURE", "SKIP"}
-VALID_FINAL_STATUSES = {"MATCHED", "NOT_FOUND", "RETRIEVAL_MISS"}
+VALID_FINAL_STATUSES = {"MATCHED", "NOT_FOUND", "RETRIEVAL_MISS", "UNREVIEWED"}
 
 
 def default_query_review_state() -> dict[str, Any]:
     return {
         "candidate_grades": {},
-        "final_status": "UNREVIEWED",
+        "final_status": None,
         "final_comment": "",
         "completed": False,
         "cursor_index": 0,
@@ -43,7 +43,8 @@ def _normalize_query_state(query_state: dict[str, Any] | None) -> dict[str, Any]
     if not query_state:
         return normalized
     normalized["candidate_grades"] = copy.deepcopy(query_state.get("candidate_grades", {}))
-    normalized["final_status"] = query_state.get("final_status", "UNREVIEWED")
+    final_status = query_state.get("final_status")
+    normalized["final_status"] = final_status if final_status in VALID_FINAL_STATUSES else None
     normalized["final_comment"] = query_state.get("final_comment", "") or ""
     normalized["completed"] = bool(query_state.get("completed", False))
     normalized["cursor_index"] = int(query_state.get("cursor_index", 0) or 0)
@@ -138,7 +139,7 @@ def get_query_progress(query_state: dict[str, Any], total_candidates: int | None
         "reviewed_candidates": reviewed_candidates,
         "total_candidates": total_candidates,
         "remaining_candidates": None if total_candidates is None else max(total_candidates - reviewed_candidates, 0),
-        "final_status": query_state.get("final_status", "UNREVIEWED"),
+        "final_status": query_state.get("final_status") or "UNREVIEWED",
         "completed": bool(query_state.get("completed", False)),
     }
     return progress
@@ -150,7 +151,6 @@ def finalize_query(
     final_status: str,
     *,
     comment: str = "",
-    confirmed: bool = False,
 ) -> dict[str, Any]:
     if final_status not in VALID_FINAL_STATUSES:
         raise ValueError(f"Unsupported final status: {final_status}")
@@ -159,8 +159,6 @@ def finalize_query(
     query_state = copied["queries"][str(query_id)]
     if final_status == "MATCHED" and not get_accepted_candidate_ids(query_state):
         raise ValueError("MATCHED finalization requires at least one ACCEPT candidate")
-    if final_status == "NOT_FOUND" and not confirmed:
-        raise ValueError("NOT_FOUND finalization requires explicit confirmation")
 
     query_state["final_status"] = final_status
     query_state["final_comment"] = comment or ""
@@ -171,15 +169,17 @@ def finalize_query(
 def reopen_query(state: dict[str, Any], query_id: str) -> dict[str, Any]:
     copied = ensure_query_state(state, query_id)
     query_state = copied["queries"][str(query_id)]
-    query_state["final_status"] = "UNREVIEWED"
+    query_state["final_status"] = None
     query_state["final_comment"] = ""
     query_state["completed"] = False
     return copied
 
 
 def build_v2_label_entry(query_state: dict[str, Any]) -> dict[str, Any] | None:
-    final_status = query_state.get("final_status", "UNREVIEWED")
-    if final_status == "RETRIEVAL_MISS" or not query_state.get("completed", False):
+    final_status = query_state.get("final_status")
+    if not query_state.get("completed", False):
+        return None
+    if final_status in {None, "RETRIEVAL_MISS", "UNREVIEWED"}:
         return None
     if final_status not in {"MATCHED", "NOT_FOUND"}:
         return None
