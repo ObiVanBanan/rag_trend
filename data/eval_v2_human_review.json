@@ -5,66 +5,99 @@
       "candidate_grades": {
         "19201": {"grade": "REJECT"}, "18248": {"grade": "REJECT"}, "18942": {"grade": "REJECT"}, "3293": {"grade": "REJECT"}, "17512": {"grade": "REJECT"}, "5370": {"grade": "REJECT"}, "4214": {"grade": "REJECT"}, "5371": {"grade": "REJECT"}, "18127": {"grade": "REJECT"}, "3289": {"grade": "REJECT"}, "18793": {"grade": "REJECT"}, "3290": {"grade": "REJECT"}, "18795": {"grade": "REJECT"}, "3291": {"grade": "REJECT"}, "17513": {"grade": "REJECT"}, "3292": {"grade": "REJECT"}, "19142": {"grade": "REJECT"}, "4008": {"grade": "REJECT"}, "18109": {"grade": "REJECT"}, "3818": {"grade": "REJECT"}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed: no STRICT_ACCEPT candidate. Continue expanded ground-truth review.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q02": {
       "candidate_grades": {
-        "3293": {"grade": "REJECT"}, "3292": {"grade": "REJECT"}, "19254": {"grade": "ACCEPT"}, "3289": {"grade": "REJECT"}, "19256": {"grade": "REJECT"}, "19249": {"grade": "REJECT"}, "3291": {"grade": "REJECT"}, "3290": {"grade": "REJECT"}, "19261": {"grade": "REJECT"}, "19250": {"grade": "REJECT"}, "171": {"grade": "ACCEPT"}, "19029": {"grade": "REJECT"}, "2315": {"grade": "REJECT"}, "1443": {"grade": "REJECT"}, "4008": {"grade": "REJECT"}
+        "3293": {"grade": "REJECT"}, "3292": {"grade": "REJECT"}, "19254": {"grade": "ACCEPT"}, "3289": {"grade": "REJECT"}, "19256": {"grade": "REJECT"}, "19249": {"grade": "REJECT"}, "3291": {"grade": "REJECT"}, "3290": {"grade": "REJECT"}, "19261": {"grade": "REJECT"}, "19250": {"grade": "REJECT"}, "171": {"grade": "ACCEPT"}, "19029": {"grade": "REJECT", "comment": "Business-acceptable material substitution, excluded from strict golden."}, "2315": {"grade": "REJECT", "comment": "Business-acceptable material substitution, excluded from strict golden."}, "1443": {"grade": "REJECT"}, "4008": {"grade": "REJECT"}
       },
+      "final_status": "MATCHED",
+      "final_comment": "Strict golden: flat DN100 PN16 steel-20 flanges only; material substitutions excluded.",
+      "completed": true,
       "cursor_index": 14
     },
     "v2_q03": {
       "candidate_grades": {
-        "19255": {"grade": "REJECT"}, "3291": {"grade": "REJECT"}, "19241": {"grade": "REJECT"}, "19252": {"grade": "REJECT"}, "2483": {"grade": "REJECT"}, "19317": {"grade": "REJECT"}, "861": {"grade": "REJECT"}, "139": {"grade": "REJECT"}, "2324": {"grade": "REJECT"}, "19244": {"grade": "REJECT"}, "19311": {"grade": "REJECT"}, "3289": {"grade": "REJECT"}, "3290": {"grade": "REJECT"}, "3292": {"grade": "REJECT"}, "3293": {"grade": "REJECT"}, "19312": {"grade": "REJECT"}, "4008": {"grade": "REJECT"}, "18248": {"grade": "REJECT"}, "5370": {"grade": "REJECT"}, "5371": {"grade": "REJECT"}, "19315": {"grade": "REJECT"}, "19027": {"grade": "REJECT"}
+        "19255": {"grade": "REJECT"}, "3291": {"grade": "REJECT"}, "19241": {"grade": "REJECT"}, "19252": {"grade": "REJECT"}, "2483": {"grade": "REJECT"}, "19317": {"grade": "REJECT"}, "861": {"grade": "REJECT"}, "139": {"grade": "REJECT"}, "2324": {"grade": "REJECT"}, "19244": {"grade": "REJECT"}, "19311": {"grade": "REJECT"}, "3289": {"grade": "REJECT"}, "3290": {"grade": "REJECT"}, "3292": {"grade": "REJECT"}, "3293": {"grade": "REJECT"}, "19312": {"grade": "REJECT"}, "4008": {"grade": "REJECT"}, "18248": {"grade": "REJECT"}, "5370": {"grade": "REJECT"}, "5371": {"grade": "REJECT"}, "19315": {"grade": "REJECT"}, "19027": {"grade": "REJECT", "comment": "Flat flange; query explicitly requires weld-neck/butt-weld."}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed: no STRICT_ACCEPT weld-neck 09G2S DN65 PN16 flange.",
+      "completed": true,
       "cursor_index": 21
     },
     "v2_q04": {
       "candidate_grades": {
-        "16427": {"grade": "ACCEPT"}, "2006": {"grade": "ACCEPT"}, "17244": {"grade": "ACCEPT"}, "3825": {"grade": "REJECT"}, "760": {"grade": "ACCEPT"}, "3817": {"grade": "REJECT"}, "1129": {"grade": "ACCEPT"}, "2007": {"grade": "REJECT"}, "2058": {"grade": "ACCEPT"}, "18533": {"grade": "REJECT"}, "16587": {"grade": "REJECT"}, "19402": {"grade": "REJECT"}, "2104": {"grade": "REJECT"}, "3269": {"grade": "REJECT"}, "15077": {"grade": "ACCEPT"}, "1731": {"grade": "REJECT"}, "17247": {"grade": "ACCEPT"}, "3842": {"grade": "REJECT"}, "15424": {"grade": "ACCEPT"}, "18648": {"grade": "REJECT"}
+        "16427": {"grade": "ACCEPT"}, "2006": {"grade": "REJECT", "comment": "Regula/business alternative excluded from strict golden."}, "17244": {"grade": "REJECT", "comment": "Regula/business alternative excluded from strict golden."}, "3825": {"grade": "REJECT"}, "760": {"grade": "ACCEPT"}, "3817": {"grade": "REJECT"}, "1129": {"grade": "REJECT", "comment": "Regula/business alternative excluded from strict golden."}, "2007": {"grade": "REJECT"}, "2058": {"grade": "ACCEPT"}, "18533": {"grade": "REJECT"}, "16587": {"grade": "REJECT"}, "19402": {"grade": "REJECT"}, "2104": {"grade": "REJECT"}, "3269": {"grade": "REJECT"}, "15077": {"grade": "ACCEPT"}, "1731": {"grade": "REJECT"}, "17247": {"grade": "ACCEPT"}, "3842": {"grade": "REJECT"}, "15424": {"grade": "ACCEPT"}, "18648": {"grade": "REJECT"}
       },
+      "final_status": "MATCHED",
+      "final_comment": "Strict golden excludes Regula variants with conflicting regulating-valve semantics.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q05": {
       "candidate_grades": {
-        "2241": {"grade": "REJECT"}, "18375": {"grade": "REJECT"}, "18842": {"grade": "REJECT"}, "925": {"grade": "REJECT"}, "14807": {"grade": "REJECT"}, "18342": {"grade": "REJECT"}, "17692": {"grade": "REJECT"}, "2262": {"grade": "REJECT"}, "5258": {"grade": "REJECT"}, "2222": {"grade": "REJECT"}, "5342": {"grade": "REJECT"}, "7745": {"grade": "REJECT"}, "4245": {"grade": "REJECT"}, "18341": {"grade": "REJECT"}, "4206": {"grade": "REJECT"}, "5484": {"grade": "REJECT"}, "4019": {"grade": "REJECT"}, "2604": {"grade": "REJECT"}, "4203": {"grade": "REJECT"}
+        "2241": {"grade": "REJECT"}, "19163": {"grade": "REJECT", "comment": "Butterfly valve DN200; query requires DN100."}, "18375": {"grade": "REJECT"}, "18842": {"grade": "REJECT"}, "925": {"grade": "REJECT"}, "14807": {"grade": "REJECT"}, "18342": {"grade": "REJECT"}, "17692": {"grade": "REJECT"}, "2262": {"grade": "REJECT"}, "5258": {"grade": "REJECT"}, "2222": {"grade": "REJECT"}, "5342": {"grade": "REJECT"}, "7745": {"grade": "REJECT"}, "4245": {"grade": "REJECT"}, "18341": {"grade": "REJECT"}, "4206": {"grade": "REJECT"}, "5484": {"grade": "REJECT"}, "4019": {"grade": "REJECT"}, "2604": {"grade": "REJECT"}, "4203": {"grade": "REJECT"}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed: no STRICT_ACCEPT Granvel-type butterfly valve DN100 PN16.",
+      "completed": true,
       "cursor_index": 4
     },
     "v2_q06": {
       "candidate_grades": {
-        "18604": {"grade": "REJECT"}, "3901": {"grade": "REJECT"}, "232": {"grade": "ACCEPT"}, "3902": {"grade": "REJECT"}, "2201": {"grade": "ACCEPT"}, "3903": {"grade": "REJECT"}, "2911": {"grade": "ACCEPT"}, "3904": {"grade": "REJECT"}, "16747": {"grade": "ACCEPT"}, "3905": {"grade": "REJECT"}, "2721": {"grade": "REJECT"}, "3906": {"grade": "REJECT"}, "3120": {"grade": "REJECT"}, "5203": {"grade": "REJECT"}, "17041": {"grade": "REJECT"}, "5207": {"grade": "REJECT"}, "740": {"grade": "ACCEPT"}, "5209": {"grade": "REJECT"}, "10293": {"grade": "REJECT"}, "5211": {"grade": "REJECT"}
+        "18604": {"grade": "REJECT"}, "3901": {"grade": "REJECT"}, "232": {"grade": "ACCEPT"}, "3902": {"grade": "REJECT"}, "2201": {"grade": "ACCEPT"}, "3903": {"grade": "REJECT"}, "2911": {"grade": "REJECT", "comment": "Gearbox execution is a business alternative, excluded from strict golden."}, "3904": {"grade": "REJECT"}, "16747": {"grade": "ACCEPT"}, "3905": {"grade": "REJECT"}, "2721": {"grade": "REJECT"}, "3906": {"grade": "REJECT"}, "3120": {"grade": "REJECT"}, "5203": {"grade": "REJECT"}, "17041": {"grade": "REJECT"}, "5207": {"grade": "REJECT"}, "740": {"grade": "REJECT", "comment": "Electric-actuator-ready execution is a business alternative, excluded from strict golden."}, "5209": {"grade": "REJECT"}, "10293": {"grade": "REJECT"}, "5211": {"grade": "REJECT"}
       },
+      "final_status": "MATCHED",
+      "final_comment": "Strict golden uses ordinary manual steel DN80 PN16 flanged executions; gearbox/actuator-ready variants excluded.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q07": {
       "candidate_grades": {
         "950": {"grade": "REJECT"}, "4008": {"grade": "REJECT"}, "16845": {"grade": "REJECT"}, "3289": {"grade": "REJECT"}, "2564": {"grade": "REJECT"}, "3290": {"grade": "REJECT"}, "2689": {"grade": "REJECT"}, "3291": {"grade": "REJECT"}, "8966": {"grade": "REJECT"}, "3292": {"grade": "REJECT"}, "15858": {"grade": "REJECT"}, "3293": {"grade": "REJECT"}, "866": {"grade": "REJECT"}, "18692": {"grade": "REJECT"}, "5664": {"grade": "REJECT"}, "18364": {"grade": "REJECT"}, "19359": {"grade": "REJECT"}, "18365": {"grade": "REJECT"}, "9248": {"grade": "REJECT"}, "18672": {"grade": "REJECT"}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed: no STRICT_ACCEPT PND compression DN32 PN16 outdoor valve.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q08": {
       "candidate_grades": {
-        "1586": {"grade": "REJECT"}, "18148": {"grade": "REJECT"}, "3909": {"grade": "ACCEPT"}, "18067": {"grade": "REJECT"}, "3896": {"grade": "REJECT"}, "18055": {"grade": "REJECT"}, "3903": {"grade": "REJECT"}, "18056": {"grade": "REJECT"}, "17896": {"grade": "ACCEPT"}, "18062": {"grade": "REJECT"}, "2051": {"grade": "REJECT"}, "18171": {"grade": "REJECT"}, "2371": {"grade": "ACCEPT"}, "18077": {"grade": "REJECT"}, "17774": {"grade": "REJECT"}, "18078": {"grade": "REJECT"}, "17598": {"grade": "ACCEPT"}, "18053": {"grade": "REJECT"}, "17856": {"grade": "ACCEPT"}, "18054": {"grade": "REJECT"}
+        "1586": {"grade": "REJECT"}, "18148": {"grade": "REJECT"}, "3909": {"grade": "ACCEPT"}, "18067": {"grade": "REJECT"}, "3896": {"grade": "REJECT"}, "18055": {"grade": "REJECT"}, "3903": {"grade": "REJECT"}, "18056": {"grade": "REJECT"}, "17896": {"grade": "ACCEPT"}, "18062": {"grade": "REJECT"}, "2051": {"grade": "REJECT"}, "18171": {"grade": "REJECT"}, "2371": {"grade": "ACCEPT"}, "18077": {"grade": "REJECT"}, "17774": {"grade": "REJECT"}, "18078": {"grade": "REJECT"}, "17598": {"grade": "REJECT", "comment": "Angular execution is a business alternative, excluded from strict golden."}, "18053": {"grade": "REJECT"}, "17856": {"grade": "ACCEPT"}, "18054": {"grade": "REJECT"}
       },
+      "final_status": "MATCHED",
+      "final_comment": "Strict golden uses straight-layout brass DN25 male-female ball valves; angular execution excluded.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q09": {
       "candidate_grades": {
         "18835": {"grade": "REJECT"}, "18148": {"grade": "REJECT"}, "18831": {"grade": "REJECT"}, "18067": {"grade": "REJECT"}, "18953": {"grade": "REJECT"}, "18055": {"grade": "REJECT"}, "17088": {"grade": "REJECT"}, "18056": {"grade": "REJECT"}, "19035": {"grade": "REJECT"}, "18062": {"grade": "REJECT"}, "15849": {"grade": "REJECT"}, "18171": {"grade": "REJECT"}, "15715": {"grade": "REJECT"}, "18077": {"grade": "REJECT"}, "15714": {"grade": "REJECT"}, "18078": {"grade": "REJECT"}, "17203": {"grade": "REJECT"}, "18053": {"grade": "REJECT"}, "17218": {"grade": "REJECT"}, "18054": {"grade": "REJECT"}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed with no STRICT_ACCEPT; expanded review recovered a candidate.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q10": {
       "candidate_grades": {
-        "16981": {"grade": "REJECT"}, "3904": {"grade": "REJECT"}, "13533": {"grade": "REJECT"}, "13377": {"grade": "REJECT"}, "3910": {"grade": "REJECT"}, "6570": {"grade": "REJECT"}, "17851": {"grade": "REJECT"}, "6234": {"grade": "REJECT"}, "5215": {"grade": "REJECT"}, "6185": {"grade": "REJECT"}, "18490": {"grade": "REJECT"}, "13698": {"grade": "REJECT"}, "18493": {"grade": "REJECT"}, "5931": {"grade": "REJECT"}, "18508": {"grade": "REJECT"}, "5245": {"grade": "REJECT"}, "17857": {"grade": "REJECT"}
+        "16981": {"grade": "REJECT"}, "3904": {"grade": "REJECT"}, "13533": {"grade": "REJECT"}, "13377": {"grade": "REJECT"}, "3910": {"grade": "REJECT"}, "6570": {"grade": "REJECT"}, "17851": {"grade": "REJECT"}, "6234": {"grade": "REJECT"}, "5215": {"grade": "REJECT"}, "6185": {"grade": "REJECT"}, "18490": {"grade": "REJECT"}, "13698": {"grade": "REJECT"}, "18493": {"grade": "REJECT"}, "5931": {"grade": "REJECT"}, "18508": {"grade": "REJECT"}, "5245": {"grade": "REJECT"}, "17857": {"grade": "REJECT"}, "5211": {"grade": "REJECT", "comment": "Brass, not steel."}, "6529": {"grade": "REJECT", "comment": "Steel but welded PN40; query requires coupling/threaded PN25."}, "18481": {"grade": "REJECT", "comment": "Brass, not steel."}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed: no STRICT_ACCEPT steel coupling/threaded DN32 PN25 valve.",
+      "completed": true,
       "cursor_index": 19
     },
     "v2_q11": {
       "candidate_grades": {
-        "16622": {"grade": "REJECT"}, "16202": {"grade": "REJECT"}, "17100": {"grade": "REJECT"}, "15427": {"grade": "REJECT"}, "16587": {"grade": "REJECT"}, "15424": {"grade": "REJECT"}, "17040": {"grade": "REJECT"}, "15917": {"grade": "REJECT"}, "17489": {"grade": "REJECT"}, "17365": {"grade": "REJECT"}, "3798": {"grade": "REJECT"}, "16134": {"grade": "REJECT"}, "15654": {"grade": "REJECT"}, "15891": {"grade": "REJECT"}, "16674": {"grade": "REJECT"}, "4300": {"grade": "REJECT"}, "17223": {"grade": "REJECT"}, "15125": {"grade": "REJECT"}, "17167": {"grade": "REJECT"}, "15933": {"grade": "REJECT"}, "16675": {"grade": "REJECT"}, "2608": {"grade": "REJECT"}, "18833": {"grade": "REJECT"}
+        "16622": {"grade": "REJECT"}, "16202": {"grade": "REJECT"}, "17100": {"grade": "REJECT"}, "15427": {"grade": "REJECT"}, "16587": {"grade": "REJECT"}, "15424": {"grade": "REJECT"}, "17040": {"grade": "REJECT"}, "15917": {"grade": "REJECT"}, "17489": {"grade": "REJECT"}, "17365": {"grade": "REJECT"}, "3798": {"grade": "REJECT"}, "16134": {"grade": "REJECT"}, "15654": {"grade": "REJECT"}, "15891": {"grade": "REJECT"}, "16674": {"grade": "REJECT"}, "4300": {"grade": "REJECT"}, "17223": {"grade": "REJECT"}, "15125": {"grade": "REJECT"}, "17167": {"grade": "REJECT"}, "15933": {"grade": "REJECT"}, "16675": {"grade": "REJECT"}, "2608": {"grade": "REJECT"}, "18833": {"grade": "REJECT"}, "16361": {"grade": "REJECT", "comment": "DN50 flanged manual with flange kit, but PN40 instead of required PN80."}
       },
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "Base pool fully reviewed: no STRICT_ACCEPT DN50 PN80 flanged manual valve with flange kit.",
+      "completed": true,
       "cursor_index": 23
     }
   }
