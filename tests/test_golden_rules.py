@@ -114,7 +114,10 @@ def test_unmodeled_temperature_and_torque_are_detected():
 
 
 def test_missing_required_candidate_data_produces_unknown():
-    candidate = product(properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
+    candidate = product(
+        name="Кран шаровый LD Ду50 Ру1,6МПа фланцевый",
+        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
+    )
     result = evaluate_product_strict(candidate, constraints(body_material="steel"))
     assert result.status == "UNKNOWN"
     assert "body_material" in result.unknown_fields
