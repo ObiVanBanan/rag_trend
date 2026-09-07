@@ -13,37 +13,64 @@
 
 ## Golden dataset / human annotation
 
-Для ручной разметки установите review-зависимости и запустите упрощённый annotator:
+В `data/golden_queries_100.json` лежит новый набор из 100 тендероподобных запросов для harness/eval: шаровые краны, затворы, задвижки, обратные клапаны, фильтры, фланцы, приводы, неоднозначные и грязные строки, а также hard-negative запросы для проверки `NOT_FOUND`.
+
+Сначала сгенерируйте объединённый пул Dense + BM25 + Hybrid/RRF кандидатов. DeepSeek на этом этапе не вызывается:
+
+```bash
+python scripts/prepare_review_candidates.py
+```
+
+По умолчанию команда читает:
+
+```text
+data/golden_queries_100.json
+```
+
+и сохраняет:
+
+```text
+data/golden_100_review_candidates.json
+```
+
+Для ручной разметки установите review-зависимости и запустите annotator:
 
 ```bash
 pip install -e ".[review]"
 streamlit run scripts/annotate_golden.py
 ```
 
-UI умеет работать с уже существующими артефактами без повторных API-вызовов:
+После генерации кандидатов в UI появится workflow `Golden 100`. Текст текущего query закреплён сверху и остаётся виден при прокрутке длинного списка кандидатов.
 
-- `Baseline q01-q11` — читает сохранённый `data/eval_results.json` и `data/eval_labels.json`;
-- `Eval V2` — читает `data/eval_v2_review_candidates.json` и существующую human-review разметку;
-- `Eval V2 expanded` — использует расширенный пул retrieval-miss кандидатов;
-- `Golden generated` — появляется после генерации нового пула кандидатов.
-
-В annotator для каждого query отметьте галочками все допустимые товары и сохраните один из статусов:
+Для каждого query отметьте галочками все допустимые товары и сохраните один из статусов:
 
 - `MATCHED` — выбран хотя бы один допустимый LD ID;
 - `RETRIEVAL_MISS` — правильный товар, вероятно, существует, но его нет среди показанных кандидатов;
 - `NOT_FOUND` — правильного товара нет во всём каталоге; требует явного подтверждения;
 - `UNREVIEWED` / черновик — решение пока не принято.
 
-Для новой партии запросов сначала сгенерируйте объединённый пул Dense + BM25 + Hybrid/RRF кандидатов. DeepSeek при подготовке пула не вызывается:
+Разметка Golden 100 сохраняется в:
+
+```text
+data/golden_100_labels.json
+data/golden_100_human_review.json
+```
+
+UI также продолжает работать с уже существующими артефактами без повторных API-вызовов:
+
+- `Baseline q01-q11` — `data/eval_results.json` + `data/eval_labels.json`;
+- `Eval V2` — `data/eval_v2_review_candidates.json` + существующая human-review разметка;
+- `Eval V2 expanded` — расширенный пул retrieval-miss кандидатов;
+- `Golden generated (legacy)` — старый generic workflow.
+
+Для другого файла запросов можно явно переопределить пути:
 
 ```bash
 python scripts/prepare_review_candidates.py \
-  --queries data/eval_queries.json \
-  --output data/golden_review_candidates.json \
+  --queries data/my_queries.json \
+  --output data/my_review_candidates.json \
   --top-k 20
 ```
-
-После этого снова запустите `streamlit run scripts/annotate_golden.py` и выберите workflow `Golden generated`. Разметка будет сохраняться в `data/golden_labels.json`, а подробное состояние review — в `data/golden_human_review.json`.
 
 Production `ld_product` содержит только `name` и `article`. Расширенные поля LD, retrieval scores/ranks и LLM reason/confidence сохраняются в debug/eval payload для проверки качества.
 
