@@ -11,6 +11,40 @@
 7. Eval baseline: `python scripts/eval.py --experiment-name 2026-09-07-baseline`
 8. Тесты: `python -m pytest -q`
 
+## Golden dataset / human annotation
+
+Для ручной разметки установите review-зависимости и запустите упрощённый annotator:
+
+```bash
+pip install -e ".[review]"
+streamlit run scripts/annotate_golden.py
+```
+
+UI умеет работать с уже существующими артефактами без повторных API-вызовов:
+
+- `Baseline q01-q11` — читает сохранённый `data/eval_results.json` и `data/eval_labels.json`;
+- `Eval V2` — читает `data/eval_v2_review_candidates.json` и существующую human-review разметку;
+- `Eval V2 expanded` — использует расширенный пул retrieval-miss кандидатов;
+- `Golden generated` — появляется после генерации нового пула кандидатов.
+
+В annotator для каждого query отметьте галочками все допустимые товары и сохраните один из статусов:
+
+- `MATCHED` — выбран хотя бы один допустимый LD ID;
+- `RETRIEVAL_MISS` — правильный товар, вероятно, существует, но его нет среди показанных кандидатов;
+- `NOT_FOUND` — правильного товара нет во всём каталоге; требует явного подтверждения;
+- `UNREVIEWED` / черновик — решение пока не принято.
+
+Для новой партии запросов сначала сгенерируйте объединённый пул Dense + BM25 + Hybrid/RRF кандидатов. DeepSeek при подготовке пула не вызывается:
+
+```bash
+python scripts/prepare_review_candidates.py \
+  --queries data/eval_queries.json \
+  --output data/golden_review_candidates.json \
+  --top-k 20
+```
+
+После этого снова запустите `streamlit run scripts/annotate_golden.py` и выберите workflow `Golden generated`. Разметка будет сохраняться в `data/golden_labels.json`, а подробное состояние review — в `data/golden_human_review.json`.
+
 Production `ld_product` содержит только `name` и `article`. Расширенные поля LD, retrieval scores/ranks и LLM reason/confidence сохраняются в debug/eval payload для проверки качества.
 
 Цена и URL хранятся в payload Qdrant и не включаются в `search_text`. Sparse vectors, rule-based filtering и отдельные сервисы для BM25 не используются; hybrid retrieval строится in-memory через BM25 + RRF.
