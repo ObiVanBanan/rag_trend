@@ -1,0 +1,1369 @@
+{
+  "version": 1,
+  "queries": {
+    "gold_q001": {
+      "candidate_grades": {
+        "3798": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "17862": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4300": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "18559": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2238": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "18566": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3247": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3901": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19362": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "3902": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1930": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3903": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19039": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3904": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2258": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "3905": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2836": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3906": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15210": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19267": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3642": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19220": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2244": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5203": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2224": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3907": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3789": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5207": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15905": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3908": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "14879": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "5209": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15917": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3909": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4051": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "5211": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3799": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18481": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16801": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3910": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true,
+      "cursor_index": 39
+    },
+    "gold_q002": {
+      "candidate_grades": {
+        "15317": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "18604": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6565": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3846": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15425": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5853": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16200": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4093": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5787": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19078": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1678": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "4192": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6669": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3022": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "8872": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "850": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15870": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1445": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15650": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1862": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16343": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4184": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1050": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2874": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16411": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3149": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6038": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1423": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5793": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15095": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15607": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1118": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5854": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1426": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17204": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6029": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1790": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true,
+      "cursor_index": 39
+    },
+    "gold_q003": {
+      "candidate_grades": {
+        "16201": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17042": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18742": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5620": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17454": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15639": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18839": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15690": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3822": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15608": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "1445": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6008": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1862": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17030": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2874": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6484": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1423": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5904": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15095": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "7760": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1426": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17085": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "15317": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15979": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1790": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6439": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19207": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6656": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17413": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "13479": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17218": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5945": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17082": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6763": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2057": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6125": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1230": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6941": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17062": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true,
+      "cursor_index": 39
+    },
+    "gold_q004": {
+      "candidate_grades": {
+        "19378": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "15212": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "15723": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17160": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17037": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "16269": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17058": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "917": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18696": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "15227": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16125": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15495": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2983": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17365": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17297": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2742": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "16504": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17623": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "16497": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "1268": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3798": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "19267": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19220": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2253": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "19212": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19268": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19221": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1078": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "19213": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4428": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15904": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "4419": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19484": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "19489": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19042": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19043": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17125": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "15504": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2244": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "1806": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4339": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2646": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "1807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16173": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "15857": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true,
+      "cursor_index": 44
+    },
+    "gold_q005": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q006": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q007": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q008": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q009": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q010": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q011": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q012": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q013": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q014": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q015": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q016": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q017": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q018": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q019": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q020": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q021": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q022": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q023": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q024": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q025": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q026": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q027": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q028": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q029": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q030": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q031": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q032": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q033": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q034": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q035": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q036": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q037": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q038": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q039": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q040": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q041": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q042": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q043": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q044": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q045": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q046": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q047": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q048": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q049": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q050": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q051": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q052": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q053": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q054": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q055": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q056": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q057": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q058": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q059": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q060": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q061": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q062": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q063": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q064": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q065": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q066": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q067": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q068": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q069": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q070": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q071": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q072": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q073": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q074": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q075": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q076": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q077": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q078": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q079": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q080": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q081": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q082": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q083": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q084": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q085": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q086": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q087": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q088": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q089": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q090": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q091": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q092": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q093": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q094": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q095": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q096": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q097": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q098": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q099": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    },
+    "gold_q100": {
+      "candidate_grades": {},
+      "final_status": null,
+      "final_comment": "",
+      "completed": false,
+      "cursor_index": 0
+    }
+  }
+}

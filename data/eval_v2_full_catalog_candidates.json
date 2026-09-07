@@ -1,0 +1,159 @@
+{
+  "source_csv": "ld_products_full_nomenclature.csv",
+  "method": "deterministic_full_catalog_scan",
+  "note": "Candidate generation only. A zero candidate count is evidence for NOT_FOUND only if these predicates faithfully encode the strict policy.",
+  "queries": {
+    "v2_q01": {
+      "description": "Задвижка клиновая 30с41нж, фланцевая, DN100 PN16",
+      "candidates": [],
+      "candidate_count": 0
+    },
+    "v2_q03": {
+      "description": "Фланец воротниковый встык 09Г2С DN65 PN16",
+      "candidates": [],
+      "candidate_count": 0
+    },
+    "v2_q05": {
+      "description": "Затвор поворотный дисковый DN100 PN16",
+      "candidates": [],
+      "candidate_count": 0
+    },
+    "v2_q07": {
+      "description": "Кран шаровой ПНД компрессионный DN32 PN16",
+      "candidates": [],
+      "candidate_count": 0
+    },
+    "v2_q10": {
+      "description": "Кран стальной шаровой муфтовый/резьбовой DN32 PN25",
+      "candidates": [
+        {
+          "ld_id": "5211",
+          "article": "LD 47.351.32.0",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-В.Р GAS Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/5211--kran_sarovoj_latunnyj_ld_pride_47_32_v_v_r_gas_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "18493",
+          "article": "LD 47.113.1.32.M02 GAS",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-В.Р GAS Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/18493--kran_sarovoj_latunnyj_ld_pride_47_32_v_v_r_gas_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "3904",
+          "article": "LD 47.301.32.0",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-В.Р Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/3904--kran_sarovoj_latunnyj_ld_pride_47_32_v_v_r_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "18481",
+          "article": "LD 47.113.1.32.M02",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-В.Р Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/18481--kran_sarovoj_latunnyj_ld_pride_47_32_v_v_r_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "17851",
+          "article": "LD 47.311.32.0",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-В.Р Ду 32 Ру 25 рычаг стальной с биркой",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/17851--kran_sarovoj_latunnyj_ld_pride_47_32_v_v_r_du_32_ru_25_rycag_stal_noj_s_birkoj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "18508",
+          "article": "LD 47.113.2.32.M02",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-В.Р Ду 32 Ру 25 рычаг стальной с биркой",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/18508--kran_sarovoj_latunnyj_ld_pride_47_32_v_v_r_du_32_ru_25_rycag_stal_noj_s_birkoj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "5215",
+          "article": "LD 47.353.32.0",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-Н.Р GAS Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/5215--kran_sarovoj_latunnyj_ld_pride_47_32_v_n_r_gas_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "18496",
+          "article": "LD 47.123.1.32.M02 GAS",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-Н.Р GAS Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/18496--kran_sarovoj_latunnyj_ld_pride_47_32_v_n_r_gas_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "3910",
+          "article": "LD 47.303.32.0",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-Н.Р Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/3910--kran_sarovoj_latunnyj_ld_pride_47_32_v_n_r_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "18490",
+          "article": "LD 47.123.1.32.M02",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-Н.Р Ду 32 Ру 25 рычаг стальной",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/18490--kran_sarovoj_latunnyj_ld_pride_47_32_v_n_r_du_32_ru_25_rycag_stal_noj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "17857",
+          "article": "LD 47.313.32.0",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-Н.Р Ду 32 Ру 25 рычаг стальной с биркой",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/17857--kran_sarovoj_latunnyj_ld_pride_47_32_v_n_r_du_32_ru_25_rycag_stal_noj_s_birkoj/",
+          "technical_properties": {}
+        },
+        {
+          "ld_id": "18523",
+          "article": "LD 47.123.2.32.M02",
+          "name": "Кран шаровой латунный LD Pride 47.32.В-Н.Р Ду 32 Ру 25 рычаг стальной с биркой",
+          "dn": "32",
+          "pn": "2,5",
+          "joining_type": "Резьбовое",
+          "url": "https://xn--d1an.xn--p1ai/products/18523--kran_sarovoj_latunnyj_ld_pride_47_32_v_n_r_du_32_ru_25_rycag_stal_noj_s_birkoj/",
+          "technical_properties": {}
+        }
+      ],
+      "candidate_count": 12
+    },
+    "v2_q11": {
+      "description": "Кран шаровой фланцевый DN50 PN80 с ответными фланцами",
+      "candidates": [],
+      "candidate_count": 0
+    }
+  },
+  "rows_scanned": 15788
+}
