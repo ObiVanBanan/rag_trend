@@ -15,6 +15,7 @@ from .models import LDProduct
 DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
     Path(__file__).resolve().parent / "prompts" / "query_constraints_system.md"
 )
+_ALNUM_RU = "0-9a-zа-я"
 
 
 class QueryConstraints(BaseModel):
@@ -86,7 +87,29 @@ def _norm(value: Any) -> str:
 
 
 def _compact(value: Any) -> str:
-    return re.sub(r"[^0-9a-zа-я]+", "", _norm(value))
+    return re.sub(rf"[^{_ALNUM_RU}]+", "", _norm(value))
+
+
+def _exact_token_match(text: Any, token: Any) -> bool:
+    expected = _norm(token)
+    if not expected:
+        return True
+    pattern = rf"(?<![{_ALNUM_RU}]){re.escape(expected)}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flexible_code_match(text: Any, code: Any) -> bool:
+    """Match an exact designation while ignoring punctuation inside it.
+
+    КШ.Ф.050.080-02 matches кшф05008002, but КШЦФ does not match КШЦФЭ.
+    """
+    expected = _compact(code)
+    if not expected:
+        return True
+    separator = rf"[^{_ALNUM_RU}]*"
+    body = separator.join(re.escape(char) for char in expected)
+    pattern = rf"(?<![{_ALNUM_RU}]){body}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
 
 
 def _flatten_values(value: Any) -> list[str]:
@@ -115,7 +138,7 @@ def _product_text(product: LDProduct) -> str:
     for prop in product.properties or []:
         parts.append(str(prop.get("name") or ""))
         parts.extend(_flatten_values(prop.get("values")))
-    return " ".join(parts)
+    return " \n ".join(parts)
 
 
 def _first_number(value: Any) -> float | None:
@@ -331,8 +354,9 @@ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
     expected = _compact(designation)
     if not expected:
         return True
-    actual = _compact(_product_text(product))
-    return expected in actual
+    values = [product.article or "", product.name]
+    values.extend(_property_values(product, "Тип продукта", "Тип продукта AI", "Серия"))
+    return any(_flexible_code_match(value, expected) for value in values)
 
 
 def _medium_values(product: LDProduct) -> list[str]:
@@ -397,7 +421,7 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
 
     if constraints.valve_designation is not None:
         designation_ok = candidate_has_designation(product, constraints.valve_designation)
-        checks["valve_designation"] = f"contains exact normalized {constraints.valve_designation}: {designation_ok}"
+        checks["valve_designation"] = f"exact normalized {constraints.valve_designation}: {designation_ok}"
         if not designation_ok:
             return MatchDecision(False, checks)
 
@@ -409,9 +433,10 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
 
     if constraints.body_material_grade is not None:
         expected_grade = _norm(constraints.body_material_grade)
-        actual_material_text = _norm(candidate_material_text(product))
-        checks["body_material_grade"] = f"{expected_grade} in {actual_material_text}"
-        if expected_grade not in actual_material_text:
+        actual_material_text = candidate_material_text(product)
+        grade_ok = _exact_token_match(actual_material_text, expected_grade)
+        checks["body_material_grade"] = f"exact {expected_grade}: {grade_ok}"
+        if not grade_ok:
             return MatchDecision(False, checks)
 
     if constraints.bore_type is not None:
