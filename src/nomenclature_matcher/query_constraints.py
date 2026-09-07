@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from openai import OpenAI
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from .models import LDProduct
 
@@ -27,6 +27,7 @@ class QueryConstraints(BaseModel):
     thread_type: str | None = None
     working_medium: str | None = None
     valve_type: str | None = None
+    valve_designation: str | None = None
     body_material: str | None = None
     body_material_grade: str | None = None
     bore_type: str | None = None
@@ -84,6 +85,10 @@ def _norm(value: Any) -> str:
     return text.strip()
 
 
+def _compact(value: Any) -> str:
+    return re.sub(r"[^0-9a-zа-я]+", "", _norm(value))
+
+
 def _flatten_values(value: Any) -> list[str]:
     if value in (None, "", []):
         return []
@@ -137,8 +142,6 @@ def candidate_pn_mpa(product: LDProduct) -> float | None:
         number = _first_number(value)
         if number is None:
             continue
-        # Catalog PN is normally stored in MPa (1.6, 2.5, 4.0). If a raw PN/Ru
-        # class such as 16/25/40 slipped into the field, normalize bar -> MPa.
         if number > 10:
             number /= 10.0
         return number
@@ -197,12 +200,8 @@ def canonical_joining_type(text: Any) -> str | None:
 
 
 def candidate_joining_type(product: LDProduct) -> str | None:
-    candidates = [
-        product.joining_type,
-        *_property_values(product, "Присоединение"),
-        product.name,
-    ]
-    for value in candidates:
+    values = [product.joining_type, *_property_values(product, "Присоединение"), product.name]
+    for value in values:
         canonical = canonical_joining_type(value)
         if canonical not in {None, "other"}:
             return canonical
@@ -230,8 +229,7 @@ def canonical_thread_type(text: Any) -> str | None:
 
 
 def candidate_thread_type(product: LDProduct) -> str | None:
-    values = [*_property_values(product, "Тип резьбы"), product.name]
-    for value in values:
+    for value in [*_property_values(product, "Тип резьбы"), product.name]:
         result = canonical_thread_type(value)
         if result:
             return result
@@ -256,8 +254,7 @@ def canonical_material(text: Any) -> str | None:
 
 
 def candidate_material(product: LDProduct) -> str | None:
-    values = [*_property_values(product, "Материал корпуса"), product.name]
-    for value in values:
+    for value in [*_property_values(product, "Материал корпуса"), product.name]:
         result = canonical_material(value)
         if result not in {None, "other"}:
             return result
@@ -281,8 +278,7 @@ def canonical_bore_type(text: Any) -> str | None:
 
 
 def candidate_bore_type(product: LDProduct) -> str | None:
-    values = [*_property_values(product, "Тип прохода"), product.name]
-    for value in values:
+    for value in [*_property_values(product, "Тип прохода"), product.name]:
         result = canonical_bore_type(value)
         if result:
             return result
@@ -307,12 +303,10 @@ def canonical_control(text: Any) -> str | None:
 
 
 def candidate_control(product: LDProduct) -> str | None:
-    values = [*_property_values(product, "Управление"), product.name]
-    for value in values:
+    for value in [*_property_values(product, "Управление"), product.name]:
         result = canonical_control(value)
         if result:
             return result
-    # Ordinary ball valves without an actuator/gearbox marker are normally manual.
     if candidate_product_type(product) == "ball_valve":
         return "manual"
     return None
@@ -331,6 +325,14 @@ def candidate_valve_type(product: LDProduct) -> str | None:
     if re.search(r"\bgas\b", value) or "газов" in value:
         return "gas"
     return "standard"
+
+
+def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+    expected = _compact(designation)
+    if not expected:
+        return True
+    actual = _compact(_product_text(product))
+    return expected in actual
 
 
 def _medium_values(product: LDProduct) -> list[str]:
@@ -391,6 +393,12 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
         actual_valve_type = candidate_valve_type(product)
         checks["valve_type"] = f"{actual_valve_type} == {constraints.valve_type}"
         if actual_valve_type != constraints.valve_type:
+            return MatchDecision(False, checks)
+
+    if constraints.valve_designation is not None:
+        designation_ok = candidate_has_designation(product, constraints.valve_designation)
+        checks["valve_designation"] = f"contains exact normalized {constraints.valve_designation}: {designation_ok}"
+        if not designation_ok:
             return MatchDecision(False, checks)
 
     if constraints.body_material is not None:
