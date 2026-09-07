@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 import sys
 from pathlib import Path
@@ -20,6 +21,12 @@ from nomenclature_matcher.review_state import (
 ROOT = Path(__file__).resolve().parents[1]
 
 WORKFLOW_SPECS = {
+    "Golden 100": {
+        "candidates": ROOT / "data" / "golden_100_review_candidates.json",
+        "kind": "review_candidates",
+        "labels": ROOT / "data" / "golden_100_labels.json",
+        "state": ROOT / "data" / "golden_100_human_review.json",
+    },
     "Baseline q01-q11": {
         "candidates": ROOT / "data" / "eval_results.json",
         "kind": "eval_results",
@@ -38,7 +45,7 @@ WORKFLOW_SPECS = {
         "labels": ROOT / "data" / "eval_labels_v2.json",
         "state": ROOT / "data" / "eval_v2_retrieval_miss_human_review.json",
     },
-    "Golden generated": {
+    "Golden generated (legacy)": {
         "candidates": ROOT / "data" / "golden_review_candidates.json",
         "kind": "review_candidates",
         "labels": ROOT / "data" / "golden_labels.json",
@@ -61,18 +68,12 @@ def _write_json(path: Path, payload: Any) -> None:
 
 
 def _merge_eval_result_candidates(item: dict[str, Any]) -> list[dict[str, Any]]:
-    """Turn saved eval output into the same shape as review-candidate files.
-
-    This lets the annotator reuse already-paid-for baseline retrieval results without
-    calling OpenAI, Qdrant or DeepSeek again.
-    """
     merged: dict[int, dict[str, Any]] = {}
     selected_ids = {
         int(row["ld_id"])
         for row in item.get("deepseek_result", {}).get("selected", [])
         if row.get("ld_id") is not None
     }
-
     source_specs = (
         ("hybrid_top20", "hybrid", "hybrid_rank", "rrf_score"),
         ("dense_top20", "dense", "dense_rank", "dense_score"),
@@ -131,6 +132,7 @@ def _load_queries(path: Path, kind: str) -> list[dict[str, Any]]:
             {
                 "id": item["id"],
                 "query": item["query"],
+                "metadata": {},
                 "candidates": _merge_eval_result_candidates(item),
             }
             for item in payload.get("results", [])
@@ -195,6 +197,22 @@ def _query_status(labels: dict[str, Any], review_state: dict[str, Any], query_id
     return "UNREVIEWED"
 
 
+def _current_selected_ids(
+    workflow: str,
+    query_id: str,
+    candidates: list[dict[str, Any]],
+    existing_accept: set[int],
+) -> set[int]:
+    return {
+        int(candidate["ld_id"])
+        for candidate in candidates
+        if st.session_state.get(
+            _candidate_checkbox_key(workflow, query_id, int(candidate["ld_id"])),
+            int(candidate["ld_id"]) in existing_accept,
+        )
+    }
+
+
 def _save_query(
     *,
     labels_path: Path,
@@ -250,6 +268,57 @@ def _save_query(
     _write_json(labels_path, labels)
 
 
+def _render_sticky_query(query_id: str, query_text: str, status: str) -> None:
+    safe_id = html.escape(query_id)
+    safe_query = html.escape(query_text)
+    safe_status = html.escape(status)
+    st.markdown(
+        """
+        <style>
+        .golden-sticky-query {
+            position: sticky;
+            top: 2.85rem;
+            z-index: 1000;
+            background: rgba(14, 17, 23, 0.96);
+            border: 1px solid rgba(250, 250, 250, 0.18);
+            border-left: 5px solid #ff4b4b;
+            border-radius: 0.65rem;
+            padding: 0.8rem 1rem;
+            margin: 0.35rem 0 0.85rem 0;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.24);
+        }
+        .golden-sticky-query .qid {
+            opacity: 0.7;
+            font-size: 0.78rem;
+            margin-bottom: 0.2rem;
+        }
+        .golden-sticky-query .qtext {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+        .golden-sticky-query .qstatus {
+            opacity: 0.75;
+            font-size: 0.78rem;
+            margin-top: 0.3rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        (
+            '<div class="golden-sticky-query">'
+            f'<div class="qid">{safe_id}</div>'
+            f'<div class="qtext">{safe_query}</div>'
+            f'<div class="qstatus">Статус: {safe_status}</div>'
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+
+
 def _render_candidate(
     workflow: str,
     query_id: str,
@@ -265,7 +334,7 @@ def _render_candidate(
     rank_text = " · ".join(rank_bits) or "без rank"
     llm_badge = " · 🤖 LLM выбрал" if candidate.get("llm_selected") else ""
 
-    left, right = st.columns([0.08, 0.92])
+    left, right = st.columns([0.07, 0.93])
     with left:
         st.checkbox("OK", value=default_selected, key=key, label_visibility="collapsed")
     with right:
@@ -273,12 +342,11 @@ def _render_candidate(
         st.caption(
             f"LD {ld_id} · {candidate.get('article') or 'без артикула'} · {rank_text}{llm_badge}"
         )
-        compact = (
+        st.write(
             f"DN: {_format_value(candidate.get('dn'))} · "
             f"PN: {_format_value(candidate.get('pn'))} · "
             f"Присоединение: {_format_value(candidate.get('joining_type'))}"
         )
-        st.write(compact)
         technical = _technical_summary(candidate)
         if technical:
             st.caption(technical)
@@ -300,7 +368,7 @@ def _render_candidate(
 def main() -> None:
     st.set_page_config(page_title="Golden Dataset Annotator", layout="wide")
     st.title("Golden Dataset Annotator")
-    st.caption("Быстрая разметка RAG: выбери все допустимые товары и сохрани query одним действием.")
+    st.caption("Запрос закреплён сверху: при прокрутке кандидатов он остаётся перед глазами.")
 
     available = {
         name: spec
@@ -308,7 +376,10 @@ def main() -> None:
         if Path(spec["candidates"]).exists()
     }
     if not available:
-        st.error("Не найдено ни одного файла кандидатов.")
+        st.error(
+            "Не найдено ни одного файла кандидатов. "
+            "Для Golden 100 сначала запусти: python scripts/prepare_review_candidates.py"
+        )
         st.stop()
 
     workflow = st.sidebar.selectbox("Dataset / workflow", list(available))
@@ -329,7 +400,10 @@ def main() -> None:
         query_id: _query_status(labels, review_state, query_id)
         for query_id in query_by_id
     }
-    verified = sum(1 for query_id in query_by_id if labels.get(query_id, {}).get("label_status") == "VERIFIED")
+    verified = sum(
+        1 for query_id in query_by_id
+        if labels.get(query_id, {}).get("label_status") == "VERIFIED"
+    )
     st.sidebar.metric("Verified", f"{verified} / {len(queries)}")
 
     filter_mode = st.sidebar.selectbox(
@@ -339,9 +413,15 @@ def main() -> None:
     if filter_mode == "Все":
         visible_ids = list(query_by_id)
     elif filter_mode == "Неразмеченные":
-        visible_ids = [query_id for query_id, status in statuses.items() if status == "UNREVIEWED"]
+        visible_ids = [
+            query_id for query_id, status in statuses.items()
+            if status == "UNREVIEWED"
+        ]
     else:
-        visible_ids = [query_id for query_id, status in statuses.items() if status == filter_mode]
+        visible_ids = [
+            query_id for query_id, status in statuses.items()
+            if status == filter_mode
+        ]
     if not visible_ids:
         st.sidebar.success("В этом фильтре всё размечено 🎉")
         visible_ids = list(query_by_id)
@@ -354,10 +434,11 @@ def main() -> None:
     item = query_by_id[query_id]
     candidates = item.get("candidates", [])
     existing_accept = _existing_accepted_ids(labels, review_state, query_id)
-
-    st.header(item["query"])
     status = statuses[query_id]
     label = labels.get(query_id, {})
+
+    _render_sticky_query(query_id, item["query"], status)
+
     if status != "UNREVIEWED":
         st.info(
             f"Текущий статус: {status}. "
@@ -366,7 +447,9 @@ def main() -> None:
     if label.get("human_comment"):
         st.caption(f"Предыдущий комментарий: {label['human_comment']}")
 
-    search = st.text_input("Фильтр кандидатов по названию / артикулу / LD ID", "").strip().lower()
+    search = st.text_input(
+        "Фильтр кандидатов по названию / артикулу / LD ID", ""
+    ).strip().lower()
     visible_candidates = []
     for candidate in candidates:
         haystack = " ".join(
@@ -380,6 +463,14 @@ def main() -> None:
         if not search or search in haystack:
             visible_candidates.append(candidate)
 
+    selected_ids = _current_selected_ids(
+        workflow, query_id, candidates, existing_accept
+    )
+    summary_cols = st.columns(3)
+    summary_cols[0].metric("Выбрано", len(selected_ids))
+    summary_cols[1].metric("Кандидатов", len(candidates))
+    summary_cols[2].metric("Статус", status)
+
     st.subheader(f"Кандидаты: {len(visible_candidates)} / {len(candidates)}")
     st.caption("Поставь галочки у ВСЕХ товаров, которые считаешь допустимым правильным ответом.")
 
@@ -392,28 +483,33 @@ def main() -> None:
         )
         st.divider()
 
-    selected_ids = {
-        int(candidate["ld_id"])
-        for candidate in candidates
-        if st.session_state.get(
-            _candidate_checkbox_key(workflow, query_id, int(candidate["ld_id"])),
-            int(candidate["ld_id"]) in existing_accept,
-        )
-    }
+    selected_ids = _current_selected_ids(
+        workflow, query_id, candidates, existing_accept
+    )
 
-    summary_cols = st.columns(3)
-    summary_cols[0].metric("Выбрано", len(selected_ids))
-    summary_cols[1].metric("Всего кандидатов", len(candidates))
-    summary_cols[2].metric("Статус", status)
-
-    default_comment = label.get("human_comment", "") or review_state.get("queries", {}).get(query_id, {}).get("final_comment", "")
-    comment = st.text_area("Комментарий к query", value=default_comment, height=100)
+    st.subheader("Завершить query")
+    st.markdown(f"**Запрос:** {item['query']}")
+    default_comment = (
+        label.get("human_comment", "")
+        or review_state.get("queries", {}).get(query_id, {}).get("final_comment", "")
+    )
+    comment_key = f"golden::{workflow}::{query_id}::comment"
+    if comment_key not in st.session_state:
+        st.session_state[comment_key] = default_comment
+    comment = st.text_area("Комментарий к query", key=comment_key, height=100)
+    confirm_key = f"golden::{workflow}::{query_id}::confirm_not_found"
     confirm_not_found = st.checkbox(
-        "Для NOT_FOUND подтверждаю: подходящего товара нет во всём каталоге, а не только среди показанных кандидатов."
+        "Для NOT_FOUND подтверждаю: подходящего товара нет во всём каталоге, "
+        "а не только среди показанных кандидатов.",
+        key=confirm_key,
     )
 
     matched_col, miss_col, not_found_col, draft_col = st.columns(4)
-    if matched_col.button("✅ Сохранить MATCHED", use_container_width=True, disabled=not selected_ids):
+    if matched_col.button(
+        "✅ Сохранить MATCHED",
+        use_container_width=True,
+        disabled=not selected_ids,
+    ):
         _save_query(
             labels_path=labels_path,
             state_path=state_path,
@@ -425,10 +521,13 @@ def main() -> None:
             status="MATCHED",
             comment=comment,
         )
-        st.success(f"Сохранено: MATCHED, acceptable_ld_ids={sorted(selected_ids)}")
         st.rerun()
 
-    if miss_col.button("⚠️ RETRIEVAL_MISS", use_container_width=True, disabled=bool(selected_ids)):
+    if miss_col.button(
+        "⚠️ RETRIEVAL_MISS",
+        use_container_width=True,
+        disabled=bool(selected_ids),
+    ):
         _save_query(
             labels_path=labels_path,
             state_path=state_path,
@@ -440,7 +539,6 @@ def main() -> None:
             status="RETRIEVAL_MISS",
             comment=comment or "No acceptable item in the shown retrieval pool; expand candidate search.",
         )
-        st.warning("Сохранено как RETRIEVAL_MISS. Этот query не попадёт в verified eval до расширенного поиска.")
         st.rerun()
 
     if not_found_col.button(
@@ -459,7 +557,6 @@ def main() -> None:
             status="NOT_FOUND",
             comment=comment,
         )
-        st.success("Сохранено: NOT_FOUND")
         st.rerun()
 
     if draft_col.button("💾 Черновик", use_container_width=True):
@@ -474,7 +571,6 @@ def main() -> None:
             status="UNREVIEWED",
             comment=comment,
         )
-        st.success("Черновик сохранён")
         st.rerun()
 
     st.caption(
