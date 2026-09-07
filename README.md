@@ -11,30 +11,34 @@
 7. Eval baseline: `python scripts/eval.py --experiment-name 2026-09-07-baseline`
 8. Тесты: `python -m pytest -q`
 
-## Golden 100: автоматическая разметка через DeepSeek + deterministic rules
+## Golden 100: DeepSeek parser + strict deterministic silver labels
 
 В `data/golden_queries_100.json` лежит набор из 100 тендероподобных запросов для harness/eval.
 
-Рекомендуемый путь теперь не требует ручного просмотра 20 кандидатов для каждого query. DeepSeek используется только как structured parser одного запроса, а решение о допустимых товарах принимает обычный Python rule engine по всему CSV-каталогу LD.
+DeepSeek используется только как structured parser одной тендерной строки. Он извлекает известные ограничения, а строгий Python evaluator проверяет весь CSV-каталог LD.
 
-Бизнес-правила:
+Базовые правила:
 
-- DN — точное совпадение;
-- PN — товар подходит, если его PN не меньше PN из запроса;
-- присоединение — точное каноническое совпадение;
-- направление резьбы — точное, если указано;
-- рабочая среда — точное совпадение, если указана; иначе любая;
-- тип товара — точное совпадение;
-- специальное исполнение шарового крана — точное; если специальный тип не указан, требуется обычное `standard` исполнение;
-- обозначение/тип крана (`11с39п`, `11б27п1`, `КШЦФ`, `КШ.Ф...`) — точное, если явно указано;
-- материал корпуса — точная группа материала, марка материала точная, если указана;
-- тип прохода — точный, если указан; иначе любой;
-- управление — точное, если указано; иначе любое.
+- DN — exact;
+- PN — candidate PN >= query PN;
+- присоединение — exact;
+- направление резьбы — exact, если явно указано;
+- рабочая среда — exact, если явно указана;
+- тип товара — exact;
+- специальное исполнение шарового крана — exact; без специального типа нужен обычный `standard`;
+- точное LD-обозначение — exact, если оно явно указано;
+- материал корпуса и марка — exact, только если явно указаны;
+- проход — exact, если указан;
+- управление — exact, если указано.
 
-Сначала проверьте pipeline на трёх запросах:
+Для golden truth действует дополнительное правило: если нужная характеристика товара отсутствует в каталоге, это `UNKNOWN`, а не автоматически подходящий/неподходящий товар. Поэтому `UNKNOWN` блокирует автоматическую разметку.
+
+Также parser возвращает `unsupported_constraints`. Температура, момент/напряжение привода, высота штока, ГОСТ, тип фланца, EPDM/NBR/PTFE, комплектность, референсная модель конкурента и другие пока не моделируемые требования автоматически отправляют query в `NEEDS_REVIEW`.
+
+### Повторный прогон после изменения schema/prompt
 
 ```bash
-python scripts/auto_label_golden.py --limit 3
+python scripts/auto_label_golden.py --force-reparse --sync-labels
 ```
 
 Скрипт создаст/обновит:
@@ -43,42 +47,39 @@ python scripts/auto_label_golden.py --limit 3
 data/golden_100_query_constraints.json
 data/golden_100_auto_label_report.json
 data/golden_100_auto_labels.json
+data/golden_100_labels.json
 ```
 
-`golden_100_query_constraints.json` сохраняется после каждого запроса, поэтому запуск resumable: уже успешно распарсенные запросы не требуют повторного вызова DeepSeek. Ошибка одного query записывается как `PARSE_ERROR` и не ломает оставшиеся 99.
+Кэш constraints versioned. После изменения parser schema старые constraints автоматически перестают считаться актуальными; `--force-reparse` можно использовать для явного полного перезапуска.
 
-После проверки первых трёх запустите все 100:
+Decision policy:
 
-```bash
-python scripts/auto_label_golden.py
-```
+- `AUTO_MATCHED` — только строгие `PASS`, ноль `UNKNOWN`, нет unsupported constraints/ambiguity; записывается как `SILVER`, а не human GOLD;
+- `AUTO_NOT_FOUND` — только запросы, которые сам датасет помечает как synthetic negative и DeepSeek также считает out-of-scope;
+- `NEEDS_REVIEW` — ambiguity, parser warning, unsupported requirement, zero PASS, `UNKNOWN` product data или слишком широкий candidate set;
+- `PARSE_ERROR` — невалидный structured output.
 
-Автоматический decision консервативный:
+`data/golden_100_labels.json` хранит provenance:
 
-- `AUTO_MATCHED` — запрос однозначный и rule engine нашёл разумное число товаров;
-- `AUTO_NOT_FOUND` — только явно out-of-scope классы вроде насоса/кабеля/подшипника;
-- `NEEDS_REVIEW` — ambiguous query, слишком много совпадений или 0 совпадений для in-scope товара;
-- `PARSE_ERROR` — DeepSeek не вернул валидную структуру.
+- human ручная разметка: `label_status=VERIFIED`, `label_source=HUMAN`;
+- auto matched: `label_status=SILVER`, `label_source=AUTO_RULE_V2`;
+- явные synthetic negatives: `label_status=VERIFIED`, `label_source=SYNTHETIC_NEGATIVE`.
 
-После spot-check отчёта безопасные auto labels можно перенести в основной golden label файл:
+При `--sync-labels` старые записи, которые раньше были ошибочно записаны как `VERIFIED` с комментарием `AUTO: ...`, автоматически удаляются/пересчитываются. Human `VERIFIED` никогда не перезаписываются.
 
-```bash
-python scripts/auto_label_golden.py --write-verified-labels
-```
-
-При этом уже существующие human `VERIFIED` записи в `data/golden_100_labels.json` не перезаписываются.
-
-Системный prompt для structured parser хранится в:
+Golden-specific parser prompt:
 
 ```text
-src/nomenclature_matcher/prompts/query_constraints_system.md
+src/nomenclature_matcher/prompts/golden_query_constraints_system.md
 ```
 
-Rule engine находится в:
+Golden-specific strict evaluator:
 
 ```text
-src/nomenclature_matcher/query_constraints.py
+src/nomenclature_matcher/golden_rules.py
 ```
+
+Production query/matching helpers остаются отдельно в `src/nomenclature_matcher/query_constraints.py` и не меняются этим экспериментальным pipeline.
 
 ## Golden dataset / manual annotation fallback
 
@@ -88,7 +89,7 @@ src/nomenclature_matcher/query_constraints.py
 python scripts/prepare_review_candidates.py
 ```
 
-и открыть карточный annotator:
+и открыть annotator:
 
 ```bash
 pip install -e ".[review]"
@@ -113,4 +114,4 @@ Production `ld_product` содержит только `name` и `article`. Ра�
 
 Цена и URL хранятся в payload Qdrant и не включаются в `search_text`. Sparse vectors, rule-based filtering и отдельные сервисы для BM25 не используются; hybrid retrieval строится in-memory через BM25 + RRF.
 
-Системный prompt LLM reranker хранится в `src/nomenclature_matcher/prompts/reranker_system.md`; путь можно переопределить через `RERANKER_SYSTEM_PROMPT_PATH`. Эксперименты сохраняются в `data/experiments/<run-name>/` и должны фиксировать гипотезу, настройки поиска, конфигурацию индекса Qdrant, версию prompt, метрики и вывод. На MVP этапе eval измеряет baseline без hard quality threshold; главный бизнес-риск в отчетах - `WRONG_NOT_FOUND`.
+Системный prompt LLM reranker хранится в `src/nomenclature_matcher/prompts/reranker_system.md`; путь можно переопределить через `RERANKER_SYSTEM_PROMPT_PATH`. Эксперименты сохраняются в `data/experiments/<run-name>/` и должны фиксировать гипотезу, настройки поиска, конфигурацию индекса Qdrant, версию prompt, метрики и вывод. На MVP этапе eval измеряет baseline без hard quality threshold; главный бизнес-риск в отчетах — `WRONG_NOT_FOUND`.
