@@ -42,6 +42,7 @@ def constraints(**overrides):
         "thread_type": None,
         "working_medium": None,
         "valve_type": "standard",
+        "valve_designation": None,
         "body_material": None,
         "body_material_grade": None,
         "bore_type": None,
@@ -127,6 +128,28 @@ def test_regula_is_not_standard_ball_valve():
     )
     assert evaluate_product(regula, constraints(valve_type="standard")).matches is False
     assert evaluate_product(regula, constraints(valve_type="regulating")).matches is True
+
+
+def test_exact_valve_designation_is_required_when_present_in_query():
+    kshcf = product(name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа")
+    other = product(name="Кран шаровый LD КШЦП из стали 20 Ду200 Ру1,6МПа")
+    assert evaluate_product(kshcf, constraints(valve_designation="КШЦФ")).matches is True
+    assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+
+
+def test_designation_normalizes_punctuation_and_case():
+    exact_model = product(
+        name="Кран шаровый фланцевый",
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+        ],
+    )
+    exact_model.article = "КШ.Ф.200.016-02"
+    assert evaluate_product(
+        exact_model,
+        constraints(valve_designation="кшф20001602"),
+    ).matches is True
 
 
 def test_unspecified_fields_do_not_filter_candidates():
