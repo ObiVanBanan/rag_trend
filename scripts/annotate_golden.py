@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import html
 import json
 import sys
 from pathlib import Path
@@ -148,106 +147,98 @@ def _format_value(value: Any) -> str:
     return str(value)
 
 
-def _technical_summary(candidate: dict[str, Any]) -> str:
+def _technical_rows(candidate: dict[str, Any]) -> list[tuple[str, str]]:
     props = candidate.get("technical_properties") or {}
-    preferred = (
-        "Тип продукта",
-        "Материал корпуса",
-        "Тип резьбы",
-        "Рабочая среда",
-        "Управление",
-        "Серия",
-    )
-    parts = []
-    for key in preferred:
-        value = props.get(key)
-        if value not in (None, "", []):
-            parts.append(f"{key}: {_format_value(value)}")
-    return " · ".join(parts)
+    rows = [
+        ("Тип", props.get("Тип продукта")),
+        ("Материал", props.get("Материал корпуса")),
+        ("DN", candidate.get("dn") or props.get("Номинальный диаметр, DN")),
+        ("PN", candidate.get("pn") or props.get("Номинальное давление, МПа")),
+        ("Присоединение", candidate.get("joining_type") or props.get("Присоединение")),
+        ("Резьба", props.get("Тип резьбы")),
+        ("Среда", props.get("Рабочая среда")),
+        ("Управление", props.get("Управление")),
+        ("Серия", props.get("Серия")),
+    ]
+    return [(label, _format_value(value)) for label, value in rows if value not in (None, "", [])]
 
 
-def _candidate_checkbox_key(workflow: str, query_id: str, ld_id: int) -> str:
-    return f"golden::{workflow}::{query_id}::{ld_id}::accept"
+def _query_state(review_state: dict[str, Any], query_id: str) -> dict[str, Any]:
+    return review_state.setdefault("queries", {}).setdefault(query_id, default_query_review_state())
 
 
-def _existing_accepted_ids(
-    labels: dict[str, Any], review_state: dict[str, Any], query_id: str
-) -> set[int]:
-    query_state = review_state.get("queries", {}).get(query_id, {})
-    accepted = {
+def _accepted_ids(query_state: dict[str, Any]) -> list[int]:
+    return sorted(
         int(candidate_id)
         for candidate_id, grade in query_state.get("candidate_grades", {}).items()
         if grade.get("grade") == "ACCEPT"
-    }
-    if accepted:
-        return accepted
-    label = labels.get(query_id, {})
-    if label.get("label_status") == "VERIFIED" and label.get("expected_status") == "MATCHED":
-        return {int(candidate_id) for candidate_id in label.get("acceptable_ld_ids", [])}
-    return set()
+    )
 
 
-def _query_status(labels: dict[str, Any], review_state: dict[str, Any], query_id: str) -> str:
-    query_state = review_state.get("queries", {}).get(query_id, {})
-    if query_state.get("final_status"):
-        return str(query_state["final_status"])
-    label = labels.get(query_id, {})
-    if label.get("label_status") == "VERIFIED":
-        return str(label.get("expected_status") or "VERIFIED")
-    return "UNREVIEWED"
+def _reviewed_count(query_state: dict[str, Any], candidates: list[dict[str, Any]]) -> int:
+    candidate_ids = {str(candidate["ld_id"]) for candidate in candidates}
+    return sum(1 for candidate_id in query_state.get("candidate_grades", {}) if candidate_id in candidate_ids)
 
 
-def _current_selected_ids(
-    workflow: str,
-    query_id: str,
-    candidates: list[dict[str, Any]],
-    existing_accept: set[int],
-) -> set[int]:
-    return {
-        int(candidate["ld_id"])
-        for candidate in candidates
-        if st.session_state.get(
-            _candidate_checkbox_key(workflow, query_id, int(candidate["ld_id"])),
-            int(candidate["ld_id"]) in existing_accept,
-        )
-    }
+def _candidate_grade(query_state: dict[str, Any], candidate_id: int) -> str | None:
+    return query_state.get("candidate_grades", {}).get(str(candidate_id), {}).get("grade")
 
 
-def _save_query(
-    *,
-    labels_path: Path,
-    state_path: Path,
-    labels: dict[str, Any],
+def _next_unreviewed_index(
+    candidates: list[dict[str, Any]], query_state: dict[str, Any], current_index: int
+) -> int | None:
+    if not candidates:
+        return None
+    graded_ids = set(query_state.get("candidate_grades", {}))
+    for index in range(current_index + 1, len(candidates)):
+        if str(candidates[index]["ld_id"]) not in graded_ids:
+            return index
+    for index in range(0, current_index + 1):
+        if str(candidates[index]["ld_id"]) not in graded_ids:
+            return index
+    return None
+
+
+def _save_candidate_grade(
     review_state: dict[str, Any],
+    state_path: Path,
     query_id: str,
     candidates: list[dict[str, Any]],
-    selected_ids: set[int],
+    current_index: int,
+    grade: str,
+    comment: str,
+) -> None:
+    query_state = _query_state(review_state, query_id)
+    candidate = candidates[current_index]
+    query_state.setdefault("candidate_grades", {})[str(candidate["ld_id"])] = {
+        "grade": grade,
+        "comment": comment or "",
+    }
+    next_index = _next_unreviewed_index(candidates, query_state, current_index)
+    query_state["cursor_index"] = current_index if next_index is None else next_index
+    save_review_state(state_path, review_state)
+
+
+def _save_final_label(
+    labels: dict[str, Any],
+    labels_path: Path,
+    review_state: dict[str, Any],
+    state_path: Path,
+    query_id: str,
     status: str,
     comment: str,
 ) -> None:
-    state = review_state
-    state.setdefault("queries", {})
-    query_state = state["queries"].setdefault(query_id, default_query_review_state())
-
-    current_ids = {int(candidate["ld_id"]) for candidate in candidates}
-    grades = query_state.setdefault("candidate_grades", {})
-    for candidate_id in current_ids:
-        key = str(candidate_id)
-        existing_comment = grades.get(key, {}).get("comment", "")
-        grades[key] = {
-            "grade": "ACCEPT" if candidate_id in selected_ids else "REJECT",
-            "comment": existing_comment,
-        }
-
+    query_state = _query_state(review_state, query_id)
+    accepted_ids = _accepted_ids(query_state)
     query_state["final_status"] = status
     query_state["final_comment"] = comment or ""
     query_state["completed"] = status in {"MATCHED", "NOT_FOUND", "RETRIEVAL_MISS"}
-    save_review_state(state_path, state)
+    save_review_state(state_path, review_state)
 
     if status == "MATCHED":
         labels[query_id] = {
             "label_status": "VERIFIED",
-            "acceptable_ld_ids": sorted(selected_ids),
+            "acceptable_ld_ids": accepted_ids,
             "expected_status": "MATCHED",
             "human_comment": comment or "",
         }
@@ -268,107 +259,79 @@ def _save_query(
     _write_json(labels_path, labels)
 
 
-def _render_sticky_query(query_id: str, query_text: str, status: str) -> None:
-    safe_id = html.escape(query_id)
-    safe_query = html.escape(query_text)
-    safe_status = html.escape(status)
-    st.markdown(
-        """
-        <style>
-        .golden-sticky-query {
-            position: sticky;
-            top: 2.85rem;
-            z-index: 1000;
-            background: rgba(14, 17, 23, 0.96);
-            border: 1px solid rgba(250, 250, 250, 0.18);
-            border-left: 5px solid #ff4b4b;
-            border-radius: 0.65rem;
-            padding: 0.8rem 1rem;
-            margin: 0.35rem 0 0.85rem 0;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.24);
-        }
-        .golden-sticky-query .qid {
-            opacity: 0.7;
-            font-size: 0.78rem;
-            margin-bottom: 0.2rem;
-        }
-        .golden-sticky-query .qtext {
-            font-size: 1.05rem;
-            font-weight: 700;
-            line-height: 1.35;
-        }
-        .golden-sticky-query .qstatus {
-            opacity: 0.75;
-            font-size: 0.78rem;
-            margin-top: 0.3rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        (
-            '<div class="golden-sticky-query">'
-            f'<div class="qid">{safe_id}</div>'
-            f'<div class="qtext">{safe_query}</div>'
-            f'<div class="qstatus">Статус: {safe_status}</div>'
-            "</div>"
-        ),
-        unsafe_allow_html=True,
-    )
-
-
-def _render_candidate(
-    workflow: str,
-    query_id: str,
-    candidate: dict[str, Any],
-    default_selected: bool,
+def _seed_state_from_label(
+    labels: dict[str, Any], review_state: dict[str, Any], query_id: str
 ) -> None:
-    ld_id = int(candidate["ld_id"])
-    key = _candidate_checkbox_key(workflow, query_id, ld_id)
-    rank_bits = []
-    for label, field in (("H", "hybrid_rank"), ("D", "dense_rank"), ("B", "bm25_rank")):
-        if candidate.get(field) is not None:
-            rank_bits.append(f"{label}#{candidate[field]}")
-    rank_text = " · ".join(rank_bits) or "без rank"
-    llm_badge = " · 🤖 LLM выбрал" if candidate.get("llm_selected") else ""
+    query_state = _query_state(review_state, query_id)
+    if query_state.get("candidate_grades") or query_state.get("final_status"):
+        return
+    label = labels.get(query_id, {})
+    if label.get("label_status") != "VERIFIED":
+        return
+    if label.get("expected_status") == "MATCHED":
+        for candidate_id in label.get("acceptable_ld_ids", []):
+            query_state.setdefault("candidate_grades", {})[str(candidate_id)] = {
+                "grade": "ACCEPT",
+                "comment": "Imported from existing label",
+            }
+    query_state["final_status"] = label.get("expected_status")
+    query_state["final_comment"] = label.get("human_comment", "")
+    query_state["completed"] = True
 
-    left, right = st.columns([0.07, 0.93])
-    with left:
-        st.checkbox("OK", value=default_selected, key=key, label_visibility="collapsed")
-    with right:
-        st.markdown(f"**{candidate.get('name') or 'Без названия'}**")
-        st.caption(
-            f"LD {ld_id} · {candidate.get('article') or 'без артикула'} · {rank_text}{llm_badge}"
+
+def _render_query_card(item: dict[str, Any], query_state: dict[str, Any]) -> None:
+    metadata = item.get("metadata") or {}
+    status = query_state.get("final_status") or "UNREVIEWED"
+    st.markdown("### Запрос")
+    st.info(item["query"], icon="🔎")
+    meta_bits = [f"ID: {item['id']}", f"Статус: {status}"]
+    if metadata.get("category"):
+        meta_bits.append(f"Категория: {metadata['category']}")
+    if metadata.get("difficulty"):
+        meta_bits.append(f"Сложность: {metadata['difficulty']}")
+    st.caption(" · ".join(meta_bits))
+
+
+def _render_candidate_card(candidate: dict[str, Any], grade: str | None) -> None:
+    st.markdown("### Кандидат LD")
+    st.markdown(f"## {candidate.get('name') or 'Без названия'}")
+    rank_bits = []
+    for label, field in (("Hybrid", "hybrid_rank"), ("Dense", "dense_rank"), ("BM25", "bm25_rank")):
+        if candidate.get(field) is not None:
+            rank_bits.append(f"{label} #{candidate[field]}")
+    st.caption(
+        f"LD ID {candidate['ld_id']} · Артикул: {candidate.get('article') or '—'}"
+        + (" · " + " · ".join(rank_bits) if rank_bits else "")
+    )
+
+    rows = _technical_rows(candidate)
+    if rows:
+        columns = st.columns(3)
+        for index, (label, value) in enumerate(rows):
+            columns[index % 3].markdown(f"**{label}:** {value}")
+
+    if grade:
+        st.info(f"Текущая оценка этого кандидата: **{grade}**")
+
+    with st.expander("Технические детали / retrieval scores"):
+        st.json(
+            {
+                "dense_rank": candidate.get("dense_rank"),
+                "dense_score": candidate.get("dense_score"),
+                "bm25_rank": candidate.get("bm25_rank"),
+                "bm25_score": candidate.get("bm25_score"),
+                "hybrid_rank": candidate.get("hybrid_rank"),
+                "rrf_score": candidate.get("rrf_score"),
+                "retrieval_sources": candidate.get("retrieval_sources", []),
+                "technical_properties": candidate.get("technical_properties", {}),
+            }
         )
-        st.write(
-            f"DN: {_format_value(candidate.get('dn'))} · "
-            f"PN: {_format_value(candidate.get('pn'))} · "
-            f"Присоединение: {_format_value(candidate.get('joining_type'))}"
-        )
-        technical = _technical_summary(candidate)
-        if technical:
-            st.caption(technical)
-        with st.expander("Retrieval details"):
-            st.json(
-                {
-                    "dense_rank": candidate.get("dense_rank"),
-                    "dense_score": candidate.get("dense_score"),
-                    "bm25_rank": candidate.get("bm25_rank"),
-                    "bm25_score": candidate.get("bm25_score"),
-                    "hybrid_rank": candidate.get("hybrid_rank"),
-                    "rrf_score": candidate.get("rrf_score"),
-                    "retrieval_sources": candidate.get("retrieval_sources", []),
-                    "technical_properties": candidate.get("technical_properties", {}),
-                }
-            )
 
 
 def main() -> None:
     st.set_page_config(page_title="Golden Dataset Annotator", layout="wide")
     st.title("Golden Dataset Annotator")
-    st.caption("Запрос закреплён сверху: при прокрутке кандидатов он остаётся перед глазами.")
+    st.caption("Один экран = один тендерный запрос + один кандидат LD. Оцени кандидата и сразу переходи к следующему.")
 
     available = {
         name: spec
@@ -377,12 +340,12 @@ def main() -> None:
     }
     if not available:
         st.error(
-            "Не найдено ни одного файла кандидатов. "
-            "Для Golden 100 сначала запусти: python scripts/prepare_review_candidates.py"
+            "Не найдено файлов кандидатов. Для Golden 100 сначала запусти: "
+            "python scripts/prepare_review_candidates.py"
         )
         st.stop()
 
-    workflow = st.sidebar.selectbox("Dataset / workflow", list(available))
+    workflow = st.sidebar.selectbox("Dataset", list(available))
     spec = available[workflow]
     candidates_path = Path(spec["candidates"])
     labels_path = Path(spec["labels"])
@@ -392,191 +355,200 @@ def main() -> None:
     labels = _read_json(labels_path, {}) or {}
     review_state = initialize_review_state(item["id"] for item in queries)
     if state_path.exists():
-        loaded = load_review_state(state_path)
-        review_state["queries"].update(loaded.get("queries", {}))
+        loaded_state = load_review_state(state_path)
+        review_state["queries"].update(loaded_state.get("queries", {}))
+
+    for item in queries:
+        _seed_state_from_label(labels, review_state, item["id"])
 
     query_by_id = {item["id"]: item for item in queries}
-    statuses = {
-        query_id: _query_status(labels, review_state, query_id)
-        for query_id in query_by_id
-    }
-    verified = sum(
-        1 for query_id in query_by_id
-        if labels.get(query_id, {}).get("label_status") == "VERIFIED"
-    )
-    st.sidebar.metric("Verified", f"{verified} / {len(queries)}")
+
+    def query_status(query_id: str) -> str:
+        return _query_state(review_state, query_id).get("final_status") or "UNREVIEWED"
 
     filter_mode = st.sidebar.selectbox(
-        "Фильтр",
+        "Запросы",
         ["Неразмеченные", "Все", "MATCHED", "NOT_FOUND", "RETRIEVAL_MISS"],
     )
     if filter_mode == "Все":
         visible_ids = list(query_by_id)
     elif filter_mode == "Неразмеченные":
-        visible_ids = [
-            query_id for query_id, status in statuses.items()
-            if status == "UNREVIEWED"
-        ]
+        visible_ids = [query_id for query_id in query_by_id if query_status(query_id) == "UNREVIEWED"]
     else:
-        visible_ids = [
-            query_id for query_id, status in statuses.items()
-            if status == filter_mode
-        ]
+        visible_ids = [query_id for query_id in query_by_id if query_status(query_id) == filter_mode]
     if not visible_ids:
-        st.sidebar.success("В этом фильтре всё размечено 🎉")
+        st.sidebar.success("В выбранном фильтре ничего не осталось 🎉")
         visible_ids = list(query_by_id)
 
-    def query_title(query_id: str) -> str:
-        text = query_by_id[query_id]["query"]
-        return f"[{statuses[query_id]}] {query_id} — {text[:90]}"
+    def query_label(query_id: str) -> str:
+        item = query_by_id[query_id]
+        return f"[{query_status(query_id)}] {query_id} — {item['query'][:72]}"
 
-    query_id = st.sidebar.selectbox("Query", visible_ids, format_func=query_title)
+    query_id = st.sidebar.selectbox("Query", visible_ids, format_func=query_label)
     item = query_by_id[query_id]
     candidates = item.get("candidates", [])
-    existing_accept = _existing_accepted_ids(labels, review_state, query_id)
-    status = statuses[query_id]
-    label = labels.get(query_id, {})
+    query_state = _query_state(review_state, query_id)
+    reviewed = _reviewed_count(query_state, candidates)
+    accepted_ids = _accepted_ids(query_state)
 
-    _render_sticky_query(query_id, item["query"], status)
+    verified_queries = sum(
+        1
+        for candidate_query_id in query_by_id
+        if labels.get(candidate_query_id, {}).get("label_status") == "VERIFIED"
+    )
+    st.sidebar.metric("Verified queries", f"{verified_queries} / {len(queries)}")
+    st.sidebar.metric("Кандидаты просмотрены", f"{reviewed} / {len(candidates)}")
+    st.sidebar.metric("ACCEPT", len(accepted_ids))
 
-    if status != "UNREVIEWED":
-        st.info(
-            f"Текущий статус: {status}. "
-            f"acceptable_ld_ids: {label.get('acceptable_ld_ids', sorted(existing_accept))}"
+    _render_query_card(item, query_state)
+
+    if query_state.get("completed"):
+        st.success(f"Query завершён: {query_state.get('final_status')}")
+        if accepted_ids:
+            st.write(f"Допустимые LD ID: {accepted_ids}")
+        if query_state.get("final_comment"):
+            st.caption(query_state["final_comment"])
+        if st.button("↩️ Переоткрыть query", use_container_width=True):
+            query_state["completed"] = False
+            query_state["final_status"] = None
+            query_state["final_comment"] = ""
+            next_index = _next_unreviewed_index(candidates, query_state, -1)
+            query_state["cursor_index"] = 0 if next_index is None else next_index
+            save_review_state(state_path, review_state)
+            st.rerun()
+        st.stop()
+
+    all_reviewed = reviewed >= len(candidates) if candidates else True
+
+    if not all_reviewed:
+        current_index = min(max(int(query_state.get("cursor_index", 0)), 0), len(candidates) - 1)
+        if _candidate_grade(query_state, int(candidates[current_index]["ld_id"])) is not None:
+            next_index = _next_unreviewed_index(candidates, query_state, current_index)
+            if next_index is not None:
+                current_index = next_index
+                query_state["cursor_index"] = current_index
+                save_review_state(state_path, review_state)
+
+        candidate = candidates[current_index]
+        candidate_id = int(candidate["ld_id"])
+        grade = _candidate_grade(query_state, candidate_id)
+
+        progress = reviewed / len(candidates) if candidates else 1.0
+        st.progress(progress, text=f"Просмотрено {reviewed} из {len(candidates)} · ACCEPT: {len(accepted_ids)}")
+        _render_candidate_card(candidate, grade)
+
+        comment_key = f"candidate-comment::{workflow}::{query_id}::{candidate_id}"
+        existing_comment = query_state.get("candidate_grades", {}).get(str(candidate_id), {}).get("comment", "")
+        if comment_key not in st.session_state:
+            st.session_state[comment_key] = existing_comment
+        candidate_comment = st.text_input(
+            "Комментарий к кандидату (необязательно)",
+            key=comment_key,
+            placeholder="Например: DN совпадает, но материал не тот",
         )
-    if label.get("human_comment"):
-        st.caption(f"Предыдущий комментарий: {label['human_comment']}")
 
-    search = st.text_input(
-        "Фильтр кандидатов по названию / артикулу / LD ID", ""
-    ).strip().lower()
-    visible_candidates = []
-    for candidate in candidates:
-        haystack = " ".join(
-            [
-                str(candidate.get("ld_id", "")),
-                str(candidate.get("article", "")),
-                str(candidate.get("name", "")),
-                _technical_summary(candidate),
-            ]
-        ).lower()
-        if not search or search in haystack:
-            visible_candidates.append(candidate)
+        accept_col, reject_col, unsure_col, skip_col = st.columns(4)
+        if accept_col.button("✅ Подходит", type="primary", use_container_width=True):
+            _save_candidate_grade(
+                review_state, state_path, query_id, candidates, current_index, "ACCEPT", candidate_comment
+            )
+            st.rerun()
+        if reject_col.button("❌ Не подходит", use_container_width=True):
+            _save_candidate_grade(
+                review_state, state_path, query_id, candidates, current_index, "REJECT", candidate_comment
+            )
+            st.rerun()
+        if unsure_col.button("⚠️ Сомневаюсь", use_container_width=True):
+            _save_candidate_grade(
+                review_state, state_path, query_id, candidates, current_index, "UNSURE", candidate_comment
+            )
+            st.rerun()
+        if skip_col.button("⏭ Пропустить", use_container_width=True):
+            _save_candidate_grade(
+                review_state, state_path, query_id, candidates, current_index, "SKIP", candidate_comment
+            )
+            st.rerun()
 
-    selected_ids = _current_selected_ids(
-        workflow, query_id, candidates, existing_accept
-    )
-    summary_cols = st.columns(3)
-    summary_cols[0].metric("Выбрано", len(selected_ids))
-    summary_cols[1].metric("Кандидатов", len(candidates))
-    summary_cols[2].metric("Статус", status)
+        nav_left, nav_right = st.columns(2)
+        if nav_left.button("← предыдущий кандидат", use_container_width=True, disabled=current_index == 0):
+            query_state["cursor_index"] = current_index - 1
+            save_review_state(state_path, review_state)
+            st.rerun()
+        if nav_right.button(
+            "следующий кандидат →",
+            use_container_width=True,
+            disabled=current_index >= len(candidates) - 1,
+        ):
+            query_state["cursor_index"] = current_index + 1
+            save_review_state(state_path, review_state)
+            st.rerun()
+        st.stop()
 
-    st.subheader(f"Кандидаты: {len(visible_candidates)} / {len(candidates)}")
-    st.caption("Поставь галочки у ВСЕХ товаров, которые считаешь допустимым правильным ответом.")
+    st.success(f"Все кандидаты просмотрены. ACCEPT: {len(accepted_ids)}")
+    if accepted_ids:
+        st.write(f"Выбранные LD ID: {accepted_ids}")
+    else:
+        st.warning("Подходящих кандидатов в показанном пуле нет.")
 
-    for candidate in visible_candidates:
-        _render_candidate(
-            workflow,
-            query_id,
-            candidate,
-            int(candidate["ld_id"]) in existing_accept,
-        )
-        st.divider()
+    default_comment = query_state.get("final_comment", "")
+    query_comment = st.text_area("Комментарий к query", value=default_comment, height=90)
 
-    selected_ids = _current_selected_ids(
-        workflow, query_id, candidates, existing_accept
-    )
-
-    st.subheader("Завершить query")
-    st.markdown(f"**Запрос:** {item['query']}")
-    default_comment = (
-        label.get("human_comment", "")
-        or review_state.get("queries", {}).get(query_id, {}).get("final_comment", "")
-    )
-    comment_key = f"golden::{workflow}::{query_id}::comment"
-    if comment_key not in st.session_state:
-        st.session_state[comment_key] = default_comment
-    comment = st.text_area("Комментарий к query", key=comment_key, height=100)
-    confirm_key = f"golden::{workflow}::{query_id}::confirm_not_found"
-    confirm_not_found = st.checkbox(
-        "Для NOT_FOUND подтверждаю: подходящего товара нет во всём каталоге, "
-        "а не только среди показанных кандидатов.",
-        key=confirm_key,
-    )
-
-    matched_col, miss_col, not_found_col, draft_col = st.columns(4)
+    matched_col, miss_col, not_found_col = st.columns(3)
     if matched_col.button(
-        "✅ Сохранить MATCHED",
+        "✅ Завершить MATCHED",
+        type="primary",
         use_container_width=True,
-        disabled=not selected_ids,
+        disabled=not accepted_ids,
     ):
-        _save_query(
-            labels_path=labels_path,
-            state_path=state_path,
-            labels=labels,
-            review_state=review_state,
-            query_id=query_id,
-            candidates=candidates,
-            selected_ids=selected_ids,
-            status="MATCHED",
-            comment=comment,
+        _save_final_label(
+            labels, labels_path, review_state, state_path, query_id, "MATCHED", query_comment
         )
         st.rerun()
 
     if miss_col.button(
         "⚠️ RETRIEVAL_MISS",
         use_container_width=True,
-        disabled=bool(selected_ids),
+        disabled=bool(accepted_ids),
     ):
-        _save_query(
-            labels_path=labels_path,
-            state_path=state_path,
-            labels=labels,
-            review_state=review_state,
-            query_id=query_id,
-            candidates=candidates,
-            selected_ids=set(),
-            status="RETRIEVAL_MISS",
-            comment=comment or "No acceptable item in the shown retrieval pool; expand candidate search.",
+        _save_final_label(
+            labels,
+            labels_path,
+            review_state,
+            state_path,
+            query_id,
+            "RETRIEVAL_MISS",
+            query_comment or "No acceptable item in the shown retrieval pool.",
         )
         st.rerun()
 
-    if not_found_col.button(
-        "❌ Сохранить NOT_FOUND",
-        use_container_width=True,
-        disabled=bool(selected_ids) or not confirm_not_found,
-    ):
-        _save_query(
-            labels_path=labels_path,
-            state_path=state_path,
-            labels=labels,
-            review_state=review_state,
-            query_id=query_id,
-            candidates=candidates,
-            selected_ids=set(),
-            status="NOT_FOUND",
-            comment=comment,
-        )
-        st.rerun()
-
-    if draft_col.button("💾 Черновик", use_container_width=True):
-        _save_query(
-            labels_path=labels_path,
-            state_path=state_path,
-            labels=labels,
-            review_state=review_state,
-            query_id=query_id,
-            candidates=candidates,
-            selected_ids=selected_ids,
-            status="UNREVIEWED",
-            comment=comment,
-        )
-        st.rerun()
-
-    st.caption(
-        f"Файлы: candidates={candidates_path.relative_to(ROOT)} · "
-        f"labels={labels_path.relative_to(ROOT)} · state={state_path.relative_to(ROOT)}"
+    confirm_not_found = st.checkbox(
+        "Подтверждаю: подходящего товара нет во всём каталоге LD, а не только среди кандидатов."
     )
+    if not_found_col.button(
+        "❌ Завершить NOT_FOUND",
+        use_container_width=True,
+        disabled=bool(accepted_ids) or not confirm_not_found,
+    ):
+        _save_final_label(
+            labels, labels_path, review_state, state_path, query_id, "NOT_FOUND", query_comment
+        )
+        st.rerun()
+
+    if st.button("🔄 Сбросить оценки кандидатов этого query"):
+        query_state["candidate_grades"] = {}
+        query_state["cursor_index"] = 0
+        query_state["final_status"] = None
+        query_state["final_comment"] = ""
+        query_state["completed"] = False
+        save_review_state(state_path, review_state)
+        labels[query_id] = {
+            "label_status": "UNREVIEWED",
+            "acceptable_ld_ids": [],
+            "expected_status": None,
+            "human_comment": "",
+        }
+        _write_json(labels_path, labels)
+        st.rerun()
 
 
 if __name__ == "__main__":
