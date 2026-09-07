@@ -23,8 +23,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate a human-review candidate pool from Dense + BM25 + Hybrid retrieval."
     )
-    parser.add_argument("--queries", default=str(root / "data" / "eval_queries.json"))
-    parser.add_argument("--output", default=str(root / "data" / "golden_review_candidates.json"))
+    parser.add_argument("--queries", default=str(root / "data" / "golden_queries_100.json"))
+    parser.add_argument("--output", default=str(root / "data" / "golden_100_review_candidates.json"))
     parser.add_argument("--csv", default=str(root / "ld_products_full_nomenclature.csv"))
     parser.add_argument("--top-k", type=int, default=20)
     return parser
@@ -77,10 +77,16 @@ def main() -> int:
             hybrid,
             max_per_source=args.top_k,
         )
+        metadata = {
+            key: value
+            for key, value in item.items()
+            if key not in {"id", "query"}
+        }
         report["queries"].append(
             {
                 "id": item["id"],
                 "query": query,
+                "metadata": metadata,
                 "candidates": merged,
             }
         )
