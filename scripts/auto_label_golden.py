@@ -100,15 +100,32 @@ def _parse_queries(
 
     for index, item in enumerate(queries, 1):
         query_id = item["id"]
-        if query_id in items and not force_reparse:
+        existing = items.get(query_id, {})
+        if existing.get("constraints") and not force_reparse:
             print(f"[{index}/{len(queries)}] {query_id}: reuse parsed constraints")
             continue
 
-        constraints = extractor.extract(item["query"])
-        items[query_id] = {
+        base = {
             "query": item["query"],
             "metadata": {key: value for key, value in item.items() if key not in {"id", "query"}},
+        }
+        try:
+            constraints = extractor.extract(item["query"])
+        except Exception as exc:  # keep the 100-query run resumable
+            items[query_id] = {
+                **base,
+                "parse_error": f"{type(exc).__name__}: {exc}",
+                "parsed_at": _now(),
+            }
+            state["updated_at"] = _now()
+            _write_json(constraints_path, state)
+            print(f"[{index}/{len(queries)}] {query_id}: PARSE_ERROR: {exc}")
+            continue
+
+        items[query_id] = {
+            **base,
             "constraints": constraints.model_dump(),
+            "parse_error": None,
             "parsed_at": _now(),
         }
         state["updated_at"] = _now()
@@ -173,9 +190,31 @@ def _build_outputs(
 
     for index, item in enumerate(queries, 1):
         query_id = item["id"]
-        parsed = constraint_state.get("items", {}).get(query_id)
-        if not parsed:
+        parsed = constraint_state.get("items", {}).get(query_id, {})
+        if not parsed.get("constraints"):
+            error = parsed.get("parse_error") or "No structured constraints were produced."
+            report_items.append(
+                {
+                    "id": query_id,
+                    "query": item["query"],
+                    "metadata": parsed.get("metadata", {}),
+                    "auto_status": "PARSE_ERROR",
+                    "auto_reason": error,
+                    "match_count": 0,
+                    "matches": [],
+                }
+            )
+            auto_labels[query_id] = {
+                "label_status": "AUTO",
+                "expected_status": None,
+                "acceptable_ld_ids": [],
+                "human_comment": "",
+                "auto_status": "PARSE_ERROR",
+                "auto_reason": error,
+            }
+            print(f"[{index}/{len(queries)}] {query_id}: PARSE_ERROR")
             continue
+
         constraints = QueryConstraints.model_validate(parsed["constraints"])
         matches = matching_products(products, constraints)
         auto_status, reason, expected_status = _auto_decision(
@@ -219,6 +258,7 @@ def _build_outputs(
             "working_medium": "exact when specified; otherwise any",
             "product_type": "exact",
             "valve_type": "exact; ball valve defaults to standard when special type is not requested",
+            "valve_designation": "exact normalized code/model when explicitly specified",
             "body_material": "exact family; grade exact when specified; otherwise any",
             "bore_type": "exact when specified; otherwise any",
             "control": "exact when specified; otherwise any",
