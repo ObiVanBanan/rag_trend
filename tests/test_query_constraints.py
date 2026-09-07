@@ -88,6 +88,12 @@ def test_working_medium_only_restricts_when_query_specifies_it():
 
 def test_material_family_and_grade_are_exact_when_specified():
     steel20 = product()
+    steel20l = product(
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20Л"]},
+        ]
+    )
     assert evaluate_product(steel20, constraints(body_material=None)).matches is True
     assert evaluate_product(steel20, constraints(body_material="steel")).matches is True
     assert evaluate_product(
@@ -97,6 +103,10 @@ def test_material_family_and_grade_are_exact_when_specified():
     assert evaluate_product(
         steel20,
         constraints(body_material="steel", body_material_grade="09Г2С"),
+    ).matches is False
+    assert evaluate_product(
+        steel20l,
+        constraints(body_material="steel", body_material_grade="20"),
     ).matches is False
 
 
@@ -132,8 +142,10 @@ def test_regula_is_not_standard_ball_valve():
 
 def test_exact_valve_designation_is_required_when_present_in_query():
     kshcf = product(name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа")
+    kshcfe = product(name="Кран шаровый LD КШЦФЭ из стали 20 Ду200 Ру1,6МПа под электропривод")
     other = product(name="Кран шаровый LD КШЦП из стали 20 Ду200 Ру1,6МПа")
     assert evaluate_product(kshcf, constraints(valve_designation="КШЦФ")).matches is True
+    assert evaluate_product(kshcfe, constraints(valve_designation="КШЦФ")).matches is False
     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
 
 
