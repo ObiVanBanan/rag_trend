@@ -9,7 +9,7 @@ def has_overlap(actual_ids, acceptable_ids) -> bool:
     return bool(_id_set(actual_ids) & _id_set(acceptable_ids))
 
 
-def recall_at_20(results: list[dict], top_key: str) -> float | None:
+def recall_at_k(results: list[dict], top_key: str, k: int) -> float | None:
     matched = [
         item
         for item in results
@@ -19,10 +19,14 @@ def recall_at_20(results: list[dict], top_key: str) -> float | None:
         return None
     hits = 0
     for item in matched:
-        actual_ids = [candidate["ld_id"] for candidate in item[top_key][:20]]
+        actual_ids = [candidate["ld_id"] for candidate in item[top_key][:k]]
         if has_overlap(actual_ids, item["acceptable_ld_ids"]):
             hits += 1
     return hits / len(matched)
+
+
+def recall_at_20(results: list[dict], top_key: str) -> float | None:
+    return recall_at_k(results, top_key, 20)
 
 
 def reranker_accuracy(results: list[dict]) -> float | None:
@@ -37,6 +41,43 @@ def reranker_accuracy(results: list[dict]) -> float | None:
         elif item["deepseek_status"] == "NOT_FOUND":
             hits += 1
     return hits / len(verified)
+
+
+def final_selection_accuracy(results: list[dict]) -> float | None:
+    return reranker_accuracy(results)
+
+
+def _verified_count(results: list[dict], expected_status: str | None = None) -> int:
+    return sum(
+        1
+        for item in results
+        if item["label_status"] == "VERIFIED"
+        and (expected_status is None or item["expected_status"] == expected_status)
+    )
+
+
+def wrong_not_found_rate(results: list[dict]) -> float | None:
+    total = _verified_count(results, "MATCHED")
+    if not total:
+        return None
+    misses = sum(1 for item in results if item.get("error_type") == "WRONG_NOT_FOUND")
+    return misses / total
+
+
+def false_match_rate(results: list[dict]) -> float | None:
+    total = _verified_count(results, "NOT_FOUND")
+    if not total:
+        return None
+    false_matches = sum(1 for item in results if item.get("error_type") == "FALSE_MATCH")
+    return false_matches / total
+
+
+def wrong_product_selection_rate(results: list[dict]) -> float | None:
+    total = _verified_count(results, "MATCHED")
+    if not total:
+        return None
+    wrong = sum(1 for item in results if item.get("error_type") == "WRONG_LLM_SELECTION")
+    return wrong / total
 
 
 def reranker_accuracy_given_hybrid_hit(results: list[dict]) -> float | None:
@@ -70,8 +111,8 @@ def classify_error_type(
         if deepseek_status == "RERANK_FAILED":
             return "RERANKER_ERROR"
         if not reranker_success:
-            return "RERANKER_FAIL"
+            return "WRONG_NOT_FOUND" if deepseek_status == "NOT_FOUND" else "WRONG_LLM_SELECTION"
         return "OK"
     if deepseek_status == "RERANK_FAILED":
         return "RERANKER_ERROR"
-    return "CORRECT_NOT_FOUND" if deepseek_status == "NOT_FOUND" else "WRONG_NOT_FOUND"
+    return "CORRECT_NOT_FOUND" if deepseek_status == "NOT_FOUND" else "FALSE_MATCH"

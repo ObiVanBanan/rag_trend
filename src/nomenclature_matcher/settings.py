@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     deepseek_base_url: str = "https://api.deepseek.com/v1"
     deepseek_model: str = "deepseek-v4-flash"
     deepseek_timeout_seconds: float = 20
+    reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
     hybrid_dense_limit: int = 50
     hybrid_bm25_limit: int = 50
     hybrid_rerank_limit: int = 20

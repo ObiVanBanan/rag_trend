@@ -11,8 +11,10 @@ class FakeCompletions:
     def __init__(self, content=None, error=None):
         self.content = content
         self.error = error
+        self.calls = []
 
     def create(self, **kwargs):
+        self.calls.append(kwargs)
         if self.error:
             raise self.error
         return SimpleNamespace(
@@ -22,7 +24,8 @@ class FakeCompletions:
 
 class FakeClient:
     def __init__(self, content=None, error=None):
-        self.chat = SimpleNamespace(completions=FakeCompletions(content=content, error=error))
+        self.completions = FakeCompletions(content=content, error=error)
+        self.chat = SimpleNamespace(completions=self.completions)
 
 
 def settings():
@@ -104,3 +107,15 @@ def test_build_prompt_includes_hybrid_retrieval_signals():
     assert "bm25_rank: 1" in prompt
     assert "rrf_score: 0.031250" in prompt
     assert "retrieval_sources: dense, bm25" in prompt
+
+
+def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+    prompt = tmp_path / "system.md"
+    prompt.write_text("custom system prompt", encoding="utf-8")
+    custom_settings = settings()
+    custom_settings.reranker_system_prompt_path = str(prompt)
+    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
+    reranker = DeepSeekReranker(custom_settings, client=client)
+    reranker.rerank("query", candidates())
+    messages = client.completions.calls[0]["messages"]
+    assert messages[0] == {"role": "system", "content": "custom system prompt"}

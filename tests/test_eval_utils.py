@@ -1,9 +1,14 @@
 from nomenclature_matcher.eval_utils import (
     classify_error_type,
+    false_match_rate,
+    final_selection_accuracy,
     has_overlap,
+    recall_at_k,
     recall_at_20,
     reranker_accuracy,
     reranker_accuracy_given_hybrid_hit,
+    wrong_not_found_rate,
+    wrong_product_selection_rate,
 )
 
 
@@ -24,6 +29,7 @@ def test_recall_at_20_uses_only_matched_queries():
     ]
 
     assert recall_at_20(results, "dense_top20") == 1.0
+    assert recall_at_k(results, "dense_top20", 1) == 1.0
 
 
 def test_has_overlap_accepts_any_acceptable_id():
@@ -140,7 +146,7 @@ def test_classify_error_types():
             reranker_success=False,
             deepseek_status="MATCHED",
         )
-        == "RERANKER_FAIL"
+        == "WRONG_LLM_SELECTION"
     )
     assert (
         classify_error_type(
@@ -176,7 +182,7 @@ def test_classify_error_types():
             reranker_success=False,
             deepseek_status="MATCHED",
         )
-        == "WRONG_NOT_FOUND"
+        == "FALSE_MATCH"
     )
     assert (
         classify_error_type(
@@ -202,3 +208,36 @@ def test_classify_error_types():
         )
         == "UNREVIEWED"
     )
+
+
+def test_business_risk_rates_are_separate():
+    results = [
+        {
+            "label_status": "VERIFIED",
+            "expected_status": "MATCHED",
+            "acceptable_ld_ids": [1],
+            "deepseek_selected_ld_ids": [],
+            "deepseek_status": "NOT_FOUND",
+            "error_type": "WRONG_NOT_FOUND",
+        },
+        {
+            "label_status": "VERIFIED",
+            "expected_status": "MATCHED",
+            "acceptable_ld_ids": [2],
+            "deepseek_selected_ld_ids": [3],
+            "deepseek_status": "MATCHED",
+            "error_type": "WRONG_LLM_SELECTION",
+        },
+        {
+            "label_status": "VERIFIED",
+            "expected_status": "NOT_FOUND",
+            "acceptable_ld_ids": [],
+            "deepseek_selected_ld_ids": [9],
+            "deepseek_status": "MATCHED",
+            "error_type": "FALSE_MATCH",
+        },
+    ]
+    assert final_selection_accuracy(results) == 0.0
+    assert wrong_not_found_rate(results) == 0.5
+    assert wrong_product_selection_rate(results) == 0.5
+    assert false_match_rate(results) == 1.0

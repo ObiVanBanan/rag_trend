@@ -57,6 +57,16 @@ def test_not_found_cases_and_duplicate_queries():
     assert store.calls == 2
 
 
+def test_duplicate_queries_are_cached_after_normalization():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.9)])
+    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", " same ", "same"])
+    assert [r.status for r in results] == ["MATCHED", "MATCHED", "MATCHED"]
+    assert [r.query for r in results] == ["same", " same ", "same"]
+    assert len(embedder.calls) == 1
+    assert store.calls == 1
+
+
 def test_empty_qdrant_result():
     settings = SimpleNamespace(match_top_k=5, match_score_threshold=0)
     result = NomenclatureMatcher(Embedder(), Store([]), settings).match_one("query")
@@ -111,3 +121,19 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
     assert result.selected[0].bm25_score == 1.2
     assert result.selected[0].rrf_score == 0.03
     assert not hasattr(result.selected[0], "vector_score")
+
+
+def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+    results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+    assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
+    assert hybrid.calls == [("query", 20)]

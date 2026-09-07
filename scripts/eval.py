@@ -1,5 +1,6 @@
 import json
 import sys
+import argparse
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -10,16 +11,34 @@ from nomenclature_matcher.documents import load_products_from_csv
 from nomenclature_matcher.embeddings import OpenAIEmbedder
 from nomenclature_matcher.eval_utils import (
     classify_error_type,
+    false_match_rate,
+    final_selection_accuracy,
     has_overlap,
+    recall_at_k,
     recall_at_20,
     reranker_accuracy,
     reranker_accuracy_given_hybrid_hit,
+    wrong_not_found_rate,
+    wrong_product_selection_rate,
 )
+from nomenclature_matcher.experiments import create_experiment_record, settings_snapshot
 from nomenclature_matcher.hybrid_retriever import HybridRetriever
 from nomenclature_matcher.matcher import NomenclatureMatcher
 from nomenclature_matcher.qdrant_store import QdrantStore
 from nomenclature_matcher.reranker import DeepSeekReranker
 from nomenclature_matcher.settings import Settings
+
+
+ERROR_TYPES = [
+    "HYBRID_RETRIEVAL_FAIL",
+    "WRONG_NOT_FOUND",
+    "WRONG_LLM_SELECTION",
+    "FALSE_MATCH",
+    "RERANKER_ERROR",
+    "CORRECT_NOT_FOUND",
+    "UNREVIEWED",
+    "OK",
+]
 
 
 def _candidate_rows(candidates, score_field: str):
@@ -70,13 +89,28 @@ def _selected_rows(result):
     return rows
 
 
-def main():
-    root = Path(__file__).resolve().parents[1]
-    dataset_path = root / "data" / "eval_queries.json"
-    results_path = root / "data" / "eval_results.json"
-    labels_path = root / "data" / "eval_labels.json"
+def _build_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", default=None)
+    parser.add_argument("--labels", default=None)
+    parser.add_argument("--output", default=None)
+    parser.add_argument("--experiment-name", default=None)
+    parser.add_argument("--hypothesis", default="MVP baseline for hybrid retrieval, reranker, and LLM selection.")
+    parser.add_argument("--conclusion", default="Baseline measured; compare metrics before setting hard quality thresholds.")
+    parser.add_argument("--next-action", default="Review WRONG_NOT_FOUND, FALSE_MATCH, and retrieval miss examples.")
+    parser.add_argument("--csv", default=None)
+    return parser
 
-    products = load_products_from_csv(root / "ld_products_full_nomenclature.csv")
+
+def main():
+    args = _build_parser().parse_args()
+    root = Path(__file__).resolve().parents[1]
+    dataset_path = Path(args.dataset) if args.dataset else root / "data" / "eval_queries.json"
+    labels_path = Path(args.labels) if args.labels else root / "data" / "eval_labels.json"
+    results_path = Path(args.output) if args.output else root / "data" / "eval_results.json"
+    csv_path = Path(args.csv) if args.csv else root / "ld_products_full_nomenclature.csv"
+
+    products = load_products_from_csv(csv_path)
     settings = Settings()
     embedder = OpenAIEmbedder(settings)
     qdrant_store = QdrantStore(settings)
@@ -176,28 +210,50 @@ def main():
             for item in results
             if item["label_status"] == "VERIFIED" and item["expected_status"] == "NOT_FOUND"
         ),
+        "dense_recall_at_5": recall_at_k(results, "dense_top20", 5),
+        "bm25_recall_at_5": recall_at_k(results, "bm25_top20", 5),
+        "hybrid_recall_at_5": recall_at_k(results, "hybrid_top20", 5),
         "dense_recall_at_20": recall_at_20(results, "dense_top20"),
         "bm25_recall_at_20": recall_at_20(results, "bm25_top20"),
         "hybrid_recall_at_20": recall_at_20(results, "hybrid_top20"),
+        "final_selection_accuracy": final_selection_accuracy(results),
         "reranker_accuracy": reranker_accuracy(results),
         "reranker_accuracy_given_hybrid_hit": reranker_accuracy_given_hybrid_hit(results),
+        "wrong_not_found_rate": wrong_not_found_rate(results),
+        "false_match_rate": false_match_rate(results),
+        "wrong_product_selection_rate": wrong_product_selection_rate(results),
+        "primary_business_risk_metric": "wrong_not_found_rate",
+        "baseline_has_hard_quality_threshold": False,
         "error_counts": {},
     }
     for item in results:
         metrics["error_counts"][item["error_type"]] = metrics["error_counts"].get(item["error_type"], 0) + 1
 
-    results_path.write_text(
-        json.dumps(
-            {
-                "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-                "metrics": metrics,
-                "results": results,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+    output_payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "dataset_path": str(dataset_path),
+        "labels_path": str(labels_path),
+        "csv_path": str(csv_path),
+        "metrics": metrics,
+        "results": results,
+    }
+    if args.experiment_name:
+        prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+        run_dir = create_experiment_record(
+            root / "data" / "experiments",
+            args.experiment_name,
+            hypothesis=args.hypothesis,
+            dataset_path=dataset_path,
+            labels_path=labels_path,
+            configuration=settings_snapshot(settings, prompt_path=prompt_path),
+            metrics=metrics,
+            results=output_payload,
+            conclusion=args.conclusion,
+            next_action=args.next_action,
+        )
+        results_path = run_dir / "results.json"
+    else:
+        results_path.write_text(json.dumps(output_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"Saved eval results to {results_path}")
     print(f"Queries: {metrics['queries']}")
@@ -205,40 +261,20 @@ def main():
     print(f"Unreviewed: {metrics['unreviewed_queries']}")
     print(f"Expected MATCHED: {metrics['expected_matched']}")
     print(f"Expected NOT_FOUND: {metrics['expected_not_found']}")
-    print(
-        "Dense Recall@20: "
-        + ("n/a" if metrics["dense_recall_at_20"] is None else f"{metrics['dense_recall_at_20'] * 100:.1f}%")
-    )
-    print(
-        "BM25 Recall@20: "
-        + ("n/a" if metrics["bm25_recall_at_20"] is None else f"{metrics['bm25_recall_at_20'] * 100:.1f}%")
-    )
-    print(
-        "Hybrid Recall@20: "
-        + ("n/a" if metrics["hybrid_recall_at_20"] is None else f"{metrics['hybrid_recall_at_20'] * 100:.1f}%")
-    )
-    print(
-        "Reranker accuracy: "
-        + ("n/a" if metrics["reranker_accuracy"] is None else f"{metrics['reranker_accuracy'] * 100:.1f}%")
-    )
-    print(
-        "Reranker accuracy given retrieval hit: "
-        + (
-            "n/a"
-            if metrics["reranker_accuracy_given_hybrid_hit"] is None
-            else f"{metrics['reranker_accuracy_given_hybrid_hit'] * 100:.1f}%"
-        )
-    )
-    print("Errors:")
-    for error_type in [
-        "HYBRID_RETRIEVAL_FAIL",
-        "RERANKER_FAIL",
-        "RERANKER_ERROR",
-        "CORRECT_NOT_FOUND",
-        "WRONG_NOT_FOUND",
-        "UNREVIEWED",
-        "OK",
+    for label, key in [
+        ("Dense Recall@20", "dense_recall_at_20"),
+        ("BM25 Recall@20", "bm25_recall_at_20"),
+        ("Hybrid Recall@20", "hybrid_recall_at_20"),
+        ("Final selection accuracy", "final_selection_accuracy"),
+        ("Wrong NOT_FOUND rate", "wrong_not_found_rate"),
+        ("False match rate", "false_match_rate"),
+        ("Wrong product selection rate", "wrong_product_selection_rate"),
+        ("Reranker accuracy given retrieval hit", "reranker_accuracy_given_hybrid_hit"),
     ]:
+        value = metrics[key]
+        print(f"{label}: " + ("n/a" if value is None else f"{value * 100:.1f}%"))
+    print("Errors:")
+    for error_type in ERROR_TYPES:
         print(f"- {error_type}: {metrics['error_counts'].get(error_type, 0)}")
 
 

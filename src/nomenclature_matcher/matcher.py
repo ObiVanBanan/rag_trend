@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from .models import MatchResult, SearchCandidate, SelectedMatch
 
 
@@ -105,8 +107,23 @@ class NomenclatureMatcher:
         candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
         return self.rerank_candidates(query, candidates)
 
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
     def match_many(self, queries: list[str]) -> list[MatchResult]:
-        cache = {q: self.match_one(q) for q in dict.fromkeys(queries) if q.strip()}
-        return [cache.get(q, MatchResult(query=self._normalize_query(q), status="NOT_FOUND")) for q in queries]
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
 
     match = match_many

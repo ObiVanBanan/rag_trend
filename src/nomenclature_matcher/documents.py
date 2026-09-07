@@ -44,7 +44,7 @@ def _append_property_lines(parts: list[str], properties: list[dict[str, Any]], a
     for prop in properties:
         name = prop.get("name")
         values = prop.get("values", [])
-        if not name or name in {"GUID", "updated_at", "is_system"}:
+        if not name or prop.get("is_system") or name in {"GUID", "updated_at", "is_system"}:
             continue
         if allowed_names is not None and name not in allowed_names:
             continue

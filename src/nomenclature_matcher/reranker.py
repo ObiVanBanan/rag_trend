@@ -1,57 +1,34 @@
 import json
+from pathlib import Path
 
 from openai import OpenAI
 
 from .models import RerankedCandidate, RerankResult, SearchCandidate
 
-RERANKER_SYSTEM_PROMPT = """Ты выполняешь техническое сопоставление тендерной
-номенклатуры с товарами каталога.
+DEFAULT_RERANKER_SYSTEM_PROMPT_PATH = (
+    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+)
 
-Тебе дан исходный запрос и список товаров-кандидатов,
-уже найденных поисковой системой.
 
-Твоя задача — выбрать наиболее подходящий товар
-или несколько товаров.
-
-Правила:
-
-1. Не придумывай характеристики, которых нет в запросе
-или описании товара.
-
-2. Сначала учитывай тип изделия.
-
-3. Учитывай DN, PN, тип присоединения, материал,
-исполнение, назначение и другие характеристики,
-если они указаны.
-
-4. Дополнительная специализация товара не является
-преимуществом, если пользователь её не запросил.
-
-Например:
-- подземное исполнение;
-- ПЭ патрубки;
-- продувочные свечи;
-- специальный привод;
-- специальное климатическое исполнение;
-- нестандартное назначение.
-
-Если запрос обычный, предпочитай обычное исполнение
-специализированному при прочих равных.
-
-5. Dense score, BM25 score, ranks и RRF — только вспомогательные сигналы.
-
-6. Если ни один кандидат достаточно не соответствует
-запросу, верни NOT_FOUND.
-
-7. Не выбирай кандидатов, которых нет во входном списке.
-
-Ответь только JSON без markdown.
-"""
+def load_system_prompt(path: str | Path | None = None) -> str:
+    prompt_path = Path(path) if path else DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    if not prompt_path.is_absolute():
+        cwd_path = Path.cwd() / prompt_path
+        package_path = Path(__file__).resolve().parent / prompt_path
+        if cwd_path.exists():
+            prompt_path = cwd_path
+        elif package_path.exists():
+            prompt_path = package_path
+        else:
+            prompt_path = DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    return prompt_path.read_text(encoding="utf-8").strip()
 
 
 class DeepSeekReranker:
     def __init__(self, settings, client=None):
         self.settings = settings
+        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+        self.system_prompt = load_system_prompt(self.system_prompt_path)
         self.client = client or OpenAI(
             api_key=settings.deepseek_api_key,
             base_url=settings.deepseek_base_url,
@@ -65,7 +42,7 @@ class DeepSeekReranker:
             response_format={"type": "json_object"},
             extra_body={"thinking": {"type": "disabled"}},
             messages=[
-                {"role": "system", "content": RERANKER_SYSTEM_PROMPT},
+                {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": self._build_prompt(query, candidates)},
             ],
         )
