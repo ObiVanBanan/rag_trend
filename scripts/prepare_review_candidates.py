@@ -56,6 +56,17 @@ def _query_items(payload: Any) -> list[dict[str, Any]]:
     return result
 
 
+def _query_metadata(item: dict[str, Any]) -> dict[str, Any]:
+    """Return one flat metadata object for both old and new query schemas."""
+
+    nested = item.get("metadata")
+    metadata = dict(nested) if isinstance(nested, dict) else {}
+    for key, value in item.items():
+        if key not in {"id", "query", "metadata"}:
+            metadata[key] = value
+    return metadata
+
+
 def main() -> int:
     args = _build_parser().parse_args()
     queries_path = Path(args.queries)
@@ -108,16 +119,11 @@ def main() -> int:
             hybrid,
             max_per_source=args.top_k,
         )
-        metadata = {
-            key: value
-            for key, value in item.items()
-            if key not in {"id", "query"}
-        }
         report["queries"].append(
             {
                 "id": item["id"],
                 "query": query,
-                "metadata": metadata,
+                "metadata": _query_metadata(item),
                 "candidates": merged,
             }
         )
