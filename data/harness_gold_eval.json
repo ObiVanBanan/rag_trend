@@ -1,0 +1,459 @@
+{
+  "generated_at": "2026-09-08T14:00:07.073387Z",
+  "dataset": "/workspaces/ML-Cancer-Data/data/harness_gold.json",
+  "summary": {
+    "evaluated": 19,
+    "hard_gate_cases": 19,
+    "core_cases": 14,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8421052631578947,
+    "core_pass_rate": 0.7857142857142857,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.0,
+    "known_positive_hit_rate": 0.75,
+    "verdict_counts": {
+      "PASS": 16,
+      "FAIL_WRONG_PRODUCT": 3
+    }
+  },
+  "threshold_failures": [],
+  "results": [
+    {
+      "id": "gold_q001",
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1930,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "50 == 50",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'standard' == 'standard'",
+          "body_material": "'steel' == 'steel'",
+          "bore_type": "'full' == 'full'",
+          "control": "'manual' == 'manual'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q002",
+      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15870,
+      "known_positive_eligible": true,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "80 == 80",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'standard' == 'standard'",
+          "body_material": "'steel' == 'steel'",
+          "body_material_grade": "exact '20' in 'Сталь 20'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q003",
+      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 16201,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "100 == 100",
+          "pn": "2.5 >= 2.5 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'standard' == 'standard'",
+          "body_material": "'steel' == 'steel'",
+          "body_material_grade": "exact '20' in 'Сталь 20'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q004",
+      "query": "Кран шаровой Ду150 Ру16 фланцевый с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 2742,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "150 == 150",
+          "pn": "2.5 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'standard' == 'standard'",
+          "control": "'gearbox' == 'gearbox'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q005",
+      "query": "Кран шаровый стальной DN200 PN16 полнопроходной фл/фл",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1251,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "200 == 200",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'standard' == 'standard'",
+          "body_material": "'steel' == 'steel'",
+          "bore_type": "'full' == 'full'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q007",
+      "query": "Кран шаровый КШЦФ 100.025 из стали 20 ручной",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15639,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "100 == 100",
+          "pn": "2.5 >= 2.5 MPa",
+          "valve_type": "'standard' == 'standard'",
+          "valve_designation": "exact normalized 'КШЦФ': True",
+          "body_material": "'steel' == 'steel'",
+          "body_material_grade": "exact '20' in 'Сталь 20'",
+          "control": "'manual' == 'manual'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q021",
+      "query": "Кран шаровой под приварку Ду50 Ру40 сталь 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15253,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "50 == 50",
+          "pn": "4.0 >= 4.0 MPa",
+          "joining_type": "'welded' == 'welded'",
+          "valve_type": "'standard' == 'standard'",
+          "body_material": "'steel' == 'steel'",
+          "body_material_grade": "exact '20' in 'Сталь 20'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q022",
+      "query": "Кран шаровый сварной WW DN100 PN25",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 19270,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "FAIL",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "100 == 100",
+          "pn": "2.5 >= 2.5 MPa",
+          "joining_type": "'welded' == 'welded'",
+          "valve_type": "'underground' == 'standard'"
+        },
+        "unknown_fields": [],
+        "failed_fields": [
+          "valve_type"
+        ]
+      }
+    },
+    {
+      "id": "gold_q026",
+      "query": "Кран шаровой фланцевый DN50 PN16 под электропривод",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 17700,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "FAIL",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "50 == 50",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'underground' == 'standard'",
+          "control": "None == 'electric_ready'"
+        },
+        "unknown_fields": [
+          "control"
+        ],
+        "failed_fields": [
+          "valve_type"
+        ]
+      }
+    },
+    {
+      "id": "gold_q027",
+      "query": "Кран шаровой Ду80 Ру16 с электроприводом",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 18787,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "FAIL",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "80 == 80",
+          "pn": "1.6 >= 1.6 MPa",
+          "valve_type": "'standard' == 'standard'",
+          "control": "'electric_ready' == 'electric'"
+        },
+        "unknown_fields": [],
+        "failed_fields": [
+          "control"
+        ]
+      }
+    },
+    {
+      "id": "gold_q033",
+      "query": "Затвор дисковый Ду200 Ру16 с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1545,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'butterfly_valve' == 'butterfly_valve'",
+          "dn": "200 == 200",
+          "pn": "1.6 >= 1.6 MPa",
+          "control": "'gearbox' == 'gearbox'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q043",
+      "query": "Затвор дисковый фланцевый Ду300 Ру16",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1206,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'butterfly_valve' == 'butterfly_valve'",
+          "dn": "300 == 300",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q064",
+      "query": "Фильтр сетчатый фланцевый Ду80 Ру16",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 18827,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'filter' == 'filter'",
+          "dn": "80 == 80",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q066",
+      "query": "Фильтр грязевик DN100 PN16 фланцевый",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 3792,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'filter' == 'filter'",
+          "dn": "100 == 100",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q096",
+      "query": "Насос центробежный 5,5 кВт 380В производительность 25 м3/ч",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "actual_status": "NOT_FOUND",
+      "returned_ld_id": null,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Explicit negative correctly returned NOT_FOUND."
+    },
+    {
+      "id": "gold_q097",
+      "query": "Подшипник 6205 2RS",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "actual_status": "NOT_FOUND",
+      "returned_ld_id": null,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Explicit negative correctly returned NOT_FOUND."
+    },
+    {
+      "id": "gold_q098",
+      "query": "Кабель ВВГнг-LS 3х2,5 мм2",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "actual_status": "NOT_FOUND",
+      "returned_ld_id": null,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Explicit negative correctly returned NOT_FOUND."
+    },
+    {
+      "id": "gold_q099",
+      "query": "Болт М16х60 оцинкованный класс 8.8",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "actual_status": "NOT_FOUND",
+      "returned_ld_id": null,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Explicit negative correctly returned NOT_FOUND."
+    },
+    {
+      "id": "gold_q100",
+      "query": "Теплообменник пластинчатый 500 кВт",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "actual_status": "NOT_FOUND",
+      "returned_ld_id": null,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "verdict": "PASS",
+      "reason": "Explicit negative correctly returned NOT_FOUND."
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "generated_at": "2026-09-08T13:56:19.438244Z",
+  "purpose": "Constraint-based GOLD for automated RAG harness evaluation hooks.",
+  "semantics": {
+    "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
+    "core": "Hard-gate MATCHED cases with deterministic requirements and catalog existence evidence.",
+    "negative": "Hard-gate explicit NOT_FOUND cases.",
+    "extended": "Diagnostic-only cases with ambiguity, unsupported constraints, or unproven catalog existence.",
+    "pn": "candidate PN must be >= query pn_min_mpa"
+  },
+  "source_paths": {
+    "queries": "/workspaces/ML-Cancer-Data/data/golden_queries_100.json",
+    "constraints": "/workspaces/ML-Cancer-Data/data/golden_100_query_constraints.json",
+    "labels": "/workspaces/ML-Cancer-Data/data/golden_100_labels.json",
+    "auto_report": "/workspaces/ML-Cancer-Data/data/golden_100_auto_label_report.json"
+  },
+  "summary": {
+    "total": 5,
+    "CORE": 0,
+    "NEGATIVE": 5,
+    "EXTENDED": 0,
+    "hard_gate": 5
+  },
+  "cases": [
+    {
+      "id": "gold_q096",
+      "query": "Насос центробежный 5,5 кВт 380В производительность 25 м3/ч",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "requirements": {},
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "SYNTHETIC_NEGATIVE",
+      "metadata": {
+        "category": "hard_negative",
+        "difficulty": "negative",
+        "tags": [
+          "pump"
+        ]
+      },
+      "notes": "Explicit out-of-scope negative. A MATCHED production answer is a false match."
+    },
+    {
+      "id": "gold_q097",
+      "query": "Подшипник 6205 2RS",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "requirements": {},
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "SYNTHETIC_NEGATIVE",
+      "metadata": {
+        "category": "hard_negative",
+        "difficulty": "negative",
+        "tags": [
+          "bearing"
+        ]
+      },
+      "notes": "Explicit out-of-scope negative. A MATCHED production answer is a false match."
+    },
+    {
+      "id": "gold_q098",
+      "query": "Кабель ВВГнг-LS 3х2,5 мм2",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "requirements": {},
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "SYNTHETIC_NEGATIVE",
+      "metadata": {
+        "category": "hard_negative",
+        "difficulty": "negative",
+        "tags": [
+          "cable"
+        ]
+      },
+      "notes": "Explicit out-of-scope negative. A MATCHED production answer is a false match."
+    },
+    {
+      "id": "gold_q099",
+      "query": "Болт М16х60 оцинкованный класс 8.8",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "requirements": {},
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "SYNTHETIC_NEGATIVE",
+      "metadata": {
+        "category": "hard_negative",
+        "difficulty": "negative",
+        "tags": [
+          "fastener"
+        ]
+      },
+      "notes": "Explicit out-of-scope negative. A MATCHED production answer is a false match."
+    },
+    {
+      "id": "gold_q100",
+      "query": "Теплообменник пластинчатый 500 кВт",
+      "split": "NEGATIVE",
+      "hard_gate": true,
+      "expected_status": "NOT_FOUND",
+      "requirements": {},
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "SYNTHETIC_NEGATIVE",
+      "metadata": {
+        "category": "hard_negative",
+        "difficulty": "negative",
+        "tags": [
+          "heat_exchanger"
+        ]
+      },
+      "notes": "Explicit out-of-scope negative. A MATCHED production answer is a false match."
+    }
+  ]
+}

@@ -1,0 +1,491 @@
+{
+  "version": 1,
+  "generated_at": "2026-09-08T13:56:19.437574Z",
+  "purpose": "Constraint-based GOLD for automated RAG harness evaluation hooks.",
+  "semantics": {
+    "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
+    "core": "Hard-gate MATCHED cases with deterministic requirements and catalog existence evidence.",
+    "negative": "Hard-gate explicit NOT_FOUND cases.",
+    "extended": "Diagnostic-only cases with ambiguity, unsupported constraints, or unproven catalog existence.",
+    "pn": "candidate PN must be >= query pn_min_mpa"
+  },
+  "source_paths": {
+    "queries": "/workspaces/ML-Cancer-Data/data/golden_queries_100.json",
+    "constraints": "/workspaces/ML-Cancer-Data/data/golden_100_query_constraints.json",
+    "labels": "/workspaces/ML-Cancer-Data/data/golden_100_labels.json",
+    "auto_report": "/workspaces/ML-Cancer-Data/data/golden_100_auto_label_report.json"
+  },
+  "summary": {
+    "total": 14,
+    "CORE": 14,
+    "NEGATIVE": 0,
+    "EXTENDED": 0,
+    "hard_gate": 14
+  },
+  "cases": [
+    {
+      "id": "gold_q001",
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual"
+      },
+      "known_positive_ids": [
+        1930,
+        2836,
+        14879,
+        15905,
+        15917,
+        16801,
+        19039
+      ],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "easy",
+        "tags": [
+          "steel",
+          "flanged",
+          "dn",
+          "pn"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 44,
+      "strict_catalog_unknown_count": 33
+    },
+    {
+      "id": "gold_q002",
+      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 80,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "body_material_grade": "20"
+      },
+      "known_positive_ids": [
+        1050,
+        1678
+      ],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "easy",
+        "tags": [
+          "steel",
+          "flanged",
+          "brand_ld"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 50,
+      "strict_catalog_unknown_count": 3
+    },
+    {
+      "id": "gold_q003",
+      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 100,
+        "pn_min_mpa": 2.5,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "body_material_grade": "20"
+      },
+      "known_positive_ids": [
+        15608,
+        15639,
+        16201,
+        17085
+      ],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "steel",
+          "flanged",
+          "dn",
+          "pn",
+          "material"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 16,
+      "strict_catalog_unknown_count": 0
+    },
+    {
+      "id": "gold_q004",
+      "query": "Кран шаровой Ду150 Ру16 фланцевый с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 150,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "control": "gearbox"
+      },
+      "known_positive_ids": [
+        917,
+        1078,
+        1268,
+        2244,
+        2253,
+        2646,
+        2742,
+        2983,
+        3798,
+        4339,
+        15212,
+        15495,
+        15504,
+        15723,
+        15904,
+        16173,
+        16269,
+        16497,
+        17037,
+        17058,
+        17125,
+        17160,
+        17297,
+        17365,
+        17623,
+        18696,
+        19378,
+        19484
+      ],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "flanged",
+          "gearbox"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 30,
+      "strict_catalog_unknown_count": 9
+    },
+    {
+      "id": "gold_q005",
+      "query": "Кран шаровый стальной DN200 PN16 полнопроходной фл/фл",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 200,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "abbreviation",
+          "flanged"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 37,
+      "strict_catalog_unknown_count": 43
+    },
+    {
+      "id": "gold_q007",
+      "query": "Кран шаровый КШЦФ 100.025 из стали 20 ручной",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 100,
+        "pn_min_mpa": 2.5,
+        "valve_type": "standard",
+        "valve_designation": "КШЦФ",
+        "body_material": "steel",
+        "body_material_grade": "20",
+        "control": "manual"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "AUTO_RULE_V2",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "hard",
+        "tags": [
+          "model",
+          "compact_notation"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 8,
+      "strict_catalog_unknown_count": 0
+    },
+    {
+      "id": "gold_q021",
+      "query": "Кран шаровой под приварку Ду50 Ру40 сталь 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "pn_min_mpa": 4.0,
+        "joining_type": "welded",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "body_material_grade": "20"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "welded",
+          "steel"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 24,
+      "strict_catalog_unknown_count": 3
+    },
+    {
+      "id": "gold_q022",
+      "query": "Кран шаровый сварной WW DN100 PN25",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 100,
+        "pn_min_mpa": 2.5,
+        "joining_type": "welded",
+        "valve_type": "standard"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "welded",
+          "notation"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 42,
+      "strict_catalog_unknown_count": 5
+    },
+    {
+      "id": "gold_q026",
+      "query": "Кран шаровой фланцевый DN50 PN16 под электропривод",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "control": "electric_ready"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "actuator_ready",
+          "flanged"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 14,
+      "strict_catalog_unknown_count": 11
+    },
+    {
+      "id": "gold_q027",
+      "query": "Кран шаровой Ду80 Ру16 с электроприводом",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 80,
+        "pn_min_mpa": 1.6,
+        "valve_type": "standard",
+        "control": "electric"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "electric_actuator"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 10,
+      "strict_catalog_unknown_count": 15
+    },
+    {
+      "id": "gold_q033",
+      "query": "Затвор дисковый Ду200 Ру16 с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "butterfly_valve",
+        "dn": 200,
+        "pn_min_mpa": 1.6,
+        "control": "gearbox"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "butterfly_valve",
+        "difficulty": "medium",
+        "tags": [
+          "gearbox"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 17,
+      "strict_catalog_unknown_count": 1
+    },
+    {
+      "id": "gold_q043",
+      "query": "Затвор дисковый фланцевый Ду300 Ру16",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "butterfly_valve",
+        "dn": 300,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "butterfly_valve",
+        "difficulty": "hard",
+        "tags": [
+          "flanged_vs_wafer"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 23,
+      "strict_catalog_unknown_count": 1
+    },
+    {
+      "id": "gold_q064",
+      "query": "Фильтр сетчатый фланцевый Ду80 Ру16",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "filter",
+        "dn": 80,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "filter",
+        "difficulty": "easy",
+        "tags": [
+          "flanged"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 6,
+      "strict_catalog_unknown_count": 12
+    },
+    {
+      "id": "gold_q066",
+      "query": "Фильтр грязевик DN100 PN16 фланцевый",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "filter",
+        "dn": 100,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged"
+      },
+      "known_positive_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": null,
+      "metadata": {
+        "category": "filter",
+        "difficulty": "medium",
+        "tags": [
+          "synonym"
+        ]
+      },
+      "unsupported_constraints": [],
+      "parser_warnings": [],
+      "strict_catalog_pass_count": 6,
+      "strict_catalog_unknown_count": 41
+    }
+  ]
+}
