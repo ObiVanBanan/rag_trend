@@ -1,0 +1,505 @@
+{
+  "gold_q043": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1206
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q042": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q006": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q008": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      3247
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q009": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      5239
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q010": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q013": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q016": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q017": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q018": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      5208
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q019": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q020": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q022": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q023": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q031": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q032": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q034": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q035": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q036": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      847
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q037": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q038": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q039": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q040": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q041": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      14807
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q044": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q045": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q046": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q047": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q048": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q049": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q050": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q051": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q052": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q053": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q054": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q055": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q056": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q057": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q058": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q061": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q062": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q063": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q067": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q068": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      5370,
+      18248,
+      18472
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q071": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q072": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q073": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      251,
+      1603,
+      2626
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q075": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      19253,
+      19256
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q077": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      19311
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q080": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q081": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      2627,
+      4415,
+      18551
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q082": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      2576,
+      2626,
+      2627
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q083": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q084": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      19343
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q085": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      19343
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q086": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q087": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q088": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q090": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q091": {
+    "label_status": "RETRIEVAL_MISS",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [],
+    "human_comment": "No acceptable item in top-3 retrieval candidates."
+  },
+  "gold_q092": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      2058,
+      2104,
+      17587
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q093": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      16631
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  },
+  "gold_q094": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_REMAINING_TOP3",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      3641
+    ],
+    "human_comment": "",
+    "known_positive_ids_exhaustive": false
+  }
+}

@@ -1,0 +1,1265 @@
+{
+  "version": 1,
+  "queries": {
+    "gold_q006": {
+      "candidate_grades": {
+        "18783": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18785": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16910": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q008": {
+      "candidate_grades": {
+        "3798": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19267": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3247": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q009": {
+      "candidate_grades": {
+        "5239": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18672": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "9303": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q010": {
+      "candidate_grades": {
+        "3798": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3901": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15716": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q013": {
+      "candidate_grades": {
+        "17770": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17505": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2051": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q016": {
+      "candidate_grades": {
+        "18526": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17889": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17727": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q017": {
+      "candidate_grades": {
+        "12881": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19331": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "7762": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q018": {
+      "candidate_grades": {
+        "5208": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17862": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "706": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q019": {
+      "candidate_grades": {
+        "3798": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18673": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18399": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q020": {
+      "candidate_grades": {
+        "4568": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17508": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "7268": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q022": {
+      "candidate_grades": {
+        "13479": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19270": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q023": {
+      "candidate_grades": {
+        "4296": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19001": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18934": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q031": {
+      "candidate_grades": {
+        "4224": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18551": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5382": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q032": {
+      "candidate_grades": {
+        "4871": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18389": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q034": {
+      "candidate_grades": {
+        "18238": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17601": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q035": {
+      "candidate_grades": {
+        "5064": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18551": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5092": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q036": {
+      "candidate_grades": {
+        "14807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "847": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q037": {
+      "candidate_grades": {
+        "5275": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4404": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5181": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q038": {
+      "candidate_grades": {
+        "5092": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18777": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q039": {
+      "candidate_grades": {
+        "4433": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18842": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19490": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q040": {
+      "candidate_grades": {
+        "4419": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18842": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19489": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q041": {
+      "candidate_grades": {
+        "4260": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "14807": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q042": {
+      "candidate_grades": {
+        "19163": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5258": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q043": {
+      "candidate_grades": {
+        "4206": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "1206": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18352": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q044": {
+      "candidate_grades": {
+        "4415": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4433": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18543": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q045": {
+      "candidate_grades": {
+        "19084": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19085": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q046": {
+      "candidate_grades": {
+        "5432": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4425": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4418": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q047": {
+      "candidate_grades": {
+        "1804": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "276": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18348": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q048": {
+      "candidate_grades": {
+        "8018": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "8020": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q049": {
+      "candidate_grades": {
+        "12261": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5432": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "9207": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q050": {
+      "candidate_grades": {
+        "19366": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4412": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4431": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q051": {
+      "candidate_grades": {
+        "18742": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18828": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5361": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q052": {
+      "candidate_grades": {
+        "17846": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18401": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2378": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q053": {
+      "candidate_grades": {
+        "19254": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3790": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2781": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q054": {
+      "candidate_grades": {
+        "18460": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18459": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q055": {
+      "candidate_grades": {
+        "19378": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "14972": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18692": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q056": {
+      "candidate_grades": {
+        "4412": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17513": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4431": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q057": {
+      "candidate_grades": {
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3293": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q058": {
+      "candidate_grades": {
+        "17513": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17518": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18942": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q061": {
+      "candidate_grades": {
+        "15849": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17513": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "2543": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q062": {
+      "candidate_grades": {
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17513": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q063": {
+      "candidate_grades": {
+        "18232": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3825": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "760": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q067": {
+      "candidate_grades": {
+        "2058": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3817": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5969": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q068": {
+      "candidate_grades": {
+        "18472": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "5370": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18248": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q071": {
+      "candidate_grades": {
+        "18487": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19445": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "17909": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q072": {
+      "candidate_grades": {
+        "3293": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19313": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19236": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q073": {
+      "candidate_grades": {
+        "1603": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2626": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "251": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q075": {
+      "candidate_grades": {
+        "19256": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17693": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19253": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q077": {
+      "candidate_grades": {
+        "19030": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19311": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q080": {
+      "candidate_grades": {
+        "19315": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19313": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q081": {
+      "candidate_grades": {
+        "4415": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2627": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "18551": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q082": {
+      "candidate_grades": {
+        "2626": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2627": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2576": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q083": {
+      "candidate_grades": {
+        "13394": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "8843": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "11526": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q084": {
+      "candidate_grades": {
+        "3930": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19343": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "4021": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q085": {
+      "candidate_grades": {
+        "18838": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "19343": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "4435": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q086": {
+      "candidate_grades": {
+        "15442": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "13998": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "8018": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q087": {
+      "candidate_grades": {
+        "9303": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "14547": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "253": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q088": {
+      "candidate_grades": {
+        "18862": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5541": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5343": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q090": {
+      "candidate_grades": {
+        "16125": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18765": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15510": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q091": {
+      "candidate_grades": {
+        "4415": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18828": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5361": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "RETRIEVAL_MISS",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q092": {
+      "candidate_grades": {
+        "2104": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "17587": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "2058": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q093": {
+      "candidate_grades": {
+        "18604": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16631": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    },
+    "gold_q094": {
+      "candidate_grades": {
+        "18605": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "4395": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3641": {
+          "grade": "ACCEPT",
+          "comment": ""
+        }
+      },
+      "cursor": 2,
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true
+    }
+  }
+}
