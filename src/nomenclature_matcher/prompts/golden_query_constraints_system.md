@@ -17,7 +17,7 @@
   "valve_designation": "КШЦФ|null",
   "body_material": "steel|stainless_steel|brass|cast_iron|polyethylene|other|null",
   "body_material_grade": "20|null",
-  "bore_type": "full|reduced|null",
+  "bore_type": "full|standard|reduced|null",
   "control": "manual|gearbox|electric|electric_ready|pneumatic|null",
   "catalog_scope": "in_scope|out_of_scope|uncertain",
   "ambiguous": false,
@@ -37,10 +37,10 @@
 4. thread_type только если направление резьбы явно дано: ВР/ВР -> female_female; НР/ВР или ВР/НР -> male_female; НР/НР -> male_male.
 5. working_medium только если среда явно написана. Иначе null.
 6. product_type: кран шаровой -> ball_valve; затвор дисковый/поворотный -> butterfly_valve; задвижка -> gate_valve; клапан обратный -> check_valve; фильтр -> filter; фланец -> flange; электропривод/пневмопривод -> actuator; ручной редуктор -> gearbox; ремкомплект/сменная сетка/запчасть -> repair_kit; комплект ответных фланцев/комплектующие -> accessory. Явно посторонние товары (насос, кабель, подшипник, болт, теплообменник) -> other + catalog_scope=out_of_scope.
-7. valve_type только для шаровых кранов. Подземный -> underground; регулирующий/Regula -> regulating; специальный газовый -> gas; криогенный -> cryogenic; если это ball_valve и специальное исполнение не указано -> standard.
+7. valve_type только для шаровых кранов. Подземный -> underground; регулирующий/Regula -> regulating; специальный газовый -> gas; криогенный -> cryogenic; если это ball_valve и специальное исполнение клапана не указано -> standard. Не путай valve_type со способом прохода.
 8. valve_designation — только точное LD-совместимое обозначение/код, явно написанное в запросе: например 11с39п, 11б27п1, КШЦФ, КШЦП, КШ.Ф.050.080-02. Не расшифровывай код. Если это модель конкурента/референс (`JiP-R`, `Danfoss`, `Гранвэл`, `AUMA`, `AOX`) или запрос содержит `аналог/эквивалент`, клади такую модель в reference_model, а не в valve_designation.
 9. body_material только если материал явно написан словами/маркой: стальной/сталь -> steel; нержавеющий/AISI -> stainless_steel; латунь -> brass; чугун -> cast_iron; ПНД/полиэтилен -> polyethylene. Марку материала записывай в body_material_grade только если она явно присутствует рядом с материалом (`сталь 20`, `ст.09Г2С`). Не выводи материал из 30с41нж/19с53нж и подобных кодов.
-10. bore_type: полнопроходной -> full; редуцированный/неполнопроходной -> reduced; иначе null.
+10. bore_type описывает проход шарового крана: полнопроходной/полный проход -> full; стандартнопроходной/стандартный проход/`стандартное исполнение` для шарового крана -> standard; редуцированный/неполнопроходной -> reduced; иначе null. `standard` здесь НЕ означает valve_type.
 11. control: ручной/ручка/рукоятка -> manual; с редуктором -> gearbox; с электроприводом -> electric; под электропривод -> electric_ready; с пневмоприводом -> pneumatic; иначе null.
 12. catalog_scope=in_scope для арматуры/фланцев/приводов/комплектующих, которые разумно искать в LD; out_of_scope только для явно посторонних классов; uncertain если тип товара непонятен.
 13. ambiguous=true для слишком общего/противоречивого запроса (`Кран Ду50`, диапазон DN, два диаметра без однозначной трактовки).
