@@ -89,8 +89,9 @@ def _append_unsupported(
     value: str | int | float | bool | None,
     reason: str,
 ) -> None:
-    key = (name, str(value))
-    if any((row.name, str(row.value)) == key for row in rows):
+    # One logical unsupported requirement should appear only once in diagnostics,
+    # even when both DeepSeek and deterministic guards detect it with different text.
+    if any(row.name == name for row in rows):
         return
     rows.append(UnsupportedConstraint(name=name, value=value, reason=reason))
 
@@ -99,7 +100,7 @@ def _material_is_explicit(query: str) -> bool:
     value = _norm(query)
     return bool(
         re.search(
-            r"(?:\bсталь\b|\bстальной\w*\b|\bст\.\s*(?:20|09г2с)|09г2с|"
+            r"(?:\bстал(?:ь|и|ьн\w*)\b|\bст\.\s*(?:20|09г2с)|09г2с|"
             r"\bлатун\w*\b|\bчугун\w*\b|\bнерж\w*\b|\baisi\s*\d+|"
             r"\bпнд\b|полиэтилен)",
             value,
@@ -147,16 +148,22 @@ def _detect_unmodeled_requirements(
         if model:
             _append_unsupported(rows, "drive_model", model.group(0), "drive model/series is not modeled")
 
-    if re.search(r"\b(?:dn|ду|д)\s*\d+\s*/\s*\d+", value):
+    diameter_pair = re.search(r"\b(?:dn|ду|д)\s*\d+\s*/\s*\d+", value)
+    if diameter_pair:
         _append_unsupported(
             rows,
             "secondary_diameter_or_reduced_bore",
-            re.search(r"\b(?:dn|ду|д)\s*\d+\s*/\s*\d+", value).group(0),
+            diameter_pair.group(0),
             "two diameters need explicit domain interpretation",
         )
 
     if re.search(r"\b\d+\s*[-–]\s*\d+\s*мм\b", value):
-        _append_unsupported(rows, "diameter_range", "range", "multi-DN query cannot produce one exact golden set")
+        _append_unsupported(
+            rows,
+            "diameter_range",
+            "range",
+            "multi-DN query cannot produce one exact golden set",
+        )
 
     if constraints.dn is None:
         inch = re.search(r"\b(?:1/2|3/4|1\s+1/4|1\s+1/2|2)\s*(?:\"|дюйм)?", value)
@@ -173,6 +180,11 @@ def sanitize_golden_constraints(
     payload = constraints.model_dump()
     warnings = list(constraints.parser_warnings)
     unsupported = [UnsupportedConstraint.model_validate(row) for row in payload["unsupported_constraints"]]
+    # Collapse duplicate names that may already have been returned by the parser.
+    deduped: list[UnsupportedConstraint] = []
+    for row in unsupported:
+        _append_unsupported(deduped, row.name, row.value, row.reason)
+    unsupported = deduped
     value = _norm(query)
 
     if constraints.body_material is not None and not _material_is_explicit(query):
@@ -256,8 +268,17 @@ def evaluate_product_strict(
         elif actual != expected:
             failed.append(field)
 
+    # Product type is a coarse pre-filter, not an optional attribute. A product whose
+    # canonical type differs from the requested type (including `other`) cannot become
+    # UNKNOWN and poison the unresolved-candidate count for the whole catalog.
     actual_type = candidate_product_type(product)
-    exact("product_type", actual_type, constraints.product_type, unknown_values={None, "", "other"})
+    checks["product_type"] = f"{actual_type!r} == {constraints.product_type!r}"
+    if actual_type != constraints.product_type:
+        return GoldenMatchDecision(
+            status="FAIL",
+            checks=checks,
+            failed_fields=("product_type",),
+        )
 
     if constraints.dn is not None:
         exact("dn", candidate_dn(product), constraints.dn)
