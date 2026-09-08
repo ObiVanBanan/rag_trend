@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "corrections": {
+    "gold_q075": {
+      "label_status": "RETRIEVAL_MISS",
+      "label_source": "HUMAN_CORRECTION",
+      "expected_status": "MATCHED",
+      "acceptable_ld_ids": [],
+      "human_comment": "Manual correction after review: LD 19253 and 19256 are plain DN80 PN16 flanges, while the query requires mating/counter flanges supplied with fasteners and gaskets. No acceptable item remained in the reviewed top-3.",
+      "known_positive_ids_exhaustive": false,
+      "candidate_grade_overrides": {
+        "19253": "REJECT",
+        "19256": "REJECT"
+      }
+    }
+  }
+}
