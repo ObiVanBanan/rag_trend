@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "name": "Tender-50 v1",
+  "purpose": "Real tender nomenclature lines for expanding RAG golden/eval coverage. Exact source text is preserved; labels are not assigned yet.",
+  "selection_policy": {
+    "product_like": "Keep real product/nomenclature lines relevant to LD catalog, including noisy spacing, competitor models, PND variants, temperature/kit constraints, and generic low-information cases.",
+    "negative_or_mixed": "Keep a small set of service/work/system-bundle lines to test that product retrieval does not hallucinate a catalog match.",
+    "deduplication": "Avoid repeated identical tender rows and excessive quantity-only variants; preserve a few intentionally noisy variants."
+  },
+  "query_count": 50,
+  "queries": [
+    {
+      "id": "tender_v1_001",
+      "query": "дисковый затвор Ду80",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":2,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_002",
+      "query": "дисковый затвор Ду40",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":3,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_003",
+      "query": "дисковый затвор Ду50",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":4,"source_document":"ТЗ зам.RAR","quantity":9,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_004",
+      "query": "дисковый затвор Ду100",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":5,"source_document":"ТЗ зам.RAR","quantity":4,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_005",
+      "query": "дисковый затвор Ду32",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":10,"source_document":"ТЗ зам.RAR","quantity":3,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_006",
+      "query": "фильтр Ду50",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":6,"source_document":"ТЗ зам.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"filter","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_007",
+      "query": "фильтр Ду150",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":7,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"filter","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_008",
+      "query": "Фильтр (Ду40)",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":16,"source_document":"ТЗ зам.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"filter","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_009",
+      "query": "кран шаровый Ду150",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":8,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_010",
+      "query": "кран шаровый Ду25",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":9,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_011",
+      "query": "кран шаровый фланцевый Ду50",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":12,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_012",
+      "query": "кран шаровыйфланцевыйДу50",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":13,"source_document":"ТЗ зам.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product_noisy_spacing"}
+    },
+    {
+      "id": "tender_v1_013",
+      "query": "Ревизия запорно-регулирующей арматуры (задвижки, вентили, шаровые краны, обратные клапаны). Кран шаровой 11c67п — 4 шт., DN50.",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":11,"source_document":"ТЗ зам.RAR","quantity":4,"unit":"шт","extraction_confidence":0.9,"category":"ball_valve","review_intent":"mixed_service_product"}
+    },
+    {
+      "id": "tender_v1_014",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 15 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":470,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_015",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 20 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":495,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_016",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 25 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":471,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_017",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 32 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":540,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_018",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с22нж, номинальное давление PN 4,0 МПа, номинальный диаметр DN 40 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":486,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_019",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с22нж, номинальное давление PN 4,0 МПа, номинальный диаметр DN 50 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":509,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_020",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с22нж, номинальное давление PN 4,0 МПа, номинальный диаметр DN 80 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":518,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"shutoff_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_021",
+      "query": "Задвижки стальные",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":20,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":"шт","extraction_confidence":0.9,"category":"gate_valve","review_intent":"ambiguous_product"}
+    },
+    {
+      "id": "tender_v1_022",
+      "query": "Задвижка клиновая с выдвижным шпинделем 30с41нж, присоединение к трубопроводу фланцевое, номинальное давление 1,6 МПа, номинальный диаметр 100 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":2,"source_document":"ТЗ.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"gate_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_023",
+      "query": "Фланец стальной плоский приварной, марка стали 20, номинальное давление 1,6 МПа, номинальный диаметр 100 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":4,"source_document":"ТЗ.RAR","quantity":6,"unit":"шт","extraction_confidence":0.95,"category":"flange","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_024",
+      "query": "Кран шаровый 11Б27П ДУ15 РУ16",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":5,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_025",
+      "query": "Кран шаровый 11Б27П ДУ20 РУ16",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":7,"source_document":"ТЗ.RAR","quantity":4,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_026",
+      "query": "Кран шаровый 11Б27П ДУ50 РУ16",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":11,"source_document":"ТЗ.RAR","quantity":3,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_027",
+      "query": "Задвижка клиновая с выдвижным шпинделем фланцевая 30с41нж Ду150, 1,6 МПа,",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":9,"source_document":"ТЗ.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"gate_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_028",
+      "query": "Задвижка клиновая с выдвижным шпинделем фланцевая 30лс41нж Ду50 Ру16, 1,6 МПа,",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":12,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"gate_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_029",
+      "query": "Фланец воротниковый приварной в стык Ду 65 мм, ст. 09Г2С, Py 1,6 МПа",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":14,"source_document":"ТЗ.RAR","quantity":4,"unit":"Шт","extraction_confidence":1.0,"category":"flange","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_030",
+      "query": "Кран шаровый фланцевый Ду 50 h-90. LD ДУ 50/40 PN40 КШЦФ или аналог",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":15,"source_document":"ТЗ.RAR","quantity":4,"unit":"шт","extraction_confidence":0.9,"category":"ball_valve","review_intent":"product_analog"}
+    },
+    {
+      "id": "tender_v1_031",
+      "query": "Фланец воротниковый приварной встык Ду 80",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":16,"source_document":"ТЗ.RAR","quantity":8,"unit":"шт","extraction_confidence":0.95,"category":"flange","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_032",
+      "query": "Фланец стальной ду80мм. под втулку ПНД ду90мм.",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":19,"source_document":"ТЗ.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"flange","review_intent":"product_pnd"}
+    },
+    {
+      "id": "tender_v1_033",
+      "query": "Фланец стальной ду50мм. под втулку ПНД ду63мм.",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":20,"source_document":"ТЗ.RAR","quantity":10,"unit":"шт","extraction_confidence":0.95,"category":"flange","review_intent":"product_pnd"}
+    },
+    {
+      "id": "tender_v1_034",
+      "query": "Фланец стальной ду40мм. под втулку ПНД ду50мм.",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":21,"source_document":"ТЗ.RAR","quantity":3,"unit":"шт","extraction_confidence":0.95,"category":"flange","review_intent":"product_pnd"}
+    },
+    {
+      "id": "tender_v1_035",
+      "query": "Фланец стальной ду100мм. под втулку ПНД ду110мм.",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":35,"source_document":"ТЗ.RAR","quantity":3,"unit":"шт","extraction_confidence":0.95,"category":"flange","review_intent":"product_pnd"}
+    },
+    {
+      "id": "tender_v1_036",
+      "query": "Затвор поворотный дисковый Гранвел ЗПВС- Ду=100, Pу=16",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":23,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product_competitor"}
+    },
+    {
+      "id": "tender_v1_037",
+      "query": "Затвор поворотный дисковый Гранвэл ЗПВС-Ду=50, Pу=16",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":25,"source_document":"ТЗ.RAR","quantity":5,"unit":"шт","extraction_confidence":0.95,"category":"butterfly_valve","review_intent":"product_competitor"}
+    },
+    {
+      "id": "tender_v1_038",
+      "query": "Кран шаровой фланцевый стальной Ду80 Ру-16, в к-те (вода) стальной, в помещении",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":28,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_039",
+      "query": "Кран шаровой ПНД компрессионный Ду32Ру16, наружный (в колодце), компрессионный-обжимной",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":30,"source_document":"ТЗ.RAR","quantity":3,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product_pnd"}
+    },
+    {
+      "id": "tender_v1_040",
+      "query": "Кран шаровый латунный Ду25, НР-ВР, наружный (в колодце), наружная-внутренняя резьба",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":32,"source_document":"ТЗ.RAR","quantity":2,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_041",
+      "query": "Кран шаровый латунь 11б27п1 Ду20 вр/нр Ру40, в помещении, внутренняя/наружная резьба",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":34,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"ball_valve","review_intent":"product"}
+    },
+    {
+      "id": "tender_v1_042",
+      "query": "Задвижка клиновая фланцевая с выдвижным шпинделем d 108мм, Ру 16 МПа",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":41,"source_document":"ТЗ.RAR","quantity":8,"unit":"шт","extraction_confidence":0.9,"category":"gate_valve","review_intent":"product_weird_dn"}
+    },
+    {
+      "id": "tender_v1_043",
+      "query": "Кран стальной шаровой муфтовый 11с39п Ду 32 Ру25 рабочая температура -30+200С",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":42,"source_document":"ТЗ.RAR","quantity":6,"unit":"шт","extraction_confidence":0.9,"category":"ball_valve","review_intent":"product_temperature"}
+    },
+    {
+      "id": "tender_v1_044",
+      "query": "Кран шаровый фланцевый КШ.Ф.050.080-02 с ручным управлением с комплектом ответных фланцев, Ду 50, Ру 8 МПа",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":43,"source_document":"ТЗ.RAR","quantity":2,"unit":"шт","extraction_confidence":0.9,"category":"ball_valve","review_intent":"product_kit"}
+    },
+    {
+      "id": "tender_v1_045",
+      "query": "Чистка, промывка механических фильтров (грязевиков).",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123290_nomenclature.xlsx","source_row":18,"source_document":"ТЗ зам.RAR","quantity":1,"unit":"шт","extraction_confidence":0.9,"category":"service","review_intent":"service_negative"}
+    },
+    {
+      "id": "tender_v1_046",
+      "query": "Монтаж крана шарового ду80 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":27,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"service","review_intent":"service_negative"}
+    },
+    {
+      "id": "tender_v1_047",
+      "query": "Монтаж задвижки Ду 50мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":26,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"service","review_intent":"service_negative"}
+    },
+    {
+      "id": "tender_v1_048",
+      "query": "Монтаж затвора ду100 мм",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":22,"source_document":"ТЗ.RAR","quantity":1,"unit":"шт","extraction_confidence":0.95,"category":"service","review_intent":"service_negative"}
+    },
+    {
+      "id": "tender_v1_049",
+      "query": "Разработка грунта в траншеях и котлованах глубиной более 3 м вручную с подъемом краном при наличии креплений, группа грунтов 1-3",
+      "metadata": {"origin":"real_tender","source_file":"kontur_32616336697_nomenclature.xlsx","source_row":140,"source_document":"ZD_26VP1768.7z","quantity":null,"unit":null,"extraction_confidence":0.9,"category":"service","review_intent":"service_negative_false_keyword"}
+    },
+    {
+      "id": "tender_v1_050",
+      "query": "Монтаж газовой рампы Ду 50 (Блок клапанов, сервоприводов, регулятор давления газа, газовый фильтр)",
+      "metadata": {"origin":"real_tender","source_file":"kontur_AP123184_nomenclature (1).xlsx","source_row":10,"source_document":"ТЗ.RAR","quantity":1,"unit":"комп","extraction_confidence":0.9,"category":"system_bundle","review_intent":"complex_mixed_scope"}
+    }
+  ]
+}
