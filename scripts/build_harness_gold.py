@@ -12,7 +12,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from nomenclature_matcher.golden_rules import GoldenQueryConstraints, sanitize_golden_constraints
+from nomenclature_matcher.golden_rules import GoldenQueryConstraints
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -125,11 +125,12 @@ def _extended_reasons(
         reasons.append("parser_ambiguous")
     if constraints.parser_warnings:
         reasons.append("parser_warning")
-    if constraints.unsupported_constraints:
-        names = sorted({row.name for row in constraints.unsupported_constraints})
-        reasons.append("unsupported:" + ",".join(names))
+    for name in sorted({row.name for row in constraints.unsupported_constraints}):
+        reasons.append(f"unsupported:{name}")
     # A CORE MATCHED case needs evidence that at least one catalog product satisfies
     # the deterministic requirements. Zero strict PASS means existence is unproven.
+    # UNKNOWN candidates do not demote a case: known positive IDs are examples rather
+    # than an exhaustive list, and the hook evaluates only the product RAG returned.
     if int(report_item.get("pass_count") or 0) <= 0:
         reasons.append("no_strict_catalog_pass")
     return reasons
@@ -177,8 +178,11 @@ def _build_case(
         }
 
     try:
-        raw_constraints = GoldenQueryConstraints.model_validate(parsed["constraints"])
-        constraints = sanitize_golden_constraints(query, raw_constraints)
+        # The parser artifact is already sanitized when it is created. Re-running the
+        # sanitizer here makes the dataset builder depend on current text heuristics
+        # and can mutate a frozen parse (for example by adding drive_model warnings).
+        # A hook dataset builder must only validate and project the saved artifact.
+        constraints = GoldenQueryConstraints.model_validate(parsed["constraints"])
     except (ValidationError, ValueError) as exc:
         return {
             "id": query_id,
