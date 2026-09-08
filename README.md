@@ -154,6 +154,67 @@ python scripts/eval_harness_gold.py \
 
 При нарушении заданного threshold скрипт завершится с exit code `1`, что позволяет использовать его напрямую из lifecycle hook harness.
 
+## ChatGPT first-pass GOLD + human verify only positives
+
+Чтобы быстро расширить human GOLD без ручного просмотра всех retrieval-кандидатов, используется отдельный workflow:
+
+```text
+100 queries
+  -> retrieval candidate pool
+  -> ChatGPT first-pass ACCEPT / REJECT / UNSURE
+  -> человек видит только ChatGPT ACCEPT
+  -> CONFIRM превращается в VERIFIED human label
+```
+
+Подготовить компактные batch-файлы для ChatGPT:
+
+```bash
+python scripts/prepare_chatgpt_gold_batches.py
+```
+
+По умолчанию создаются 10 файлов по 10 запросов в:
+
+```text
+data/chatgpt_gold_batches/
+```
+
+Для каждого query сохраняются максимум 20 наиболее полезных retrieval-кандидатов и их технические свойства. Это важно: ChatGPT должен видеть не только название, но и `Тип прохода`, DN/PN, материал, присоединение, управление и другие заполненные свойства.
+
+После генерации batch-файлы нужно закоммитить и запушить. ChatGPT читает их в репозитории и создаёт:
+
+```text
+data/golden_100_chatgpt_accepts.json
+```
+
+Файл содержит только кандидатов, которые ChatGPT считает подходящими. AI `REJECT` человеку не показываются.
+
+Проверка только положительных ответов:
+
+```bash
+pip install -e ".[review]"
+streamlit run scripts/verify_chatgpt_gold_accepts.py
+```
+
+UI показывает один ChatGPT ACCEPT за раз и три действия:
+
+```text
+Подтвердить / Отклонить / Не уверен
+```
+
+Состояние проверки сохраняется в:
+
+```text
+data/golden_100_chatgpt_accepts_human_review.json
+```
+
+А подтверждённые человеком positives автоматически экспортируются в:
+
+```text
+data/golden_100_chatgpt_verified_labels.json
+```
+
+`HUMAN_VERIFIED_CHATGPT` — это сильный human label. Отсутствие ChatGPT ACCEPT или отклонение всех его кандидатов НЕ превращает query автоматически в `NOT_FOUND`: для negative ground truth нужна отдельная проверка.
+
 ## Golden dataset / manual annotation fallback
 
 При необходимости ручной проверки можно сгенерировать Dense + BM25 + Hybrid/RRF candidate pool:
