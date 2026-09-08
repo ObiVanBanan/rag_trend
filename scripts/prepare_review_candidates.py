@@ -5,6 +5,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -30,6 +31,31 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _query_items(payload: Any) -> list[dict[str, Any]]:
+    """Accept both the legacy top-level list and named query bundles.
+
+    Golden-100 is a JSON list. Real tender datasets keep provenance metadata next to
+    a `queries` list, so review preparation must support both without duplicating the
+    retrieval pipeline.
+    """
+
+    if isinstance(payload, list):
+        rows = payload
+    elif isinstance(payload, dict) and isinstance(payload.get("queries"), list):
+        rows = payload["queries"]
+    else:
+        raise ValueError("queries JSON must be a list or an object containing a queries list")
+
+    result: list[dict[str, Any]] = []
+    for item in rows:
+        if not isinstance(item, dict) or "id" not in item or "query" not in item:
+            raise ValueError("each query item must be an object containing id and query")
+        result.append(item)
+    if not result:
+        raise ValueError("queries list must not be empty")
+    return result
+
+
 def main() -> int:
     args = _build_parser().parse_args()
     queries_path = Path(args.queries)
@@ -38,7 +64,12 @@ def main() -> int:
     if args.top_k <= 0:
         raise SystemExit("--top-k must be > 0")
 
-    queries = json.loads(queries_path.read_text(encoding="utf-8"))
+    payload = json.loads(queries_path.read_text(encoding="utf-8"))
+    try:
+        queries = _query_items(payload)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
     products = load_products_from_csv(csv_path)
     settings = Settings()
     embedder = OpenAIEmbedder(settings)
