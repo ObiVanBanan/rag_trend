@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
 
-import sys
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from nomenclature_matcher.golden_rules import GoldenQueryConstraints
+from nomenclature_matcher.harness_gold import calibrate_harness_constraints
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,33 +35,22 @@ REQUIREMENT_FIELDS = (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Build a hook-ready constraint-based GOLD dataset. Known positive LD IDs are examples, "
-            "not an exhaustive list of every acceptable catalog product."
+            "Build a hook-ready constraint-based GOLD dataset. Human ACCEPT/REJECT/UNSURE "
+            "is preserved as stronger evidence than the generic constraint judge."
         )
     )
     parser.add_argument("--queries", default=str(ROOT / "data" / "golden_queries_100.json"))
+    parser.add_argument("--constraints", default=str(ROOT / "data" / "golden_100_query_constraints.json"))
+    parser.add_argument("--labels", default=str(ROOT / "data" / "golden_100_labels.json"))
     parser.add_argument(
-        "--constraints",
-        default=str(ROOT / "data" / "golden_100_query_constraints.json"),
+        "--human-review",
+        default=str(ROOT / "data" / "golden_100_human_review.json"),
     )
-    parser.add_argument(
-        "--labels",
-        default=str(ROOT / "data" / "golden_100_labels.json"),
-    )
-    parser.add_argument(
-        "--auto-report",
-        default=str(ROOT / "data" / "golden_100_auto_label_report.json"),
-    )
+    parser.add_argument("--auto-report", default=str(ROOT / "data" / "golden_100_auto_label_report.json"))
     parser.add_argument("--output", default=str(ROOT / "data" / "harness_gold.json"))
     parser.add_argument("--core-output", default=str(ROOT / "data" / "harness_gold_core.json"))
-    parser.add_argument(
-        "--negative-output",
-        default=str(ROOT / "data" / "harness_gold_negative.json"),
-    )
-    parser.add_argument(
-        "--extended-output",
-        default=str(ROOT / "data" / "harness_gold_extended.json"),
-    )
+    parser.add_argument("--negative-output", default=str(ROOT / "data" / "harness_gold_negative.json"))
+    parser.add_argument("--extended-output", default=str(ROOT / "data" / "harness_gold_extended.json"))
     return parser
 
 
@@ -82,14 +71,33 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def _human_positive_ids(label: dict[str, Any]) -> list[int]:
-    if label.get("label_status") != "VERIFIED":
-        return []
-    if label.get("label_source") != "HUMAN":
-        return []
-    if label.get("expected_status") != "MATCHED":
-        return []
-    return sorted({int(value) for value in label.get("acceptable_ld_ids", [])})
+def _portable_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT.resolve()))
+    except ValueError:
+        return str(path)
+
+
+def _human_review_grades(review_entry: dict[str, Any]) -> dict[str, list[int]]:
+    result = {"ACCEPT": [], "REJECT": [], "UNSURE": []}
+    for candidate_id, payload in (review_entry.get("candidate_grades") or {}).items():
+        grade = str((payload or {}).get("grade") or "").upper()
+        if grade in result:
+            result[grade].append(int(candidate_id))
+    for grade in result:
+        result[grade] = sorted(set(result[grade]))
+    return result
+
+
+def _human_positive_ids(label: dict[str, Any], review_entry: dict[str, Any]) -> list[int]:
+    values: set[int] = set(_human_review_grades(review_entry)["ACCEPT"])
+    if (
+        label.get("label_status") == "VERIFIED"
+        and label.get("label_source") == "HUMAN"
+        and label.get("expected_status") == "MATCHED"
+    ):
+        values.update(int(value) for value in label.get("acceptable_ld_ids", []))
+    return sorted(values)
 
 
 def _synthetic_negative(label: dict[str, Any], metadata: dict[str, Any]) -> bool:
@@ -115,6 +123,8 @@ def _extended_reasons(
     constraints: GoldenQueryConstraints,
     metadata: dict[str, Any],
     report_item: dict[str, Any],
+    *,
+    has_human_positive: bool,
 ) -> list[str]:
     reasons: list[str] = []
     if constraints.catalog_scope != "in_scope":
@@ -127,13 +137,19 @@ def _extended_reasons(
         reasons.append("parser_warning")
     for name in sorted({row.name for row in constraints.unsupported_constraints}):
         reasons.append(f"unsupported:{name}")
-    # A CORE MATCHED case needs evidence that at least one catalog product satisfies
-    # the deterministic requirements. Zero strict PASS means existence is unproven.
-    # UNKNOWN candidates do not demote a case: known positive IDs are examples rather
-    # than an exhaustive list, and the hook evaluates only the product RAG returned.
-    if int(report_item.get("pass_count") or 0) <= 0:
+    if int(report_item.get("pass_count") or 0) <= 0 and not has_human_positive:
         reasons.append("no_strict_catalog_pass")
     return reasons
+
+
+def _base_human_fields(label: dict[str, Any], review_entry: dict[str, Any]) -> dict[str, Any]:
+    grades = _human_review_grades(review_entry)
+    return {
+        "known_positive_ids": _human_positive_ids(label, review_entry),
+        "known_rejected_ids": grades["REJECT"],
+        "known_unsure_ids": grades["UNSURE"],
+        "known_positive_ids_exhaustive": False,
+    }
 
 
 def _build_case(
@@ -141,11 +157,13 @@ def _build_case(
     parsed: dict[str, Any],
     label: dict[str, Any],
     report_item: dict[str, Any],
+    human_review_entry: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     query_id = str(item["id"])
     query = str(item["query"])
     metadata = {key: value for key, value in item.items() if key not in {"id", "query"}}
-    known_positive_ids = _human_positive_ids(label)
+    human_review_entry = human_review_entry or {}
+    human_fields = _base_human_fields(label, human_review_entry)
 
     if _synthetic_negative(label, metadata):
         return {
@@ -155,8 +173,7 @@ def _build_case(
             "hard_gate": True,
             "expected_status": "NOT_FOUND",
             "requirements": {},
-            "known_positive_ids": [],
-            "known_positive_ids_exhaustive": False,
+            **human_fields,
             "label_source": label.get("label_source") or "SYNTHETIC_NEGATIVE",
             "metadata": metadata,
             "notes": "Explicit out-of-scope negative. A MATCHED production answer is a false match.",
@@ -170,19 +187,15 @@ def _build_case(
             "hard_gate": False,
             "expected_status": label.get("expected_status"),
             "requirements": {},
-            "known_positive_ids": known_positive_ids,
-            "known_positive_ids_exhaustive": False,
+            **human_fields,
             "label_source": label.get("label_source"),
             "metadata": metadata,
             "extended_reasons": [parsed.get("parse_error") or "missing_constraints"],
         }
 
     try:
-        # The parser artifact is already sanitized when it is created. Re-running the
-        # sanitizer here makes the dataset builder depend on current text heuristics
-        # and can mutate a frozen parse (for example by adding drive_model warnings).
-        # A hook dataset builder must only validate and project the saved artifact.
         constraints = GoldenQueryConstraints.model_validate(parsed["constraints"])
+        constraints, calibration_notes = calibrate_harness_constraints(query, constraints)
     except (ValidationError, ValueError) as exc:
         return {
             "id": query_id,
@@ -191,14 +204,18 @@ def _build_case(
             "hard_gate": False,
             "expected_status": label.get("expected_status"),
             "requirements": {},
-            "known_positive_ids": known_positive_ids,
-            "known_positive_ids_exhaustive": False,
+            **human_fields,
             "label_source": label.get("label_source"),
             "metadata": metadata,
             "extended_reasons": [f"invalid_constraints:{type(exc).__name__}"],
         }
 
-    reasons = _extended_reasons(constraints, metadata, report_item)
+    reasons = _extended_reasons(
+        constraints,
+        metadata,
+        report_item,
+        has_human_positive=bool(human_fields["known_positive_ids"]),
+    )
     expected_status = "MATCHED" if not reasons else label.get("expected_status")
     split = "CORE" if not reasons else "EXTENDED"
     return {
@@ -208,12 +225,12 @@ def _build_case(
         "hard_gate": split == "CORE",
         "expected_status": expected_status,
         "requirements": _requirements(constraints),
-        "known_positive_ids": known_positive_ids,
-        "known_positive_ids_exhaustive": False,
+        **human_fields,
         "label_source": label.get("label_source"),
         "metadata": metadata,
         "unsupported_constraints": [row.model_dump() for row in constraints.unsupported_constraints],
         "parser_warnings": list(constraints.parser_warnings),
+        "calibration_notes": calibration_notes,
         "strict_catalog_pass_count": int(report_item.get("pass_count") or 0),
         "strict_catalog_unknown_count": int(report_item.get("unknown_count") or 0),
         **({"extended_reasons": reasons} if reasons else {}),
@@ -221,20 +238,31 @@ def _build_case(
 
 
 def _dataset_payload(cases: list[dict[str, Any]], *, source_paths: dict[str, str]) -> dict[str, Any]:
-    counts = {split: sum(case["split"] == split for case in cases) for split in ("CORE", "NEGATIVE", "EXTENDED")}
+    counts = {
+        split: sum(case["split"] == split for case in cases)
+        for split in ("CORE", "NEGATIVE", "EXTENDED")
+    }
     return {
-        "version": 1,
+        "version": 2,
         "generated_at": _now(),
         "purpose": "Constraint-based GOLD for automated RAG harness evaluation hooks.",
         "semantics": {
+            "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
             "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
+            "known_rejected_ids": "Human-confirmed rejected candidates override the generic constraint judge.",
+            "known_unsure_ids": "Human-uncertain candidates are not counted as PASS.",
             "core": "Hard-gate MATCHED cases with deterministic requirements and catalog existence evidence.",
             "negative": "Hard-gate explicit NOT_FOUND cases.",
             "extended": "Diagnostic-only cases with ambiguity, unsupported constraints, or unproven catalog existence.",
             "pn": "candidate PN must be >= query pn_min_mpa",
+            "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
         },
         "source_paths": source_paths,
-        "summary": {"total": len(cases), **counts, "hard_gate": counts["CORE"] + counts["NEGATIVE"]},
+        "summary": {
+            "total": len(cases),
+            **counts,
+            "hard_gate": counts["CORE"] + counts["NEGATIVE"],
+        },
         "cases": cases,
     }
 
@@ -244,11 +272,13 @@ def main() -> int:
     queries_path = Path(args.queries)
     constraints_path = Path(args.constraints)
     labels_path = Path(args.labels)
+    human_review_path = Path(args.human_review)
     report_path = Path(args.auto_report)
 
     queries = _read_json(queries_path, [])
     constraints_state = _read_json(constraints_path, {})
     labels = _read_json(labels_path, {})
+    human_review = _read_json(human_review_path, {})
     report = _read_json(report_path, {})
     report_by_id = _auto_report_map(report)
 
@@ -258,21 +288,24 @@ def main() -> int:
         raise SystemExit("labels file must contain a JSON object")
 
     parsed_items = constraints_state.get("items", {}) if isinstance(constraints_state, dict) else {}
+    review_items = human_review.get("queries", {}) if isinstance(human_review, dict) else {}
     cases = [
         _build_case(
             item,
             parsed_items.get(str(item["id"]), {}),
             labels.get(str(item["id"]), {}),
             report_by_id.get(str(item["id"]), {}),
+            review_items.get(str(item["id"]), {}),
         )
         for item in queries
     ]
 
     source_paths = {
-        "queries": str(queries_path),
-        "constraints": str(constraints_path),
-        "labels": str(labels_path),
-        "auto_report": str(report_path),
+        "queries": _portable_path(queries_path),
+        "constraints": _portable_path(constraints_path),
+        "labels": _portable_path(labels_path),
+        "human_review": _portable_path(human_review_path),
+        "auto_report": _portable_path(report_path),
     }
     payload = _dataset_payload(cases, source_paths=source_paths)
     _write_json(Path(args.output), payload)
