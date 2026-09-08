@@ -1,6 +1,17 @@
 {
   "version": 1,
   "corrections": {
+    "gold_q041": {
+      "label_status": "RETRIEVAL_MISS",
+      "label_source": "HUMAN_CORRECTION",
+      "expected_status": "MATCHED",
+      "acceptable_ld_ids": [],
+      "human_comment": "Manual sanity correction: query explicitly requires an interflange (межфланцевый) butterfly valve with reducer; LD 14807 is welded (Приварное). No acceptable item remained in the reviewed top-3.",
+      "known_positive_ids_exhaustive": false,
+      "candidate_grade_overrides": {
+        "14807": "REJECT"
+      }
+    },
     "gold_q075": {
       "label_status": "RETRIEVAL_MISS",
       "label_source": "HUMAN_CORRECTION",
@@ -11,6 +22,39 @@
       "candidate_grade_overrides": {
         "19253": "REJECT",
         "19256": "REJECT"
+      }
+    },
+    "gold_q077": {
+      "label_status": "RETRIEVAL_MISS",
+      "label_source": "HUMAN_CORRECTION",
+      "expected_status": "MATCHED",
+      "acceptable_ld_ids": [],
+      "human_comment": "Manual sanity correction: query requires flange type 11, DN65 PN16, steel 09Г2С; LD 19311 is a type 01 flat flange in 12Х18Н10Т (PN25). No acceptable item remained in the reviewed top-3.",
+      "known_positive_ids_exhaustive": false,
+      "candidate_grade_overrides": {
+        "19311": "REJECT"
+      }
+    },
+    "gold_q084": {
+      "label_status": "RETRIEVAL_MISS",
+      "label_source": "HUMAN_CORRECTION",
+      "expected_status": "MATCHED",
+      "acceptable_ld_ids": [],
+      "human_comment": "Manual sanity correction: query requires an AOX-Q quarter-turn actuator with 400 Nm; LD 19343 is AOX-Q-005 rated 50 Nm. No acceptable item remained in the reviewed top-3.",
+      "known_positive_ids_exhaustive": false,
+      "candidate_grade_overrides": {
+        "19343": "REJECT"
+      }
+    },
+    "gold_q085": {
+      "label_status": "RETRIEVAL_MISS",
+      "label_source": "HUMAN_CORRECTION",
+      "expected_status": "MATCHED",
+      "acceptable_ld_ids": [],
+      "human_comment": "Manual sanity correction: query explicitly requires AOX-Q-100; LD 19343 is AOX-Q-005. No acceptable item remained in the reviewed top-3.",
+      "known_positive_ids_exhaustive": false,
+      "candidate_grade_overrides": {
+        "19343": "REJECT"
       }
     }
   }
