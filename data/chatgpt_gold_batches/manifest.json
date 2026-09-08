@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "generated_at": "2026-09-08T15:32:04.342103Z",
+  "query_count": 100,
+  "batch_size": 10,
+  "max_candidates_per_query": 20,
+  "batches": [
+    {
+      "file": "data/chatgpt_gold_batches/batch_01_001_010.json",
+      "query_ids": [
+        "gold_q001",
+        "gold_q002",
+        "gold_q003",
+        "gold_q004",
+        "gold_q005",
+        "gold_q006",
+        "gold_q007",
+        "gold_q008",
+        "gold_q009",
+        "gold_q010"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_02_011_020.json",
+      "query_ids": [
+        "gold_q011",
+        "gold_q012",
+        "gold_q013",
+        "gold_q014",
+        "gold_q015",
+        "gold_q016",
+        "gold_q017",
+        "gold_q018",
+        "gold_q019",
+        "gold_q020"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_03_021_030.json",
+      "query_ids": [
+        "gold_q021",
+        "gold_q022",
+        "gold_q023",
+        "gold_q024",
+        "gold_q025",
+        "gold_q026",
+        "gold_q027",
+        "gold_q028",
+        "gold_q029",
+        "gold_q030"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_04_031_040.json",
+      "query_ids": [
+        "gold_q031",
+        "gold_q032",
+        "gold_q033",
+        "gold_q034",
+        "gold_q035",
+        "gold_q036",
+        "gold_q037",
+        "gold_q038",
+        "gold_q039",
+        "gold_q040"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_05_041_050.json",
+      "query_ids": [
+        "gold_q041",
+        "gold_q042",
+        "gold_q043",
+        "gold_q044",
+        "gold_q045",
+        "gold_q046",
+        "gold_q047",
+        "gold_q048",
+        "gold_q049",
+        "gold_q050"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_06_051_060.json",
+      "query_ids": [
+        "gold_q051",
+        "gold_q052",
+        "gold_q053",
+        "gold_q054",
+        "gold_q055",
+        "gold_q056",
+        "gold_q057",
+        "gold_q058",
+        "gold_q059",
+        "gold_q060"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_07_061_070.json",
+      "query_ids": [
+        "gold_q061",
+        "gold_q062",
+        "gold_q063",
+        "gold_q064",
+        "gold_q065",
+        "gold_q066",
+        "gold_q067",
+        "gold_q068",
+        "gold_q069",
+        "gold_q070"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_08_071_080.json",
+      "query_ids": [
+        "gold_q071",
+        "gold_q072",
+        "gold_q073",
+        "gold_q074",
+        "gold_q075",
+        "gold_q076",
+        "gold_q077",
+        "gold_q078",
+        "gold_q079",
+        "gold_q080"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_09_081_090.json",
+      "query_ids": [
+        "gold_q081",
+        "gold_q082",
+        "gold_q083",
+        "gold_q084",
+        "gold_q085",
+        "gold_q086",
+        "gold_q087",
+        "gold_q088",
+        "gold_q089",
+        "gold_q090"
+      ],
+      "candidate_count": 200
+    },
+    {
+      "file": "data/chatgpt_gold_batches/batch_10_091_100.json",
+      "query_ids": [
+        "gold_q091",
+        "gold_q092",
+        "gold_q093",
+        "gold_q094",
+        "gold_q095",
+        "gold_q096",
+        "gold_q097",
+        "gold_q098",
+        "gold_q099",
+        "gold_q100"
+      ],
+      "candidate_count": 200
+    }
+  ]
+}
