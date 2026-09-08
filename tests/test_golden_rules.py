@@ -1,5 +1,6 @@
 from nomenclature_matcher.golden_rules import (
     GoldenQueryConstraints,
+    UnsupportedConstraint,
     evaluate_product_strict,
     sanitize_golden_constraints,
     strict_candidate_control,
@@ -78,6 +79,26 @@ def test_inferred_material_from_valve_code_is_cleared():
     assert sanitized.parser_warnings
 
 
+def test_explicit_material_case_stali_is_preserved():
+    parsed = GoldenQueryConstraints(
+        product_type="ball_valve",
+        dn=100,
+        pn_min_mpa=2.5,
+        joining_type="flanged",
+        valve_type="standard",
+        body_material="steel",
+        body_material_grade="20",
+        catalog_scope="in_scope",
+    )
+    sanitized = sanitize_golden_constraints(
+        "Кран шаровой фланцевый DN100 PN25 из стали 20",
+        parsed,
+    )
+    assert sanitized.body_material == "steel"
+    assert sanitized.body_material_grade == "20"
+    assert sanitized.parser_warnings == []
+
+
 def test_competitor_reference_is_not_exact_ld_designation():
     parsed = GoldenQueryConstraints(
         product_type="ball_valve",
@@ -113,6 +134,24 @@ def test_unmodeled_temperature_and_torque_are_detected():
     assert "drive_model" in names
 
 
+def test_unsupported_constraints_are_deduplicated_by_name():
+    parsed = GoldenQueryConstraints(
+        product_type="actuator",
+        control="electric",
+        catalog_scope="in_scope",
+        unsupported_constraints=[
+            UnsupportedConstraint(name="torque_nm", value="400 Нм", reason="parser"),
+            UnsupportedConstraint(name="torque_nm", value=400, reason="parser duplicate"),
+        ],
+    )
+    sanitized = sanitize_golden_constraints(
+        "Электропривод четвертьоборотный AOX-Q 400 Нм",
+        parsed,
+    )
+    names = [row.name for row in sanitized.unsupported_constraints]
+    assert names.count("torque_nm") == 1
+
+
 def test_missing_required_candidate_data_produces_unknown():
     candidate = product(
         name="Кран шаровый LD Ду50 Ру1,6МПа фланцевый",
@@ -121,3 +160,14 @@ def test_missing_required_candidate_data_produces_unknown():
     result = evaluate_product_strict(candidate, constraints(body_material="steel"))
     assert result.status == "UNKNOWN"
     assert "body_material" in result.unknown_fields
+
+
+def test_other_product_type_is_fail_not_unknown():
+    candidate = product(
+        name="Изделие Ду50 Ру1,6МПа",
+        properties=[{"name": "Тип продукта", "values": ["Неизвестное изделие"]}],
+    )
+    result = evaluate_product_strict(candidate, constraints())
+    assert result.status == "FAIL"
+    assert result.failed_fields == ("product_type",)
+    assert result.unknown_fields == ()
