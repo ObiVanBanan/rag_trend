@@ -31,7 +31,7 @@ Tests use `pytest` with `pythonpath = ["src"]` configured in `pyproject.toml`. A
 
 ## Commit & Pull Request Guidelines
 
-Recent history uses short imperative or conventional-style subjects, for example `fix: harden Codex loop diff and verification guards` and `Add Eval V2 full catalog checker`. Keep commits focused and describe behavior changes. Pull requests should include a summary, test results, linked issue or evaluation artifact when relevant, and screenshots only for Streamlit or review UI changes.
+Recent history uses short imperative or conventional-style subjects, for example `fix: harden Codex loop diff and verification guards` and `Add Eval V2 full catalog checker`. Keep commits focused and describe behavior changes. Pull requests should include a summary, test results, linked issue or evaluation artifact when relevant, and screenshots only for Streamlit or review UI changes. При пуше использовать unset GITHUB_TOKEN
 
 ## Security & Configuration Tips
 

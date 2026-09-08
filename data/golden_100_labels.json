@@ -71,5 +71,40 @@
     ],
     "expected_status": "MATCHED",
     "human_comment": ""
+  },
+  "gold_q096": {
+    "label_status": "VERIFIED",
+    "label_source": "SYNTHETIC_NEGATIVE",
+    "expected_status": "NOT_FOUND",
+    "acceptable_ld_ids": [],
+    "human_comment": "Товар - насос, не относится к трубопроводной арматуре. Указаны мощность, напряжение и производительность, но они не проверяются схемой."
+  },
+  "gold_q097": {
+    "label_status": "VERIFIED",
+    "label_source": "SYNTHETIC_NEGATIVE",
+    "expected_status": "NOT_FOUND",
+    "acceptable_ld_ids": [],
+    "human_comment": "Товар 'Подшипник 6205 2RS' не относится к трубопроводной арматуре и комплектующим, поэтому вне области каталога."
+  },
+  "gold_q098": {
+    "label_status": "VERIFIED",
+    "label_source": "SYNTHETIC_NEGATIVE",
+    "expected_status": "NOT_FOUND",
+    "acceptable_ld_ids": [],
+    "human_comment": "Товар 'Кабель ВВГнг-LS 3х2,5 мм2' явно не относится к трубопроводной арматуре, поэтому catalog_scope=out_of_scope."
+  },
+  "gold_q099": {
+    "label_status": "VERIFIED",
+    "label_source": "SYNTHETIC_NEGATIVE",
+    "expected_status": "NOT_FOUND",
+    "acceptable_ld_ids": [],
+    "human_comment": "Товар - болт, не относится к трубопроводной арматуре."
+  },
+  "gold_q100": {
+    "label_status": "VERIFIED",
+    "label_source": "SYNTHETIC_NEGATIVE",
+    "expected_status": "NOT_FOUND",
+    "acceptable_ld_ids": [],
+    "human_comment": "Товар 'теплообменник пластинчатый' не относится к трубопроводной арматуре и комплектующим, поэтому вне каталога."
   }
 }

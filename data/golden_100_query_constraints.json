@@ -13,6 +13,7 @@
           "pn"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -28,10 +29,13 @@
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN>=1.6 МПа, присоединение фланцевое, материал сталь, полнопроходной, управление ручное. Специальное исполнение не указано, поэтому требуется standard. Среда и обозначение не указаны, не ограничивают."
+        "comment": "DN exact: 50; PN lower bound: 1.6 MPa; joining exact: flanged; material exact: steel; bore exact: full; control exact: manual; valve_type standard inferred from absence of special type.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:46.093249Z"
+      "parsed_at": "2026-09-08T11:03:00.951423Z"
     },
     "gold_q002": {
       "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
@@ -44,6 +48,7 @@
           "brand_ld"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 80,
@@ -59,10 +64,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (нижняя граница), присоединение фланцевое, материал сталь 20, тип крана стандартный. Среда, проход, управление не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал: сталь 20; стандартное исполнение.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:47.587884Z"
+      "parsed_at": "2026-09-08T11:03:02.569946Z"
     },
     "gold_q003": {
       "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
@@ -77,6 +85,7 @@
           "material"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 100,
@@ -86,16 +95,21 @@
         "working_medium": null,
         "valve_type": "standard",
         "valve_designation": null,
-        "body_material": "steel",
-        "body_material_grade": "20",
+        "body_material": null,
+        "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=2.5 МПа (PN25), присоединение фланцевое, материал корпуса сталь 20, тип крана стандартный (не подземный и т.п.). Среда, проход, управление не указаны — не ограничивают."
+        "comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; joining exact: фланцевый; material exact: сталь 20; тип крана шаровой, специальное исполнение не указано -> standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:49.076836Z"
+      "parsed_at": "2026-09-08T11:03:04.557050Z"
     },
     "gold_q004": {
       "query": "Кран шаровой Ду150 Ру16 фланцевый с редуктором",
@@ -107,6 +121,7 @@
           "gearbox"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 150,
@@ -122,10 +137,13 @@
         "control": "gearbox",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN=1.6 МПа (Ру16), присоединение фланцевое, управление с редуктором. Среда, материал, проход не указаны. Для шарового крана без специального типа требуется standard."
+        "comment": "DN exact 150; PN нижняя граница 1.6 МПа; joining exact фланцевый; control exact с редуктором; материал, среда, тип прохода не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:50.481960Z"
+      "parsed_at": "2026-09-08T11:03:06.350581Z"
     },
     "gold_q005": {
       "query": "Кран шаровый стальной DN200 PN16 полнопроходной фл/фл",
@@ -137,6 +155,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 200,
@@ -152,10 +171,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=200, PN=1.6 МПа (нижняя граница), присоединение фланцевое, материал сталь, полнопроходной, тип крана стандартный (не указано специальное исполнение), управление не указано, среда не указана, обозначение не указано."
+        "comment": "DN exact: 200; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; material exact: стальной; bore exact: полнопроходной; тип крана шаровый, специальное исполнение не указано -> standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:51.940633Z"
+      "parsed_at": "2026-09-08T11:03:08.207202Z"
     },
     "gold_q006": {
       "query": "Кран шаровой КШЦФ Ду80 Ру40 ст.09Г2С",
@@ -168,6 +190,7 @@
           "pn"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 80,
@@ -183,10 +206,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=4.0 МПа (Ру40), присоединение не указано, среда не указана, обозначение КШЦФ, материал сталь 09Г2С, тип крана standard (не указано специальное исполнение), проход и управление не указаны."
+        "comment": "DN exact: 80; PN lower bound: 4.0 МПа (Ру40); material exact: сталь 09Г2С; designation exact: КШЦФ; тип крана: шаровой, специальное исполнение не указано -> standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:53.557689Z"
+      "parsed_at": "2026-09-08T11:03:10.185293Z"
     },
     "gold_q007": {
       "query": "Кран шаровый КШЦФ 100.025 из стали 20 ручной",
@@ -198,25 +224,31 @@
           "compact_notation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 100,
         "pn_min_mpa": 2.5,
-        "joining_type": "flanged",
+        "joining_type": null,
         "thread_type": null,
         "working_medium": null,
         "valve_type": "standard",
-        "valve_designation": "КШЦФ 100.025",
-        "body_material": "steel",
-        "body_material_grade": "20",
+        "valve_designation": "КШЦФ",
+        "body_material": null,
+        "body_material_grade": null,
         "bore_type": null,
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=2.5 МПа (PN25), присоединение фланцевое (КШЦФ), среда не указана, материал сталь 20, управление ручное, тип крана стандартный (не подземный и т.п.), обозначение КШЦФ 100.025."
+        "comment": "DN exact: 100; PN нижняя граница: 2.5 МПа (из 100.025); материал: сталь 20; управление: ручное; тип: шаровый кран стандартный; обозначение КШЦФ.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:55.338419Z"
+      "parsed_at": "2026-09-08T11:03:12.174516Z"
     },
     "gold_q008": {
       "query": "Кран шаровой Ридан JiP-R Standard FF Ду50 Ру16 или аналог",
@@ -228,6 +260,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -236,17 +269,26 @@
         "thread_type": null,
         "working_medium": null,
         "valve_type": "standard",
-        "valve_designation": "JiP-R Standard FF",
+        "valve_designation": null,
         "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (Ру16), присоединение фланцевое (FF), тип крана стандартный (не подземный и т.п.), обозначение JiP-R Standard FF. Материал, среда, проход, управление не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 50; PN lower bound: 1.6; joining exact: фланцевый (FF); valve_type standard; reference model JiP-R Standard FF; материал, среда, управление не указаны.",
+        "reference_model": "JiP-R Standard FF",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "JiP-R Standard FF",
+            "reason": "Модель конкурента указана как референс, эквивалентность не доказана"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:57.068121Z"
+      "parsed_at": "2026-09-08T11:03:14.386518Z"
     },
     "gold_q009": {
       "query": "Кран шаровой Danfoss JiP Premium WW DN80 PN25 аналог LD",
@@ -258,6 +300,7 @@
           "welded"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 80,
@@ -273,10 +316,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN80 exact, PN25 => min 2.5 МПа, присоединение не указано, среда не указана, материал не указан, проход не указан, управление не указано. Для шарового крана без специального типа требуется standard."
+        "comment": "DN exact: 80; PN нижняя граница: 2.5 МПа; тип: шаровой кран; специальное исполнение не указано, поэтому valve_type=standard; модель Danfoss JiP Premium WW указана как референс, не является LD-обозначением.",
+        "reference_model": "Danfoss JiP Premium WW",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "Danfoss JiP Premium WW",
+            "reason": "Модель конкурента указана как аналог, но эквивалентность LD не может быть доказана строгими полями."
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:58.387883Z"
+      "parsed_at": "2026-09-08T11:03:16.835370Z"
     },
     "gold_q010": {
       "query": "Шаровой кран стальной Ду 65 Ру 16 фланцы, вода",
@@ -288,6 +340,7 @@
           "work_medium"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 65,
@@ -303,10 +356,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=65, PN=1.6 МПа (Ру16), присоединение фланцевое, среда вода, материал сталь. Тип крана не указан, поэтому standard. Проход и управление не указаны, не ограничивают."
+        "comment": "DN exact: 65; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; medium exact: вода; material exact: стальной; valve_type standard для шарового крана без спец. исполнения.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:34:59.908073Z"
+      "parsed_at": "2026-09-08T11:03:18.658113Z"
     },
     "gold_q011": {
       "query": "Кран шаровой латунный DN15 PN40 ВР/ВР рычаг",
@@ -318,6 +374,7 @@
           "threaded"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 15,
@@ -333,10 +390,13 @@
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN15 точный, PN40 -> нижняя граница 4.0 МПа, присоединение резьбовое, резьба ВР/ВР, материал латунь, управление ручное (рычаг), тип крана standard (не указано специальное исполнение), среда не указана, обозначение не указано, проход не указан."
+        "comment": "DN exact; PN нижняя граница; joining exact; material exact; control exact; thread exact.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:01.566865Z"
+      "parsed_at": "2026-09-08T11:03:20.500717Z"
     },
     "gold_q012": {
       "query": "Кран латунный шаровый Ду20 Ру40 внутренняя-внутренняя резьба",
@@ -349,6 +409,7 @@
           "notation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 20,
@@ -364,10 +425,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=20, PN=4.0 МПа (Ру40), присоединение резьбовое, резьба внутренняя-внутренняя, материал латунь. Специальное исполнение не указано, поэтому для шарового крана требуется standard. Проход, управление, среда не указаны."
+        "comment": "DN exact: 20; PN нижняя граница: 4.0 МПа; joining exact: резьба; thread exact: внутренняя-внутренняя; material exact: латунный; valve_type: standard (шаровый кран без спец. исполнения).",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:03.163689Z"
+      "parsed_at": "2026-09-08T11:03:22.442111Z"
     },
     "gold_q013": {
       "query": "Кран шаровый латунь 11б27п1 Ду25 вр/нр Ру40 бабочка",
@@ -380,6 +444,7 @@
           "model"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 25,
@@ -392,13 +457,16 @@
         "body_material": "brass",
         "body_material_grade": null,
         "bore_type": null,
-        "control": null,
+        "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=25, PN=4.0 МПа (Ру40), присоединение резьбовое, резьба ВР/НР (female_male), материал латунь, обозначение 11б27п1, тип крана standard (не указано специальное исполнение). Среда, проход и управление не указаны, поэтому не ограничивают."
+        "comment": "DN exact: 25; PN нижняя граница: 4.0 МПа (Ру40); joining exact: резьбовой (вр/нр); thread_type exact: female_male (вр/нр); material exact: латунь; valve_type: standard (шаровый кран без спец. исполнения); control: manual (бабочка - ручка); valve_designation: 11б27п1.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:04.866257Z"
+      "parsed_at": "2026-09-08T11:03:24.822290Z"
     },
     "gold_q014": {
       "query": "Кран латунный Д32 муфтовый мама-мама",
@@ -411,6 +479,7 @@
           "dn"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 32,
@@ -426,10 +495,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=32 exact; PN не указан, не ограничивает; присоединение резьбовое муфтовое; резьба мама-мама (внутренняя-внутренняя); среда не указана; материал латунь; тип крана не указан, для шарового крана требуется standard; обозначение не указано; проход не указан; управление не указано."
+        "comment": "DN exact: 32; joining exact: threaded; thread_type exact: female_female; material exact: brass; product_type inferred from 'кран' as ball_valve; valve_type standard because no special type mentioned.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:06.544515Z"
+      "parsed_at": "2026-09-08T11:03:26.645115Z"
     },
     "gold_q015": {
       "query": "Кран шаровый латунный 1/2 ВР-НР",
@@ -441,6 +513,7 @@
           "thread_type"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": null,
@@ -456,10 +529,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN не указан. PN не указан. Присоединение резьбовое (1/2 дюйма). Резьба: наружная-внутренняя (ВР-НР). Среда не указана. Материал латунь. Проход не указан. Управление не указано. Для шарового крана без специального типа требуется standard."
+        "comment": "DN не указан; PN не указан; joining: резьбовой; thread_type: ВР-НР; материал: латунный; тип крана: шаровый, специальное исполнение не указано.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "inch_size",
+            "value": "1/2 ",
+            "reason": "inch-to-DN mapping is not modeled here"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:08.504537Z"
+      "parsed_at": "2026-09-08T11:03:28.466509Z"
     },
     "gold_q016": {
       "query": "Кран шаровый латунный 3/4 внутренняя резьба с обеих сторон",
@@ -471,6 +553,7 @@
           "threaded"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": null,
@@ -486,10 +569,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN не указан. PN не указан. Присоединение резьбовое, резьба внутренняя с обеих сторон (ВР/ВР). Среда не указана. Материал латунь. Проход не указан. Управление не указано. Для шарового крана без специального типа требуется standard."
+        "comment": "Тип: шаровый кран. Материал: латунь (явно). Присоединение: резьбовое (внутренняя резьба с обеих сторон). Резьба: ВР/ВР. DN не указан. PN не указан. Управление не указано. Специальное исполнение не указано, поэтому valve_type=standard.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "inch_size",
+            "value": "3/4 ",
+            "reason": "inch-to-DN mapping is not modeled here"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:09.980723Z"
+      "parsed_at": "2026-09-08T11:03:30.530009Z"
     },
     "gold_q017": {
       "query": "Кран шаровой латунный Ду25 с накидной гайкой",
@@ -501,11 +593,12 @@
           "union_nut"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 25,
         "pn_min_mpa": null,
-        "joining_type": "compression",
+        "joining_type": null,
         "thread_type": null,
         "working_medium": null,
         "valve_type": "standard",
@@ -516,10 +609,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=25 exact; PN не указан, не ограничивает; присоединение с накидной гайкой трактуем как компрессионное; среда не указана; материал латунь; тип крана standard; обозначение не указано; проход и управление не указаны."
+        "comment": "DN exact: 25; material exact: латунный; valve_type standard для шарового крана без спец. исполнения; наличие накидной гайки не покрывается схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "накидная гайка",
+            "value": "присутствует",
+            "reason": "требование наличия накидной гайки не проверяется текущей схемой"
+          },
+          {
+            "name": "union_nut",
+            "value": "накидной гайкой",
+            "reason": "union nut execution is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:11.578125Z"
+      "parsed_at": "2026-09-08T11:03:32.341389Z"
     },
     "gold_q018": {
       "query": "Кран шаровой газовый латунный DN20 ВР/НР желтая ручка",
@@ -531,12 +638,13 @@
           "brass"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 20,
         "pn_min_mpa": null,
         "joining_type": "threaded",
-        "thread_type": "female_male",
+        "thread_type": "male_female",
         "working_medium": null,
         "valve_type": "gas",
         "valve_designation": null,
@@ -546,10 +654,13 @@
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN20 exact; PN не указан; присоединение резьбовое, ВР/НР (female_male); среда не указана; тип крана газовый; материал латунь; проход не указан; управление ручное (желтая ручка); обозначение не указано."
+        "comment": "DN exact: 20; joining exact: threaded (резьба); thread_type exact: male_female (ВР/НР); material exact: латунный; valve_type: газовый; control: ручная ручка (желтая ручка). PN не указан.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:13.345883Z"
+      "parsed_at": "2026-09-08T11:03:34.163933Z"
     },
     "gold_q019": {
       "query": "Кран шаровой стальной муфтовый 11с39п Ду32 Ру25",
@@ -562,6 +673,7 @@
           "model"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 32,
@@ -577,10 +689,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=32, PN=2.5 МПа (Ру25), присоединение муфтовое (резьбовое), материал сталь, обозначение 11с39п. Тип крана не указан, поэтому standard. Среда, проход, управление не указаны."
+        "comment": "DN exact: 32; PN нижняя граница: 2.5 МПа; joining exact: муфтовый; материал exact: стальной; обозначение exact: 11с39п; тип крана: стандартный (не указано спец. исполнение).",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:15.065559Z"
+      "parsed_at": "2026-09-08T11:03:36.186359Z"
     },
     "gold_q020": {
       "query": "Кран стальной шаровый резьбовой DN25 PN40, температура до 180С",
@@ -593,6 +708,7 @@
           "temperature"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 25,
@@ -608,10 +724,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=25, PN40 (нижняя граница 4.0 МПа), присоединение резьбовое, материал сталь, кран шаровой без спец. исполнения -> standard. Температура до 180С не является ограничением для каталога. Среда, тип резьбы, проход, управление не указаны."
+        "comment": "DN exact: 25; PN нижняя граница: 4.0 МПа; joining exact: резьбовой; материал exact: стальной; температура до 180С указана, но не проверяется схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "temperature_max_c",
+            "value": 180,
+            "reason": "температура явно указана, но не проверяется текущей схемой"
+          },
+          {
+            "name": "temperature",
+            "value": "температур",
+            "reason": "temperature is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:16.886320Z"
+      "parsed_at": "2026-09-08T11:03:37.928270Z"
     },
     "gold_q021": {
       "query": "Кран шаровой под приварку Ду50 Ру40 сталь 20",
@@ -623,6 +753,7 @@
           "steel"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -638,10 +769,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=4.0 МПа (Ру40), присоединение приварное, материал сталь 20, тип крана standard (не указано специальное исполнение), среда, проход и управление не указаны."
+        "comment": "DN exact: 50; PN нижняя граница: 4.0 МПа (Ру40); joining exact: приварка; материал exact: сталь 20; тип крана: шаровой, спец. исполнение не указано -> standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:18.706979Z"
+      "parsed_at": "2026-09-08T11:03:39.658475Z"
     },
     "gold_q022": {
       "query": "Кран шаровый сварной WW DN100 PN25",
@@ -653,6 +787,7 @@
           "notation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 100,
@@ -668,10 +803,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=2.5 МПа (PN25), присоединение сварное. Среда, материал, проход и управление не указаны, поэтому не ограничивают. Для шарового крана без специального типа требуется standard."
+        "comment": "DN exact; PN нижняя граница; joining exact; valve_type standard для шарового крана без спец. исполнения; материал, среда, bore, control не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:20.080901Z"
+      "parsed_at": "2026-09-08T11:03:41.527465Z"
     },
     "gold_q023": {
       "query": "Кран шаровой ПЭ/сталь Ду63 для подземной установки",
@@ -683,11 +821,12 @@
           "pe"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 63,
         "pn_min_mpa": null,
-        "joining_type": "compression",
+        "joining_type": null,
         "thread_type": null,
         "working_medium": null,
         "valve_type": "underground",
@@ -698,10 +837,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=63, присоединение компрессионное (ПЭ/сталь), материал корпуса полиэтилен, специальное исполнение подземный. PN не указан, среда не указана, обозначение не указано, проход и управление не указаны."
+        "comment": "DN exact: 63. Материал: ПЭ (полиэтилен) и сталь, но body_material выбран polyethylene, так как ПЭ указан первым. Тип: подземный. PN не указан. Присоединение не указано.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:21.940111Z"
+      "parsed_at": "2026-09-08T11:03:43.651253Z"
     },
     "gold_q024": {
       "query": "Кран шаровый для подземной установки Ду80 Ру16 Н=1500",
@@ -713,6 +855,7 @@
           "height"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 80,
@@ -728,10 +871,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (Ру16), тип крана - подземный (underground). Присоединение, среда, материал, проход, управление не указаны, поэтому не ограничивают выбор. Обозначение не указано."
+        "comment": "DN exact: 80; PN lower bound: 1.6 MPa; valve_type underground explicit; height H=1500 not covered by schema.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "height_mm",
+            "value": 1500,
+            "reason": "высота штока явно указана, но не проверяется текущей схемой"
+          },
+          {
+            "name": "stem_height",
+            "value": "н=1500",
+            "reason": "stem/installation height is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:23.507843Z"
+      "parsed_at": "2026-09-08T11:03:45.520492Z"
     },
     "gold_q025": {
       "query": "КШЦП Ду100 Ру16 П/П подземный, шток 1200 мм",
@@ -743,6 +900,7 @@
           "underground"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 100,
@@ -758,10 +916,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (Ру16), тип крана подземный (underground), обозначение КШЦП, полнопроходной (П/П). Присоединение, среда, материал, управление не указаны, поэтому не ограничивают выбор. Требуется подземный кран с обозначением КШЦП."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; тип крана: подземный; обозначение: КШЦП; полнопроходной (П/П); шток 1200 мм указан, но не проверяется схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "stem_length_mm",
+            "value": 1200,
+            "reason": "шток явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "stem_height",
+            "value": "шток 1200",
+            "reason": "stem/installation height is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:25.239840Z"
+      "parsed_at": "2026-09-08T11:03:47.605411Z"
     },
     "gold_q026": {
       "query": "Кран шаровой фланцевый DN50 PN16 под электропривод",
@@ -773,6 +945,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -788,10 +961,13 @@
         "control": "electric_ready",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (нижняя граница), присоединение фланцевое, управление под электропривод, тип крана стандартный (не указано специальное исполнение), материал, среда, проход не указаны."
+        "comment": "DN exact 50; PN16 -> pn_min_mpa=1.6; joining exact flanged; control electric_ready (под электропривод); valve_type standard (ball valve, спец. исполнение не указано); материал, среда, bore не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:26.788642Z"
+      "parsed_at": "2026-09-08T11:03:49.629636Z"
     },
     "gold_q027": {
       "query": "Кран шаровой Ду80 Ру16 с электроприводом",
@@ -802,6 +978,7 @@
           "electric_actuator"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 80,
@@ -817,10 +994,13 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (Ру16), управление электроприводом. Присоединение, среда, материал, проход не указаны. Для шарового крана без специального типа требуется standard."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; control: electric; тип арматуры: шаровой кран, специальное исполнение не указано, поэтому standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:28.208508Z"
+      "parsed_at": "2026-09-08T11:03:51.352693Z"
     },
     "gold_q028": {
       "query": "Кран регулирующий шаровой Regula Ду50 Ру16",
@@ -832,6 +1012,7 @@
           "series"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -847,10 +1028,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (Ру16). Тип: регулирующий шаровой кран (Regula). Присоединение, среда, материал, проход, управление не указаны — не ограничивают. Обозначение не указано."
+        "comment": "DN exact: 50; PN lower bound: 1.6 MPa; valve_type: regulating (явно указано 'регулирующий'); материал, присоединение, среда, управление не указаны.",
+        "reference_model": "Regula",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "Regula",
+            "reason": "Модель Regula указана, но не может быть строго сопоставлена с каталогом LD."
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:29.683277Z"
+      "parsed_at": "2026-09-08T11:03:53.179447Z"
     },
     "gold_q029": {
       "query": "Кран шаровый Ду80/70 Ру16 регулирующий под привод",
@@ -862,9 +1052,10 @@
           "regulating"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
-        "dn": 80,
+        "dn": null,
         "pn_min_mpa": 1.6,
         "joining_type": null,
         "thread_type": null,
@@ -876,11 +1067,25 @@
         "bore_type": null,
         "control": "electric_ready",
         "catalog_scope": "in_scope",
-        "ambiguous": false,
-        "comment": "DN=80 (указано Ду80, но также есть Ду70? В запросе 'Ду80/70' может означать редуцированный проход, но DN принимаем как 80). PN=1.6 МПа (Ру16). Присоединение не указано. Среда не указана. Тип крана: регулирующий (valve_type=regulating). Управление: под привод (electric_ready). Материал, проход, обозначение не указаны."
+        "ambiguous": true,
+        "comment": "DN указан как диапазон Ду80/70, что неоднозначно; PN16 -> 1.6 МПа; регулирующий -> valve_type=regulating; под привод -> control=electric_ready; материал, присоединение, среда не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "dn_range",
+            "value": "80/70",
+            "reason": "Указаны два диаметра без однозначной трактовки"
+          },
+          {
+            "name": "secondary_diameter_or_reduced_bore",
+            "value": "ду80/70",
+            "reason": "two diameters need explicit domain interpretation"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:31.639970Z"
+      "parsed_at": "2026-09-08T11:03:55.303355Z"
     },
     "gold_q030": {
       "query": "кран шар 50 16 фл ст20",
@@ -892,6 +1097,7 @@
           "abbreviation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -901,16 +1107,21 @@
         "working_medium": null,
         "valve_type": "standard",
         "valve_designation": null,
-        "body_material": "steel",
-        "body_material_grade": "20",
+        "body_material": null,
+        "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (PN16), присоединение фланцевое, материал сталь 20, тип крана стандартный (не указано специальное исполнение). Среда, проход, управление не указаны — не ограничивают."
+        "comment": "DN exact: 50; PN нижняя граница: 16 -> 1.6 МПа; joining exact: фл -> фланцевый; материал явно указан: ст20 -> сталь 20; тип крана: шаровой.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:33.117897Z"
+      "parsed_at": "2026-09-08T11:03:57.427023Z"
     },
     "gold_q031": {
       "query": "Затвор дисковый поворотный межфланцевый Ду100 Ру16",
@@ -923,6 +1134,7 @@
           "pn"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 100,
@@ -938,10 +1150,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (Ру16), присоединение межфланцевое (wafer). Материал, среда, управление не указаны — не ограничивают выбор. Тип товара: затвор дисковый поворотный."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: межфланцевый; материал, среда, управление не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:34.854838Z"
+      "parsed_at": "2026-09-08T11:03:59.027354Z"
     },
     "gold_q032": {
       "query": "Затвор поворотный дисковый DN150 PN16 межфланцевый с рукояткой",
@@ -953,6 +1168,7 @@
           "handle"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 150,
@@ -968,10 +1184,13 @@
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN150 exact, PN16 -> pn_min_mpa=1.6, присоединение межфланцевое (wafer), управление рукояткой (manual). Материал, среда, проход не указаны, не ограничивают выбор."
+        "comment": "Затвор поворотный дисковый, DN150 exact, PN16 нижняя граница, межфланцевый exact, рукоятка -> manual.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:36.213614Z"
+      "parsed_at": "2026-09-08T11:04:00.857419Z"
     },
     "gold_q033": {
       "query": "Затвор дисковый Ду200 Ру16 с редуктором",
@@ -982,6 +1201,7 @@
           "gearbox"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 200,
@@ -997,10 +1217,13 @@
         "control": "gearbox",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=200, PN=1.6 МПа (нижняя граница), присоединение не указано, среда не указана, материал не указан, проход не указан, управление - редуктор."
+        "comment": "Затвор дисковый, DN=200 exact, PN=16 (1.6 МПа) нижняя граница, управление с редуктором exact. Материал, присоединение, среда не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:37.555127Z"
+      "parsed_at": "2026-09-08T11:04:02.744130Z"
     },
     "gold_q034": {
       "query": "Затвор межфланцевый DN250 PN16 EPDM диск нержавеющий",
@@ -1012,6 +1235,7 @@
           "seal"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 250,
@@ -1021,16 +1245,35 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "stainless_steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=250, PN16 (нижняя граница 1.6 МПа), присоединение межфланцевое (wafer), материал диска нержавеющий (stainless_steel), среда не указана, тип затвора дисковый, специальное исполнение не требуется."
+        "comment": "Затвор межфланцевый, DN250, PN16. Материал диска нержавеющий, но материал корпуса не указан. EPDM - материал уплотнения, не проверяется схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "disc_material",
+            "value": "stainless_steel",
+            "reason": "материал диска явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "seal_material",
+            "value": "EPDM",
+            "reason": "материал уплотнения явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "seal_material",
+            "value": "epdm",
+            "reason": "seal material is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:39.240689Z"
+      "parsed_at": "2026-09-08T11:04:05.195684Z"
     },
     "gold_q035": {
       "query": "Затвор Гранвэл ЗПВС Ду100 Ру16 или эквивалент",
@@ -1041,25 +1284,35 @@
           "competitor"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 100,
         "pn_min_mpa": 1.6,
-        "joining_type": null,
+        "joining_type": "wafer",
         "thread_type": null,
         "working_medium": null,
         "valve_type": null,
-        "valve_designation": "ЗПВС",
+        "valve_designation": null,
         "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Затвор дисковый (butterfly_valve). DN=100, PN=1.6 МПа (Ру16). Присоединение не указано. Среда не указана. Обозначение ЗПВС (Гранвэл) указано, должно совпадать с артикулом. Материал, проход, управление не указаны, не ограничивают."
+        "comment": "Затвор (butterfly valve) Гранвэл ЗПВС, Ду100, Ру16. DN exact: 100. PN нижняя граница: 1.6 МПа. Тип присоединения: wafer (межфланцевый) из обозначения ЗПВС? Не выводим, но в запросе явно не указано, поэтому null. Материал, среда, управление не указаны. Модель Гранвэл ЗПВС указана как референс, так как запрос содержит 'или эквивалент'.",
+        "reference_model": "Гранвэл ЗПВС",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "Гранвэл ЗПВС",
+            "reason": "Модель конкурента указана как референс, эквивалентность не может быть доказана строгими полями."
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:40.911763Z"
+      "parsed_at": "2026-09-08T11:04:08.262455Z"
     },
     "gold_q036": {
       "query": "Затвор дисковый поворотный ГРАНВЭЛ DN150 PN16 редуктор",
@@ -1071,6 +1324,7 @@
           "gearbox"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 150,
@@ -1086,10 +1340,19 @@
         "control": "gearbox",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN=16 (минимум 1.6 МПа), управление редуктором. Присоединение, среда, материал, проход не указаны — не ограничивают. Тип товара: затвор дисковый поворотный."
+        "comment": "Затвор дисковый поворотный, DN150 exact, PN16 нижняя граница, управление редуктором exact. Материал, тип присоединения, среда не указаны.",
+        "reference_model": "ГРАНВЭЛ",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "ГРАНВЭЛ",
+            "reason": "Модель/бренд-референс, эквивалентность которого нельзя доказать строгими полями"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:42.327563Z"
+      "parsed_at": "2026-09-08T11:04:10.430369Z"
     },
     "gold_q037": {
       "query": "Затвор поворотный Ду80 Ру16 под электропривод",
@@ -1100,6 +1363,7 @@
           "actuator_ready"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 80,
@@ -1112,13 +1376,16 @@
         "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
-        "control": "electric",
+        "control": "electric_ready",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (нижняя граница), управление электроприводом. Присоединение, среда, материал, проход не указаны — не ограничивают. Тип затвора поворотный, поэтому valve_type=null."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; control: под электропривод (явно указано).",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:43.777778Z"
+      "parsed_at": "2026-09-08T11:04:12.095907Z"
     },
     "gold_q038": {
       "query": "Затвор дисковый с электроприводом DN100 PN16",
@@ -1129,6 +1396,7 @@
           "electric_actuator"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 100,
@@ -1144,10 +1412,13 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (нижняя граница), управление электроприводом. Присоединение, среда, материал, проход не указаны — не ограничивают. Тип товара: затвор дисковый."
+        "comment": "Затвор дисковый с электроприводом, DN100, PN16. DN exact, PN нижняя граница, control exact.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:45.235572Z"
+      "parsed_at": "2026-09-08T11:04:13.783908Z"
     },
     "gold_q039": {
       "query": "Затвор межфланцевый 6-0100.16 с ручкой",
@@ -1158,6 +1429,7 @@
           "article_like"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 100,
@@ -1173,10 +1445,13 @@
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Затвор межфланцевый (butterfly_valve), DN=100, PN=1.6 МПа (PN16), присоединение межфланцевое (wafer), управление ручное (ручка). Обозначение '6-0100.16' указано точно. Материал, среда, проход не указаны — не ограничивают выбор."
+        "comment": "Затвор межфланцевый, DN100, PN16 (1.6 МПа), с ручным управлением. Обозначение 6-0100.16 указано явно.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:46.836342Z"
+      "parsed_at": "2026-09-08T11:04:15.715212Z"
     },
     "gold_q040": {
       "query": "Дисковый затвор Ду150 Ру10/16 межфланцевый",
@@ -1187,6 +1462,7 @@
           "pn_range"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 150,
@@ -1202,10 +1478,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN нижняя граница 1.0 МПа (Ру10), присоединение межфланцевое (wafer). Среда, материал, проход, управление не указаны — не ограничивают. Тип товара: затвор дисковый."
+        "comment": "DN exact: 150; PN нижняя граница: Ру10/16 означает минимум 1.0 МПа; joining exact: межфланцевый; материал, среда, управление не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:48.355562Z"
+      "parsed_at": "2026-09-08T11:04:17.180870Z"
     },
     "gold_q041": {
       "query": "затвор 200 16 межфл ред",
@@ -1217,6 +1496,7 @@
           "abbreviation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 200,
@@ -1232,10 +1512,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=200, PN=16 (1.6 МПа) как нижняя граница, присоединение межфланцевое (wafer), проход редуцированный. Материал, среда, управление не указаны — не ограничивают. Тип: затвор дисковый."
+        "comment": "Затвор дисковый, DN 200, PN16 (нижняя граница 1.6 МПа), межфланцевый, редуцированный. Материал, среда, управление не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:49.965870Z"
+      "parsed_at": "2026-09-08T11:04:19.086229Z"
     },
     "gold_q042": {
       "query": "Поворотный дисковый клапан DN100 PN16 wafer",
@@ -1247,6 +1530,7 @@
           "synonym"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 100,
@@ -1262,10 +1546,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (PN16), присоединение межфланцевое (wafer). Среда, материал, проход, управление не указаны — не ограничивают выбор."
+        "comment": "DN exact; PN нижняя граница; joining exact; материал, среда, тип управления не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:51.345789Z"
+      "parsed_at": "2026-09-08T11:04:20.721790Z"
     },
     "gold_q043": {
       "query": "Затвор дисковый фланцевый Ду300 Ру16",
@@ -1276,6 +1563,7 @@
           "flanged_vs_wafer"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "butterfly_valve",
         "dn": 300,
@@ -1291,10 +1579,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=300, PN=1.6 МПа (нижняя граница), присоединение фланцевое. Среда, материал, проход, управление не указаны — не ограничивают выбор."
+        "comment": "Затвор дисковый, фланцевый, Ду300, Ру16. DN exact: 300; PN нижняя граница: 1.6 МПа; joining exact: фланцевый.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:52.857992Z"
+      "parsed_at": "2026-09-08T11:04:22.577821Z"
     },
     "gold_q044": {
       "query": "Задвижка клиновая стальная 30с41нж Ду100 Ру16 фланцевая",
@@ -1307,6 +1598,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 100,
@@ -1315,17 +1607,22 @@
         "thread_type": null,
         "working_medium": null,
         "valve_type": null,
-        "valve_designation": "30с41нж",
-        "body_material": "steel",
+        "valve_designation": null,
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (Ру16), присоединение фланцевое, материал сталь, обозначение 30с41нж. Среда, проход, управление не указаны — не ограничивают."
+        "comment": "Задвижка клиновая, стальная, Ду100, Ру16, фланцевая. DN exact, PN нижняя граница, joining exact, material exact.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:54.170485Z"
+      "parsed_at": "2026-09-08T11:04:24.486373Z"
     },
     "gold_q045": {
       "query": "Задвижка 30с41нж DN150 PN16 с выдвижным шпинделем",
@@ -1337,6 +1634,7 @@
           "stem"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 150,
@@ -1345,17 +1643,26 @@
         "thread_type": null,
         "working_medium": null,
         "valve_type": null,
-        "valve_designation": "30с41нж",
-        "body_material": "cast_iron",
+        "valve_designation": null,
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN=1.6 МПа (нижняя граница). Присоединение не указано. Среда не указана. Обозначение 30с41нж (задвижка с выдвижным шпинделем, чугунная, с нержавеющими уплотнительными кольцами). Материал корпуса: чугун (из обозначения). Проход и управление не указаны. Требуется задвижка с обозначением 30с41нж."
+        "comment": "DN exact: 150; PN lower bound: 1.6 MPa; product type: gate valve; material not explicitly stated (code 30с41нж not decoded); joining type not specified; medium not specified; control not specified.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "stem_type",
+            "value": "выдвижной шпиндель",
+            "reason": "тип шпинделя явно указан, но не проверяется текущей схемой"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:56.260559Z"
+      "parsed_at": "2026-09-08T11:04:26.810522Z"
     },
     "gold_q046": {
       "query": "Задвижка клиновая Ду200 Ру16 стальная фланцевая",
@@ -1367,6 +1674,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 200,
@@ -1376,16 +1684,21 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=200, PN=1.6 МПа (Ру16), присоединение фланцевое, материал сталь. Среда, проход, управление не указаны — не ограничивают. Тип задвижка, в каталоге LD."
+        "comment": "DN exact: 200; PN нижняя граница: 1.6 МПа; joining exact: фланцевая; material exact: стальная.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:57.728138Z"
+      "parsed_at": "2026-09-08T11:04:28.608696Z"
     },
     "gold_q047": {
       "query": "Задвижка Ду100 Ру25 с редуктором",
@@ -1396,6 +1709,7 @@
           "gearbox"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 100,
@@ -1411,10 +1725,13 @@
         "control": "gearbox",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=2.5 МПа (Ру25), управление с редуктором. Присоединение, среда, материал, проход не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; control: с редуктором; тип арматуры: задвижка.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:35:59.094292Z"
+      "parsed_at": "2026-09-08T11:04:30.425703Z"
     },
     "gold_q048": {
       "query": "Задвижка стальная DN150 PN16 под электропривод",
@@ -1425,6 +1742,7 @@
           "actuator_ready"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 150,
@@ -1434,16 +1752,21 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": "electric_ready",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN=1.6 МПа (нижняя граница), материал корпуса сталь, управление под электропривод. Присоединение, среда, обозначение, проход не указаны — не ограничивают выбор."
+        "comment": "DN exact; PN нижняя граница; материал стальной указан; управление под электропривод указано.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:00.451744Z"
+      "parsed_at": "2026-09-08T11:04:32.182965Z"
     },
     "gold_q049": {
       "query": "Задвижка клиновая с электроприводом Ду200 Ру16",
@@ -1454,6 +1777,7 @@
           "electric_actuator"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 200,
@@ -1469,10 +1793,13 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=200, PN=1.6 МПа (нижняя граница), управление электроприводом, тип задвижка клиновая. Присоединение, среда, материал, проход не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 200; PN нижняя граница: 1.6 МПа; control: electric (с электроприводом); тип: задвижка клиновая.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:01.762134Z"
+      "parsed_at": "2026-09-08T11:04:33.710884Z"
     },
     "gold_q050": {
       "query": "Задвижка чугунная Ду80 Ру16 обрезиненный клин",
@@ -1484,6 +1811,7 @@
           "rubber_wedge"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 80,
@@ -1499,10 +1827,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (Ру16), материал корпуса чугун, тип задвижка. Присоединение, среда, управление не указаны. Обрезиненный клин не влияет на ограничения."
+        "comment": "DN exact: 80; PN lower bound: 1.6 MPa; material exact: чугунная; product type exact: задвижка; обрезиненный клин не покрыт схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "wedge_sealing",
+            "value": "обрезиненный",
+            "reason": "обрезиненный клин явно указан, но не проверяется текущей схемой"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:03.309696Z"
+      "parsed_at": "2026-09-08T11:04:35.743255Z"
     },
     "gold_q051": {
       "query": "Задвижка фланцевая чугунная DN100 PN10/16",
@@ -1514,6 +1851,7 @@
           "pn_range"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 100,
@@ -1529,10 +1867,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN10/16 означает минимальное давление 1.0 МПа (PN10), присоединение фланцевое, материал чугун. Среда, проход, управление не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 100; PN нижняя граница: 1.0 МПа (PN10); joining exact: фланцевая; material exact: чугунная.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:04.955844Z"
+      "parsed_at": "2026-09-08T11:04:37.388602Z"
     },
     "gold_q052": {
       "query": "Задвижка 30с15нж Ду50 Ру40",
@@ -1544,6 +1885,7 @@
           "high_pressure"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 50,
@@ -1553,16 +1895,19 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": "30с15нж",
-        "body_material": "cast_iron",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=4.0 МПа (Ру40), обозначение 30с15нж, материал чугун (с), присоединение не указано, среда не указана, проход не указан, управление не указано."
+        "comment": "Задвижка, DN exact 50, PN нижняя граница 4.0 МПа (Ру40). Обозначение 30с15нж указано явно, но материал не выводим из кода.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:06.504777Z"
+      "parsed_at": "2026-09-08T11:04:39.341509Z"
     },
     "gold_q053": {
       "query": "задвижка 100 16 фл ст",
@@ -1574,6 +1919,7 @@
           "abbreviation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 100,
@@ -1583,16 +1929,21 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=16 (минимум 1.6 МПа), присоединение фланцевое, материал сталь. Среда, проход, управление не указаны — не ограничивают. Тип задвижки не указан, поэтому valve_type=null."
+        "comment": "Задвижка, DN=100, PN=16 (1.6 МПа), фланцевое присоединение, материал сталь (из слова 'ст').",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:07.923860Z"
+      "parsed_at": "2026-09-08T11:04:41.137049Z"
     },
     "gold_q054": {
       "query": "Задвижка клиновая сталь 09Г2С DN100 PN16",
@@ -1603,6 +1954,7 @@
           "material"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 100,
@@ -1618,10 +1970,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (PN16), материал корпуса сталь 09Г2С. Присоединение, среда, проход, управление не указаны — не ограничивают выбор. Тип товара: задвижка."
+        "comment": "Тип: задвижка клиновая. Материал: сталь, марка 09Г2С. DN=100 точное. PN=16 (1.6 МПа) нижняя граница. Тип соединения, среда, управление не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:09.631324Z"
+      "parsed_at": "2026-09-08T11:04:43.008621Z"
     },
     "gold_q055": {
       "query": "Задвижка шиберная ножевая Ду150 Ру10",
@@ -1632,6 +1987,7 @@
           "knife_gate"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gate_valve",
         "dn": 150,
@@ -1647,10 +2003,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN=1.0 МПа (Ру10). Тип: задвижка шиберная ножевая. Присоединение, среда, материал, проход, управление не указаны — не ограничивают выбор."
+        "comment": "DN exact: 150; PN lower bound: 1.0 MPa (Ру10); product type: gate valve (шиберная ножевая).",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:11.133082Z"
+      "parsed_at": "2026-09-08T11:04:44.604077Z"
     },
     "gold_q056": {
       "query": "Клапан обратный поворотный стальной Ду80 Ру16 фланцевый",
@@ -1662,6 +2021,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 80,
@@ -1677,10 +2037,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (нижняя граница), присоединение фланцевое, материал сталь. Среда, обозначение, проход и управление не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; material exact: стальной.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:12.729612Z"
+      "parsed_at": "2026-09-08T11:04:46.387105Z"
     },
     "gold_q057": {
       "query": "Клапан обратный DN100 PN16 фланцевый сталь 20",
@@ -1692,6 +2055,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 100,
@@ -1707,10 +2071,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (нижняя граница), присоединение фланцевое, материал сталь марки 20. Среда, проход, управление не указаны — не ограничивают. Тип товара: клапан обратный."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал exact: сталь 20.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:14.301559Z"
+      "parsed_at": "2026-09-08T11:04:47.922671Z"
     },
     "gold_q058": {
       "query": "Клапан обратный межфланцевый Ду50 Ру16",
@@ -1721,6 +2088,7 @@
           "wafer"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 50,
@@ -1736,10 +2104,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (Ру16), присоединение межфланцевое (wafer). Среда, материал, проход, управление не указаны — не ограничивают. Тип товара: обратный клапан."
+        "comment": "DN exact: 50; PN lower bound: 1.6 MPa; joining exact: wafer; product type exact: check valve.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:15.863070Z"
+      "parsed_at": "2026-09-08T11:04:49.323309Z"
     },
     "gold_q059": {
       "query": "Клапан обратный пружинный латунный Ду25 резьбовой",
@@ -1752,6 +2123,7 @@
           "threaded"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 25,
@@ -1767,10 +2139,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=25, присоединение резьбовое, материал латунь. PN не указан, среда не указана, тип резьбы не указан, обозначение не указано, проход не указан, управление не указано. Товар входит в каталог."
+        "comment": "DN exact: 25; joining exact: резьбовой; material exact: латунный; тип товара: обратный клапан.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:17.740657Z"
+      "parsed_at": "2026-09-08T11:04:50.888965Z"
     },
     "gold_q060": {
       "query": "Обратный клапан латунный 1 дюйм ВР/ВР",
@@ -1782,6 +2157,7 @@
           "threaded"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 25,
@@ -1797,10 +2173,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN: 1 дюйм = 25 мм (точное). PN: не указано, не ограничивает. Присоединение: резьбовое (threaded), резьба ВР/ВР (female_female). Среда: не указана. Материал: латунь (brass). Проход и управление не указаны. Тип: обратный клапан."
+        "comment": "DN exact: 1 дюйм = 25 мм; joining exact: резьбовой; thread exact: ВР/ВР; material exact: латунный.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:19.334925Z"
+      "parsed_at": "2026-09-08T11:04:52.366640Z"
     },
     "gold_q061": {
       "query": "Клапан обратный Ду80 Ру40 стальной",
@@ -1811,6 +2190,7 @@
           "high_pressure"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 80,
@@ -1826,10 +2206,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=4.0 МПа (Ру40), материал корпуса сталь. Присоединение, среда, проход, управление не указаны, поэтому не ограничивают выбор. Тип товара - обратный клапан."
+        "comment": "DN exact: 80; PN lower bound: 4.0 MPa; material exact: steel; joining not specified; medium not specified.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:20.725008Z"
+      "parsed_at": "2026-09-08T11:04:54.116355Z"
     },
     "gold_q062": {
       "query": "Клапан обратный 19с53нж DN100 PN40",
@@ -1840,6 +2223,7 @@
           "model"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 100,
@@ -1849,16 +2233,19 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": "19с53нж",
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=4.0 МПа (PN40), обозначение 19с53нж, материал корпуса сталь (по обозначению 'с'), среда не указана, присоединение не указано, проход не указан, управление не указано."
+        "comment": "DN exact: 100; PN нижняя граница: 4.0 МПа (PN40); тип: обратный клапан; обозначение 19с53нж указано явно, но материал не выводим из кода.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:22.497783Z"
+      "parsed_at": "2026-09-08T11:04:55.869711Z"
     },
     "gold_q063": {
       "query": "обратник 50 16 фл",
@@ -1870,6 +2257,7 @@
           "dirty"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "check_valve",
         "dn": 50,
@@ -1885,10 +2273,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=16 (1.6 МПа) как нижняя граница, присоединение фланцевое. Среда, материал, проход, управление не указаны — не ограничивают. Тип товара: клапан обратный."
+        "comment": "DN exact: 50; PN нижняя граница: 16 -> 1.6 МПа; joining exact: фл -> фланцевый; тип товара: обратный клапан.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:23.821685Z"
+      "parsed_at": "2026-09-08T11:04:57.408863Z"
     },
     "gold_q064": {
       "query": "Фильтр сетчатый фланцевый Ду80 Ру16",
@@ -1899,6 +2290,7 @@
           "flanged"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "filter",
         "dn": 80,
@@ -1914,10 +2306,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (Ру16), присоединение фланцевое. Среда, материал, проход и управление не указаны, поэтому не ограничивают выбор. Тип товара - фильтр."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; тип товара: фильтр.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:25.283945Z"
+      "parsed_at": "2026-09-08T11:04:59.300602Z"
     },
     "gold_q065": {
       "query": "Фильтр сетчатый косой латунный Ду25 ВР/ВР",
@@ -1929,6 +2324,7 @@
           "threaded"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "filter",
         "dn": 25,
@@ -1944,10 +2340,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=25, присоединение резьбовое, резьба ВР/ВР, материал латунь. Давление не указано, среда не указана, проход и управление не указаны. Тип товара - фильтр, входит в каталог."
+        "comment": "DN exact: 25; joining exact: threaded (резьбовой); thread_type exact: female_female (ВР/ВР); material exact: brass (латунный). PN, среда, тип управления не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:26.862135Z"
+      "parsed_at": "2026-09-08T11:05:00.962035Z"
     },
     "gold_q066": {
       "query": "Фильтр грязевик DN100 PN16 фланцевый",
@@ -1958,6 +2357,7 @@
           "synonym"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "filter",
         "dn": 100,
@@ -1973,10 +2373,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (PN16), присоединение фланцевое. Среда, материал, проход, управление не указаны — не ограничивают. Тип товара: фильтр."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: фланцевый. Материал, среда, тип управления не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:28.128142Z"
+      "parsed_at": "2026-09-08T11:05:02.709739Z"
     },
     "gold_q067": {
       "query": "Фильтр сетчатый стальной DN50 PN40",
@@ -1988,6 +2391,7 @@
           "high_pressure"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "filter",
         "dn": 50,
@@ -2003,10 +2407,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=4.0 МПа (нижняя граница), материал корпуса сталь, тип товара фильтр. Присоединение, среда, проход, управление не указаны — не ограничивают."
+        "comment": "DN exact: 50; PN нижняя граница: 4.0 МПа; материал: сталь (явно указано); тип товара: фильтр.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:29.614482Z"
+      "parsed_at": "2026-09-08T11:05:04.500450Z"
     },
     "gold_q068": {
       "query": "Сетка сменная для фильтра LD Pride Ду15",
@@ -2018,8 +2425,9 @@
           "series"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
-        "product_type": "filter",
+        "product_type": "repair_kit",
         "dn": 15,
         "pn_min_mpa": null,
         "joining_type": null,
@@ -2033,10 +2441,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=15, тип товара - фильтр (сменная сетка для фильтра). Давление, присоединение, среда, материал, проход, управление не указаны, поэтому не ограничивают выбор. Товар входит в каталог арматуры."
+        "comment": "Сменная сетка для фильтра, Ду15 указан точно. Тип товара - ремкомплект/запчасть.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:31.366367Z"
+      "parsed_at": "2026-09-08T11:05:06.373007Z"
     },
     "gold_q069": {
       "query": "Фланец стальной плоский приварной Ду50 Ру16 сталь 20",
@@ -2048,6 +2459,7 @@
           "steel20"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 50,
@@ -2063,10 +2475,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (Ру16), присоединение приварное, материал сталь 20. Среда не указана, тип арматуры не применим, обозначение не указано, проход и управление не указаны."
+        "comment": "DN exact: 50; PN нижняя граница: 1.6 МПа; joining: приварной; материал: сталь, марка 20.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "плоский",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "плоский",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:32.812263Z"
+      "parsed_at": "2026-09-08T11:05:08.434298Z"
     },
     "gold_q070": {
       "query": "Фланец плоский DN100 PN16 ст.20 ГОСТ 33259",
@@ -2078,11 +2504,12 @@
           "gost"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 100,
         "pn_min_mpa": 1.6,
-        "joining_type": "flanged",
+        "joining_type": null,
         "thread_type": null,
         "working_medium": null,
         "valve_type": null,
@@ -2093,10 +2520,34 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (нижняя граница), присоединение фланцевое, материал сталь марки 20, среда не указана, тип арматуры не применим, обозначение не указано, проход и управление не указаны."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; материал сталь, марка 20; тип фланца плоский и ГОСТ указаны, но не проверяются схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "плоский",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "gost",
+            "value": "ГОСТ 33259",
+            "reason": "ГОСТ явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "standard",
+            "value": "гост 33259",
+            "reason": "GOST/standard is not modeled"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "плоский",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:34.320004Z"
+      "parsed_at": "2026-09-08T11:05:10.609191Z"
     },
     "gold_q071": {
       "query": "Фланец воротниковый приварной встык Ду65 Ру16 09Г2С",
@@ -2108,6 +2559,7 @@
           "09g2s"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 65,
@@ -2123,10 +2575,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=65, PN=1.6 МПа (Ру16), присоединение приварное встык, материал сталь 09Г2С. Среда, проход, управление не указаны — не ограничивают."
+        "comment": "DN exact: 65; PN lower bound: 1.6 MPa; joining exact: welded (приварной встык); material exact: steel (сталь, марка 09Г2С); flange type (воротниковый) not covered by schema.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "воротниковый",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "воротниковый",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:35.772288Z"
+      "parsed_at": "2026-09-08T11:05:12.643749Z"
     },
     "gold_q072": {
       "query": "Фланец воротниковый DN100 PN25 сталь 20",
@@ -2137,6 +2603,7 @@
           "weld_neck"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 100,
@@ -2152,10 +2619,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=2.5 МПа (PN25), присоединение: воротниковый (под приварку), материал: сталь 20. Среда, проход, управление не указаны, не ограничивают. Товар: фланец, входит в каталог."
+        "comment": "DN exact; PN нижняя граница; joining exact (воротниковый фланец приваривается); материал exact (сталь 20).",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "воротниковый",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "воротниковый",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:37.600668Z"
+      "parsed_at": "2026-09-08T11:05:14.628086Z"
     },
     "gold_q073": {
       "query": "Фланец свободный на приварном кольце Ду80 Ру16",
@@ -2166,6 +2647,7 @@
           "loose"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 80,
@@ -2181,10 +2663,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (Ру16), присоединение - приварное (свободный фланец на приварном кольце). Материал, среда, проход, управление не указаны, поэтому не ограничивают выбор."
+        "comment": "DN exact: 80; PN lower bound: 1.6 МПа; joining: приварное кольцо -> welded; тип фланца (свободный на приварном кольце) не покрыт схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "свободный на приварном кольце",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "свободный",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:39.067605Z"
+      "parsed_at": "2026-09-08T11:05:16.741459Z"
     },
     "gold_q074": {
       "query": "Фланец ответный Ду50 Ру40 ст20 комплект",
@@ -2196,6 +2692,7 @@
           "kit"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 50,
@@ -2205,16 +2702,32 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
-        "body_material_grade": "20",
+        "body_material": null,
+        "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=4.0 МПа (Ру40), материал сталь 20. Присоединение не указано, среда не указана, тип фланца не указан. Требуется фланец ответный."
+        "comment": "DN exact: 50; PN нижняя граница: 4.0 МПа; материал сталь 20 указан явно; тип фланца 'ответный' не покрыт схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "ответный",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "ответный",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:40.703440Z"
+      "parsed_at": "2026-09-08T11:05:18.431259Z"
     },
     "gold_q075": {
       "query": "Фланцы ответные DN80 PN16 с крепежом и прокладками",
@@ -2226,6 +2739,7 @@
           "kit"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 80,
@@ -2241,10 +2755,29 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (PN16), присоединение фланцевое (ответные фланцы). Материал, среда, проход, управление не указаны, поэтому не ограничивают. Товар: фланцы с крепежом и прокладками, входит в каталог."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал не указан; комплектность (крепёж, прокладки) не покрывается схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "комплектность",
+            "value": "с крепежом и прокладками",
+            "reason": "требование комплектности не проверяется текущей схемой"
+          },
+          {
+            "name": "kit_contents",
+            "value": "крепежом",
+            "reason": "kit contents are not modeled"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "ответные",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:42.417430Z"
+      "parsed_at": "2026-09-08T11:05:20.875877Z"
     },
     "gold_q076": {
       "query": "Фланец 1-100-16 ст.20 ГОСТ 33259",
@@ -2255,11 +2788,12 @@
           "gost_designation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 100,
         "pn_min_mpa": 1.6,
-        "joining_type": "flanged",
+        "joining_type": null,
         "thread_type": null,
         "working_medium": null,
         "valve_type": null,
@@ -2270,10 +2804,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (PN16), присоединение фланцевое, материал сталь 20. Среда, тип клапана, обозначение, проход и управление не указаны, поэтому не ограничивают."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа (PN16); материал сталь 20 указан явно; ГОСТ 33259 указан, но не проверяется схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "gost",
+            "value": "33259",
+            "reason": "ГОСТ указан явно, но не проверяется текущей схемой"
+          },
+          {
+            "name": "standard",
+            "value": "гост 33259",
+            "reason": "GOST/standard is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:44.060204Z"
+      "parsed_at": "2026-09-08T11:05:22.789963Z"
     },
     "gold_q077": {
       "query": "Фланец тип 11 DN65 PN16 09Г2С",
@@ -2284,6 +2832,7 @@
           "type11"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 65,
@@ -2299,10 +2848,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN exact 65; PN16 как нижняя граница 1.6 МПа; материал сталь 09Г2С; присоединение не указано; среда не указана; тип фланец."
+        "comment": "DN exact: 65; PN нижняя граница: 1.6 МПа; материал сталь (марка 09Г2С) указан явно; тип фланца 11 указан, но не проверяется схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "тип 11",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "тип 11",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:45.461901Z"
+      "parsed_at": "2026-09-08T11:05:24.428817Z"
     },
     "gold_q078": {
       "query": "Фланец Ду150 Ру10 плоский стальной",
@@ -2313,6 +2876,7 @@
           "flat"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 150,
@@ -2328,10 +2892,24 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=150, PN=1.0 МПа (Ру10), материал сталь, тип фланец плоский. Присоединение не указано, среда не указана, управление не применимо."
+        "comment": "DN exact: 150; PN нижняя граница: Ру10=1.0 МПа; материал: стальной; тип фланца 'плоский' указан, но не проверяется схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "плоский",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "плоский",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:47.230201Z"
+      "parsed_at": "2026-09-08T11:05:26.313998Z"
     },
     "gold_q079": {
       "query": "фл 80 16 ст20 плоский",
@@ -2343,6 +2921,7 @@
           "abbreviation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 80,
@@ -2352,16 +2931,32 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
-        "body_material_grade": "20",
+        "body_material": null,
+        "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=80, PN=1.6 МПа (PN16), присоединение фланцевое, материал сталь 20, тип фланец плоский. Среда, проход, управление не указаны и не ограничивают."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа (PN16); joining exact: фланцевый; материал: сталь 20; тип фланца: плоский (не проверяется схемой).",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "плоский",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flange_subtype",
+            "value": "плоский",
+            "reason": "flange subtype is not represented by the deterministic schema"
+          }
+        ],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:48.638788Z"
+      "parsed_at": "2026-09-08T11:05:28.374888Z"
     },
     "gold_q080": {
       "query": "Фланец нержавеющий DN50 PN16 AISI 304",
@@ -2372,6 +2967,7 @@
           "stainless"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 50,
@@ -2387,10 +2983,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=1.6 МПа (нижняя граница), материал нержавеющая сталь AISI 304, тип товара - фланец. Присоединение не указано, среда не указана, проход и управление не применимы."
+        "comment": "DN exact: 50; PN lower bound: 1.6; material exact: stainless steel (AISI 304); product type: flange.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "not specified",
+            "reason": "Тип фланца (плоский/воротниковый и т.п.) не указан, но если бы был указан, не проверялся бы схемой."
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:50.238568Z"
+      "parsed_at": "2026-09-08T11:05:30.681279Z"
     },
     "gold_q081": {
       "query": "Фланец стальной Ду100 Ру16",
@@ -2401,6 +3006,7 @@
           "ambiguous_type"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": 100,
@@ -2416,10 +3022,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (Ру16), материал сталь. Присоединение не указано, среда не указана, тип фланца не указан. Ищем фланец стальной с DN=100 и PN не менее 1.6 МПа."
+        "comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; материал: сталь (явно указано). Тип фланца не указан.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:51.847454Z"
+      "parsed_at": "2026-09-08T11:05:32.416661Z"
     },
     "gold_q082": {
       "query": "Фланцы стальные",
@@ -2430,6 +3039,7 @@
           "generic"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "flange",
         "dn": null,
@@ -2439,16 +3049,21 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Товар: фланец стальной. DN не указан, PN не указан, присоединение не указано, среда не указана, материал сталь (без марки). Ограничения: материал сталь, тип фланец."
+        "comment": "Товар: фланец стальной. Материал указан явно (стальной). DN, PN, тип присоединения и другие параметры не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:53.428308Z"
+      "parsed_at": "2026-09-08T11:05:34.000021Z"
     },
     "gold_q083": {
       "query": "Электропривод для шарового крана Ду100, 220В",
@@ -2459,6 +3074,7 @@
           "electric"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "actuator",
         "dn": 100,
@@ -2474,10 +3090,24 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Запрос на электропривод для шарового крана Ду100. DN=100, управление электрическое (220В). Давление, присоединение, среда, материал, проход не указаны. Тип крана не указан, но это привод, поэтому valve_type=null. Каталог: приводы входят в область поиска."
+        "comment": "Запрос на электропривод для шарового крана Ду100. DN exact: 100. Указано напряжение 220В, что не покрывается схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "voltage",
+            "value": "220В",
+            "reason": "напряжение явно указано, но не проверяется текущей схемой"
+          },
+          {
+            "name": "voltage",
+            "value": "220в",
+            "reason": "actuator voltage is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:55.103258Z"
+      "parsed_at": "2026-09-08T11:05:35.683569Z"
     },
     "gold_q084": {
       "query": "Электропривод четвертьоборотный AOX-Q 400 Нм",
@@ -2489,6 +3119,7 @@
           "torque"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "actuator",
         "dn": null,
@@ -2504,10 +3135,39 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Товар — электропривод четвертьоборотный, момент 400 Нм. DN, PN, присоединение, среда, материал, проход не указаны, поэтому не ограничивают. Управление — электрическое. Каталог LD включает приводы, поэтому in_scope."
+        "comment": "Электропривод четвертьоборотный, модель AOX-Q, момент 400 Нм. DN, PN, тип присоединения, среда, материал не указаны. Модель AOX-Q и момент 400 Нм не покрываются схемой.",
+        "reference_model": "AOX-Q-100",
+        "unsupported_constraints": [
+          {
+            "name": "torque_nm",
+            "value": 400,
+            "reason": "момент явно указан, но не проверяется текущей схемой"
+          },
+          {
+            "name": "model",
+            "value": "AOX-Q",
+            "reason": "модель привода не может быть строго сопоставлена с каталогом LD"
+          },
+          {
+            "name": "reference_model",
+            "value": "AOX-Q-100",
+            "reason": "reference/competitor model equivalence is not deterministic"
+          },
+          {
+            "name": "torque_nm",
+            "value": "400 нм",
+            "reason": "actuator torque is not modeled"
+          },
+          {
+            "name": "drive_model",
+            "value": "aox-q 400",
+            "reason": "drive model/series is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:56.846277Z"
+      "parsed_at": "2026-09-08T11:05:38.104300Z"
     },
     "gold_q085": {
       "query": "Привод электрический AOX-Q-100 для затвора",
@@ -2519,6 +3179,7 @@
           "article_like"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "actuator",
         "dn": null,
@@ -2534,10 +3195,24 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Товар - электрический привод (actuator). DN, PN, присоединение, среда, материал, проход не указаны, поэтому не ограничивают. Управление - электрическое (electric). Каталог LD содержит приводы, поэтому in_scope."
+        "comment": "Запрос явно указывает на электрический привод модели AOX-Q-100 для затвора. Тип товара - привод. Управление электрическое. Модель AOX-Q-100 является референсной, так как не может быть однозначно сопоставлена с конкретным товаром в каталоге.",
+        "reference_model": "AOX-Q-100",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "AOX-Q-100",
+            "reason": "Модель привода указана, но не может быть проверена текущей схемой."
+          },
+          {
+            "name": "drive_model",
+            "value": "aox-q-100",
+            "reason": "drive model/series is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:58.402899Z"
+      "parsed_at": "2026-09-08T11:05:40.087984Z"
     },
     "gold_q086": {
       "query": "Электропривод AUMA для задвижки Ду150",
@@ -2549,6 +3224,7 @@
           "auma"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "actuator",
         "dn": 150,
@@ -2564,10 +3240,24 @@
         "control": "electric",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Запрос на электропривод AUMA для задвижки Ду150. DN=150, управление электрическое. Давление, присоединение, среда, материал, проход не указаны. Тип товара - привод (actuator), входит в каталог."
+        "comment": "Запрос на электропривод AUMA для задвижки Ду150. DN указан точно: 150. Тип привода электрический. Модель AUMA является референсом, не может быть однозначно сопоставлена с LD.",
+        "reference_model": "AUMA",
+        "unsupported_constraints": [
+          {
+            "name": "reference_model",
+            "value": "AUMA",
+            "reason": "Модель привода AUMA указана, но не может быть проверена текущей схемой."
+          },
+          {
+            "name": "drive_model",
+            "value": "auma",
+            "reason": "drive model/series is not modeled"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:36:59.929629Z"
+      "parsed_at": "2026-09-08T11:05:42.019746Z"
     },
     "gold_q087": {
       "query": "Пневмопривод двойного действия для крана DN80",
@@ -2578,6 +3268,7 @@
           "pneumatic"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "actuator",
         "dn": 80,
@@ -2593,10 +3284,19 @@
         "control": "pneumatic",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Запрошен пневмопривод двойного действия для крана DN80. DN=80, управление пневматическое. Давление, присоединение, среда, материал, проход не указаны, поэтому не ограничивают. Тип привода - пневматический, двойного действия."
+        "comment": "Запрос на пневмопривод двойного действия для крана DN80. DN указан точно (80). Тип привода - пневматический. Двойное действие не имеет отдельного поля, поэтому добавлено в unsupported_constraints.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "actuator_type",
+            "value": "double_acting",
+            "reason": "Тип привода (двойного действия) явно указан, но не покрывается текущей схемой."
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:01.307302Z"
+      "parsed_at": "2026-09-08T11:05:44.130516Z"
     },
     "gold_q088": {
       "query": "Ручной редуктор для затвора Ду200",
@@ -2607,6 +3307,7 @@
           "gearbox"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "gearbox",
         "dn": 200,
@@ -2622,10 +3323,13 @@
         "control": "manual",
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Запрошен ручной редуктор для затвора с Ду200. DN=200, управление ручное. Давление, присоединение, среда, материал, проход не указаны, поэтому не ограничивают выбор. Товар относится к каталогу арматуры (редуктор)."
+        "comment": "Запрос на ручной редуктор для затвора с Ду200. DN exact: 200. Управление manual (ручной). Тип товара gearbox.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:02.849891Z"
+      "parsed_at": "2026-09-08T11:05:45.903114Z"
     },
     "gold_q089": {
       "query": "Комплект ответных фланцев Ду50 Ру40 для шарового крана",
@@ -2636,11 +3340,12 @@
           "flange_kit"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
-        "product_type": "flange",
+        "product_type": "accessory",
         "dn": 50,
         "pn_min_mpa": 4.0,
-        "joining_type": "flanged",
+        "joining_type": null,
         "thread_type": null,
         "working_medium": null,
         "valve_type": null,
@@ -2651,10 +3356,19 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=50, PN=4.0 МПа (Ру40), присоединение фланцевое (ответные фланцы), среда не указана, материал не указан, проход не указан, управление не указано. Товар - фланец, входит в каталог."
+        "comment": "Комплект ответных фланцев, DN exact 50, PN нижняя граница 4.0 МПа (Ру40). Тип фланца не указан.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "flange_type",
+            "value": "ответный",
+            "reason": "тип фланца явно указан, но не проверяется текущей схемой"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:04.364173Z"
+      "parsed_at": "2026-09-08T11:05:47.818376Z"
     },
     "gold_q090": {
       "query": "Ремкомплект для крана шарового LD Ду50",
@@ -2665,6 +3379,7 @@
           "repair_kit"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "repair_kit",
         "dn": 50,
@@ -2680,10 +3395,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "Ремкомплект для шарового крана LD, DN=50. Давление, присоединение, среда, материал, проход, управление не указаны, поэтому не ограничивают. Тип крана не указан, но так как это ремкомплект для шарового крана, он должен подходить к стандартному шаровому крану."
+        "comment": "Ремкомплект для шарового крана, DN 50 указан точно. Тип соединения, давление, материал и другие параметры не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:06.052976Z"
+      "parsed_at": "2026-09-08T11:05:49.657641Z"
     },
     "gold_q091": {
       "query": "Арматура трубопроводная фланцевая Ду100 Ру16",
@@ -2694,6 +3412,7 @@
           "generic"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": 100,
@@ -2709,10 +3428,13 @@
         "control": null,
         "catalog_scope": "uncertain",
         "ambiguous": false,
-        "comment": "DN=100, PN=1.6 МПа (Ру16), присоединение фланцевое. Тип арматуры не указан, поэтому product_type=other, catalog_scope=uncertain. Остальные параметры не ограничивают."
+        "comment": "DN exact: 100; PN lower bound: 1.6 MPa; joining exact: flanged. Product type not specified, only general 'арматура трубопроводная'.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:07.494533Z"
+      "parsed_at": "2026-09-08T11:05:51.412841Z"
     },
     "gold_q092": {
       "query": "Кран Ду50",
@@ -2723,6 +3445,7 @@
           "underspecified"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -2738,10 +3461,13 @@
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": true,
-        "comment": "DN exact: 50. PN не указан, присоединение не указано, среда не указана, материал не указан, проход не указан, управление не указано. Для шарового крана без специального типа требуется standard. Запрос слишком общий, поэтому ambiguous=true."
+        "comment": "DN exact: 50. Тип арматуры не указан, но 'Кран' обычно означает шаровой кран, поэтому product_type=ball_valve. Специальное исполнение не указано, поэтому valve_type=standard. Остальные характеристики не указаны.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:08.876347Z"
+      "parsed_at": "2026-09-08T11:05:53.394853Z"
     },
     "gold_q093": {
       "query": "Запорная арматура DN80 PN16 стальная",
@@ -2752,6 +3478,7 @@
           "underspecified"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": 80,
@@ -2761,16 +3488,21 @@
         "working_medium": null,
         "valve_type": null,
         "valve_designation": null,
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "uncertain",
         "ambiguous": false,
-        "comment": "Запрос 'Запорная арматура' не указывает конкретный тип (кран, задвижка и т.д.), поэтому product_type='other'. DN=80, PN=1.6 МПа (PN16), материал сталь. Присоединение, среда, проход, управление не указаны. catalog_scope='uncertain', так как тип арматуры неясен."
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; материал exact: сталь. Тип арматуры не указан, поэтому product_type=other, catalog_scope=uncertain.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:10.707138Z"
+      "parsed_at": "2026-09-08T11:05:55.230311Z"
     },
     "gold_q094": {
       "query": "краны шаровые стальные фланцевые 50-100 мм Ру16",
@@ -2782,6 +3514,7 @@
           "plural"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": null,
@@ -2791,16 +3524,32 @@
         "working_medium": null,
         "valve_type": "standard",
         "valve_designation": null,
-        "body_material": "steel",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": true,
-        "comment": "DN указан диапазоном 50-100 мм, что делает запрос неоднозначным для точного подбора. PN16 (1.6 МПа) как нижняя граница. Присоединение фланцевое. Материал сталь. Среда не указана. Управление не указано. Для шарового крана без специального типа требуется standard."
+        "comment": "DN указан диапазоном 50-100 мм, что неоднозначно; PN16 -> 1.6 МПа; материал сталь; присоединение фланцевое; тип - шаровой кран, стандартное исполнение.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "dn_range",
+            "value": "50-100",
+            "reason": "Диаметр указан диапазоном, невозможно однозначно определить DN"
+          },
+          {
+            "name": "diameter_range",
+            "value": "range",
+            "reason": "multi-DN query cannot produce one exact golden set"
+          }
+        ],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:12.430001Z"
+      "parsed_at": "2026-09-08T11:05:57.321953Z"
     },
     "gold_q095": {
       "query": "Кран шар. Ду 25 Ру 40 лат. м/м",
@@ -2812,6 +3561,7 @@
           "abbreviation"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "ball_valve",
         "dn": 25,
@@ -2821,16 +3571,21 @@
         "working_medium": null,
         "valve_type": "standard",
         "valve_designation": null,
-        "body_material": "brass",
+        "body_material": null,
         "body_material_grade": null,
         "bore_type": null,
         "control": null,
         "catalog_scope": "in_scope",
         "ambiguous": false,
-        "comment": "DN=25, PN=4.0 МПа (Ру40), присоединение резьбовое, резьба наружная/наружная (м/м), материал латунь. Тип крана не указан, поэтому standard. Проход и управление не указаны, не ограничивают."
+        "comment": "DN exact 25; PN нижняя граница 4.0 МПа; joining exact threaded (резьбовой); thread_type male_male (м/м); материал латунь (лат.); тип крана шаровой, специальное исполнение не указано -> standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": [
+          "body_material was inferred although the query contains no explicit material cue; field cleared"
+        ]
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:14.149693Z"
+      "parsed_at": "2026-09-08T11:05:59.407660Z"
     },
     "gold_q096": {
       "query": "Насос центробежный 5,5 кВт 380В производительность 25 м3/ч",
@@ -2841,6 +3596,7 @@
           "pump"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": null,
@@ -2856,10 +3612,39 @@
         "control": null,
         "catalog_scope": "out_of_scope",
         "ambiguous": false,
-        "comment": "Товар — насос центробежный, не относится к трубопроводной арматуре и каталогу LD. Параметры (мощность, напряжение, производительность) не являются ограничениями для арматуры. catalog_scope=out_of_scope."
+        "comment": "Товар - насос, не относится к трубопроводной арматуре. Указаны мощность, напряжение и производительность, но они не проверяются схемой.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "power_kw",
+            "value": 5.5,
+            "reason": "мощность явно указана, но не проверяется текущей схемой"
+          },
+          {
+            "name": "voltage_v",
+            "value": 380,
+            "reason": "напряжение явно указано, но не проверяется текущей схемой"
+          },
+          {
+            "name": "flow_rate_m3h",
+            "value": 25,
+            "reason": "производительность явно указана, но не проверяется текущей схемой"
+          },
+          {
+            "name": "voltage",
+            "value": "380в",
+            "reason": "actuator voltage is not modeled"
+          },
+          {
+            "name": "inch_size",
+            "value": "2",
+            "reason": "inch-to-DN mapping is not modeled here"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:15.576717Z"
+      "parsed_at": "2026-09-08T11:06:01.278274Z"
     },
     "gold_q097": {
       "query": "Подшипник 6205 2RS",
@@ -2870,6 +3655,7 @@
           "bearing"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": null,
@@ -2885,10 +3671,19 @@
         "control": null,
         "catalog_scope": "out_of_scope",
         "ambiguous": false,
-        "comment": "Товар 'Подшипник 6205 2RS' не относится к трубопроводной арматуре, поэтому catalog_scope=out_of_scope, все технические поля null."
+        "comment": "Товар 'Подшипник 6205 2RS' не относится к трубопроводной арматуре и комплектующим, поэтому вне области каталога.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "inch_size",
+            "value": "2",
+            "reason": "inch-to-DN mapping is not modeled here"
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:16.826266Z"
+      "parsed_at": "2026-09-08T11:06:03.059136Z"
     },
     "gold_q098": {
       "query": "Кабель ВВГнг-LS 3х2,5 мм2",
@@ -2899,6 +3694,7 @@
           "cable"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": null,
@@ -2914,10 +3710,13 @@
         "control": null,
         "catalog_scope": "out_of_scope",
         "ambiguous": false,
-        "comment": "Товар 'Кабель ВВГнг-LS 3х2,5 мм2' не относится к трубопроводной арматуре, поэтому catalog_scope=out_of_scope, все технические поля не ограничивают."
+        "comment": "Товар 'Кабель ВВГнг-LS 3х2,5 мм2' явно не относится к трубопроводной арматуре, поэтому catalog_scope=out_of_scope.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:18.080073Z"
+      "parsed_at": "2026-09-08T11:06:04.683819Z"
     },
     "gold_q099": {
       "query": "Болт М16х60 оцинкованный класс 8.8",
@@ -2928,6 +3727,7 @@
           "fastener"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": null,
@@ -2943,10 +3743,13 @@
         "control": null,
         "catalog_scope": "out_of_scope",
         "ambiguous": false,
-        "comment": "Товар — болт, не относится к трубопроводной арматуре, поэтому вне каталога."
+        "comment": "Товар - болт, не относится к трубопроводной арматуре.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:19.280536Z"
+      "parsed_at": "2026-09-08T11:06:06.216808Z"
     },
     "gold_q100": {
       "query": "Теплообменник пластинчатый 500 кВт",
@@ -2957,6 +3760,7 @@
           "heat_exchanger"
         ]
       },
+      "parser_schema_version": 2,
       "constraints": {
         "product_type": "other",
         "dn": null,
@@ -2972,11 +3776,21 @@
         "control": null,
         "catalog_scope": "out_of_scope",
         "ambiguous": false,
-        "comment": "Теплообменник не относится к трубопроводной арматуре, поэтому вне каталога."
+        "comment": "Товар 'теплообменник пластинчатый' не относится к трубопроводной арматуре и комплектующим, поэтому вне каталога.",
+        "reference_model": null,
+        "unsupported_constraints": [
+          {
+            "name": "power_kw",
+            "value": 500,
+            "reason": "Мощность теплообменника явно указана, но не проверяется текущей схемой."
+          }
+        ],
+        "parser_warnings": []
       },
       "parse_error": null,
-      "parsed_at": "2026-09-07T09:37:20.560786Z"
+      "parsed_at": "2026-09-08T11:06:08.254536Z"
     }
   },
-  "updated_at": "2026-09-07T09:37:20.560803Z"
+  "updated_at": "2026-09-08T11:06:08.254555Z",
+  "parser_schema_version": 2
 }
