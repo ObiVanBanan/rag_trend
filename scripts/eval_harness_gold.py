@@ -13,7 +13,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from nomenclature_matcher.bm25_store import BM25Store
 from nomenclature_matcher.documents import load_products_from_csv
 from nomenclature_matcher.embeddings import OpenAIEmbedder
-from nomenclature_matcher.golden_rules import GoldenQueryConstraints, evaluate_product_strict
+from nomenclature_matcher.golden_rules import GoldenQueryConstraints, golden_product_snapshot
+from nomenclature_matcher.harness_gold import (
+    evaluate_harness_product,
+    harness_candidate_bore_type,
+    human_grade_for_returned_id,
+)
 from nomenclature_matcher.hybrid_retriever import HybridRetriever
 from nomenclature_matcher.matcher import NomenclatureMatcher
 from nomenclature_matcher.qdrant_store import QdrantStore
@@ -28,7 +33,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run the current hybrid+reranker pipeline against constraint-based harness GOLD. "
-            "CORE/NEGATIVE are hard-gate candidates; EXTENDED is diagnostic by default."
+            "Human candidate grades take priority over generic constraint evaluation."
         )
     )
     parser.add_argument("--dataset", default=str(ROOT / "data" / "harness_gold.json"))
@@ -36,30 +41,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", default=str(ROOT / "data" / "harness_gold_eval.json"))
     parser.add_argument("--include-extended", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument(
-        "--min-hard-pass-rate",
-        type=float,
-        default=None,
-        help="Optional hook threshold. Exit 1 when hard-gate pass rate is below this value.",
-    )
-    parser.add_argument(
-        "--max-wrong-not-found-rate",
-        type=float,
-        default=None,
-        help="Optional hook threshold for CORE queries.",
-    )
-    parser.add_argument(
-        "--max-false-match-rate",
-        type=float,
-        default=None,
-        help="Optional hook threshold for NEGATIVE queries.",
-    )
-    parser.add_argument(
-        "--max-unknown-answer-rate",
-        type=float,
-        default=None,
-        help="Optional hook threshold for returned products whose required fields are not verifiable.",
-    )
+    parser.add_argument("--min-hard-pass-rate", type=float, default=None)
+    parser.add_argument("--max-wrong-not-found-rate", type=float, default=None)
+    parser.add_argument("--max-false-match-rate", type=float, default=None)
+    parser.add_argument("--max-unknown-answer-rate", type=float, default=None)
     return parser
 
 
@@ -76,6 +61,13 @@ def _write_json(path: Path, payload: Any) -> None:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _portable_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT.resolve()))
+    except ValueError:
+        return str(path)
 
 
 def _build_matcher(products, settings: Settings) -> NomenclatureMatcher:
@@ -101,6 +93,12 @@ def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
     return GoldenQueryConstraints.model_validate(payload)
 
 
+def _returned_product_snapshot(product) -> dict[str, Any]:
+    snapshot = golden_product_snapshot(product)
+    snapshot["harness_bore_type"] = harness_candidate_bore_type(product)
+    return snapshot
+
+
 def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any]) -> dict[str, Any]:
     split = case["split"]
     expected_status = case.get("expected_status")
@@ -117,9 +115,16 @@ def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any])
         "returned_ld_id": returned_ld_id,
         "known_positive_eligible": bool(known_positive_ids),
         "known_positive_hit": bool(returned_ld_id is not None and returned_ld_id in known_positive_ids),
+        "human_grade": human_grade_for_returned_id(case, returned_ld_id),
         "verdict": "UNSCORED",
         "reason": "",
     }
+
+    product = None
+    if returned_ld_id is not None:
+        product = products_by_id.get(int(returned_ld_id))
+        if product is not None:
+            row["returned_product"] = _returned_product_snapshot(product)
 
     if split == "NEGATIVE":
         if result.status == "NOT_FOUND":
@@ -146,14 +151,30 @@ def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any])
         row["verdict"] = "FAIL_PIPELINE"
         row["reason"] = f"Unexpected pipeline status: {result.status}"
         return row
-
-    product = products_by_id.get(int(result.ld_product.ld_id))
     if product is None:
         row["verdict"] = "FAIL_MISSING_CATALOG_PRODUCT"
         row["reason"] = "Returned LD id is not present in the catalog snapshot used by the evaluator."
         return row
 
-    decision = evaluate_product_strict(product, _requirements_model(case))
+    human_grade = row["human_grade"]
+    if human_grade == "ACCEPT":
+        row["verdict"] = "PASS"
+        row["reason"] = "Returned product is explicitly HUMAN ACCEPT for this query."
+        row["decision_source"] = "HUMAN_ACCEPT"
+        return row
+    if human_grade == "REJECT":
+        row["verdict"] = "FAIL_HUMAN_REJECT"
+        row["reason"] = "Returned product is explicitly HUMAN REJECT for this query."
+        row["decision_source"] = "HUMAN_REJECT"
+        return row
+    if human_grade == "UNSURE":
+        row["verdict"] = "UNKNOWN_HUMAN"
+        row["reason"] = "Returned product was explicitly marked HUMAN UNSURE; do not count it as PASS."
+        row["decision_source"] = "HUMAN_UNSURE"
+        return row
+
+    decision = evaluate_harness_product(product, _requirements_model(case))
+    row["decision_source"] = "CONSTRAINTS"
     row["requirement_decision"] = {
         "status": decision.status,
         "checks": decision.checks,
@@ -188,7 +209,11 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     negative_pass = sum(row["verdict"] == "PASS" for row in negative)
     wrong_not_found = sum(row["verdict"] == "FAIL_WRONG_NOT_FOUND" for row in core)
     false_match = sum(row["verdict"] == "FAIL_FALSE_MATCH" for row in negative)
-    unknown_answer = sum(row["verdict"] in {"FAIL_UNKNOWN_PRODUCT_DATA", "UNKNOWN"} for row in rows)
+    unknown_answer = sum(
+        row["verdict"] in {"FAIL_UNKNOWN_PRODUCT_DATA", "UNKNOWN", "UNKNOWN_HUMAN"}
+        for row in rows
+    )
+    human_reject = sum(row["verdict"] == "FAIL_HUMAN_REJECT" for row in rows)
     known_positive_hit = sum(bool(row.get("known_positive_hit")) for row in known_positive_eligible)
 
     return {
@@ -202,6 +227,7 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "wrong_not_found_rate": _rate(wrong_not_found, len(core)),
         "false_match_rate": _rate(false_match, len(negative)),
         "unknown_answer_rate": _rate(unknown_answer, len(rows)),
+        "human_reject_rate": _rate(human_reject, len(rows)),
         "known_positive_hit_rate": _rate(known_positive_hit, len(known_positive_eligible)),
         "verdict_counts": dict(verdicts),
     }
@@ -229,7 +255,8 @@ def main() -> int:
     if args.limit is not None and args.limit <= 0:
         raise SystemExit("--limit must be > 0")
 
-    dataset = _read_json(Path(args.dataset))
+    dataset_path = Path(args.dataset)
+    dataset = _read_json(dataset_path)
     cases = dataset.get("cases", [])
     if not args.include_extended:
         cases = [case for case in cases if case.get("split") in {"CORE", "NEGATIVE"}]
@@ -246,13 +273,16 @@ def main() -> int:
     for case, result in zip(cases, results, strict=True):
         row = _evaluate_case(case, result, products_by_id)
         rows.append(row)
-        print(f"{case['id']}: {row['verdict']} status={result.status} ld_id={row['returned_ld_id']}")
+        print(
+            f"{case['id']}: {row['verdict']} status={result.status} "
+            f"ld_id={row['returned_ld_id']} human={row.get('human_grade')}"
+        )
 
     summary = _summary(rows)
     threshold_failures = _threshold_failures(summary, args)
     payload = {
         "generated_at": _now(),
-        "dataset": args.dataset,
+        "dataset": _portable_path(dataset_path),
         "summary": summary,
         "threshold_failures": threshold_failures,
         "results": rows,
