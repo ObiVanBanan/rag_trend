@@ -1,0 +1,354 @@
+[
+  {
+    "id": "tender_v1_001",
+    "query": "Задвижка клиновая с выдвижным шпинделем 30с41нж, присоединение к трубопроводу фланцевое, номинальное давление 1,6 МПа, номинальный диаметр 100 мм",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 2
+  },
+  {
+    "id": "tender_v1_002",
+    "query": "Фланец стальной плоский приварной, марка стали 20, номинальное давление 1,6 МПа, номинальный диаметр 100 мм",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 4
+  },
+  {
+    "id": "tender_v1_003",
+    "query": "Кран шаровый 11Б27П ДУ15 РУ16",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 5
+  },
+  {
+    "id": "tender_v1_004",
+    "query": "Кран шаровый 11Б27П ДУ20 РУ16",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 7
+  },
+  {
+    "id": "tender_v1_005",
+    "query": "Задвижка клиновая с выдвижным шпинделем фланцевая 30с41нж Ду150, 1,6 МПа,",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 9
+  },
+  {
+    "id": "tender_v1_006",
+    "query": "Кран шаровый 11Б27П ДУ50 РУ16",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 11
+  },
+  {
+    "id": "tender_v1_007",
+    "query": "Задвижка клиновая с выдвижным шпинделем фланцевая 30лс41нж Ду50 Ру16, 1,6 МПа,",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 12
+  },
+  {
+    "id": "tender_v1_008",
+    "query": "Фланец воротниковый приварной в стык Ду 65 мм, ст. 09Г2С, Py 1,6 МПа",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 14
+  },
+  {
+    "id": "tender_v1_009",
+    "query": "Кран шаровый фланцевый Ду 50 h-90. LD ДУ 50/40 PN40 КШЦФ или аналог",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 15
+  },
+  {
+    "id": "tender_v1_010",
+    "query": "Фланец воротниковый приварной встык Ду 80",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 16
+  },
+  {
+    "id": "tender_v1_011",
+    "query": "Фланец стальной ду80мм. под втулку ПНД ду90мм.",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 19
+  },
+  {
+    "id": "tender_v1_012",
+    "query": "Фланец стальной ду50мм. под втулку ПНД ду63мм.",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 20
+  },
+  {
+    "id": "tender_v1_013",
+    "query": "Фланец стальной ду40мм. под втулку ПНД ду50мм.",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 21
+  },
+  {
+    "id": "tender_v1_014",
+    "query": "Затвор поворотный дисковый Гранвел ЗПВС- Ду=100, Pу=16",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 23
+  },
+  {
+    "id": "tender_v1_015",
+    "query": "Затвор поворотный дисковый Гранвэл ЗПВС-Ду=50, Pу=16",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 25
+  },
+  {
+    "id": "tender_v1_016",
+    "query": "Кран шаровой фланцевый стальной Ду80 Ру-16, в к-те (вода) стальной, в помещении",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 28
+  },
+  {
+    "id": "tender_v1_017",
+    "query": "Кран шаровой ПНД компрессионный Ду32Ру16, наружный (в колодце), компрессионный-обжимной",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 30
+  },
+  {
+    "id": "tender_v1_018",
+    "query": "Кран шаровый латунный Ду25, НР-ВР, наружный (в колодце), наружная-внутренняя резьба",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 32
+  },
+  {
+    "id": "tender_v1_019",
+    "query": "Кран шаровый латунь 11б27п1 Ду20 вр/нр Ру40, в помещении, внутренняя/наружная резьба",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 34
+  },
+  {
+    "id": "tender_v1_020",
+    "query": "Фланец стальной ду100мм. под втулку ПНД ду110мм.",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 35
+  },
+  {
+    "id": "tender_v1_021",
+    "query": "Задвижка клиновая фланцевая с выдвижным шпинделем d 108мм, Ру 16 МПа",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 41
+  },
+  {
+    "id": "tender_v1_022",
+    "query": "Кран стальной шаровой муфтовый 11с39п Ду 32 Ру25 рабочая температура -30+200С",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 42
+  },
+  {
+    "id": "tender_v1_023",
+    "query": "Кран шаровый фланцевый КШ.Ф.050.080-02 с ручным управлением с комплектом ответных фланцев, Ду 50, Ру 8 МПа",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+    "source_document": "ТЗ.RAR",
+    "source_row": 43
+  },
+  {
+    "id": "tender_v1_024",
+    "query": "дисковый затвор Ду80",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 2
+  },
+  {
+    "id": "tender_v1_025",
+    "query": "дисковый затвор Ду40",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 3
+  },
+  {
+    "id": "tender_v1_026",
+    "query": "дисковый затвор Ду50",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 4
+  },
+  {
+    "id": "tender_v1_027",
+    "query": "дисковый затвор Ду100",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 5
+  },
+  {
+    "id": "tender_v1_028",
+    "query": "фильтр Ду50",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 6
+  },
+  {
+    "id": "tender_v1_029",
+    "query": "фильтр Ду150",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 7
+  },
+  {
+    "id": "tender_v1_030",
+    "query": "кран шаровый Ду150",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 8
+  },
+  {
+    "id": "tender_v1_031",
+    "query": "кран шаровый Ду25",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 9
+  },
+  {
+    "id": "tender_v1_032",
+    "query": "дисковый затвор Ду32",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 10
+  },
+  {
+    "id": "tender_v1_033",
+    "query": "Ревизия запорно-регулирующей арматуры (задвижки, вентили, шаровые краны, обратные клапаны). Кран шаровой 11c67п — 4 шт., DN50.",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 11
+  },
+  {
+    "id": "tender_v1_034",
+    "query": "кран шаровый фланцевый Ду50",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 12
+  },
+  {
+    "id": "tender_v1_035",
+    "query": "кран шаровыйфланцевыйДу50",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 13
+  },
+  {
+    "id": "tender_v1_036",
+    "query": "Фильтр (Ду40)",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 16
+  },
+  {
+    "id": "tender_v1_037",
+    "query": "дисковый затвор Ду32 - 3шт.",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 21
+  },
+  {
+    "id": "tender_v1_038",
+    "query": "кран шаровыйДу25-2шт",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 22
+  },
+  {
+    "id": "tender_v1_039",
+    "query": "кран шаровыйДу150-2шт",
+    "origin": "real_tender",
+    "source_file": "kontur_AP123290_nomenclature.xlsx",
+    "source_document": "ТЗ зам.RAR",
+    "source_row": 29
+  },
+  {
+    "id": "tender_v1_040",
+    "query": "Задвижки стальные",
+    "origin": "real_tender",
+    "source_file": "kontur_32616336697_nomenclature.xlsx",
+    "source_document": "ZD_26VP1768.7z",
+    "source_row": 20
+  },
+  {
+    "id": "tender_v1_041",
+    "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 15 мм",
+    "origin": "real_tender",
+    "source_file": "kontur_32616336697_nomenclature.xlsx",
+    "source_document": "ZD_26VP1768.7z",
+    "source_row": 470
+  },
+  {
+    "id": "tender_v1_042",
+    "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 25 мм",
+    "origin": "real_tender",
+    "source_file": "kontur_32616336697_nomenclature.xlsx",
+    "source_document": "ZD_26VP1768.7z",
+    "source_row": 471
+  },
+  {
+    "id": "tender_v1_043",
+    "query": "Клапан запорный, стальной, проходной, фланцевый, 15с22нж, номинальное давление PN 4,0 МПа, номинальный диаметр DN 40 мм",
+    "origin": "real_tender",
+    "source_file": "kontur_32616336697_nomenclature.xlsx",
+    "source_document": "ZD_26VP1768.7z",
+    "source_row": 486
+  },
+  {
+    "id": "tender_v1_044",
+    "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 20 мм",
+    "origin": "real_tender",
+    "source_file": "kontur_32616336697_nomenclature.xlsx",
+    "source_document": "ZD_26VP1768.7z",
+    "source_row": 495
+  }
+]
