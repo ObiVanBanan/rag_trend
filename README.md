@@ -81,6 +81,79 @@ src/nomenclature_matcher/golden_rules.py
 
 Production query/matching helpers остаются отдельно в `src/nomenclature_matcher/query_constraints.py` и не меняются этим экспериментальным pipeline.
 
+## Harness GOLD: constraint-based hook dataset
+
+Для harness полный список всех допустимых `acceptable_ld_ids` не используется как ground truth. Ручные LD ID считаются только известными положительными примерами. Основной эталон — требования из тендерной строки.
+
+Построить hook-ready dataset из уже сохраненных parser/report/label artifacts:
+
+```bash
+python scripts/build_harness_gold.py
+```
+
+DeepSeek при этом не вызывается. Создаются:
+
+```text
+data/harness_gold.json
+data/harness_gold_core.json
+data/harness_gold_negative.json
+data/harness_gold_extended.json
+```
+
+Разбиение:
+
+- `CORE` — hard-gate MATCHED cases: требования детерминированно проверяемы и auto-report подтверждает существование хотя бы одного strict PASS товара в текущем каталоге;
+- `NEGATIVE` — hard-gate явные out-of-scope `NOT_FOUND` cases;
+- `EXTENDED` — diagnostic-only: ambiguity, unsupported constraints, parser warnings или отсутствие доказанного strict catalog PASS.
+
+`known_positive_ids` содержит только human-confirmed примеры и всегда имеет `known_positive_ids_exhaustive=false`. Поэтому новый корректный LD товар может пройти hook даже если человек раньше его не видел.
+
+Запустить текущий hybrid+reranker на hard-gate части:
+
+```bash
+python scripts/eval_harness_gold.py
+```
+
+Evaluator проверяет возвращенный LD товар по требованиям case. Для `CORE`:
+
+- DN — exact;
+- PN — candidate PN >= query PN;
+- остальные явно заданные поддерживаемые поля — exact;
+- отсутствующее обязательное поле товара → `FAIL_UNKNOWN_PRODUCT_DATA`, а не PASS;
+- `NOT_FOUND` при доказанном существовании подходящего товара → `FAIL_WRONG_NOT_FOUND`.
+
+Для `NEGATIVE` любой `MATCHED` → `FAIL_FALSE_MATCH`.
+
+Результат сохраняется в:
+
+```text
+data/harness_gold_eval.json
+```
+
+Основные hook-метрики:
+
+```text
+hard_pass_rate
+core_pass_rate
+negative_pass_rate
+wrong_not_found_rate
+false_match_rate
+unknown_answer_rate
+known_positive_hit_rate
+```
+
+Пока champion baseline не зафиксирован, evaluator только считает метрики. После фиксации champion hook может передавать thresholds, например:
+
+```bash
+python scripts/eval_harness_gold.py \
+  --min-hard-pass-rate 0.85 \
+  --max-wrong-not-found-rate 0.10 \
+  --max-false-match-rate 0.00 \
+  --max-unknown-answer-rate 0.10
+```
+
+При нарушении заданного threshold скрипт завершится с exit code `1`, что позволяет использовать его напрямую из lifecycle hook harness.
+
 ## Golden dataset / manual annotation fallback
 
 При необходимости ручной проверки можно сгенерировать Dense + BM25 + Hybrid/RRF candidate pool:
