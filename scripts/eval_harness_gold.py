@@ -92,10 +92,11 @@ def _build_matcher(products, settings: Settings) -> NomenclatureMatcher:
 
 
 def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
+    requirements = case.get("requirements", {})
     payload = {
-        "product_type": case.get("requirements", {}).get("product_type", "other"),
+        "product_type": requirements.get("product_type", "other"),
         "catalog_scope": "in_scope",
-        **case.get("requirements", {}),
+        **requirements,
     }
     return GoldenQueryConstraints.model_validate(payload)
 
@@ -103,6 +104,9 @@ def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
 def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any]) -> dict[str, Any]:
     split = case["split"]
     expected_status = case.get("expected_status")
+    known_positive_ids = {int(value) for value in case.get("known_positive_ids", [])}
+    returned_ld_id = result.ld_product.ld_id if result.ld_product is not None else None
+
     row: dict[str, Any] = {
         "id": case["id"],
         "query": case["query"],
@@ -110,15 +114,12 @@ def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any])
         "hard_gate": bool(case.get("hard_gate")),
         "expected_status": expected_status,
         "actual_status": result.status,
-        "returned_ld_id": result.ld_product.ld_id if result.ld_product is not None else None,
-        "known_positive_hit": False,
+        "returned_ld_id": returned_ld_id,
+        "known_positive_eligible": bool(known_positive_ids),
+        "known_positive_hit": bool(returned_ld_id is not None and returned_ld_id in known_positive_ids),
         "verdict": "UNSCORED",
         "reason": "",
     }
-
-    known_positive_ids = {int(value) for value in case.get("known_positive_ids", [])}
-    if row["returned_ld_id"] is not None and row["returned_ld_id"] in known_positive_ids:
-        row["known_positive_hit"] = True
 
     if split == "NEGATIVE":
         if result.status == "NOT_FOUND":
@@ -139,7 +140,7 @@ def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any])
 
     if result.status == "NOT_FOUND":
         row["verdict"] = "FAIL_WRONG_NOT_FOUND"
-        row["reason"] = "Constraint-based GOLD expects at least one matching catalog product."
+        row["reason"] = "Constraint-based GOLD has catalog evidence for a matching product."
         return row
     if result.status != "MATCHED" or result.ld_product is None:
         row["verdict"] = "FAIL_PIPELINE"
@@ -180,14 +181,6 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     hard = [row for row in rows if row.get("hard_gate")]
     core = [row for row in rows if row.get("split") == "CORE"]
     negative = [row for row in rows if row.get("split") == "NEGATIVE"]
-    known_positive_cases = [row for row in rows if row.get("split") == "CORE" and row.get("known_positive_hit") is not None]
-    known_positive_eligible = [
-        row
-        for row in rows
-        if row.get("split") == "CORE"
-        and any(True for _ in [row])
-    ]
-    # The explicit eligible count is recalculated below from a hidden marker inserted by the caller.
     known_positive_eligible = [row for row in rows if row.get("known_positive_eligible")]
 
     hard_pass = sum(row["verdict"] == "PASS" for row in hard)
@@ -196,7 +189,7 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     wrong_not_found = sum(row["verdict"] == "FAIL_WRONG_NOT_FOUND" for row in core)
     false_match = sum(row["verdict"] == "FAIL_FALSE_MATCH" for row in negative)
     unknown_answer = sum(row["verdict"] in {"FAIL_UNKNOWN_PRODUCT_DATA", "UNKNOWN"} for row in rows)
-    known_positive_hit = sum(row.get("known_positive_hit") for row in known_positive_eligible)
+    known_positive_hit = sum(bool(row.get("known_positive_hit")) for row in known_positive_eligible)
 
     return {
         "evaluated": len(rows),
@@ -252,7 +245,6 @@ def main() -> int:
     rows: list[dict[str, Any]] = []
     for case, result in zip(cases, results, strict=True):
         row = _evaluate_case(case, result, products_by_id)
-        row["known_positive_eligible"] = bool(case.get("known_positive_ids"))
         rows.append(row)
         print(f"{case['id']}: {row['verdict']} status={result.status} ld_id={row['returned_ld_id']}")
 
