@@ -4,40 +4,57 @@
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN lower bound: 1.6 MPa; joining exact: flanged; material exact: steel; bore exact: full; control exact: manual; valve_type standard inferred from absence of special type.",
+    "human_comment": "DN exact: 50; PN lower bound: 1.6 MPa; joining exact: flanged; material exact: steel; bore exact: full; control exact: manual.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "65 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 65
+    "auto_reason": "33 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 33
   },
   "gold_q002": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал: сталь 20; стандартное исполнение.",
+    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; material exact: сталь 20; valve_type: стандартное исполнение.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "7 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 7
+    "auto_reason": "3 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 3
   },
   "gold_q003": {
-    "label_status": "AUTO",
+    "label_status": "SILVER",
     "label_source": "AUTO_RULE_V2",
-    "expected_status": null,
-    "acceptable_ld_ids": [],
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1173,
+      16201,
+      2561,
+      15267,
+      266,
+      15608,
+      15639,
+      17085,
+      2745,
+      1804,
+      994,
+      17269,
+      14865,
+      3118,
+      1803,
+      1608
+    ],
     "human_comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; joining exact: фланцевый; material exact: сталь 20; тип крана шаровой, специальное исполнение не указано -> standard.",
-    "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 44
+    "auto_status": "AUTO_MATCHED",
+    "auto_reason": "Strict deterministic rules produced 16 PASS products and zero UNKNOWN candidates.",
+    "unknown_count": 0
   },
   "gold_q004": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact 150; PN нижняя граница 1.6 МПа; joining exact фланцевый; control exact с редуктором; материал, среда, тип прохода не указаны.",
+    "human_comment": "DN exact: 150; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; control exact: с редуктором; тип крана шаровой, специальное исполнение не указано -> standard.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "31 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 31
+    "auto_reason": "9 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 9
   },
   "gold_q005": {
     "label_status": "AUTO",
@@ -46,27 +63,36 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact: 200; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; material exact: стальной; bore exact: полнопроходной; тип крана шаровый, специальное исполнение не указано -> standard.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "75 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 75
+    "auto_reason": "43 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 43
   },
   "gold_q006": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN lower bound: 4.0 МПа (Ру40); material exact: сталь 09Г2С; designation exact: КШЦФ; тип крана: шаровой, специальное исполнение не указано -> standard.",
+    "human_comment": "DN exact: 80; PN нижняя граница: 4.0 МПа (Ру40); материал: сталь (ст.09Г2С); обозначение: КШЦФ; тип: шаровой кран, стандартное исполнение.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
   },
   "gold_q007": {
-    "label_status": "AUTO",
+    "label_status": "SILVER",
     "label_source": "AUTO_RULE_V2",
-    "expected_status": null,
-    "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 2.5 МПа (из 100.025); материал: сталь 20; управление: ручное; тип: шаровый кран стандартный; обозначение КШЦФ.",
-    "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1173,
+      16201,
+      2561,
+      15267,
+      266,
+      15608,
+      15639,
+      17085
+    ],
+    "human_comment": "DN exact: 100; PN нижняя граница: 2.5 МПа (из 025); материал: сталь 20; управление: ручное; тип: шаровый кран, стандартное исполнение; обозначение КШЦФ указано явно.",
+    "auto_status": "AUTO_MATCHED",
+    "auto_reason": "Strict deterministic rules produced 8 PASS products and zero UNKNOWN candidates.",
     "unknown_count": 0
   },
   "gold_q008": {
@@ -74,10 +100,10 @@
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN lower bound: 1.6; joining exact: фланцевый (FF); valve_type standard; reference model JiP-R Standard FF; материал, среда, управление не указаны.",
+    "human_comment": "DN exact: 50; PN lower bound: 1.6 МПа (Ру16); joining exact: фланцевый (FF); valve_type: standard (Standard); reference_model: JiP-R Standard FF; материал, проход, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model.",
-    "unknown_count": 51
+    "unknown_count": 11
   },
   "gold_q009": {
     "label_status": "AUTO",
@@ -87,7 +113,7 @@
     "human_comment": "DN exact: 80; PN нижняя граница: 2.5 МПа; тип: шаровой кран; специальное исполнение не указано, поэтому valve_type=standard; модель Danfoss JiP Premium WW указана как референс, не является LD-обозначением.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model.",
-    "unknown_count": 45
+    "unknown_count": 5
   },
   "gold_q010": {
     "label_status": "AUTO",
@@ -97,17 +123,17 @@
     "human_comment": "DN exact: 65; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; medium exact: вода; material exact: стальной; valve_type standard для шарового крана без спец. исполнения.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 39
+    "unknown_count": 6
   },
   "gold_q011": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact; PN нижняя граница; joining exact; material exact; control exact; thread exact.",
+    "human_comment": "DN exact; PN нижняя граница; joining exact; thread exact; material exact; control exact; valve_type standard для шарового крана без спец. исполнения.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 244
+    "unknown_count": 129
   },
   "gold_q012": {
     "label_status": "AUTO",
@@ -117,14 +143,14 @@
     "human_comment": "DN exact: 20; PN нижняя граница: 4.0 МПа; joining exact: резьба; thread exact: внутренняя-внутренняя; material exact: латунный; valve_type: standard (шаровый кран без спец. исполнения).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 162
+    "unknown_count": 81
   },
   "gold_q013": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 25; PN нижняя граница: 4.0 МПа (Ру40); joining exact: резьбовой (вр/нр); thread_type exact: female_male (вр/нр); material exact: латунь; valve_type: standard (шаровый кран без спец. исполнения); control: manual (бабочка - ручка); valve_designation: 11б27п1.",
+    "human_comment": "DN exact: 25; PN нижняя граница: 4.0 МПа (Ру40); joining exact: резьбовой (вр/нр); thread_type: male_female (НР/ВР); материал: латунь; тип: шаровый кран; обозначение: 11б27п1; управление: ручное (бабочка).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
@@ -137,37 +163,37 @@
     "human_comment": "DN exact: 32; joining exact: threaded; thread_type exact: female_female; material exact: brass; product_type inferred from 'кран' as ball_valve; valve_type standard because no special type mentioned.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 113
+    "unknown_count": 52
   },
   "gold_q015": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN не указан; PN не указан; joining: резьбовой; thread_type: ВР-НР; материал: латунный; тип крана: шаровый, специальное исполнение не указано.",
+    "human_comment": "Тип: шаровый кран. Материал: латунь (явно). Присоединение: резьбовое (1/2). Резьба: ВР-НР (явно). DN не указан. PN не указан. Управление не указано. Специальное исполнение не указано, поэтому valve_type=standard.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: inch_size.",
-    "unknown_count": 777
+    "unknown_count": 346
   },
   "gold_q016": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Тип: шаровый кран. Материал: латунь (явно). Присоединение: резьбовое (внутренняя резьба с обеих сторон). Резьба: ВР/ВР. DN не указан. PN не указан. Управление не указано. Специальное исполнение не указано, поэтому valve_type=standard.",
+    "human_comment": "DN не указан; PN не указан; присоединение резьбовое; резьба внутренняя с обеих сторон; материал латунь; тип крана стандартный.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: inch_size.",
-    "unknown_count": 699
+    "unknown_count": 346
   },
   "gold_q017": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 25; material exact: латунный; valve_type standard для шарового крана без спец. исполнения; наличие накидной гайки не покрывается схемой.",
+    "human_comment": "DN exact: 25; material exact: латунный; valve_type standard для шарового крана без спец. исполнения; накидная гайка не покрыта схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: накидная гайка, union_nut.",
-    "unknown_count": 102
+    "unknown_count": 5
   },
   "gold_q018": {
     "label_status": "AUTO",
@@ -177,14 +203,14 @@
     "human_comment": "DN exact: 20; joining exact: threaded (резьба); thread_type exact: male_female (ВР/НР); material exact: латунный; valve_type: газовый; control: ручная ручка (желтая ручка). PN не указан.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 144
+    "unknown_count": 34
   },
   "gold_q019": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 32; PN нижняя граница: 2.5 МПа; joining exact: муфтовый; материал exact: стальной; обозначение exact: 11с39п; тип крана: стандартный (не указано спец. исполнение).",
+    "human_comment": "DN exact: 32; PN нижняя граница: 2.5 МПа; joining exact: муфтовый; material exact: стальной; valve_designation exact: 11с39п; valve_type standard (шаровой кран без спец. исполнения).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
@@ -194,10 +220,10 @@
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 25; PN нижняя граница: 4.0 МПа; joining exact: резьбовой; материал exact: стальной; температура до 180С указана, но не проверяется схемой.",
+    "human_comment": "DN exact; PN нижняя граница; joining exact; material exact; valve_type standard для шарового крана без спец. исполнения.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: temperature_max_c, temperature.",
-    "unknown_count": 42
+    "unknown_count": 11
   },
   "gold_q021": {
     "label_status": "AUTO",
@@ -206,28 +232,28 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact: 50; PN нижняя граница: 4.0 МПа (Ру40); joining exact: приварка; материал exact: сталь 20; тип крана: шаровой, спец. исполнение не указано -> standard.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "7 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 7
+    "auto_reason": "3 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 3
   },
   "gold_q022": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact; PN нижняя граница; joining exact; valve_type standard для шарового крана без спец. исполнения; материал, среда, bore, control не указаны.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; joining exact: сварной; тип крана: шаровый, специальное исполнение не указано, поэтому standard.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "44 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 44
+    "auto_reason": "5 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 5
   },
   "gold_q023": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 63. Материал: ПЭ (полиэтилен) и сталь, но body_material выбран polyethylene, так как ПЭ указан первым. Тип: подземный. PN не указан. Присоединение не указано.",
+    "human_comment": "DN exact: 63. Материал корпуса: ПЭ (полиэтилен) явно указан. Тип: подземный. Присоединение не указано.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 27
+    "unknown_count": 0
   },
   "gold_q024": {
     "label_status": "AUTO",
@@ -237,7 +263,7 @@
     "human_comment": "DN exact: 80; PN lower bound: 1.6 MPa; valve_type underground explicit; height H=1500 not covered by schema.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: height_mm, stem_height.",
-    "unknown_count": 40
+    "unknown_count": 0
   },
   "gold_q025": {
     "label_status": "AUTO",
@@ -256,8 +282,8 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact 50; PN16 -> pn_min_mpa=1.6; joining exact flanged; control electric_ready (под электропривод); valve_type standard (ball valve, спец. исполнение не указано); материал, среда, bore не указаны.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "33 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 33
+    "auto_reason": "11 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 11
   },
   "gold_q027": {
     "label_status": "AUTO",
@@ -266,8 +292,8 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; control: electric; тип арматуры: шаровой кран, специальное исполнение не указано, поэтому standard.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "37 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 37
+    "auto_reason": "15 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 15
   },
   "gold_q028": {
     "label_status": "AUTO",
@@ -277,37 +303,37 @@
     "human_comment": "DN exact: 50; PN lower bound: 1.6 MPa; valve_type: regulating (явно указано 'регулирующий'); материал, присоединение, среда, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model.",
-    "unknown_count": 115
+    "unknown_count": 1
   },
   "gold_q029": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN указан как диапазон Ду80/70, что неоднозначно; PN16 -> 1.6 МПа; регулирующий -> valve_type=regulating; под привод -> control=electric_ready; материал, присоединение, среда не указаны.",
+    "human_comment": "DN указан как диапазон Ду80/70, что неоднозначно; PN16 -> 1.6 МПа; регулирующий -> valve_type=regulating; под привод -> electric_ready; материал, присоединение, среда не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Query is ambiguous/underspecified according to the structured parser.",
-    "unknown_count": 543
+    "unknown_count": 20
   },
   "gold_q030": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN нижняя граница: 16 -> 1.6 МПа; joining exact: фл -> фланцевый; материал явно указан: ст20 -> сталь 20; тип крана: шаровой.",
+    "human_comment": "DN exact: 50; PN нижняя граница: 16 -> 1.6 МПа; joining exact: фл -> фланцевый; материал явно указан: ст20 -> сталь 20; тип крана шаровой, спец. исполнение не указано -> standard.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 51
+    "unknown_count": 11
   },
   "gold_q031": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: межфланцевый; материал, среда, управление не указаны.",
+    "human_comment": "Затвор дисковый поворотный, межфланцевый, Ду100, Ру16. DN exact, PN нижняя граница, joining exact.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 1
   },
   "gold_q032": {
     "label_status": "AUTO",
@@ -317,17 +343,17 @@
     "human_comment": "Затвор поворотный дисковый, DN150 exact, PN16 нижняя граница, межфланцевый exact, рукоятка -> manual.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 1
   },
   "gold_q033": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Затвор дисковый, DN=200 exact, PN=16 (1.6 МПа) нижняя граница, управление с редуктором exact. Материал, присоединение, среда не указаны.",
+    "human_comment": "Затвор дисковый, Ду200, Ру16, с редуктором. DN exact, PN нижняя граница, control exact.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "23 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 23
+    "auto_reason": "1 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 1
   },
   "gold_q034": {
     "label_status": "AUTO",
@@ -336,38 +362,38 @@
     "acceptable_ld_ids": [],
     "human_comment": "Затвор межфланцевый, DN250, PN16. Материал диска нержавеющий, но материал корпуса не указан. EPDM - материал уплотнения, не проверяется схемой.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: disc_material, seal_material, seal_material.",
-    "unknown_count": 40
+    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: disc_material, seal_material.",
+    "unknown_count": 1
   },
   "gold_q035": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Затвор (butterfly valve) Гранвэл ЗПВС, Ду100, Ру16. DN exact: 100. PN нижняя граница: 1.6 МПа. Тип присоединения: wafer (межфланцевый) из обозначения ЗПВС? Не выводим, но в запросе явно не указано, поэтому null. Материал, среда, управление не указаны. Модель Гранвэл ЗПВС указана как референс, так как запрос содержит 'или эквивалент'.",
+    "human_comment": "Затвор (butterfly) DN100, PN16 (нижняя граница). Тип присоединения wafer (ЗПВС - затвор поворотный фланцевый? но 'ЗПВС' может означать межфланцевый, но не расшифровываем). Модель Гранвэл ЗПВС - референс, не LD.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model.",
-    "unknown_count": 40
+    "unknown_count": 1
   },
   "gold_q036": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Затвор дисковый поворотный, DN150 exact, PN16 нижняя граница, управление редуктором exact. Материал, тип присоединения, среда не указаны.",
+    "human_comment": "Затвор дисковый поворотный, DN150 exact, PN16 нижняя граница, управление редуктор exact. Материал, тип присоединения, среда не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model.",
-    "unknown_count": 23
+    "unknown_count": 1
   },
   "gold_q037": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; control: под электропривод (явно указано).",
+    "human_comment": "Затвор поворотный, Ду80, Ру16, под электропривод. DN exact, PN нижняя граница, control exact.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 23
+    "unknown_count": 1
   },
   "gold_q038": {
     "label_status": "AUTO",
@@ -377,27 +403,27 @@
     "human_comment": "Затвор дисковый с электроприводом, DN100, PN16. DN exact, PN нижняя граница, control exact.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 23
+    "unknown_count": 1
   },
   "gold_q039": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Затвор межфланцевый, DN100, PN16 (1.6 МПа), с ручным управлением. Обозначение 6-0100.16 указано явно.",
+    "human_comment": "Затвор межфланцевый, DN100, PN16, с ручным управлением. Обозначение 6-0100.16 не расшифровывается.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 0
+    "unknown_count": 1
   },
   "gold_q040": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 150; PN нижняя граница: Ру10/16 означает минимум 1.0 МПа; joining exact: межфланцевый; материал, среда, управление не указаны.",
+    "human_comment": "DN exact: 150; PN нижняя граница: Ру10 -> 1.0 МПа (Ру16 не учитываем, т.к. минимальное давление 1.0); joining exact: межфланцевый -> wafer; материал, среда, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 1
   },
   "gold_q041": {
     "label_status": "AUTO",
@@ -407,17 +433,17 @@
     "human_comment": "Затвор дисковый, DN 200, PN16 (нижняя граница 1.6 МПа), межфланцевый, редуцированный. Материал, среда, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 41
+    "unknown_count": 2
   },
   "gold_q042": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact; PN нижняя граница; joining exact; материал, среда, тип управления не указаны.",
+    "human_comment": "DN exact: 100; PN lower bound: 1.6 MPa; joining exact: wafer; product type exact: butterfly valve.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 1
   },
   "gold_q043": {
     "label_status": "AUTO",
@@ -426,8 +452,8 @@
     "acceptable_ld_ids": [],
     "human_comment": "Затвор дисковый, фланцевый, Ду300, Ру16. DN exact: 300; PN нижняя граница: 1.6 МПа; joining exact: фланцевый.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "41 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 41
+    "auto_reason": "1 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 1
   },
   "gold_q044": {
     "label_status": "AUTO",
@@ -436,18 +462,18 @@
     "acceptable_ld_ids": [],
     "human_comment": "Задвижка клиновая, стальная, Ду100, Ру16, фланцевая. DN exact, PN нижняя граница, joining exact, material exact.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 40
+    "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
+    "unknown_count": 0
   },
   "gold_q045": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 150; PN lower bound: 1.6 MPa; product type: gate valve; material not explicitly stated (code 30с41нж not decoded); joining type not specified; medium not specified; control not specified.",
+    "human_comment": "DN exact: 150; PN нижняя граница: 1.6 МПа; тип: задвижка; материал не указан явно (код 30с41нж не расшифровываем); присоединение не указано; управление не указано.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: stem_type.",
-    "unknown_count": 40
+    "unknown_count": 0
   },
   "gold_q046": {
     "label_status": "AUTO",
@@ -456,28 +482,28 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact: 200; PN нижняя граница: 1.6 МПа; joining exact: фланцевая; material exact: стальная.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 40
+    "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
+    "unknown_count": 0
   },
   "gold_q047": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; control: с редуктором; тип арматуры: задвижка.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; control exact: с редуктором; тип арматуры: задвижка.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 22
+    "unknown_count": 0
   },
   "gold_q048": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact; PN нижняя граница; материал стальной указан; управление под электропривод указано.",
+    "human_comment": "DN exact: 150; PN нижняя граница: 1.6 МПа; материал: сталь; управление: под электропривод.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 22
+    "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
+    "unknown_count": 0
   },
   "gold_q049": {
     "label_status": "AUTO",
@@ -487,7 +513,7 @@
     "human_comment": "DN exact: 200; PN нижняя граница: 1.6 МПа; control: electric (с электроприводом); тип: задвижка клиновая.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 22
+    "unknown_count": 0
   },
   "gold_q050": {
     "label_status": "AUTO",
@@ -497,7 +523,7 @@
     "human_comment": "DN exact: 80; PN lower bound: 1.6 MPa; material exact: чугунная; product type exact: задвижка; обрезиненный клин не покрыт схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: wedge_sealing.",
-    "unknown_count": 27
+    "unknown_count": 0
   },
   "gold_q051": {
     "label_status": "AUTO",
@@ -506,15 +532,15 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact: 100; PN нижняя граница: 1.0 МПа (PN10); joining exact: фланцевая; material exact: чугунная.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 27
+    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: pn_range.",
+    "unknown_count": 0
   },
   "gold_q052": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Задвижка, DN exact 50, PN нижняя граница 4.0 МПа (Ру40). Обозначение 30с15нж указано явно, но материал не выводим из кода.",
+    "human_comment": "DN exact: 50; PN lower bound: 4.0; designation exact: 30с15нж; material not explicitly stated.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
@@ -527,14 +553,14 @@
     "human_comment": "Задвижка, DN=100, PN=16 (1.6 МПа), фланцевое присоединение, материал сталь (из слова 'ст').",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 40
+    "unknown_count": 0
   },
   "gold_q054": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Тип: задвижка клиновая. Материал: сталь, марка 09Г2С. DN=100 точное. PN=16 (1.6 МПа) нижняя граница. Тип соединения, среда, управление не указаны.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; материал: сталь, марка 09Г2С; тип: задвижка клиновая.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
@@ -544,10 +570,10 @@
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 150; PN lower bound: 1.0 MPa (Ру10); product type: gate valve (шиберная ножевая).",
+    "human_comment": "DN exact: 150; PN lower bound: 1.0 MPa (Ру10); product type: gate valve (шиберная ножевая). No other explicit constraints.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 0
   },
   "gold_q056": {
     "label_status": "AUTO",
@@ -557,37 +583,37 @@
     "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; material exact: стальной.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 32
+    "unknown_count": 0
   },
   "gold_q057": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал exact: сталь 20.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал exact: сталь, марка 20.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 4
+    "unknown_count": 0
   },
   "gold_q058": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN lower bound: 1.6 MPa; joining exact: wafer; product type exact: check valve.",
+    "human_comment": "DN exact: 50; PN нижняя граница: 1.6 МПа; joining exact: межфланцевый; материал, среда, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 39
+    "unknown_count": 0
   },
   "gold_q059": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 25; joining exact: резьбовой; material exact: латунный; тип товара: обратный клапан.",
+    "human_comment": "DN exact: 25; joining exact: резьбовой; material exact: латунный; тип: обратный клапан.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "96 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 96
+    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: spring.",
+    "unknown_count": 0
   },
   "gold_q060": {
     "label_status": "AUTO",
@@ -597,24 +623,24 @@
     "human_comment": "DN exact: 1 дюйм = 25 мм; joining exact: резьбовой; thread exact: ВР/ВР; material exact: латунный.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 76
+    "unknown_count": 2
   },
   "gold_q061": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN lower bound: 4.0 MPa; material exact: steel; joining not specified; medium not specified.",
+    "human_comment": "DN exact: 80; PN нижняя граница: 4.0 МПа; материал сталь указан явно; тип товара обратный клапан.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 32
+    "unknown_count": 0
   },
   "gold_q062": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 4.0 МПа (PN40); тип: обратный клапан; обозначение 19с53нж указано явно, но материал не выводим из кода.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 4.0 МПа; тип: обратный клапан; обозначение 19с53нж указано явно, но материал не выводим из кода.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
@@ -627,27 +653,27 @@
     "human_comment": "DN exact: 50; PN нижняя граница: 16 -> 1.6 МПа; joining exact: фл -> фланцевый; тип товара: обратный клапан.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 0
   },
   "gold_q064": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; тип товара: фильтр.",
+    "human_comment": "DN exact: 80; PN lower bound: 1.6 MPa; joining exact: flanged; product type: filter.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "52 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 52
+    "auto_reason": "12 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 12
   },
   "gold_q065": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 25; joining exact: threaded (резьбовой); thread_type exact: female_female (ВР/ВР); material exact: brass (латунный). PN, среда, тип управления не указаны.",
+    "human_comment": "DN exact: 25; joining exact: threaded; thread_type exact: female_female; material exact: brass.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 92
+    "unknown_count": 18
   },
   "gold_q066": {
     "label_status": "AUTO",
@@ -656,18 +682,18 @@
     "acceptable_ld_ids": [],
     "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; joining exact: фланцевый. Материал, среда, тип управления не указаны.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "81 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
-    "unknown_count": 81
+    "auto_reason": "41 catalog candidates remain UNKNOWN because required product data is missing; acceptable IDs would be incomplete.",
+    "unknown_count": 41
   },
   "gold_q067": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN нижняя граница: 4.0 МПа; материал: сталь (явно указано); тип товара: фильтр.",
+    "human_comment": "DN exact: 50; PN нижняя граница: 4.0 МПа; материал сталь указан явно; тип присоединения, среда, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 34
+    "unknown_count": 2
   },
   "gold_q068": {
     "label_status": "AUTO",
@@ -677,34 +703,34 @@
     "human_comment": "Сменная сетка для фильтра, Ду15 указан точно. Тип товара - ремкомплект/запчасть.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 212
+    "unknown_count": 0
   },
   "gold_q069": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN нижняя граница: 1.6 МПа; joining: приварной; материал: сталь, марка 20.",
+    "human_comment": "DN exact: 50; PN нижняя граница: 1.6 МПа; joining exact: приварной; материал exact: сталь, марка 20; тип фланца (плоский) не покрыт схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, flange_subtype.",
-    "unknown_count": 4
+    "unknown_count": 0
   },
   "gold_q070": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; материал сталь, марка 20; тип фланца плоский и ГОСТ указаны, но не проверяются схемой.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; материал сталь, марка 20; тип фланца плоский и ГОСТ 33259 указаны, но не проверяются схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, gost, standard, flange_subtype.",
-    "unknown_count": 6
+    "unknown_count": 2
   },
   "gold_q071": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 65; PN lower bound: 1.6 MPa; joining exact: welded (приварной встык); material exact: steel (сталь, марка 09Г2С); flange type (воротниковый) not covered by schema.",
+    "human_comment": "DN exact: 65; PN нижняя граница: 1.6 МПа; joining exact: приварной встык; материал: сталь (по марке 09Г2С); тип фланца воротниковый указан, но не проверяется схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, flange_subtype.",
     "unknown_count": 0
@@ -717,27 +743,27 @@
     "human_comment": "DN exact; PN нижняя граница; joining exact (воротниковый фланец приваривается); материал exact (сталь 20).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, flange_subtype.",
-    "unknown_count": 4
+    "unknown_count": 0
   },
   "gold_q073": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN lower bound: 1.6 МПа; joining: приварное кольцо -> welded; тип фланца (свободный на приварном кольце) не покрыт схемой.",
+    "human_comment": "DN exact: 80; PN lower bound: 1.6 MPa; joining type: welded (на приварном кольце); flange type: свободный на приварном кольце (не покрыто схемой).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, flange_subtype.",
-    "unknown_count": 39
+    "unknown_count": 0
   },
   "gold_q074": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN нижняя граница: 4.0 МПа; материал сталь 20 указан явно; тип фланца 'ответный' не покрыт схемой.",
+    "human_comment": "DN exact: 50; PN нижняя граница: 4.0 МПа; материал: сталь 20; тип: ответный фланец (комплектующий).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 48
+    "unknown_count": 6
   },
   "gold_q075": {
     "label_status": "AUTO",
@@ -747,24 +773,24 @@
     "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал не указан; комплектность (крепёж, прокладки) не покрывается схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: комплектность, kit_contents, flange_subtype.",
-    "unknown_count": 46
+    "unknown_count": 6
   },
   "gold_q076": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа (PN16); материал сталь 20 указан явно; ГОСТ 33259 указан, но не проверяется схемой.",
+    "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа (PN16); материал: сталь (ст.20); ГОСТ 33259 указан, но не проверяется схемой.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: gost, standard.",
-    "unknown_count": 6
+    "unknown_count": 2
   },
   "gold_q077": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 65; PN нижняя граница: 1.6 МПа; материал сталь (марка 09Г2С) указан явно; тип фланца 11 указан, но не проверяется схемой.",
+    "human_comment": "DN exact: 65; PN lower bound: 1.6 MPa; material: steel (grade 09Г2С); flange type 11 explicitly mentioned but not covered by schema.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, flange_subtype.",
     "unknown_count": 0
@@ -774,29 +800,29 @@
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 150; PN нижняя граница: Ру10=1.0 МПа; материал: стальной; тип фланца 'плоский' указан, но не проверяется схемой.",
+    "human_comment": "DN exact: 150; PN нижняя граница: 1.0 МПа (Ру10); материал: стальной; тип фланца: плоский (не проверяется схемой).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type, flange_subtype.",
-    "unknown_count": 38
+    "unknown_count": 6
   },
   "gold_q079": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа (PN16); joining exact: фланцевый; материал: сталь 20; тип фланца: плоский (не проверяется схемой).",
+    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; материал: сталь 20; тип фланца: плоский (не проверяется схемой).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 46
+    "unknown_count": 6
   },
   "gold_q080": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50; PN lower bound: 1.6; material exact: stainless steel (AISI 304); product type: flange.",
+    "human_comment": "DN exact; PN нижняя граница; материал нержавеющий, марка AISI 304 указана явно.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type.",
+    "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
     "unknown_count": 0
   },
   "gold_q081": {
@@ -807,17 +833,17 @@
     "human_comment": "DN exact: 100; PN нижняя граница: 1.6 МПа; материал: сталь (явно указано). Тип фланца не указан.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Dataset metadata explicitly marks this query as ambiguous.",
-    "unknown_count": 38
+    "unknown_count": 6
   },
   "gold_q082": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Товар: фланец стальной. Материал указан явно (стальной). DN, PN, тип присоединения и другие параметры не указаны.",
+    "human_comment": "Товар: фланец стальной. Материал указан явно (стальной). DN, PN, тип присоединения и прочие характеристики не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Dataset metadata explicitly marks this query as ambiguous.",
-    "unknown_count": 557
+    "unknown_count": 15
   },
   "gold_q083": {
     "label_status": "AUTO",
@@ -826,28 +852,28 @@
     "acceptable_ld_ids": [],
     "human_comment": "Запрос на электропривод для шарового крана Ду100. DN exact: 100. Указано напряжение 220В, что не покрывается схемой.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: voltage, voltage.",
-    "unknown_count": 29
+    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: voltage.",
+    "unknown_count": 7
   },
   "gold_q084": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Электропривод четвертьоборотный, модель AOX-Q, момент 400 Нм. DN, PN, тип присоединения, среда, материал не указаны. Модель AOX-Q и момент 400 Нм не покрываются схемой.",
+    "human_comment": "Электропривод четвертьоборотный, модель AOX-Q, момент 400 Нм. DN, PN, тип присоединения, среда, материал, тип прохода не указаны. Модель AOX-Q является референсной, не отождествляется с LD.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: torque_nm, model, reference_model, torque_nm, drive_model.",
-    "unknown_count": 539
+    "auto_reason": "Explicit query requirements are not modeled by deterministic rules: torque_nm, reference_model, drive_model.",
+    "unknown_count": 0
   },
   "gold_q085": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Запрос явно указывает на электрический привод модели AOX-Q-100 для затвора. Тип товара - привод. Управление электрическое. Модель AOX-Q-100 является референсной, так как не может быть однозначно сопоставлена с конкретным товаром в каталоге.",
+    "human_comment": "Товар - электропривод, модель AOX-Q-100 указана явно. DN, PN, присоединение, среда, материал не указаны. Управление электрическое.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model, drive_model.",
-    "unknown_count": 539
+    "unknown_count": 0
   },
   "gold_q086": {
     "label_status": "AUTO",
@@ -857,47 +883,47 @@
     "human_comment": "Запрос на электропривод AUMA для задвижки Ду150. DN указан точно: 150. Тип привода электрический. Модель AUMA является референсом, не может быть однозначно сопоставлена с LD.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: reference_model, drive_model.",
-    "unknown_count": 29
+    "unknown_count": 7
   },
   "gold_q087": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Запрос на пневмопривод двойного действия для крана DN80. DN указан точно (80). Тип привода - пневматический. Двойное действие не имеет отдельного поля, поэтому добавлено в unsupported_constraints.",
+    "human_comment": "Запрос явно указывает тип товара: пневмопривод двойного действия для крана DN80. DN указан точно (80 мм). Управление пневматическое. Материал, среда, тип присоединения и другие параметры не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: actuator_type.",
-    "unknown_count": 22
+    "unknown_count": 0
   },
   "gold_q088": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Запрос на ручной редуктор для затвора с Ду200. DN exact: 200. Управление manual (ручной). Тип товара gearbox.",
+    "human_comment": "Запрос на ручной редуктор для затвора Ду200. DN указан точно: 200. Управление ручное (редуктор). Тип товара - редуктор (gearbox).",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 40
+    "unknown_count": 0
   },
   "gold_q089": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Комплект ответных фланцев, DN exact 50, PN нижняя граница 4.0 МПа (Ру40). Тип фланца не указан.",
+    "human_comment": "Комплект ответных фланцев для шарового крана. DN exact: 50. PN нижняя граница: 4.0 МПа (Ру40). Тип фланца не указан.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Explicit query requirements are not modeled by deterministic rules: flange_type.",
-    "unknown_count": 87
+    "unknown_count": 45
   },
   "gold_q090": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "Ремкомплект для шарового крана, DN 50 указан точно. Тип соединения, давление, материал и другие параметры не указаны.",
+    "human_comment": "Ремкомплект для шарового крана LD, DN 50 указан точно. PN, присоединение, среда, материал и другие характеристики не указаны.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "In-scope query produced zero strict PASS matches; could be a rule/data/parser miss.",
-    "unknown_count": 114
+    "unknown_count": 0
   },
   "gold_q091": {
     "label_status": "AUTO",
@@ -914,20 +940,20 @@
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 50. Тип арматуры не указан, но 'Кран' обычно означает шаровой кран, поэтому product_type=ball_valve. Специальное исполнение не указано, поэтому valve_type=standard. Остальные характеристики не указаны.",
+    "human_comment": "Запрос слишком общий: указан только Ду50, тип крана не уточнён (шаровый? вентиль?). DN exact: 50. PN, присоединение, материал, управление не указаны.",
     "auto_status": "NEEDS_REVIEW",
-    "auto_reason": "Dataset metadata explicitly marks this query as ambiguous.",
-    "unknown_count": 119
+    "auto_reason": "catalog_scope=uncertain; do not create a label automatically.",
+    "unknown_count": 5
   },
   "gold_q093": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; материал exact: сталь. Тип арматуры не указан, поэтому product_type=other, catalog_scope=uncertain.",
+    "human_comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; материал: сталь (указано словом 'стальная'); тип арматуры не указан, поэтому product_type=other, catalog_scope=uncertain.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "catalog_scope=uncertain; do not create a label automatically.",
-    "unknown_count": 40
+    "unknown_count": 32
   },
   "gold_q094": {
     "label_status": "AUTO",
@@ -937,24 +963,24 @@
     "human_comment": "DN указан диапазоном 50-100 мм, что неоднозначно; PN16 -> 1.6 МПа; материал сталь; присоединение фланцевое; тип - шаровой кран, стандартное исполнение.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Query is ambiguous/underspecified according to the structured parser.",
-    "unknown_count": 101
+    "unknown_count": 58
   },
   "gold_q095": {
     "label_status": "AUTO",
     "label_source": "AUTO_RULE_V2",
     "expected_status": null,
     "acceptable_ld_ids": [],
-    "human_comment": "DN exact 25; PN нижняя граница 4.0 МПа; joining exact threaded (резьбовой); thread_type male_male (м/м); материал латунь (лат.); тип крана шаровой, специальное исполнение не указано -> standard.",
+    "human_comment": "DN exact 25; PN нижняя граница 4.0 МПа; joining exact threaded; thread_type male_male из 'м/м'; материал латунь; тип крана шаровой стандартный.",
     "auto_status": "NEEDS_REVIEW",
     "auto_reason": "Parser sanity guard fired: body_material was inferred although the query contains no explicit material cue; field cleared",
-    "unknown_count": 148
+    "unknown_count": 77
   },
   "gold_q096": {
     "label_status": "SYNTHETIC",
     "label_source": "SYNTHETIC_NEGATIVE",
     "expected_status": "NOT_FOUND",
     "acceptable_ld_ids": [],
-    "human_comment": "Товар - насос, не относится к трубопроводной арматуре. Указаны мощность, напряжение и производительность, но они не проверяются схемой.",
+    "human_comment": "Товар явно посторонний (насос), не относится к трубопроводной арматуре.",
     "auto_status": "AUTO_NOT_FOUND",
     "auto_reason": "Dataset metadata marks an explicit synthetic negative and parser agrees it is out of scope.",
     "unknown_count": 0
@@ -964,7 +990,7 @@
     "label_source": "SYNTHETIC_NEGATIVE",
     "expected_status": "NOT_FOUND",
     "acceptable_ld_ids": [],
-    "human_comment": "Товар 'Подшипник 6205 2RS' не относится к трубопроводной арматуре и комплектующим, поэтому вне области каталога.",
+    "human_comment": "Товар 'Подшипник 6205 2RS' явно не относится к трубопроводной арматуре, поэтому catalog_scope=out_of_scope.",
     "auto_status": "AUTO_NOT_FOUND",
     "auto_reason": "Dataset metadata marks an explicit synthetic negative and parser agrees it is out of scope.",
     "unknown_count": 0
@@ -994,7 +1020,7 @@
     "label_source": "SYNTHETIC_NEGATIVE",
     "expected_status": "NOT_FOUND",
     "acceptable_ld_ids": [],
-    "human_comment": "Товар 'теплообменник пластинчатый' не относится к трубопроводной арматуре и комплектующим, поэтому вне каталога.",
+    "human_comment": "Товар - теплообменник, не относится к трубопроводной арматуре. Мощность 500 кВт указана, но не проверяется схемой.",
     "auto_status": "AUTO_NOT_FOUND",
     "auto_reason": "Dataset metadata marks an explicit synthetic negative and parser agrees it is out of scope.",
     "unknown_count": 0
