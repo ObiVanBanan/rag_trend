@@ -1,0 +1,281 @@
+{
+  "gold_q001": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1930
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q003": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      15639
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q004": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      2742
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q005": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1251
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q007": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      15639
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q011": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1003
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q012": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1540
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q014": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      191
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q015": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      17854
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q021": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      15253
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q024": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      9484
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q025": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      9537
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q026": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      2516
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q027": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      15422
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q028": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      15418
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q029": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1420
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q030": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      15905
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q033": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      1545
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q059": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      17513
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q060": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      17513
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q064": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      18827
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q065": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      18502
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q066": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      3792
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q069": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      170
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q070": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      171
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q074": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      18401
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q076": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      171
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q078": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      145
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q079": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      154
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q089": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      18401
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "gold_q095": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [
+      155
+    ],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  }
+}

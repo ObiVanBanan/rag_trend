@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "grades": {
+    "gold_q001:1930": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q003:15639": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q004:2742": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q005:1251": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q007:15639": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q011:1003": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q012:1540": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q014:191": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q015:17854": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q021:15253": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q024:9484": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q025:9537": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q026:2516": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q027:15422": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q028:15418": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q029:1420": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q030:15905": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q033:1545": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q059:17513": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q060:17513": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q064:18827": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q065:18502": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q066:3792": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q069:170": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q070:171": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q074:18401": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q076:171": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q078:145": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q079:154": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q089:18401": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "gold_q095:155": {
+      "grade": "CONFIRM",
+      "comment": ""
+    }
+  }
+}
