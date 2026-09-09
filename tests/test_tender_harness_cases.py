@@ -12,15 +12,15 @@ def test_verified_tender_harness_cases_match_human_labels() -> None:
         (ROOT / "data" / "tender_queries_v1_harness_cases.json").read_text(encoding="utf-8")
     )
     labels = json.loads(
-        (ROOT / "data" / "tender_queries_v1_verified_labels.json").read_text(encoding="utf-8")
+        (ROOT / "data" / "tender_queries_v1_canonical_labels.json").read_text(encoding="utf-8")
     )
     cases = cases_payload["cases"]
 
     assert {case["id"] for case in cases} == set(labels)
-    assert len(cases) == 11
-    assert sum(case["split"] == "CORE" for case in cases) == 6
-    assert sum(case["split"] == "EXTENDED" for case in cases) == 5
-    assert sum(bool(case["hard_gate"]) for case in cases) == 6
+    assert len(cases) == 20
+    assert sum(case["split"] == "CORE" for case in cases) == 11
+    assert sum(case["split"] == "EXTENDED" for case in cases) == 9
+    assert sum(bool(case["hard_gate"]) for case in cases) == 11
 
     for case in cases:
         label = labels[case["id"]]

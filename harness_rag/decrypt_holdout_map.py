@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import json
 import os
+import binascii
 from pathlib import Path
 
 
@@ -36,6 +37,16 @@ def _outside_repo(path: Path) -> None:
     raise SystemExit("Decrypted blind query map must be written outside the repository.")
 
 
+def _decode_b64(payload: dict[str, object], field: str) -> bytes:
+    value = payload.get(field)
+    if not isinstance(value, str):
+        raise SystemExit(f"Encrypted holdout payload is missing string field: {field}")
+    try:
+        return base64.b64decode(value, validate=True)
+    except binascii.Error as exc:
+        raise SystemExit(f"Encrypted holdout payload has invalid base64 in {field}: {exc}") from exc
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Decrypt the private blind query map outside the repository.")
     parser.add_argument("--input", default=str(DEFAULT_INPUT))
@@ -53,10 +64,10 @@ def main() -> int:
     if payload.get("algorithm") != "scrypt+hmac-sha256-stream-v1":
         raise SystemExit("Unsupported encrypted holdout format.")
 
-    salt = base64.b64decode(payload["salt_b64"])
-    nonce = base64.b64decode(payload["nonce_b64"])
-    ciphertext = base64.b64decode(payload["ciphertext_b64"])
-    expected_mac = base64.b64decode(payload["mac_b64"])
+    salt = _decode_b64(payload, "salt_b64")
+    nonce = _decode_b64(payload, "nonce_b64")
+    ciphertext = _decode_b64(payload, "ciphertext_b64")
+    expected_mac = _decode_b64(payload, "mac_b64")
 
     master = hashlib.scrypt(password.encode("utf-8"), salt=salt, n=2**14, r=8, p=1, dklen=64)
     enc_key, mac_key = master[:32], master[32:]
