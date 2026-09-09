@@ -8,6 +8,11 @@ from . import orchestrator
 
 
 _ORIGINAL_ROW = orchestrator._row
+_ORIGINAL_PLANNER_PROMPT = orchestrator.planner_prompt
+_ORIGINAL_RUN_CODEX = orchestrator.run_codex
+_ORIGINAL_FINAL_GOAL_MET = orchestrator.final_goal_met
+_ORIGINAL_WRITE_FINAL_REPORT = orchestrator._write_final_report
+_PLANNER_REQUESTED_DONE = False
 
 
 def _rich_row(**kwargs: Any) -> dict[str, Any]:
@@ -87,11 +92,66 @@ def _planner_created_one_new_cycle_change() -> bool:
     return not tracked
 
 
+def _planner_prompt_with_exhaustion_stop(**kwargs: Any) -> str:
+    """Keep the 93% target, but do not force low-value cycles when ideas are exhausted."""
+    prompt = _ORIGINAL_PLANNER_PROMPT(**kwargs)
+    coverage_floor = float(kwargs.get("coverage_floor") or 0.0)
+    return (
+        prompt
+        + f"""
+
+STOPPING RULE — THIS OVERRIDES ANY EARLIER DONE RESTRICTION IN THIS PROMPT
+- {coverage_floor:.2%} blind coverage is the success target, not a requirement to consume all 15 cycles.
+- You MAY return `action=DONE` below the target when, after reviewing the repository, complete experiment history, current failures, research context, and the main plausible solution families, you cannot identify a credible new experiment with positive expected metric gain or information gain.
+- Do not invent a weak, repetitive, benchmark-specific, or low-value hypothesis merely to spend another cycle.
+- If you return DONE because the search space is exhausted, explain the evidence in `why_now` and `lesson_from_history`. `candidate_hypotheses` may be empty or may list directions you considered and rejected.
+- If you return IMPLEMENT, still consider at least 3 materially different candidate hypotheses before choosing one.
+"""
+    )
+
+
+def _run_codex_with_done_tracking(**kwargs: Any) -> dict[str, Any]:
+    """Remember when the Planner intentionally asks the outer loop to stop."""
+    global _PLANNER_REQUESTED_DONE
+    payload = _ORIGINAL_RUN_CODEX(**kwargs)
+    if kwargs.get("role") == "planner":
+        _PLANNER_REQUESTED_DONE = payload.get("action") == "DONE"
+    return payload
+
+
+def _goal_met_or_planner_exhausted(*, hidden: Any, coverage_floor: float) -> bool:
+    """Let an evidence-backed Planner DONE terminate cleanly even below the success target."""
+    if _PLANNER_REQUESTED_DONE:
+        return True
+    return _ORIGINAL_FINAL_GOAL_MET(hidden=hidden, coverage_floor=coverage_floor)
+
+
+def _write_final_report_with_exhaustion_outcome(**kwargs: Any) -> None:
+    """Distinguish target success from a graceful no-more-useful-hypotheses stop."""
+    outcome = str(kwargs.get("outcome") or "")
+    state = dict(kwargs.get("state") or {})
+    config = dict(kwargs.get("config") or {})
+    if outcome == "DONE" and _PLANNER_REQUESTED_DONE:
+        hidden = orchestrator.Metrics.from_summary(dict(state.get("champion_hidden") or {}))
+        floor = float(config.get("coverage_floor") or 0.0)
+        if not _ORIGINAL_FINAL_GOAL_MET(hidden=hidden, coverage_floor=floor):
+            kwargs["outcome"] = "EXHAUSTED"
+    _ORIGINAL_WRITE_FINAL_REPORT(**kwargs)
+
+
+# For DONE, the Planner is allowed to return no remaining candidate hypotheses.
+# IMPLEMENT still requires >=3 alternatives via the prompt contract and tests.
+orchestrator.PLANNER_SCHEMA["properties"]["candidate_hypotheses"]["minItems"] = 0
+
 # The orchestrator resolves these globals at runtime, so the wrapper can enrich
-# memory and tighten the planning contract without duplicating the main loop.
+# memory and tighten the planning/stopping contract without duplicating the main loop.
 orchestrator._row = _rich_row
 orchestrator._compact_history = _full_history
 orchestrator.planner_changes_are_scoped = _planner_created_one_new_cycle_change
+orchestrator.planner_prompt = _planner_prompt_with_exhaustion_stop
+orchestrator.run_codex = _run_codex_with_done_tracking
+orchestrator.final_goal_met = _goal_met_or_planner_exhausted
+orchestrator._write_final_report = _write_final_report_with_exhaustion_outcome
 
 
 def main() -> int:
