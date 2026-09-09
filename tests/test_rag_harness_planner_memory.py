@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+from harness_rag import supervisor
 from harness_rag.prompts import PLANNER_SCHEMA, planner_prompt
 from harness_rag.supervisor import _full_history, _rich_row
 
@@ -80,3 +83,36 @@ def test_planner_contract_requires_alternatives_and_broad_mvp_freedom() -> None:
     assert "COMPLETE HYPOTHESIS / METRIC HISTORY" in prompt
     assert "cycle-03-" in prompt
     assert "hardcode a test id" in prompt
+
+
+def test_planner_may_create_only_one_untracked_cycle_openspec(monkeypatch) -> None:
+    monkeypatch.setattr(
+        supervisor.orchestrator,
+        "changed_paths",
+        lambda: {
+            "openspec/changes/cycle-04-better-matcher/proposal.md",
+            "openspec/changes/cycle-04-better-matcher/tasks.md",
+        },
+    )
+    monkeypatch.setattr(
+        supervisor.orchestrator,
+        "git",
+        lambda *args, **kwargs: SimpleNamespace(stdout=""),
+    )
+    assert supervisor._planner_created_one_new_cycle_change() is True
+
+    monkeypatch.setattr(
+        supervisor.orchestrator,
+        "git",
+        lambda *args, **kwargs: SimpleNamespace(stdout="openspec/changes/cycle-04-better-matcher/proposal.md\n"),
+    )
+    assert supervisor._planner_created_one_new_cycle_change() is False
+
+
+def test_planner_cannot_rewrite_old_non_cycle_openspec(monkeypatch) -> None:
+    monkeypatch.setattr(
+        supervisor.orchestrator,
+        "changed_paths",
+        lambda: {"openspec/changes/add-rag-business-mapping/proposal.md"},
+    )
+    assert supervisor._planner_created_one_new_cycle_change() is False
