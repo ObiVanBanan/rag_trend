@@ -50,6 +50,23 @@ def test_rejects_blind_coverage_regression_even_when_public_improves() -> None:
     assert reason == "blind coverage regressed"
 
 
+def test_rejects_public_coverage_regression_even_when_blind_improves() -> None:
+    champion_public = _metrics(hard_pass_rate=0.96)
+    champion_hidden = _metrics(hard_pass_rate=0.92)
+    candidate_public = _metrics(hard_pass_rate=0.92)
+    candidate_hidden = _metrics(hard_pass_rate=0.96)
+
+    accepted, reason = accept_candidate(
+        candidate_public=candidate_public,
+        candidate_hidden=candidate_hidden,
+        champion_public=champion_public,
+        champion_hidden=champion_hidden,
+    )
+
+    assert accepted is False
+    assert reason == "public coverage regressed"
+
+
 def test_rejects_new_false_match() -> None:
     champion = _metrics()
     candidate = _metrics(hard_pass_rate=0.96, false_match_rate=0.01)
@@ -85,3 +102,9 @@ def test_final_goal_requires_93_percent_and_no_false_or_human_reject() -> None:
     assert not final_goal_met(hidden=_metrics(hard_pass_rate=0.929, wrong_not_found_rate=0.0), coverage_floor=0.93)
     assert not final_goal_met(hidden=_metrics(hard_pass_rate=0.95, false_match_rate=0.01), coverage_floor=0.93)
     assert not final_goal_met(hidden=_metrics(hard_pass_rate=0.95, human_reject_rate=0.01), coverage_floor=0.93)
+
+
+def test_optional_public_final_floor_can_be_enforced() -> None:
+    hidden = _metrics(hard_pass_rate=0.96, wrong_not_found_rate=0.0)
+    assert final_goal_met(public=_metrics(hard_pass_rate=0.93), hidden=hidden, coverage_floor=0.93)
+    assert not final_goal_met(public=_metrics(hard_pass_rate=0.92), hidden=hidden, coverage_floor=0.93)
