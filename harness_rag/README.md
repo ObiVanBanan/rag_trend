@@ -1,109 +1,51 @@
 # RAG research harness
 
-This branch contains a bounded autonomous loop for improving `rag_trend` without turning the GOLD set into something the coding agent can simply memorize.
+This branch contains a bounded autonomous loop for improving `rag_trend` while protecting the blind final check from direct agent access.
 
-## Idea in one screen
+## Objective
 
-1. **Baseline** — measure the current solution once.
-2. **Planner** — GPT-5.6 Terra / medium analyzes the current champion, failure taxonomy, research context, and previous hypotheses. It uses the installed `openspec-propose` skill and creates one bounded OpenSpec change.
-3. **Implementer** — GPT-5.5 / low applies only that change.
-4. **Public eval** — tests plus the repository GOLD give detailed feedback for research.
-5. **Reviewer** — GPT-5.6 Terra / medium is read-only. It reads code, diff and public metrics and returns ACCEPT / FIX / REJECT.
-6. **Fixer** — GPT-5.5 / low applies only the review plan.
-7. **End hook** — run the public eval again and then the blind holdout. Hidden rows are never sent to any agent; only aggregate metrics survive.
-8. **Champion** — keep the candidate only if blind coverage did not fall, safety did not regress, and either public or blind quality improved. Otherwise reset to the previous champion.
-9. Repeat for at most **15 cycles**.
+Improve the accuracy and reliability of the **current MVP**. The Planner is free to change any product implementation component when the evidence supports it: parsing, normalization, retrieval, reranking, DeepSeek usage, prompts, model choice, index representation, constraints, thresholds, or the overall matching pipeline.
 
-Full index rebuilds are requested by agents but executed only by the supervisor. The global research budget is **5 rebuilds**.
+The existing architecture is not a constraint. The failure taxonomy and research references are evidence, not a mandatory solution order.
 
-## Why two checks
+The main success condition is blind hard-pass coverage **>= 93%**, with no blind coverage regression versus the current champion and no safety regression.
 
-The existing GOLD/tender cases are already in the repository, so they are useful as a **public development set**, not a truly blind test. A final check that agents cannot inspect must be a separate harness dataset stored outside the repository.
+## Loop
 
-The blind check has a hard success condition of **>= 93% hard-pass coverage**, while false matches and explicit human-reject failures must remain zero. During research the champion is monotonic: a new candidate may not reduce blind coverage versus the current champion.
+1. **Baseline** — measure the current solution.
+2. **Planner** — GPT-5.6 Terra / medium reads the repository, current metrics, public failures and the complete experiment history. It considers at least three materially different hypotheses and selects one.
+3. **OpenSpec** — the Planner creates one fresh `cycle-NN-*` OpenSpec change. Previous accepted cycle specs cannot be overwritten.
+4. **Implementer** — GPT-5.5 / low implements the selected hypothesis.
+5. **Public eval** — tests plus repository GOLD provide detailed development feedback.
+6. **Reviewer** — GPT-5.6 Terra / medium is read-only and returns ACCEPT / FIX / REJECT.
+7. **Fixer** — GPT-5.5 / low applies only the review plan when needed.
+8. **End hook** — public eval and then blind eval. Hidden rows are never sent to agents; only aggregate blind metrics survive.
+9. **Champion** — keep a candidate only when it improves measured quality without the protected regressions; otherwise reset to the prior champion.
+10. Repeat for at most **15 cycles**.
 
-The first blind set is intentionally a **generalization check**, not a second independently labeled catalog. It takes the 30 current hard-gate cases and replaces only the visible query wording with unseen tender-style variants while preserving the trusted requirements and human evidence. This checks whether an improvement generalizes beyond exact strings instead of rewarding memorization of the public examples.
+Full index rebuilds are executed only by the supervisor. Global experimental budget: **5 rebuilds**.
 
-> Important: keeping the holdout outside the repository prevents ordinary accidental leakage, but it is not a cryptographic sandbox boundary. For hostile-agent-grade isolation, run Codex in a container/OS user that cannot read the holdout and let only the outer evaluator access it.
+## Research memory
 
-## Build the private blind holdout
+Every cycle is recorded outside the repository. The next Planner receives the complete history (up to all 15 cycles), including:
 
-The exact private query wording must **not** be committed to this repository. Keep the supplied `rag_hidden_query_map.json` somewhere outside the clone, for example `~/rag-private/`.
+- hypothesis and plan summary;
+- alternative hypotheses considered;
+- expected effect / expected metric gain;
+- accept/reject reason;
+- public and blind hard-pass results and deltas from baseline;
+- champion metric snapshots after each decision;
+- index-build usage.
 
-```bash
-mkdir -p ~/rag-private
-# Save rag_hidden_query_map.json into ~/rag-private/ first.
+This is intended to prevent repeated failed experiments and make the loop cumulative rather than restarting its reasoning every cycle.
 
-python scripts/build_blind_holdout.py \
-  --query-map ~/rag-private/rag_hidden_query_map.json \
-  --output ~/rag-private/rag_hidden_holdout.json
-```
-
-The builder requires the private map to cover every current hard-gate case exactly once. It copies the trusted labels/requirements from `data/harness_gold_combined.json`, changes only the query wording, removes public source metadata, assigns `blind_###` ids, and refuses to write the result inside the repository.
-
-Expected first blind set:
-
-```text
-30 total
-25 CORE
-5 NEGATIVE
-30 hard-gate
-```
-
-Do not add either private JSON file to Git.
-
-## Index isolation
-
-A hypothesis that changes index-time representation must not overwrite the current champion's Qdrant collection before it is accepted. The intended harness behavior is to rebuild into a fresh temporary Qdrant collection, evaluate against it, and remember that collection only if the code becomes the new champion. Rejected experimental collections can be deleted later.
-
-After research finishes, if the champion uses a temporary harness collection, rebuild/promote the selected champion to the normal production Qdrant alias. That deployment rebuild is separate from the five experimental rebuilds.
-
-## Run
-
-Use a dedicated clone/worktree and the dedicated branch:
-
-```bash
-git fetch origin
-git switch codex/rag-harness-rnd
-git pull
-python -m pytest -q \
-  tests/test_rag_harness_policy.py \
-  tests/test_rag_harness_blind.py \
-  tests/test_tender_unresolved_taxonomy.py
-```
-
-First measure the blind baseline without starting the loop if you want a sanity check:
-
-```bash
-python scripts/eval_harness_gold.py \
-  --dataset ~/rag-private/rag_hidden_holdout.json \
-  --output ~/rag-private/rag_hidden_baseline.json
-```
-
-Then run the autonomous harness:
-
-```bash
-python scripts/run_rag_harness.py \
-  --holdout ~/rag-private/rag_hidden_holdout.json \
-  --fresh
-```
-
-To push accepted champion commits automatically:
-
-```bash
-python scripts/run_rag_harness.py \
-  --holdout ~/rag-private/rag_hidden_holdout.json \
-  --push \
-  --fresh
-```
-
-State and complete run history are stored outside the repo by default under:
+Default state location:
 
 ```text
 ~/.rag-trend-harness/codex__rag-harness-rnd/
 ```
 
-The important artifacts are:
+Important artifacts:
 
 ```text
 state.json
@@ -116,37 +58,70 @@ runs/001/candidate.diff
 FINAL_REPORT.md
 ```
 
-## Model aliases
+## Public vs blind check
 
-`config.json` contains the requested defaults:
+Repository GOLD is development feedback. The blind holdout lives outside the repository and contains unseen tender-style wording. Agents do not receive hidden query text, labels, product ids or per-case failures.
+
+The first blind set has:
+
+```text
+30 total
+25 CORE
+5 NEGATIVE
+30 hard-gate
+```
+
+The measured starting point for the first run was:
+
+```text
+Public hard-pass: 24/30 = 80.0%
+Blind hard-pass:  23/30 = 76.7%
+Target:           >= 28/30 = 93.3%
+```
+
+## Run
+
+Use the dedicated branch and a clean worktree:
+
+```bash
+git fetch origin
+git switch codex/rag-harness-rnd
+git pull
+
+python -m pytest -q \
+  tests/test_rag_harness_policy.py \
+  tests/test_rag_harness_blind.py \
+  tests/test_rag_harness_planner_memory.py \
+  tests/test_tender_unresolved_taxonomy.py
+```
+
+Run a fresh research campaign after changing the harness contract:
+
+```bash
+unset RAG_HOLDOUT_KEY
+
+python scripts/run_rag_harness.py \
+  --holdout ~/rag-private/rag_hidden_holdout.json \
+  --push \
+  --fresh
+```
+
+Resume an interrupted campaign without `--fresh` only when the harness code and objective have not changed since that campaign began.
+
+## Models
+
+Defaults in `config.json`:
 
 - Planner: `gpt-5.6-terra`, reasoning `medium`
 - Reviewer: `gpt-5.6-terra`, reasoning `medium`
 - Implementer: `gpt-5.5`, reasoning `low`
 - Fixer: `gpt-5.5`, reasoning `low`
 
-If the local Codex installation exposes different exact aliases, override them at launch:
+The exact aliases can be overridden on the CLI if the local Codex installation exposes different names.
 
-```bash
-python scripts/run_rag_harness.py \
-  --holdout /path/to/holdout.json \
-  --planner-model <local-model-alias> \
-  --reviewer-model <local-model-alias> \
-  --worker-model <local-model-alias> \
-  --fixer-model <local-model-alias>
-```
+## Guardrails
 
-## What the Planner should try first
-
-Read `RESEARCH_CONTEXT.md`. The current evidence says the main unresolved groups are alias/designation mapping and missing catalog/schema evidence, not proven dense-retrieval misses. So the loop should normally investigate:
-
-```text
-aliases/designations
-    -> parser/schema
-    -> catalog/index representation
-    -> hybrid retrieval / fusion
-    -> reranking / query expansion
-    -> embeddings or fine-tuning only later
-```
-
-The Planner is free to reject that order when the measured evidence supports another bounded hypothesis.
+- Do not hardcode benchmark ids, GOLD product ids or exact blind answers.
+- Product architecture may change; harness policy, GOLD/eval answers and blind plumbing may not.
+- A single public failure may motivate an experiment, but the change should plausibly improve a class of real tender inputs.
+- A five-build index budget is a resource constraint, not a reason to avoid a promising indexed-representation experiment.
