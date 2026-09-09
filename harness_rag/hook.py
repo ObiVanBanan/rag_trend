@@ -12,7 +12,13 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
+def run_eval(
+    *,
+    dataset: Path,
+    output_dir: Path,
+    tag: str,
+    env_overrides: dict[str, str] | None = None,
+) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / f"{tag}.json"
     cmd = [
@@ -24,13 +30,16 @@ def run_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
         str(output),
         "--include-extended",
     ]
+    env = os.environ.copy()
+    if env_overrides:
+        env.update(env_overrides)
     result = subprocess.run(
         cmd,
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        env=os.environ.copy(),
+        env=env,
     )
     if result.returncode != 0:
         raise RuntimeError(f"evaluation failed ({result.returncode})\n{result.stdout}")
@@ -54,14 +63,25 @@ def run_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
     }
 
 
-def run_hidden_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
+def run_hidden_eval(
+    *,
+    dataset: Path,
+    output_dir: Path,
+    tag: str,
+    env_overrides: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Run the blind gate and retain only aggregate metrics.
 
     The evaluator necessarily creates a detailed result temporarily, but it is
     deleted before another agent is launched. The Planner/Reviewer receive only
     the returned summary.
     """
-    result = run_eval(dataset=dataset, output_dir=output_dir, tag=tag)
+    result = run_eval(
+        dataset=dataset,
+        output_dir=output_dir,
+        tag=tag,
+        env_overrides=env_overrides,
+    )
     raw_output = Path(result["raw_output"])
     summary = dict(result["summary"])
     raw_output.unlink(missing_ok=True)
