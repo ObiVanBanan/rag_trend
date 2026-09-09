@@ -54,9 +54,17 @@ def run_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
 
 
 def run_hidden_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
-    """Run the blind gate and expose only aggregate metrics to the harness."""
+    """Run the blind gate and retain only aggregate metrics.
+
+    The evaluator necessarily creates a detailed result temporarily, but it is
+    deleted before another agent is launched. The Planner/Reviewer receive only
+    the returned summary.
+    """
     result = run_eval(dataset=dataset, output_dir=output_dir, tag=tag)
-    return {"summary": result["summary"]}
+    raw_output = Path(result["raw_output"])
+    summary = dict(result["summary"])
+    raw_output.unlink(missing_ok=True)
+    return {"summary": summary}
 
 
 def check_dataset_outside_repo(dataset: Path) -> None:
