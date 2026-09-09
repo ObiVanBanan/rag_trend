@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "grades": {
+    "tender_v1_003:3901": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_004:3902": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_006:18648": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_019:143": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_033:1930": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_035:2058": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_035:760": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_036:19404": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_038:16132": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_038:16672": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_039:17391": {
+      "grade": "CONFIRM",
+      "comment": ""
+    },
+    "tender_v1_039:1864": {
+      "grade": "CONFIRM",
+      "comment": ""
+    }
+  }
+}
