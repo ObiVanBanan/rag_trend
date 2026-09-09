@@ -17,8 +17,10 @@ class Reranker:
     def __init__(self, result=None, error=None):
         self.result = result
         self.error = error
+        self.calls = []
 
     def rerank(self, query, candidates):
+        self.calls.append((query, candidates))
         if self.error:
             raise self.error
         return self.result
@@ -29,8 +31,8 @@ class HybridRetriever:
         self.candidates = candidates
         self.calls = []
 
-    def search(self, query, limit):
-        self.calls.append((query, limit))
+    def search(self, query, limit, canonical_query=None):
+        self.calls.append((query, limit, canonical_query))
         return self.candidates
 
 
@@ -113,7 +115,8 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
         )
     ]
     rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
-    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
     result = matcher.match_one_hybrid_with_rerank("  query  ")
     assert result.status == "MATCHED"
     assert result.candidates[0].rrf_score == 0.03
@@ -121,6 +124,7 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
     assert result.selected[0].bm25_score == 1.2
     assert result.selected[0].rrf_score == 0.03
     assert not hasattr(result.selected[0], "vector_score")
+    assert hybrid.calls == [("query", 20, None)]
 
 
 def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
@@ -136,4 +140,22 @@ def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
     matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
     results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
     assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
-    assert hybrid.calls == [("query", 20)]
+    assert hybrid.calls == [("query", 20, None)]
+
+
+def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
+    reranker = Reranker(result=rerank_result)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
+    assert result.query == "Кран шаровой фл. Ду25 Ру16"
+    assert hybrid.calls == [("Кран шаровой фл. Ду25 Ру16", 20, "Кран шаровой фланцевый DN 25 PN 16")]
+    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"

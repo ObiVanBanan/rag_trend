@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from .models import MatchResult, SearchCandidate, SelectedMatch
+from .query_canonicalization import canonicalize_retrieval_query
 
 
 class NomenclatureMatcher:
@@ -99,12 +100,17 @@ class NomenclatureMatcher:
         return self.rerank_candidates(query, candidates)
 
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
-        query = self._normalize_query(query)
+        canonicalization = canonicalize_retrieval_query(query)
+        query = canonicalization.source_query
         if not query:
             return MatchResult(query=query, status="NOT_FOUND")
         if self.hybrid_retriever is None:
             raise ValueError("Hybrid retriever is not configured")
-        candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
+        candidates = self.hybrid_retriever.search(
+            query,
+            self.settings.hybrid_rerank_limit,
+            canonical_query=canonicalization.canonical_query,
+        )
         return self.rerank_candidates(query, candidates)
 
     def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
