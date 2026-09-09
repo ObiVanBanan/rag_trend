@@ -118,6 +118,21 @@ def test_hybrid_search_retrieves_alternate_only_when_distinct():
     assert bm25.calls == [("original", 8)]
 
 
+def test_hybrid_search_uses_ww_expanded_alternate_and_dedupes_by_ld_id():
+    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+    embedder = EchoEmbedder()
+    bm25 = VariantBM25Store()
+    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
+    original = "Кран шаровой WW DN100 PN25"
+    canonical = "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+    results = retriever.search(original, canonical_query=canonical)
+
+    assert embedder.calls == [original, canonical]
+    assert bm25.calls == [(original, 50), (canonical, 50)]
+    assert len({candidate.ld_id for candidate in results}) == len(results)
+
+
 def test_hybrid_search_merges_variants_per_modality_before_rrf():
     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
     retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
@@ -139,3 +154,16 @@ def test_hybrid_search_fails_open_when_alternate_modality_fails():
     results = retriever.search("original", canonical_query="canonical")
     assert len({candidate.ld_id for candidate in results}) == len(results)
     assert {candidate.ld_id for candidate in results} == {1, 2, 3, 4}
+
+
+def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
+    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(fail_on_canonical=True), settings)
+    results = retriever.search(
+        "original",
+        canonical_query="canonical",
+    )
+    by_id = {candidate.ld_id: candidate for candidate in results}
+    assert {1, 2, 4}.issubset(by_id)
+    assert by_id[1].name == "Original"
+    assert by_id[4].name == "Bm25 original"

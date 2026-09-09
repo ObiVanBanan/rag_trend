@@ -159,3 +159,30 @@ def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
     assert result.query == "Кран шаровой фл. Ду25 Ру16"
     assert hybrid.calls == [("Кран шаровой фл. Ду25 Ру16", 20, "Кран шаровой фланцевый DN 25 PN 16")]
     assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"
+
+
+def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_rerank():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="Кран приварной", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="ww")], reason=None)
+    reranker = Reranker(result=rerank_result)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+    query = "  Кран шаровой WW DN100 PN25  "
+
+    result = matcher.match_one_hybrid_with_rerank(query)
+
+    assert result.query == "Кран шаровой WW DN100 PN25"
+    assert hybrid.calls == [
+        (
+            "Кран шаровой WW DN100 PN25",
+            20,
+            "Кран шаровой WW приварной под приварку сварной DN 100 PN 25",
+        )
+    ]
+    assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"

@@ -13,6 +13,18 @@ def test_compact_dn_pn_and_joining_abbreviation_are_normalized():
     assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16"
 
 
+def test_standalone_ww_connection_code_adds_welded_vocabulary():
+    result = canonicalize_retrieval_query("Кран шаровой WW DN100 PN25")
+    assert result.source_query == "Кран шаровой WW DN100 PN25"
+    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+
+def test_standalone_ww_connection_code_is_case_insensitive():
+    result = canonicalize_retrieval_query("Кран шаровой wW Ду100 Ру25")
+    assert result.source_query == "Кран шаровой wW Ду100 Ру25"
+    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+
 def test_mixed_script_designation_token_is_normalized_without_losing_constraints():
     result = canonicalize_retrieval_query("Клапан 15C65HЖ DN50 PN16 стальной")
     assert result.canonical_query == "Клапан 15С65НЖ DN 50 PN 16 стальной"
@@ -29,3 +41,14 @@ def test_long_tender_prose_extracts_supported_item_clause_and_quantity_noise():
 def test_unsupported_or_ambiguous_text_does_not_gain_catalog_domain_terms():
     assert canonicalize_retrieval_query("Насос циркуляционный Ду25 2 шт").canonical_query is None
     assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+
+
+def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+    assert canonicalize_retrieval_query("Кран шаровой AWW DN100 PN25").canonical_query == "Кран шаровой AWW DN 100 PN 25"
+    assert canonicalize_retrieval_query("Кран шаровой WW2 DN100 PN25").canonical_query == "Кран шаровой WW2 DN 100 PN 25"
+    assert canonicalize_retrieval_query("Кран шаровой FF DN100 PN25").canonical_query == "Кран шаровой FF DN 100 PN 25"
+
+
+def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+    assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+    assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None

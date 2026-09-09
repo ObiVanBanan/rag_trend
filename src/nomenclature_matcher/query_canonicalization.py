@@ -40,6 +40,7 @@ _UNSUPPORTED_ANCHOR_RE = re.compile(
     r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
     re.IGNORECASE,
 )
+_STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,8 @@ def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
     canonical = _strip_quantity_noise(canonical)
     canonical = _normalize_dn_pn(canonical)
     canonical = _expand_joining_and_actuation(canonical)
+    if has_supported_anchor:
+        canonical = _expand_connection_notation(canonical)
     canonical = _normalize_designation_confusables(canonical)
     canonical = _cleanup_spacing(canonical)
 
@@ -129,6 +132,10 @@ def _expand_joining_and_actuation(text: str) -> str:
     for pattern, replacement in replacements:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return text
+
+
+def _expand_connection_notation(text: str) -> str:
+    return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
 
 
 def _normalize_designation_confusables(text: str) -> str:
