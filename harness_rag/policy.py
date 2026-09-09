@@ -36,7 +36,6 @@ class Metrics:
         )
 
     def public_score(self) -> tuple[float, ...]:
-        # Safety/reliability first, then recall-style diagnostics.
         return (
             self.hard_pass_rate,
             -self.false_match_rate,
@@ -67,12 +66,14 @@ def accept_candidate(
     champion_public: Metrics,
     champion_hidden: Metrics,
 ) -> tuple[bool, str]:
+    if candidate_public.hard_pass_rate + _EPS < champion_public.hard_pass_rate:
+        return False, "public coverage regressed"
     if candidate_hidden.hard_pass_rate + _EPS < champion_hidden.hard_pass_rate:
         return False, "blind coverage regressed"
-    if safety_regressed(candidate_hidden, champion_hidden):
-        return False, "blind safety metrics regressed"
     if safety_regressed(candidate_public, champion_public):
         return False, "public safety metrics regressed"
+    if safety_regressed(candidate_hidden, champion_hidden):
+        return False, "blind safety metrics regressed"
 
     hidden_improved = candidate_hidden.hard_pass_rate > champion_hidden.hard_pass_rate + _EPS
     public_improved = candidate_public.public_score() > champion_public.public_score()
@@ -81,9 +82,12 @@ def accept_candidate(
     return True, "candidate improves champion without regression"
 
 
-def final_goal_met(*, hidden: Metrics, coverage_floor: float) -> bool:
+def final_goal_met(*, public: Metrics, hidden: Metrics, coverage_floor: float) -> bool:
     return (
-        hidden.hard_pass_rate + _EPS >= coverage_floor
+        public.hard_pass_rate + _EPS >= coverage_floor
+        and hidden.hard_pass_rate + _EPS >= coverage_floor
+        and public.false_match_rate <= _EPS
         and hidden.false_match_rate <= _EPS
+        and public.human_reject_rate <= _EPS
         and hidden.human_reject_rate <= _EPS
     )
