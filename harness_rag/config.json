@@ -1,0 +1,28 @@
+{
+  "max_cycles": 15,
+  "max_index_builds": 5,
+  "coverage_floor": 0.93,
+  "planner_model": "gpt-5.6-terra",
+  "planner_reasoning_effort": "medium",
+  "reviewer_model": "gpt-5.6-terra",
+  "reviewer_reasoning_effort": "medium",
+  "worker_model": "gpt-5.5",
+  "worker_reasoning_effort": "low",
+  "fixer_model": "gpt-5.5",
+  "fixer_reasoning_effort": "low",
+  "public_dataset": "data/harness_gold_combined.json",
+  "taxonomy": "data/tender_queries_v1_unresolved_taxonomy.json",
+  "test_command": ["python", "-m", "pytest", "-q"],
+  "index_command": ["python", "scripts/build_index.py", "--csv", "ld_products_full_nomenclature.csv"],
+  "protected_from_planner": [
+    "src/",
+    "scripts/",
+    "tests/",
+    "data/"
+  ],
+  "notes": {
+    "models": "Model aliases are the requested defaults. Override them on the CLI if the local Codex installation uses different aliases.",
+    "holdout": "The blind holdout is intentionally not configured here. Pass it at runtime from outside the repository.",
+    "indexing": "Agents may request a rebuild but must not run a full rebuild themselves. The supervisor owns the global budget of five rebuilds."
+  }
+}
