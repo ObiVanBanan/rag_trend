@@ -82,12 +82,24 @@ def accept_candidate(
     return True, "candidate improves champion without regression"
 
 
-def final_goal_met(*, public: Metrics, hidden: Metrics, coverage_floor: float) -> bool:
+def final_goal_met(
+    *,
+    hidden: Metrics,
+    coverage_floor: float,
+    public: Metrics | None = None,
+) -> bool:
+    public_ok = (
+        True
+        if public is None
+        else (
+            public.hard_pass_rate + _EPS >= coverage_floor
+            and public.false_match_rate <= _EPS
+            and public.human_reject_rate <= _EPS
+        )
+    )
     return (
-        public.hard_pass_rate + _EPS >= coverage_floor
+        public_ok
         and hidden.hard_pass_rate + _EPS >= coverage_floor
-        and public.false_match_rate <= _EPS
         and hidden.false_match_rate <= _EPS
-        and public.human_reject_rate <= _EPS
         and hidden.human_reject_rate <= _EPS
     )
