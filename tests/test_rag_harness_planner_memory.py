@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from harness_rag import supervisor
-from harness_rag.prompts import PLANNER_SCHEMA, planner_prompt
+from harness_rag.prompts import PLANNER_SCHEMA, planner_prompt, reviewer_prompt, worker_prompt
 from harness_rag.supervisor import _full_history, _rich_row
 
 
@@ -83,6 +83,30 @@ def test_planner_contract_requires_alternatives_and_broad_mvp_freedom() -> None:
     assert "COMPLETE HYPOTHESIS / METRIC HISTORY" in prompt
     assert "cycle-03-" in prompt
     assert "hardcode a test id" in prompt
+    assert "NEVER assign public harness evaluation" in prompt
+    assert "BLOCKED outcomes as inconclusive" in prompt
+
+
+def test_worker_and_reviewer_leave_supervisor_metrics_to_supervisor() -> None:
+    plan = {"change_name": "cycle-02-demo", "hypothesis": "demo"}
+    worker = worker_prompt(goal="Improve MVP accuracy.", plan=plan)
+    reviewer = reviewer_prompt(
+        goal="Improve MVP accuracy.",
+        plan=plan,
+        worker_result={"status": "complete"},
+        diff_text="",
+        public_metrics={"hard_pass_rate": 0.8},
+        public_failures=[],
+    )
+
+    assert "Do not return `blocked` merely because public/blind acceptance metrics are unavailable" in worker
+    assert "outer supervisor, not the Implementer or Reviewer, owns the blind evaluation" in reviewer
+
+
+def test_blocked_rejection_is_not_scientific_reject() -> None:
+    assert supervisor._rejection_kind("Implementer blocked on missing supervisor metrics") == "BLOCKED"
+    assert supervisor._rejection_kind("Tests failed after fixer") == "IMPLEMENTATION_FAILED"
+    assert supervisor._rejection_kind("Gate-on public harness regressed") == "REJECTED"
 
 
 def test_planner_may_create_only_one_untracked_cycle_openspec(monkeypatch) -> None:
