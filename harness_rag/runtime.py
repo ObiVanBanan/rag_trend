@@ -55,6 +55,19 @@ def run(
 
 
 def git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    # A remote push is publication, not part of the scientific acceptance gate.
+    # Never discard/abort an accepted local champion only because GitHub auth or
+    # connectivity is temporarily unavailable. Callers still receive the
+    # non-zero return code and the command output is printed by run().
+    if args and args[0] == "push" and check:
+        result = run(["git", *args], check=False)
+        if result.returncode != 0:
+            print(
+                "WARNING: git push failed; keeping the accepted champion locally. "
+                "Fix GitHub authentication and push later.",
+                flush=True,
+            )
+        return result
     return run(["git", *args], check=check)
 
 
