@@ -12,6 +12,14 @@ PLANNER_SCHEMA: dict[str, Any] = {
         "hypothesis": {"type": "string"},
         "why_now": {"type": "string"},
         "expected_effect": {"type": "string"},
+        "expected_metric_gain": {"type": "string"},
+        "lesson_from_history": {"type": "string"},
+        "candidate_hypotheses": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 6,
+            "items": {"type": "string"},
+        },
         "needs_reindex": {"type": "boolean"},
         "plan_summary": {"type": "string"},
     },
@@ -21,6 +29,9 @@ PLANNER_SCHEMA: dict[str, Any] = {
         "hypothesis",
         "why_now",
         "expected_effect",
+        "expected_metric_gain",
+        "lesson_from_history",
+        "candidate_hypotheses",
         "needs_reindex",
         "plan_summary",
     ],
@@ -68,7 +79,7 @@ def planner_prompt(
     max_index_builds: int,
     coverage_floor: float,
 ) -> str:
-    return f"""You are the Planner for an autonomous RAG research harness.
+    return f"""You are the Planner for an autonomous research harness whose job is to improve the accuracy of the current LD nomenclature-matching MVP.
 
 GOAL
 {goal}
@@ -76,16 +87,22 @@ GOAL
 CYCLE
 {cycle}
 
-RULES
+CORE PLANNING RULES
 - Read the repository before deciding.
+- Optimize measured MVP quality, not preservation of the current architecture. You may propose changes to any product implementation component: parsing, normalization, structured constraints, candidate generation, lexical/dense retrieval, fusion, reranking, DeepSeek usage, prompts, model choice, index representation, thresholds, post-validation, or the overall pipeline.
+- The failure taxonomy and research context are evidence and idea sources, not a required solution order.
+- Before selecting the experiment, consider at least 3 materially different candidate hypotheses. Put them in `candidate_hypotheses`, then choose the one with the best expected metric/information gain for this cycle.
+- Use the complete experiment history below. Explicitly state in `lesson_from_history` what prior results change your decision. Do not silently repeat a rejected idea.
+- A public case may expose a defect, but do not hardcode a test id, exact GOLD product id, or one-off benchmark string. The chosen hypothesis should plausibly improve a class of real inputs.
+- One cycle still tests one falsifiable hypothesis. It can change several implementation pieces when they are necessary to test one coherent architectural idea.
 - Use the installed OpenSpec planning skill `openspec-propose` from `.agents/skills/openspec-propose/SKILL.md`.
-- Create exactly one bounded, falsifiable OpenSpec change under `openspec/changes/` and stop at planning artifacts. Do not edit project code.
-- If the OpenSpec workflow would normally ask a minor clarification, answer it yourself from repository evidence and record the assumption. Only return DONE when there is no higher-value bounded hypothesis left AND blind coverage is already at least {coverage_floor:.2%}.
-- Prefer diagnosed causes over random parameter search.
-- Do not assume unresolved means retrieval failure.
+- Create exactly one NEW OpenSpec change and stop at planning artifacts. Do not edit product code yourself.
+- The OpenSpec change name must be unique for this cycle and start with `cycle-{cycle:02d}-`. Never reuse or overwrite a previous cycle's OpenSpec change.
+- If OpenSpec would ask a minor clarification, answer it yourself from repository evidence and record the assumption.
+- Only return DONE when no higher-value hypothesis remains AND blind coverage is already at least {coverage_floor:.2%}.
 - Do not inspect or attempt to locate the hidden holdout. You are given aggregate hidden metrics only.
-- A full index rebuild is expensive. {index_builds_used}/{max_index_builds} have already been used. Request one only if the hypothesis truly changes indexed representation or index-time behavior.
-- DeepSeek credentials available to implementation may be used for the project, but do not design a solution that depends on unlimited LLM calls.
+- A full index rebuild is expensive. {index_builds_used}/{max_index_builds} have already been used. Request one when the best hypothesis requires index-time changes; do not avoid a high-value indexed-representation experiment merely to preserve the budget.
+- DeepSeek credentials available to implementation may be used when useful. Prefer bounded/cached calls and measurable benefit rather than unlimited model usage.
 
 RESEARCH CONTEXT
 {research_context}
@@ -102,10 +119,10 @@ CURRENT BLIND METRICS (AGGREGATE ONLY)
 CURRENT PUBLIC FAILURES
 {json.dumps(public_failures[:20], ensure_ascii=False, indent=2)}
 
-RECENT HYPOTHESES AND RESULTS
-{json.dumps(history[-8:], ensure_ascii=False, indent=2)}
+COMPLETE HYPOTHESIS / METRIC HISTORY
+{json.dumps(history, ensure_ascii=False, indent=2)}
 
-Choose the single highest-value uncertainty or bottleneck, use OpenSpec to create the proposal/design/spec/tasks for it, then return the required JSON summary. The `change_name` must match the OpenSpec change you created.
+Choose the highest-value experiment for improving the current MVP, create its unique OpenSpec proposal/design/spec/tasks, and return the required JSON summary. The `change_name` must exactly match the new OpenSpec change you created.
 """
 
 
@@ -120,12 +137,13 @@ PLAN
 
 RULES
 - Read the OpenSpec change named `{plan.get('change_name', '')}` and use the installed `openspec-apply-change` skill.
-- Implement only that bounded hypothesis. Do not expand scope into unrelated cleanup.
+- Implement the hypothesis completely. You are free to change any product-code component required by that hypothesis; the current MVP architecture is not protected.
+- Do not expand into unrelated cleanup or hardcode benchmark ids/answers.
 - Run focused unit tests while working.
 - You may use DeepSeek through the project's existing environment/config if useful.
 - NEVER run a full catalog index rebuild yourself. If the completed change needs a rebuild, set `needs_reindex=true`; the outer supervisor owns the global rebuild budget.
 - Do not inspect or search for the hidden final-check dataset, its path, labels, product ids, or per-case results.
-- Do not alter harness policy, hidden-check plumbing, or files under `harness_rag/`.
+- Do not alter harness policy, hidden-check plumbing, GOLD/eval answers, or files under `harness_rag/`.
 - Do not run git commit/push/reset/checkout/rebase. The supervisor owns Git state.
 - Return blocked rather than fabricating success.
 """
@@ -160,7 +178,9 @@ PUBLIC FAILURES AFTER IMPLEMENTATION
 GIT DIFF
 {diff_text[:60000]}
 
-Review correctness, scope, regression risk, and whether the code actually tests the stated hypothesis. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
 
 Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
 """
@@ -185,9 +205,10 @@ REVIEW
 
 RULES
 - Fix only the Reviewer's concrete issues. Do not introduce a new hypothesis.
+- Preserve the general MVP-level intent; do not turn the fix into a benchmark-specific special case.
 - Run focused tests.
 - NEVER run a full catalog index rebuild yourself. If fixes require one, set `needs_reindex=true` and let the supervisor do it.
 - Do not inspect or search for the hidden final-check dataset.
-- Do not alter harness policy or files under `harness_rag/`.
+- Do not alter harness policy, GOLD/eval answers, or files under `harness_rag/`.
 - Do not run git commit/push/reset/checkout/rebase.
 """
