@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from . import orchestrator
 
 
 _ORIGINAL_ROW = orchestrator._row
+_ORIGINAL_REJECT = orchestrator._reject
 _ORIGINAL_PLANNER_PROMPT = orchestrator.planner_prompt
 _ORIGINAL_RUN_CODEX = orchestrator.run_codex
 _ORIGINAL_FINAL_GOAL_MET = orchestrator.final_goal_met
@@ -53,9 +56,12 @@ def _full_history(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "candidate_hypotheses",
         "decision",
         "reason",
+        "failure_stage",
         "review_decision",
         "public_hard_pass_rate",
         "blind_hard_pass_rate",
+        "candidate_public_metrics",
+        "candidate_blind_evaluated",
         "public_delta_vs_baseline",
         "blind_delta_vs_baseline",
         "champion_public_metrics_after_decision",
@@ -139,6 +145,90 @@ def _write_final_report_with_exhaustion_outcome(**kwargs: Any) -> None:
     _ORIGINAL_WRITE_FINAL_REPORT(**kwargs)
 
 
+def _candidate_public_summary(state_dir: Path, cycle: int) -> dict[str, Any]:
+    """Recover public metrics already produced before an early reject."""
+    run_dir = state_dir / "runs" / f"{cycle:03d}"
+    for name in ("public_after_fixer.json", "public_after_worker.json"):
+        path = run_dir / name
+        if not path.exists():
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        summary = payload.get("summary")
+        if isinstance(summary, dict):
+            return dict(summary)
+    return {}
+
+
+def _rejection_kind(reason: str) -> str:
+    """Do not teach the Planner that a protocol/implementation block disproved a hypothesis."""
+    text = reason.lower()
+    if "blocked" in text or "supervisor" in text and "unavailable" in text:
+        return "BLOCKED"
+    if "tests failed" in text or "did not pass tests" in text or "evaluation failed" in text:
+        return "IMPLEMENTATION_FAILED"
+    return "REJECTED"
+
+
+def _reject_with_attempt_memory(**kwargs: Any) -> None:
+    """Record attempted public metrics and distinguish scientific rejects from blocked runs."""
+    state_dir = Path(kwargs["state_dir"])
+    state = kwargs["state"]
+    champion_commit = str(kwargs["champion_commit"])
+    cycle = int(kwargs["cycle"])
+    plan = dict(kwargs.get("plan") or {})
+    reason = str(kwargs.get("reason") or "Candidate rejected.")
+    champion_public = kwargs["champion_public"]
+    champion_hidden = kwargs["champion_hidden"]
+    review_decision = kwargs.get("review_decision")
+    candidate_alias = kwargs.get("candidate_alias")
+
+    attempted_public = _candidate_public_summary(state_dir, cycle)
+    attempted_public_rate = float(
+        attempted_public.get("hard_pass_rate", champion_public.hard_pass_rate)
+    )
+    decision = _rejection_kind(reason)
+    failure_stage = (
+        "REVIEW"
+        if review_decision == "REJECT"
+        else "PUBLIC_EVAL_OR_REVIEW"
+        if attempted_public
+        else "IMPLEMENTATION_OR_TEST"
+    )
+
+    orchestrator.rollback(champion_commit)
+    row = orchestrator._row(
+        cycle=cycle,
+        plan=plan,
+        decision=decision,
+        reason=reason,
+        public_rate=attempted_public_rate,
+        blind_rate=champion_hidden.hard_pass_rate,
+        state=state,
+        review_decision=review_decision,
+        candidate_alias=candidate_alias,
+    )
+    row["failure_stage"] = failure_stage
+    row["candidate_public_metrics"] = attempted_public
+    row["candidate_blind_evaluated"] = False
+    orchestrator._record(state_dir, state, row)
+
+    print(f"\n--- CYCLE {cycle} {decision} ---", flush=True)
+    print(f"Hypothesis: {plan.get('hypothesis', '')}", flush=True)
+    if attempted_public:
+        print(
+            "Public hard-pass: "
+            f"{champion_public.hard_pass_rate:.3f} -> {attempted_public_rate:.3f}",
+            flush=True,
+        )
+    else:
+        print("Public hard-pass: not evaluated", flush=True)
+    print("Blind: not evaluated; champion preserved", flush=True)
+    print(f"Reason: {reason}", flush=True)
+
+
 # For DONE, the Planner is allowed to return no remaining candidate hypotheses.
 # IMPLEMENT still requires >=3 alternatives via the prompt contract and tests.
 orchestrator.PLANNER_SCHEMA["properties"]["candidate_hypotheses"]["minItems"] = 0
@@ -147,6 +237,7 @@ orchestrator.PLANNER_SCHEMA["properties"]["candidate_hypotheses"]["minItems"] = 
 # memory and tighten the planning/stopping contract without duplicating the main loop.
 orchestrator._row = _rich_row
 orchestrator._compact_history = _full_history
+orchestrator._reject = _reject_with_attempt_memory
 orchestrator.planner_changes_are_scoped = _planner_created_one_new_cycle_change
 orchestrator.planner_prompt = _planner_prompt_with_exhaustion_stop
 orchestrator.run_codex = _run_codex_with_done_tracking
