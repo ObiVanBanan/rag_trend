@@ -1,7 +1,7 @@
 {
-  "version": 2,
-  "generated_at": "2026-09-09T03:12:35.689495Z",
-  "purpose": "Constraint-based GOLD for automated RAG harness evaluation hooks.",
+  "version": 3,
+  "generated_at": "2026-09-09T03:12:35.904986Z",
+  "purpose": "Combined Golden-100 + human-verified real-tender GOLD for automated RAG harness hooks.",
   "semantics": {
     "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
     "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
@@ -11,21 +11,26 @@
     "negative": "Hard-gate explicit NOT_FOUND cases.",
     "extended": "Diagnostic-only cases with ambiguity, unsupported constraints, or unproven catalog existence.",
     "pn": "candidate PN must be >= query pn_min_mpa",
-    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore."
+    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
+    "real_tender": "Human-verified tender positives are non-exhaustive. They become hard gates only when the current deterministic requirement schema can judge an unseen returned product without relying on membership in the positive-id set."
   },
   "source_paths": {
     "queries": "data/golden_queries_100.json",
     "constraints": "data/golden_100_query_constraints.json",
     "labels": "data/golden_100_labels.json",
     "human_review": "data/golden_100_human_review.json",
-    "auto_report": "data/golden_100_auto_label_report.json"
+    "auto_report": "data/golden_100_auto_label_report.json",
+    "base_harness": "data/harness_gold.json",
+    "verified_tender_cases": "data/tender_queries_v1_harness_cases.json",
+    "verified_tender_labels": "data/tender_queries_v1_verified_labels.json"
   },
   "summary": {
-    "total": 81,
+    "total": 86,
     "CORE": 0,
     "NEGATIVE": 0,
-    "EXTENDED": 81,
-    "hard_gate": 0
+    "EXTENDED": 86,
+    "hard_gate": 0,
+    "verified_real_tender_cases": 5
   },
   "cases": [
     {
@@ -3197,6 +3202,134 @@
       "extended_reasons": [
         "parser_warning",
         "no_strict_catalog_pass"
+      ]
+    },
+    {
+      "id": "tender_v1_002",
+      "query": "Фланец стальной плоский приварной, марка стали 20, номинальное давление 1,6 МПа, номинальный диаметр 100 мм",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 100,
+        "pn_min_mpa": 1.6,
+        "body_material": "steel",
+        "body_material_grade": "20"
+      },
+      "known_positive_ids": [
+        171,
+        19254
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender"
+      },
+      "extended_reasons": [
+        "unsupported:flange_subtype=flat_welded"
+      ]
+    },
+    {
+      "id": "tender_v1_011",
+      "query": "Фланец стальной ду80мм. под втулку ПНД ду90мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 80,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [
+        3292
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender"
+      },
+      "extended_reasons": [
+        "unsupported:pnd_sleeve_geometry=DN90"
+      ]
+    },
+    {
+      "id": "tender_v1_012",
+      "query": "Фланец стальной ду50мм. под втулку ПНД ду63мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 50,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [
+        3290
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender"
+      },
+      "extended_reasons": [
+        "unsupported:pnd_sleeve_geometry=DN63"
+      ]
+    },
+    {
+      "id": "tender_v1_013",
+      "query": "Фланец стальной ду40мм. под втулку ПНД ду50мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 40,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [
+        3289
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender"
+      },
+      "extended_reasons": [
+        "unsupported:pnd_sleeve_geometry=DN50"
+      ]
+    },
+    {
+      "id": "tender_v1_020",
+      "query": "Фланец стальной ду100мм. под втулку ПНД ду110мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 100,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [
+        18691
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender"
+      },
+      "extended_reasons": [
+        "unsupported:pnd_sleeve_geometry=DN110"
       ]
     }
   ]

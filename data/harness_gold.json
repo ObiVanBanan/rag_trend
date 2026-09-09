@@ -1,19 +1,24 @@
 {
-  "version": 1,
-  "generated_at": "2026-09-08T13:56:19.434461Z",
+  "version": 2,
+  "generated_at": "2026-09-09T03:12:35.684924Z",
   "purpose": "Constraint-based GOLD for automated RAG harness evaluation hooks.",
   "semantics": {
+    "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
     "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
+    "known_rejected_ids": "Human-confirmed rejected candidates override the generic constraint judge.",
+    "known_unsure_ids": "Human-uncertain candidates are not counted as PASS.",
     "core": "Hard-gate MATCHED cases with deterministic requirements and catalog existence evidence.",
     "negative": "Hard-gate explicit NOT_FOUND cases.",
     "extended": "Diagnostic-only cases with ambiguity, unsupported constraints, or unproven catalog existence.",
-    "pn": "candidate PN must be >= query pn_min_mpa"
+    "pn": "candidate PN must be >= query pn_min_mpa",
+    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore."
   },
   "source_paths": {
-    "queries": "/workspaces/ML-Cancer-Data/data/golden_queries_100.json",
-    "constraints": "/workspaces/ML-Cancer-Data/data/golden_100_query_constraints.json",
-    "labels": "/workspaces/ML-Cancer-Data/data/golden_100_labels.json",
-    "auto_report": "/workspaces/ML-Cancer-Data/data/golden_100_auto_label_report.json"
+    "queries": "data/golden_queries_100.json",
+    "constraints": "data/golden_100_query_constraints.json",
+    "labels": "data/golden_100_labels.json",
+    "human_review": "data/golden_100_human_review.json",
+    "auto_report": "data/golden_100_auto_label_report.json"
   },
   "summary": {
     "total": 100,
@@ -48,6 +53,43 @@
         16801,
         19039
       ],
+      "known_rejected_ids": [
+        2224,
+        2244,
+        3247,
+        3642,
+        3789,
+        3799,
+        3901,
+        3902,
+        3903,
+        3904,
+        3905,
+        3906,
+        3907,
+        3908,
+        3909,
+        3910,
+        5203,
+        5207,
+        5209,
+        5211,
+        15210,
+        17862,
+        18481,
+        18559,
+        18566,
+        19220,
+        19267
+      ],
+      "known_unsure_ids": [
+        2238,
+        2258,
+        3798,
+        4051,
+        4300,
+        19362
+      ],
       "known_positive_ids_exhaustive": false,
       "label_source": "HUMAN",
       "metadata": {
@@ -62,6 +104,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 44,
       "strict_catalog_unknown_count": 33
     },
@@ -78,11 +121,54 @@
         "joining_type": "flanged",
         "valve_type": "standard",
         "body_material": "steel",
-        "body_material_grade": "20"
+        "body_material_grade": "20",
+        "bore_type": "standard"
       },
       "known_positive_ids": [
         1050,
         1678
+      ],
+      "known_rejected_ids": [
+        850,
+        1118,
+        1423,
+        1426,
+        1445,
+        1790,
+        1862,
+        2874,
+        3022,
+        3149,
+        3845,
+        3846,
+        3847,
+        4093,
+        4184,
+        4192,
+        5787,
+        5793,
+        5853,
+        5854,
+        6029,
+        6038,
+        6565,
+        6669,
+        8872,
+        15095,
+        15425,
+        15607,
+        15650,
+        15870,
+        16200,
+        16343,
+        16411,
+        17204,
+        18604,
+        18807,
+        19078
+      ],
+      "known_unsure_ids": [
+        15317
       ],
       "known_positive_ids_exhaustive": false,
       "label_source": "HUMAN",
@@ -97,6 +183,9 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [
+        "ball_valve_standard_execution=>bore_type:standard"
+      ],
       "strict_catalog_pass_count": 50,
       "strict_catalog_unknown_count": 3
     },
@@ -121,6 +210,45 @@
         16201,
         17085
       ],
+      "known_rejected_ids": [
+        1230,
+        1423,
+        1426,
+        1445,
+        1790,
+        1862,
+        2057,
+        2874,
+        3822,
+        3845,
+        5620,
+        5904,
+        5945,
+        6008,
+        6125,
+        6439,
+        6484,
+        6656,
+        6763,
+        6941,
+        7760,
+        13479,
+        15095,
+        15317,
+        15690,
+        15979,
+        17030,
+        17042,
+        17062,
+        17082,
+        17218,
+        17413,
+        17454,
+        18742,
+        18839,
+        19207
+      ],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "HUMAN",
       "metadata": {
@@ -136,6 +264,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 16,
       "strict_catalog_unknown_count": 0
     },
@@ -183,6 +312,26 @@
         19378,
         19484
       ],
+      "known_rejected_ids": [
+        1806,
+        1807,
+        4419,
+        4428,
+        15227,
+        15857,
+        16125,
+        16504,
+        19042,
+        19043,
+        19212,
+        19213,
+        19220,
+        19221,
+        19267,
+        19268,
+        19489
+      ],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "HUMAN",
       "metadata": {
@@ -195,6 +344,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 30,
       "strict_catalog_unknown_count": 9
     },
@@ -214,6 +364,8 @@
         "bore_type": "full"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -226,6 +378,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 37,
       "strict_catalog_unknown_count": 43
     },
@@ -245,6 +398,8 @@
         "body_material_grade": "09Г2С"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -258,6 +413,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -281,6 +437,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "AUTO_RULE_V2",
       "metadata": {
@@ -293,6 +451,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 8,
       "strict_catalog_unknown_count": 0
     },
@@ -310,6 +469,8 @@
         "valve_type": "standard"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -328,6 +489,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 99,
       "strict_catalog_unknown_count": 11,
       "extended_reasons": [
@@ -347,6 +509,8 @@
         "valve_type": "standard"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -365,6 +529,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 104,
       "strict_catalog_unknown_count": 5,
       "extended_reasons": [
@@ -387,6 +552,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -399,6 +566,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 6,
       "extended_reasons": [
@@ -422,6 +590,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -434,6 +604,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 129,
       "extended_reasons": [
@@ -456,6 +627,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -469,6 +642,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 81,
       "extended_reasons": [
@@ -493,6 +667,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -506,6 +682,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -527,6 +704,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -540,6 +719,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 52,
       "extended_reasons": [
@@ -560,6 +740,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -578,6 +760,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 145,
       "strict_catalog_unknown_count": 346,
       "extended_reasons": [
@@ -598,6 +781,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -616,6 +801,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 346,
       "extended_reasons": [
@@ -636,6 +822,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -659,6 +847,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 68,
       "strict_catalog_unknown_count": 5,
       "extended_reasons": [
@@ -682,6 +871,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -694,6 +885,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 34,
       "extended_reasons": [
@@ -716,6 +908,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -729,6 +923,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -750,6 +945,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -774,6 +971,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 19,
       "strict_catalog_unknown_count": 11,
       "extended_reasons": [
@@ -797,6 +995,8 @@
         "body_material_grade": "20"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -809,6 +1009,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 24,
       "strict_catalog_unknown_count": 3
     },
@@ -826,6 +1027,8 @@
         "valve_type": "standard"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -838,6 +1041,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 42,
       "strict_catalog_unknown_count": 5
     },
@@ -854,6 +1058,8 @@
         "body_material": "polyethylene"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -866,6 +1072,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -885,6 +1092,8 @@
         "valve_type": "underground"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -908,6 +1117,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 892,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -930,6 +1140,8 @@
         "bore_type": "full"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -953,6 +1165,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 195,
       "strict_catalog_unknown_count": 917,
       "extended_reasons": [
@@ -975,6 +1188,8 @@
         "control": "electric_ready"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -987,6 +1202,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 14,
       "strict_catalog_unknown_count": 11
     },
@@ -1004,6 +1220,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1015,6 +1233,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 10,
       "strict_catalog_unknown_count": 15
     },
@@ -1031,6 +1250,8 @@
         "valve_type": "regulating"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1049,6 +1270,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 31,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1068,6 +1290,8 @@
         "control": "electric_ready"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1091,6 +1315,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 43,
       "strict_catalog_unknown_count": 20,
       "extended_reasons": [
@@ -1113,6 +1338,8 @@
         "valve_type": "standard"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1127,6 +1354,7 @@
       "parser_warnings": [
         "body_material was inferred although the query contains no explicit material cue; field cleared"
       ],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 99,
       "strict_catalog_unknown_count": 11,
       "extended_reasons": [
@@ -1146,6 +1374,8 @@
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1159,6 +1389,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1179,6 +1410,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1191,6 +1424,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1210,6 +1444,8 @@
         "control": "gearbox"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1221,6 +1457,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 17,
       "strict_catalog_unknown_count": 1
     },
@@ -1237,6 +1474,8 @@
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1260,6 +1499,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1281,6 +1521,8 @@
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1298,6 +1540,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1318,6 +1561,8 @@
         "control": "gearbox"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1336,6 +1581,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 11,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1355,6 +1601,8 @@
         "control": "electric_ready"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1366,6 +1614,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1385,6 +1634,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1396,6 +1647,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1416,6 +1668,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1427,6 +1681,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1446,6 +1701,8 @@
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1457,6 +1714,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1477,6 +1735,8 @@
         "bore_type": "reduced"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1489,6 +1749,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 2,
       "extended_reasons": [
@@ -1508,6 +1769,8 @@
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1520,6 +1783,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 1,
       "extended_reasons": [
@@ -1539,6 +1803,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1550,6 +1816,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 23,
       "strict_catalog_unknown_count": 1
     },
@@ -1567,6 +1834,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1580,6 +1849,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1598,6 +1868,8 @@
         "pn_min_mpa": 1.6
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1616,6 +1888,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1637,6 +1910,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1649,6 +1924,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1668,6 +1944,8 @@
         "control": "gearbox"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1679,6 +1957,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1699,6 +1978,8 @@
         "control": "electric_ready"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1710,6 +1991,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1729,6 +2011,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1740,6 +2024,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1759,6 +2044,8 @@
         "body_material": "cast_iron"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1777,6 +2064,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1798,6 +2086,8 @@
         "body_material": "cast_iron"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1816,6 +2106,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1836,6 +2127,8 @@
         "valve_designation": "30с15нж"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1848,6 +2141,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1867,6 +2161,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1881,6 +2177,7 @@
       "parser_warnings": [
         "body_material was inferred although the query contains no explicit material cue; field cleared"
       ],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1902,6 +2199,8 @@
         "body_material_grade": "09Г2С"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1913,6 +2212,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1931,6 +2231,8 @@
         "pn_min_mpa": 1.0
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1942,6 +2244,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1962,6 +2265,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -1974,6 +2279,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -1995,6 +2301,8 @@
         "body_material_grade": "20"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2007,6 +2315,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2026,6 +2335,8 @@
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2037,6 +2348,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2056,6 +2368,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2075,6 +2389,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 2,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2095,6 +2410,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2107,6 +2424,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 2,
       "extended_reasons": [
@@ -2126,6 +2444,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2137,6 +2457,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2156,6 +2477,8 @@
         "valve_designation": "19с53нж"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2167,6 +2490,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2186,6 +2510,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2198,6 +2524,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2217,6 +2544,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2228,6 +2557,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 6,
       "strict_catalog_unknown_count": 12
     },
@@ -2245,6 +2575,8 @@
         "body_material": "brass"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2257,6 +2589,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 18,
       "extended_reasons": [
@@ -2276,6 +2609,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2287,6 +2622,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 6,
       "strict_catalog_unknown_count": 41
     },
@@ -2303,6 +2639,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2315,6 +2653,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 2,
       "extended_reasons": [
@@ -2332,6 +2671,8 @@
         "dn": 15
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2344,6 +2685,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2365,6 +2707,8 @@
         "body_material_grade": "20"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2388,6 +2732,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2410,6 +2755,8 @@
         "body_material_grade": "20"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2443,6 +2790,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 8,
       "strict_catalog_unknown_count": 2,
       "extended_reasons": [
@@ -2467,6 +2815,8 @@
         "body_material_grade": "09Г2С"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2490,6 +2840,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2513,6 +2864,8 @@
         "body_material_grade": "20"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2535,6 +2888,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2556,6 +2910,8 @@
         "joining_type": "welded"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2578,6 +2934,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2598,6 +2955,8 @@
         "pn_min_mpa": 4.0
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2623,6 +2982,7 @@
       "parser_warnings": [
         "body_material was inferred although the query contains no explicit material cue; field cleared"
       ],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 6,
       "extended_reasons": [
@@ -2645,6 +3005,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2673,6 +3035,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 16,
       "strict_catalog_unknown_count": 6,
       "extended_reasons": [
@@ -2695,6 +3058,8 @@
         "body_material_grade": "20"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2717,6 +3082,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 8,
       "strict_catalog_unknown_count": 2,
       "extended_reasons": [
@@ -2738,6 +3104,8 @@
         "body_material_grade": "09Г2С"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2760,6 +3128,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 2,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2780,6 +3149,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2802,6 +3173,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 10,
       "strict_catalog_unknown_count": 6,
       "extended_reasons": [
@@ -2822,6 +3194,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2847,6 +3221,7 @@
       "parser_warnings": [
         "body_material was inferred although the query contains no explicit material cue; field cleared"
       ],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 16,
       "strict_catalog_unknown_count": 6,
       "extended_reasons": [
@@ -2869,6 +3244,8 @@
         "body_material_grade": "AISI 304"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2880,6 +3257,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -2899,6 +3277,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2910,6 +3290,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 14,
       "strict_catalog_unknown_count": 6,
       "extended_reasons": [
@@ -2927,6 +3308,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2938,6 +3321,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 179,
       "strict_catalog_unknown_count": 15,
       "extended_reasons": [
@@ -2956,6 +3340,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -2973,6 +3359,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 7,
       "extended_reasons": [
@@ -2991,6 +3378,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3019,6 +3408,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 7,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -3038,6 +3428,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3061,6 +3453,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 7,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -3080,6 +3473,8 @@
         "control": "electric"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3103,6 +3498,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 7,
       "extended_reasons": [
@@ -3123,6 +3519,8 @@
         "control": "pneumatic"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3140,6 +3538,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -3159,6 +3558,8 @@
         "control": "manual"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3170,6 +3571,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -3188,6 +3590,8 @@
         "pn_min_mpa": 4.0
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3205,6 +3609,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 1,
       "strict_catalog_unknown_count": 45,
       "extended_reasons": [
@@ -3222,6 +3627,8 @@
         "dn": 50
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3233,6 +3640,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 0,
       "extended_reasons": [
@@ -3252,6 +3660,8 @@
         "joining_type": "flanged"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3263,6 +3673,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 40,
       "extended_reasons": [
@@ -3283,6 +3694,8 @@
         "valve_type": "standard"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3294,6 +3707,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 230,
       "strict_catalog_unknown_count": 5,
       "extended_reasons": [
@@ -3315,6 +3729,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3326,6 +3742,7 @@
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 32,
       "extended_reasons": [
@@ -3348,6 +3765,8 @@
         "body_material": "steel"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3371,6 +3790,7 @@
         }
       ],
       "parser_warnings": [],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 1084,
       "strict_catalog_unknown_count": 58,
       "extended_reasons": [
@@ -3394,6 +3814,8 @@
         "valve_type": "standard"
       },
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": null,
       "metadata": {
@@ -3408,6 +3830,7 @@
       "parser_warnings": [
         "body_material was inferred although the query contains no explicit material cue; field cleared"
       ],
+      "calibration_notes": [],
       "strict_catalog_pass_count": 0,
       "strict_catalog_unknown_count": 77,
       "extended_reasons": [
@@ -3423,6 +3846,8 @@
       "expected_status": "NOT_FOUND",
       "requirements": {},
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "SYNTHETIC_NEGATIVE",
       "metadata": {
@@ -3442,6 +3867,8 @@
       "expected_status": "NOT_FOUND",
       "requirements": {},
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "SYNTHETIC_NEGATIVE",
       "metadata": {
@@ -3461,6 +3888,8 @@
       "expected_status": "NOT_FOUND",
       "requirements": {},
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "SYNTHETIC_NEGATIVE",
       "metadata": {
@@ -3480,6 +3909,8 @@
       "expected_status": "NOT_FOUND",
       "requirements": {},
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "SYNTHETIC_NEGATIVE",
       "metadata": {
@@ -3499,6 +3930,8 @@
       "expected_status": "NOT_FOUND",
       "requirements": {},
       "known_positive_ids": [],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
       "label_source": "SYNTHETIC_NEGATIVE",
       "metadata": {
