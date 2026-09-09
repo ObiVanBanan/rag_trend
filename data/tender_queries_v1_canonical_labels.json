@@ -1,0 +1,142 @@
+{
+  "tender_v1_002": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [171, 19254],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_003": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [3901],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_004": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [3902],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_006": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [18648],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_011": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [3292],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_012": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [3290],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_013": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [3289],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_018": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [200, 1585],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_019": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [143],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_020": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [18691],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_028": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [18739, 18825],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_029": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [18830],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_030": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [1864, 17391],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_031": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [16132, 16672],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_033": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [1930],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_034": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [760, 2058],
+    "human_comment": "Confirmed from ChatGPT first-pass ACCEPT candidates."
+  },
+  "tender_v1_035": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [760, 2058],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_036": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [19404],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_038": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [16132, 16672],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  },
+  "tender_v1_039": {
+    "label_status": "VERIFIED",
+    "label_source": "HUMAN_VERIFIED_CHATGPT",
+    "expected_status": "MATCHED",
+    "acceptable_ld_ids": [1864, 17391],
+    "human_comment": "Confirmed from ChatGPT deep-pass ACCEPT candidates."
+  }
+}
