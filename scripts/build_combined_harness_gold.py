@@ -24,7 +24,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--verified-labels",
-        default=str(ROOT / "data" / "tender_queries_v1_verified_labels.json"),
+        default=str(ROOT / "data" / "tender_queries_v1_canonical_labels.json"),
     )
     parser.add_argument("--output", default=str(ROOT / "data" / "harness_gold_combined.json"))
     parser.add_argument("--core-output", default=str(ROOT / "data" / "harness_gold_combined_core.json"))
