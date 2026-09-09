@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "purpose": "Human-verified real-tender cases to augment the constraint-based harness GOLD.",
+  "semantics": {
+    "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
+    "core": "Hard-gate only when the tender requirement is representable by current deterministic fields.",
+    "extended": "Diagnostic-only when a confirmed tender depends on a flange subtype or PND sleeve geometry not represented by the current schema."
+  },
+  "summary": {
+    "total": 11,
+    "CORE": 6,
+    "NEGATIVE": 0,
+    "EXTENDED": 5,
+    "hard_gate": 6
+  },
+  "cases": [
+    {
+      "id": "tender_v1_002",
+      "query": "Фланец стальной плоский приварной, марка стали 20, номинальное давление 1,6 МПа, номинальный диаметр 100 мм",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 100,
+        "pn_min_mpa": 1.6,
+        "body_material": "steel",
+        "body_material_grade": "20"
+      },
+      "known_positive_ids": [171, 19254],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"},
+      "extended_reasons": ["unsupported:flange_subtype=flat_welded"]
+    },
+    {
+      "id": "tender_v1_011",
+      "query": "Фланец стальной ду80мм. под втулку ПНД ду90мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 80,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [3292],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"},
+      "extended_reasons": ["unsupported:pnd_sleeve_geometry=DN90"]
+    },
+    {
+      "id": "tender_v1_012",
+      "query": "Фланец стальной ду50мм. под втулку ПНД ду63мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 50,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [3290],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"},
+      "extended_reasons": ["unsupported:pnd_sleeve_geometry=DN63"]
+    },
+    {
+      "id": "tender_v1_013",
+      "query": "Фланец стальной ду40мм. под втулку ПНД ду50мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 40,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [3289],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"},
+      "extended_reasons": ["unsupported:pnd_sleeve_geometry=DN50"]
+    },
+    {
+      "id": "tender_v1_018",
+      "query": "Кран шаровый латунный Ду25, НР-ВР, наружный (в колодце), наружная-внутренняя резьба",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 25,
+        "joining_type": "threaded",
+        "thread_type": "male_female",
+        "body_material": "brass"
+      },
+      "known_positive_ids": [200, 1585],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"}
+    },
+    {
+      "id": "tender_v1_020",
+      "query": "Фланец стальной ду100мм. под втулку ПНД ду110мм.",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "flange",
+        "dn": 100,
+        "body_material": "steel"
+      },
+      "known_positive_ids": [18691],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"},
+      "extended_reasons": ["unsupported:pnd_sleeve_geometry=DN110"]
+    },
+    {
+      "id": "tender_v1_028",
+      "query": "фильтр Ду50",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "filter",
+        "dn": 50
+      },
+      "known_positive_ids": [18739, 18825],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"}
+    },
+    {
+      "id": "tender_v1_029",
+      "query": "фильтр Ду150",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "filter",
+        "dn": 150
+      },
+      "known_positive_ids": [18830],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"}
+    },
+    {
+      "id": "tender_v1_030",
+      "query": "кран шаровый Ду150",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 150
+      },
+      "known_positive_ids": [1864, 17391],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"}
+    },
+    {
+      "id": "tender_v1_031",
+      "query": "кран шаровый Ду25",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 25
+      },
+      "known_positive_ids": [16132, 16672],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"}
+    },
+    {
+      "id": "tender_v1_034",
+      "query": "кран шаровый фланцевый Ду50",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "joining_type": "flanged"
+      },
+      "known_positive_ids": [760, 2058],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {"origin": "real_tender"}
+    }
+  ]
+}
