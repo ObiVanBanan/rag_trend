@@ -10,13 +10,17 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from nomenclature_matcher.bm25_store import BM25Store
+from nomenclature_matcher.deep_gold import (
+    extract_tender_dn,
+    normalize_tender_designation,
+    tender_query_product_type,
+)
 from nomenclature_matcher.documents import build_search_text, load_products_from_csv, tokenize
 from nomenclature_matcher.golden_rules import golden_product_snapshot
 from nomenclature_matcher.query_constraints import (
     candidate_dn,
     candidate_has_designation,
     candidate_product_type,
-    canonical_product_type,
 )
 
 
@@ -24,10 +28,6 @@ ROOT = Path(__file__).resolve().parents[1]
 _CODE_PATTERNS = (
     re.compile(r"(?<![0-9а-яa-z])\d{1,3}[а-яa-z]{1,5}\d+[а-яa-z0-9-]*(?![0-9а-яa-z])", re.I),
     re.compile(r"(?<![0-9а-яa-z])кш[.\s_-]*[а-яa-z]*[.\s_-]*\d[0-9а-яa-z.\-]*(?![0-9а-яa-z])", re.I),
-)
-_DN_PATTERNS = (
-    re.compile(r"\b(?:dn|ду)\s*=?\s*(\d{1,3})\b", re.I),
-    re.compile(r"номинальн\w*\s+диаметр\w*(?:\s+dn)?\s*(\d{1,3})\b", re.I),
 )
 
 
@@ -64,22 +64,14 @@ def _write_json(path: Path, payload: Any) -> None:
     tmp.replace(path)
 
 
-def _extract_dn(query: str) -> int | None:
-    for pattern in _DN_PATTERNS:
-        match = pattern.search(query)
-        if match:
-            value = int(match.group(1))
-            if value > 0:
-                return value
-    return None
-
-
 def _extract_designations(query: str) -> list[str]:
     values: list[str] = []
+    seen: set[str] = set()
     for pattern in _CODE_PATTERNS:
         for match in pattern.finditer(query):
-            value = re.sub(r"\s+", "", match.group(0)).strip(".,;:")
-            if value and value.lower() not in {item.lower() for item in values}:
+            value = normalize_tender_designation(match.group(0))
+            if value and value not in seen:
+                seen.add(value)
                 values.append(value)
     return values
 
@@ -142,10 +134,8 @@ def main() -> int:
     for item in unresolved:
         query_id = str(item["id"])
         query = str(item["query"])
-        expected_type = canonical_product_type(query)
-        if expected_type == "other":
-            expected_type = None
-        expected_dn = _extract_dn(query)
+        expected_type = tender_query_product_type(query)
+        expected_dn = extract_tender_dn(query)
         designations = _extract_designations(query)
 
         bm25_hits = bm25.search(query, args.bm25_limit)
@@ -228,13 +218,16 @@ def main() -> int:
         )
 
     payload = {
-        "version": 1,
+        "version": 2,
         "purpose": "Catalog-wide second-pass candidate review for unresolved real tender queries.",
         "retrieval": {
             "bm25_full_catalog": True,
             "bm25_limit": args.bm25_limit,
             "deterministic_type_dn_expansion": True,
             "deterministic_designation_expansion": True,
+            "compact_tender_parsing": True,
+            "designation_homoglyph_normalization": "latin c -> cyrillic с",
+            "primary_product_type_priority": True,
             "qdrant": False,
             "llm": False,
             "top_k": args.top_k,
