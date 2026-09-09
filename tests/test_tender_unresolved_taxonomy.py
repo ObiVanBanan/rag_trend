@@ -32,8 +32,8 @@ def test_primary_reason_summary_matches_rows() -> None:
     taxonomy = _read("data/tender_queries_v1_unresolved_taxonomy.json")
     rows = taxonomy["queries"]
     counts = Counter(row["primary_reason"] for row in rows)
+    summary_counts = taxonomy["summary"]["primary_reason_counts"]
 
-    assert dict(counts) == taxonomy["summary"]["primary_reason_counts"]
     assert counts == {
         "CATALOG_NO_MATCH": 12,
         "ALIAS_MAPPING_MISS": 7,
@@ -41,7 +41,10 @@ def test_primary_reason_summary_matches_rows() -> None:
         "PARSER_MISS": 1,
         "QUERY_UNDERSPECIFIED": 1,
     }
-    assert taxonomy["summary"]["primary_reason_counts"]["RETRIEVAL_MISS"] == 0
+    for reason, count in counts.items():
+        assert summary_counts[reason] == count
+    assert summary_counts["RETRIEVAL_MISS"] == 0
+    assert sum(summary_counts.values()) == 24
 
 
 def test_retrieval_miss_is_not_used_without_known_positive_evidence() -> None:
