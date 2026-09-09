@@ -5,7 +5,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from harness_rag.supervisor import main
+if "--resume" in sys.argv[1:]:
+    from harness_rag.resume import main
+else:
+    from harness_rag.supervisor import main
 
 
 if __name__ == "__main__":
