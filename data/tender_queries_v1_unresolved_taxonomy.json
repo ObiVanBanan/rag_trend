@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "purpose": "Failure taxonomy for real tender queries that remain unresolved after the first-pass and catalog-wide deep review.",
+  "semantics": {
+    "CATALOG_NO_MATCH": "No credible catalog match was evidenced after the catalog-wide deep pass. This does not prove mathematical absence from the source CSV; do not treat it as a retrieval regression until a valid catalog item is identified.",
+    "ALIAS_MAPPING_MISS": "The tender uses a legacy/vendor/designation vocabulary that is not explicitly mapped to the LD naming system. A valid analog may exist, but equivalence is not evidenced strongly enough for GOLD.",
+    "PARSER_MISS": "The query contains a value or notation whose meaning is parsed incorrectly or ambiguously before matching.",
+    "QUERY_UNDERSPECIFIED": "The tender line does not contain enough constraints to define a useful item-level target.",
+    "SCHEMA_GAP": "A requirement understood by a human is not represented by the current deterministic requirement schema, so a candidate cannot be safely verified.",
+    "RETRIEVAL_MISS": "A known-valid catalog item exists but the retrieval stage fails to surface it. This reason requires positive catalog evidence and is intentionally not assigned merely because search returned poor candidates."
+  },
+  "summary": {
+    "total_unresolved": 24,
+    "primary_reason_counts": {
+      "CATALOG_NO_MATCH": 12,
+      "ALIAS_MAPPING_MISS": 7,
+      "SCHEMA_GAP": 3,
+      "PARSER_MISS": 1,
+      "QUERY_UNDERSPECIFIED": 1,
+      "RETRIEVAL_MISS": 0
+    },
+    "key_observation": "None of the 24 cases is currently proven to be a pure RETRIEVAL_MISS. The dominant unresolved group is no-evidenced-catalog-match, followed by designation/alias mapping gaps."
+  },
+  "recommended_priority": [
+    {
+      "priority": 1,
+      "area": "alias_mapping",
+      "reason": "Seven unresolved lines use recognizable legacy/designation vocabulary. Build an explicit equivalence layer before changing embeddings or fusion weights."
+    },
+    {
+      "priority": 2,
+      "area": "catalog_coverage",
+      "reason": "Twelve lines have no evidenced valid LD item after catalog-wide review. Separate unsupported/out-of-catalog behavior from retrieval quality."
+    },
+    {
+      "priority": 3,
+      "area": "schema_and_parser",
+      "reason": "Four lines are blocked by requirements or notation that the current normalized schema cannot safely express."
+    },
+    {
+      "priority": 4,
+      "area": "retrieval",
+      "reason": "Only optimize retrieval on cases where a human-verified catalog target is known. Otherwise retrieval tuning risks optimizing toward false matches."
+    }
+  ],
+  "queries": [
+    {
+      "id": "tender_v1_001",
+      "query": "Задвижка фланцевая 30с41нж ДУ150 РУ16",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "The query is driven by designation 30с41нж. Catalog-wide review did not produce a candidate whose equivalence to that designation could be established confidently.",
+      "recommended_fix": "Add designation/analog mapping for 30с41нж to LD gate-valve families only after subject-matter validation; until then keep unresolved rather than accepting a merely similar DN/PN valve."
+    },
+    {
+      "id": "tender_v1_005",
+      "query": "Задвижка фланцевая 30с41нж ДУ50 РУ16",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "Same 30с41нж designation problem as q001 at DN50; no validated LD-equivalent was evidenced in the deep pass.",
+      "recommended_fix": "Resolve the 30с41нж designation family once, then apply DN/PN constraints deterministically."
+    },
+    {
+      "id": "tender_v1_007",
+      "query": "Задвижка фланцевая 30с41нж ДУ100 РУ16",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "Same 30с41нж designation problem at DN100; no validated LD-equivalent was evidenced in the deep pass.",
+      "recommended_fix": "Use a validated designation equivalence table before retrieval ranking."
+    },
+    {
+      "id": "tender_v1_008",
+      "query": "Фланец воротниковый приварной в стык Ду 65 мм, ст. 09Г2С, Py 1,6 МПа",
+      "primary_reason": "SCHEMA_GAP",
+      "secondary_reasons": ["CATALOG_NO_MATCH"],
+      "confidence": "HIGH",
+      "evidence": "DN, PN and steel grade are representable, but the required weld-neck/butt-weld flange subtype is not safely represented by the current deterministic schema. Similar flanges cannot be promoted to GOLD on DN/PN/material alone.",
+      "recommended_fix": "Add flange_subtype/weld-neck semantics and normalize GOST flange type before deciding whether this is truly absent from the catalog."
+    },
+    {
+      "id": "tender_v1_009",
+      "query": "Фланец воротниковый приварной в стык Ду 50 мм, ст. 09Г2С, Py 1,6 МПа",
+      "primary_reason": "SCHEMA_GAP",
+      "secondary_reasons": ["CATALOG_NO_MATCH"],
+      "confidence": "HIGH",
+      "evidence": "The decisive requirement is the weld-neck/butt-weld flange subtype, which current normalized fields do not prove reliably.",
+      "recommended_fix": "Represent flange subtype explicitly, then rerun catalog verification."
+    },
+    {
+      "id": "tender_v1_010",
+      "query": "Фланец воротниковый приварной встык Ду 80",
+      "primary_reason": "SCHEMA_GAP",
+      "secondary_reasons": ["CATALOG_NO_MATCH"],
+      "confidence": "HIGH",
+      "evidence": "DN is simple, but the defining weld-neck/butt-weld subtype is outside the current strict schema.",
+      "recommended_fix": "Add flange_subtype and only then classify candidates as valid/invalid."
+    },
+    {
+      "id": "tender_v1_014",
+      "query": "Кран стальной шаровой муфтовый 11с39п Ду 25 Ру25, рабочая температура -30+200С",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["SCHEMA_GAP", "CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "LD has threaded steel ball-valve families, but the catalog-wide review did not establish that any candidate is an equivalent of designation 11с39п. The requested temperature range is also not part of the current hard constraint schema.",
+      "recommended_fix": "Validate 11с39п-to-LD equivalence and add temperature_min/temperature_max constraints."
+    },
+    {
+      "id": "tender_v1_015",
+      "query": "Кран стальной шаровой муфтовый 11с39п Ду 20 Ру25, рабочая температура -30+200С",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["SCHEMA_GAP", "CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "Same unresolved 11с39п equivalence as q014, now at DN20; temperature compatibility is also unevidenced.",
+      "recommended_fix": "Resolve designation equivalence once and verify temperature range before creating positive IDs."
+    },
+    {
+      "id": "tender_v1_016",
+      "query": "Кран стальной шаровой муфтовый 11с39п Ду 50 Ру25, рабочая температура -30+200С",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["SCHEMA_GAP", "CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "Same 11с39п alias/equivalence gap at DN50; matching only steel/threaded/DN/PN would be insufficient.",
+      "recommended_fix": "Create a subject-validated alias mapping plus temperature constraints."
+    },
+    {
+      "id": "tender_v1_017",
+      "query": "Кран шаровой ПНД компрессионный Ду32Ру16, наружный (в колодце), компрессионный-обжимной",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": ["SCHEMA_GAP"],
+      "confidence": "HIGH",
+      "evidence": "After compact DN/PN parsing was fixed, the catalog-wide pass still did not surface a credible PND compression/collet ball valve. Ordinary brass/threaded valves are not acceptable substitutes.",
+      "recommended_fix": "Treat as unsupported/no-evidenced-match unless a PND compression product is identified; model connection technology explicitly if such products are added."
+    },
+    {
+      "id": "tender_v1_021",
+      "query": "Задвижка клиновая фланцевая с выдвижным шпинделем d 108мм, Ру 16 МПа",
+      "primary_reason": "PARSER_MISS",
+      "secondary_reasons": ["SCHEMA_GAP", "QUERY_UNDERSPECIFIED"],
+      "confidence": "HIGH",
+      "evidence": "The query specifies d=108 mm rather than an explicit DN. Treating 108 as DN would be unsafe; it may describe pipe outside diameter and requires domain-aware normalization. The spindle construction is also a structured requirement.",
+      "recommended_fix": "Distinguish pipe OD from DN; add explicit OD-to-DN normalization only where a standard mapping is justified, and represent rising-stem construction."
+    },
+    {
+      "id": "tender_v1_022",
+      "query": "Кран стальной шаровой муфтовый 11с39п Ду 32 Ру25 рабочая температура -30+200С",
+      "primary_reason": "ALIAS_MAPPING_MISS",
+      "secondary_reasons": ["SCHEMA_GAP", "CATALOG_NO_MATCH"],
+      "confidence": "MEDIUM",
+      "evidence": "Same 11с39п designation family as q014-q016, with no validated LD equivalence and an unevaluated temperature range.",
+      "recommended_fix": "Validate designation mapping and temperature compatibility before turning this into a hard-gate positive."
+    },
+    {
+      "id": "tender_v1_023",
+      "query": "Кран шаровый фланцевый КШ.Ф.050.080-02 с ручным управлением с комплектом ответных фланцев, Ду 50, Ру 8 МПа",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": ["ALIAS_MAPPING_MISS", "SCHEMA_GAP"],
+      "confidence": "HIGH",
+      "evidence": "The deep pool contained DN50 flanged ball valves with flange kits, but observed candidates had lower pressure ratings than the requested 8 MPa. Exact designation equivalence was also not evidenced.",
+      "recommended_fix": "Do not relax PN. Mark unsupported unless a PN>=8 MPa item is identified; separately model kit contents and designation aliases."
+    },
+    {
+      "id": "tender_v1_024",
+      "query": "дисковый затвор Ду80",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "This is a very simple product_type+DN query. The catalog-wide pass did not produce a credible butterfly valve DN80, making catalog coverage a stronger hypothesis than text retrieval failure.",
+      "recommended_fix": "Verify catalog coverage for butterfly DN80; only create a RETRIEVAL_MISS after identifying a valid LD target."
+    },
+    {
+      "id": "tender_v1_025",
+      "query": "дисковый затвор Ду40",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "Simple product_type+DN query, but no credible DN40 butterfly-valve item was evidenced in catalog-wide review.",
+      "recommended_fix": "Check whether the LD catalog carries this size; do not tune retrieval toward another valve type."
+    },
+    {
+      "id": "tender_v1_026",
+      "query": "дисковый затвор Ду50",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "Simple product_type+DN query with no evidenced valid DN50 butterfly-valve target after the deep pass.",
+      "recommended_fix": "Treat as catalog-coverage/unsupported until a valid LD item is found."
+    },
+    {
+      "id": "tender_v1_027",
+      "query": "дисковый затвор Ду100",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "No credible DN100 butterfly-valve target was evidenced despite the query being structurally simple.",
+      "recommended_fix": "Audit catalog coverage for DN100 butterfly valves."
+    },
+    {
+      "id": "tender_v1_032",
+      "query": "дисковый затвор Ду32",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "The deep pass returned other DN32 product classes rather than a valid butterfly valve, so no target is currently evidenced.",
+      "recommended_fix": "Keep as unsupported/no-evidenced-match until a butterfly DN32 catalog item is identified."
+    },
+    {
+      "id": "tender_v1_037",
+      "query": "дисковый затвор Ду32 - 3шт.",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "Semantically identical item target to q032; quantity does not affect nomenclature matching, and no valid DN32 butterfly target is evidenced.",
+      "recommended_fix": "Share the same catalog-coverage resolution as q032; strip quantity during query normalization."
+    },
+    {
+      "id": "tender_v1_040",
+      "query": "Задвижки стальные",
+      "primary_reason": "QUERY_UNDERSPECIFIED",
+      "secondary_reasons": [],
+      "confidence": "HIGH",
+      "evidence": "Product family and material are given, but DN, PN and other selection constraints are absent; many different catalog items could satisfy the text.",
+      "recommended_fix": "Treat as NEED_CLARIFICATION/diagnostic rather than force an item-level GOLD match."
+    },
+    {
+      "id": "tender_v1_041",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 15 мм",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": ["ALIAS_MAPPING_MISS"],
+      "confidence": "HIGH",
+      "evidence": "The line is highly specified, yet catalog-wide review produced no confidently equivalent stop-valve target for the requested designation/DN/PN. A merely similar valve must not count.",
+      "recommended_fix": "Audit whether this stop-valve family exists in LD; if an LD analog exists, encode explicit 15с27нж/15с52нж9 equivalence."
+    },
+    {
+      "id": "tender_v1_042",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 25 мм",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": ["ALIAS_MAPPING_MISS"],
+      "confidence": "HIGH",
+      "evidence": "Same well-specified stop-valve family as q041 at DN25, with no evidenced equivalent target after catalog-wide review.",
+      "recommended_fix": "Verify catalog family coverage first; add designation aliases only if a subject-validated analog exists."
+    },
+    {
+      "id": "tender_v1_043",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с22нж, номинальное давление PN 4,0 МПа, номинальный диаметр DN 40 мм",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": ["ALIAS_MAPPING_MISS"],
+      "confidence": "HIGH",
+      "evidence": "Highly specified stop-valve request, but no credible 15с22нж-equivalent LD target was established.",
+      "recommended_fix": "Check stop-valve catalog coverage and create an alias only with explicit equivalence evidence."
+    },
+    {
+      "id": "tender_v1_044",
+      "query": "Клапан запорный, стальной, проходной, фланцевый, 15с27нж (15с52нж9), номинальное давление PN 6,3 МПа, номинальный диаметр DN 20 мм",
+      "primary_reason": "CATALOG_NO_MATCH",
+      "secondary_reasons": ["ALIAS_MAPPING_MISS"],
+      "confidence": "HIGH",
+      "evidence": "Same stop-valve designation family as q041/q042, now DN20; no validated catalog target was evidenced.",
+      "recommended_fix": "Treat as unsupported until catalog coverage or a validated LD analog is demonstrated."
+    }
+  ]
+}
