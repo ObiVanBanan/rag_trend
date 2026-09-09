@@ -16,6 +16,9 @@ _ORIGINAL_RUN_CODEX = orchestrator.run_codex
 _ORIGINAL_FINAL_GOAL_MET = orchestrator.final_goal_met
 _ORIGINAL_WRITE_FINAL_REPORT = orchestrator._write_final_report
 _PLANNER_REQUESTED_DONE = False
+_PLANNER_RESEARCH_NETWORK_ALLOWED = False
+MAX_EXTERNAL_RESEARCH_CYCLES = 3
+MAX_EXTERNAL_SOURCES_PER_CYCLE = 4
 
 
 def _rich_row(**kwargs: Any) -> dict[str, Any]:
@@ -31,6 +34,9 @@ def _rich_row(**kwargs: Any) -> dict[str, Any]:
             "expected_metric_gain": plan.get("expected_metric_gain", ""),
             "lesson_from_history": plan.get("lesson_from_history", ""),
             "candidate_hypotheses": list(plan.get("candidate_hypotheses") or []),
+            "used_external_research": bool(plan.get("used_external_research", False)),
+            "research_sources": list(plan.get("research_sources") or []),
+            "research_summary": str(plan.get("research_summary") or ""),
             "champion_public_metrics_after_decision": dict(state.get("champion_public") or {}),
             "champion_blind_metrics_after_decision": dict(state.get("champion_hidden") or {}),
         }
@@ -54,6 +60,9 @@ def _full_history(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "expected_metric_gain",
         "lesson_from_history",
         "candidate_hypotheses",
+        "used_external_research",
+        "research_sources",
+        "research_summary",
         "decision",
         "reason",
         "failure_stage",
@@ -98,12 +107,48 @@ def _planner_created_one_new_cycle_change() -> bool:
     return not tracked
 
 
+def _external_research_cycles_used(history: list[dict[str, Any]]) -> int:
+    return sum(1 for row in history if bool(row.get("used_external_research")))
+
+
 def _planner_prompt_with_exhaustion_stop(**kwargs: Any) -> str:
-    """Keep the 93% target, but do not force low-value cycles when ideas are exhausted."""
+    """Keep the 93% target, bounded web research, and evidence-backed early stopping."""
+    global _PLANNER_RESEARCH_NETWORK_ALLOWED
+
     prompt = _ORIGINAL_PLANNER_PROMPT(**kwargs)
     coverage_floor = float(kwargs.get("coverage_floor") or 0.0)
+    history = list(kwargs.get("history") or [])
+    used = _external_research_cycles_used(history)
+    remaining = max(0, MAX_EXTERNAL_RESEARCH_CYCLES - used)
+    _PLANNER_RESEARCH_NETWORK_ALLOWED = remaining > 0
+
+    research_rules = (
+        f"""
+
+BOUNDED EXTERNAL RESEARCH
+- External network research is available in this Planner call because {remaining}/{MAX_EXTERNAL_RESEARCH_CYCLES} research-enabled cycles remain in the campaign.
+- Use it only when it can resolve a concrete high-value uncertainty for the next hypothesis: e.g. reading one of the papers/articles already cited in RESEARCH CONTEXT, checking an official technical source/standard/manufacturer document, or resolving an unresolved designation/domain fact that repository evidence cannot settle.
+- Do not perform a broad literature review by default. Stop as soon as you have enough evidence to choose or reject the hypothesis.
+- Open at most {MAX_EXTERNAL_SOURCES_PER_CYCLE} distinct external sources in this cycle; prefer 1-3 strong primary/technical sources over many weak sources.
+- Reading the references already listed in RESEARCH CONTEXT is allowed and encouraged when directly relevant; their summaries in the repo are not a substitute for the source when source details matter.
+- Never use network access to inspect or infer the hidden holdout, private local paths, credentials, secrets, or per-case blind data.
+- External evidence may justify a general rule or architecture change, but never hardcode a benchmark id/answer or unsupported product equivalence.
+- Set `used_external_research=true` only if you actually opened external sources. Put the exact source URLs in `research_sources` and a concise statement of what the sources changed in `research_summary`.
+- If repository evidence is already sufficient, do not browse: return `used_external_research=false`, `research_sources=[]`, and an empty `research_summary`.
+"""
+        if remaining > 0
+        else f"""
+
+BOUNDED EXTERNAL RESEARCH
+- The campaign has exhausted its {MAX_EXTERNAL_RESEARCH_CYCLES} research-enabled Planner cycles. Network research is disabled for this Planner call.
+- Use repository evidence, prior research summaries, and experiment history. Do not claim to have opened new external sources.
+- Return `used_external_research=false`, `research_sources=[]`, and an empty `research_summary`.
+"""
+    )
+
     return (
         prompt
+        + research_rules
         + f"""
 
 STOPPING RULE — THIS OVERRIDES ANY EARLIER DONE RESTRICTION IN THIS PROMPT
@@ -117,8 +162,10 @@ STOPPING RULE — THIS OVERRIDES ANY EARLIER DONE RESTRICTION IN THIS PROMPT
 
 
 def _run_codex_with_done_tracking(**kwargs: Any) -> dict[str, Any]:
-    """Remember when the Planner intentionally asks the outer loop to stop."""
+    """Track Planner DONE and enable network only while its research budget remains."""
     global _PLANNER_REQUESTED_DONE
+    if kwargs.get("role") == "planner":
+        kwargs["network"] = _PLANNER_RESEARCH_NETWORK_ALLOWED
     payload = _ORIGINAL_RUN_CODEX(**kwargs)
     if kwargs.get("role") == "planner":
         _PLANNER_REQUESTED_DONE = payload.get("action") == "DONE"
@@ -232,6 +279,18 @@ def _reject_with_attempt_memory(**kwargs: Any) -> None:
 # For DONE, the Planner is allowed to return no remaining candidate hypotheses.
 # IMPLEMENT still requires >=3 alternatives via the prompt contract and tests.
 orchestrator.PLANNER_SCHEMA["properties"]["candidate_hypotheses"]["minItems"] = 0
+for name, schema in {
+    "used_external_research": {"type": "boolean"},
+    "research_sources": {
+        "type": "array",
+        "maxItems": MAX_EXTERNAL_SOURCES_PER_CYCLE,
+        "items": {"type": "string"},
+    },
+    "research_summary": {"type": "string"},
+}.items():
+    orchestrator.PLANNER_SCHEMA["properties"][name] = schema
+    if name not in orchestrator.PLANNER_SCHEMA["required"]:
+        orchestrator.PLANNER_SCHEMA["required"].append(name)
 
 # The orchestrator resolves these globals at runtime, so the wrapper can enrich
 # memory and tighten the planning/stopping contract without duplicating the main loop.
