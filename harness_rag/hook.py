@@ -36,13 +36,14 @@ def run_eval(*, dataset: Path, output_dir: Path, tag: str) -> dict[str, Any]:
         raise RuntimeError(f"evaluation failed ({result.returncode})\n{result.stdout}")
     payload = json.loads(output.read_text(encoding="utf-8"))
     summary = dict(payload.get("summary") or {})
+    rows = payload.get("results", [])
     failures = [
         {
             "id": row.get("id"),
             "verdict": row.get("verdict"),
             "reason": row.get("reason"),
         }
-        for row in payload.get("rows", [])
+        for row in rows
         if row.get("verdict") != "PASS"
     ]
     return {
