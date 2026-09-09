@@ -22,7 +22,35 @@ The existing GOLD/tender cases are already in the repository, so they are useful
 
 The blind check has a hard success condition of **>= 93% hard-pass coverage**, while false matches and explicit human-reject failures must remain zero. During research the champion is monotonic: a new candidate may not reduce blind coverage versus the current champion.
 
+The first blind set is intentionally a **generalization check**, not a second independently labeled catalog. It takes the 30 current hard-gate cases and replaces only the visible query wording with unseen tender-style variants while preserving the trusted requirements and human evidence. This checks whether an improvement generalizes beyond exact strings instead of rewarding memorization of the public examples.
+
 > Important: keeping the holdout outside the repository prevents ordinary accidental leakage, but it is not a cryptographic sandbox boundary. For hostile-agent-grade isolation, run Codex in a container/OS user that cannot read the holdout and let only the outer evaluator access it.
+
+## Build the private blind holdout
+
+The exact private query wording must **not** be committed to this repository. Keep the supplied `rag_hidden_query_map.json` somewhere outside the clone, for example `~/rag-private/`.
+
+```bash
+mkdir -p ~/rag-private
+# Save rag_hidden_query_map.json into ~/rag-private/ first.
+
+python scripts/build_blind_holdout.py \
+  --query-map ~/rag-private/rag_hidden_query_map.json \
+  --output ~/rag-private/rag_hidden_holdout.json
+```
+
+The builder requires the private map to cover every current hard-gate case exactly once. It copies the trusted labels/requirements from `data/harness_gold_combined.json`, changes only the query wording, removes public source metadata, assigns `blind_###` ids, and refuses to write the result inside the repository.
+
+Expected first blind set:
+
+```text
+30 total
+25 CORE
+5 NEGATIVE
+30 hard-gate
+```
+
+Do not add either private JSON file to Git.
 
 ## Index isolation
 
@@ -38,14 +66,25 @@ Use a dedicated clone/worktree and the dedicated branch:
 git fetch origin
 git switch codex/rag-harness-rnd
 git pull
-python -m pytest -q tests/test_rag_harness_policy.py tests/test_tender_unresolved_taxonomy.py
+python -m pytest -q \
+  tests/test_rag_harness_policy.py \
+  tests/test_rag_harness_blind.py \
+  tests/test_tender_unresolved_taxonomy.py
 ```
 
-Prepare a blind dataset in the same harness JSON format **outside this repository**, then:
+First measure the blind baseline without starting the loop if you want a sanity check:
+
+```bash
+python scripts/eval_harness_gold.py \
+  --dataset ~/rag-private/rag_hidden_holdout.json \
+  --output ~/rag-private/rag_hidden_baseline.json
+```
+
+Then run the autonomous harness:
 
 ```bash
 python scripts/run_rag_harness.py \
-  --holdout /absolute/path/outside/repo/rag_hidden_holdout.json \
+  --holdout ~/rag-private/rag_hidden_holdout.json \
   --fresh
 ```
 
@@ -53,7 +92,7 @@ To push accepted champion commits automatically:
 
 ```bash
 python scripts/run_rag_harness.py \
-  --holdout /absolute/path/outside/repo/rag_hidden_holdout.json \
+  --holdout ~/rag-private/rag_hidden_holdout.json \
   --push \
   --fresh
 ```
