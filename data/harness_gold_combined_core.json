@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generated_at": "2026-09-09T03:12:35.903111Z",
+  "generated_at": "2026-09-09T09:14:06.119330Z",
   "purpose": "Combined Golden-100 + human-verified real-tender GOLD for automated RAG harness hooks.",
   "semantics": {
     "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
@@ -22,15 +22,15 @@
     "auto_report": "data/golden_100_auto_label_report.json",
     "base_harness": "data/harness_gold.json",
     "verified_tender_cases": "data/tender_queries_v1_harness_cases.json",
-    "verified_tender_labels": "data/tender_queries_v1_verified_labels.json"
+    "verified_tender_labels": "data/tender_queries_v1_canonical_labels.json"
   },
   "summary": {
-    "total": 20,
-    "CORE": 20,
+    "total": 25,
+    "CORE": 25,
     "NEGATIVE": 0,
     "EXTENDED": 0,
-    "hard_gate": 20,
-    "verified_real_tender_cases": 6
+    "hard_gate": 25,
+    "verified_real_tender_cases": 11
   },
   "cases": [
     {
@@ -785,6 +785,31 @@
       }
     },
     {
+      "id": "tender_v1_033",
+      "query": "Ревизия запорно-регулирующей арматуры (задвижки, вентили, шаровые краны, обратные клапаны). Кран шаровой 11c67п — 4 шт., DN50.",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "valve_designation": "11с67п"
+      },
+      "known_positive_ids": [
+        1930
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123290_nomenclature.xlsx",
+        "source_document": "ТЗ зам.RAR",
+        "source_row": 11
+      }
+    },
+    {
       "id": "tender_v1_034",
       "query": "кран шаровый фланцевый Ду50",
       "split": "CORE",
@@ -805,6 +830,106 @@
       "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "origin": "real_tender"
+      }
+    },
+    {
+      "id": "tender_v1_035",
+      "query": "кран шаровыйфланцевыйДу50",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "joining_type": "flanged"
+      },
+      "known_positive_ids": [
+        760,
+        2058
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123290_nomenclature.xlsx",
+        "source_document": "ТЗ зам.RAR",
+        "source_row": 13
+      }
+    },
+    {
+      "id": "tender_v1_036",
+      "query": "Фильтр (Ду40)",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "filter",
+        "dn": 40
+      },
+      "known_positive_ids": [
+        19404
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123290_nomenclature.xlsx",
+        "source_document": "ТЗ зам.RAR",
+        "source_row": 16
+      }
+    },
+    {
+      "id": "tender_v1_038",
+      "query": "кран шаровыйДу25-2шт",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 25
+      },
+      "known_positive_ids": [
+        16132,
+        16672
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123290_nomenclature.xlsx",
+        "source_document": "ТЗ зам.RAR",
+        "source_row": 22
+      }
+    },
+    {
+      "id": "tender_v1_039",
+      "query": "кран шаровыйДу150-2шт",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 150
+      },
+      "known_positive_ids": [
+        1864,
+        17391
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123290_nomenclature.xlsx",
+        "source_document": "ТЗ зам.RAR",
+        "source_row": 29
       }
     }
   ]

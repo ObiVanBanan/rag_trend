@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generated_at": "2026-09-09T03:12:35.904575Z",
+  "generated_at": "2026-09-09T09:14:06.120507Z",
   "purpose": "Combined Golden-100 + human-verified real-tender GOLD for automated RAG harness hooks.",
   "semantics": {
     "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
@@ -22,7 +22,7 @@
     "auto_report": "data/golden_100_auto_label_report.json",
     "base_harness": "data/harness_gold.json",
     "verified_tender_cases": "data/tender_queries_v1_harness_cases.json",
-    "verified_tender_labels": "data/tender_queries_v1_verified_labels.json"
+    "verified_tender_labels": "data/tender_queries_v1_canonical_labels.json"
   },
   "summary": {
     "total": 5,

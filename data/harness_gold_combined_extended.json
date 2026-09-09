@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generated_at": "2026-09-09T03:12:35.904986Z",
+  "generated_at": "2026-09-09T09:14:06.121031Z",
   "purpose": "Combined Golden-100 + human-verified real-tender GOLD for automated RAG harness hooks.",
   "semantics": {
     "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
@@ -22,15 +22,15 @@
     "auto_report": "data/golden_100_auto_label_report.json",
     "base_harness": "data/harness_gold.json",
     "verified_tender_cases": "data/tender_queries_v1_harness_cases.json",
-    "verified_tender_labels": "data/tender_queries_v1_verified_labels.json"
+    "verified_tender_labels": "data/tender_queries_v1_canonical_labels.json"
   },
   "summary": {
-    "total": 86,
+    "total": 90,
     "CORE": 0,
     "NEGATIVE": 0,
-    "EXTENDED": 86,
+    "EXTENDED": 90,
     "hard_gate": 0,
-    "verified_real_tender_cases": 5
+    "verified_real_tender_cases": 9
   },
   "cases": [
     {
@@ -3233,6 +3233,96 @@
       ]
     },
     {
+      "id": "tender_v1_003",
+      "query": "Кран шаровый 11Б27П ДУ15 РУ16",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 15,
+        "pn_min_mpa": 1.6,
+        "joining_type": "threaded",
+        "body_material": "brass"
+      },
+      "known_positive_ids": [
+        3901
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+        "source_document": "ТЗ.RAR",
+        "source_row": 5
+      },
+      "extended_reasons": [
+        "unsupported:designation_equivalence=11Б27П"
+      ]
+    },
+    {
+      "id": "tender_v1_004",
+      "query": "Кран шаровый 11Б27П ДУ20 РУ16",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 20,
+        "pn_min_mpa": 1.6,
+        "joining_type": "threaded",
+        "body_material": "brass"
+      },
+      "known_positive_ids": [
+        3902
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+        "source_document": "ТЗ.RAR",
+        "source_row": 7
+      },
+      "extended_reasons": [
+        "unsupported:designation_equivalence=11Б27П"
+      ]
+    },
+    {
+      "id": "tender_v1_006",
+      "query": "Кран шаровый 11Б27П ДУ50 РУ16",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "pn_min_mpa": 1.6,
+        "joining_type": "threaded",
+        "body_material": "brass"
+      },
+      "known_positive_ids": [
+        18648
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+        "source_document": "ТЗ.RAR",
+        "source_row": 11
+      },
+      "extended_reasons": [
+        "unsupported:designation_equivalence=11Б27П"
+      ]
+    },
+    {
       "id": "tender_v1_011",
       "query": "Фланец стальной ду80мм. под втулку ПНД ду90мм.",
       "split": "EXTENDED",
@@ -3305,6 +3395,37 @@
       },
       "extended_reasons": [
         "unsupported:pnd_sleeve_geometry=DN50"
+      ]
+    },
+    {
+      "id": "tender_v1_019",
+      "query": "Кран шаровый латунь 11б27п1 Ду20 вр/нр Ру40, в помещении, внутренняя/наружная резьба",
+      "split": "EXTENDED",
+      "hard_gate": false,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 20,
+        "pn_min_mpa": 4.0,
+        "joining_type": "threaded",
+        "thread_type": "male_female",
+        "body_material": "brass"
+      },
+      "known_positive_ids": [
+        143
+      ],
+      "known_rejected_ids": [],
+      "known_unsure_ids": [],
+      "known_positive_ids_exhaustive": false,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
+      "metadata": {
+        "origin": "real_tender",
+        "source_file": "kontur_AP123184_nomenclature (1).xlsx",
+        "source_document": "ТЗ.RAR",
+        "source_row": 34
+      },
+      "extended_reasons": [
+        "unsupported:designation_equivalence=11б27п1"
       ]
     },
     {
