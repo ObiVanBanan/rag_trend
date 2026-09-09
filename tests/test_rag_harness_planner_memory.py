@@ -116,3 +116,32 @@ def test_planner_cannot_rewrite_old_non_cycle_openspec(monkeypatch) -> None:
         lambda: {"openspec/changes/add-rag-business-mapping/proposal.md"},
     )
     assert supervisor._planner_created_one_new_cycle_change() is False
+
+
+def test_planner_may_stop_below_target_when_hypotheses_are_exhausted() -> None:
+    prompt = supervisor._planner_prompt_with_exhaustion_stop(
+        cycle=5,
+        goal="Improve MVP accuracy.",
+        research_context="Evidence only.",
+        taxonomy="{}",
+        history=[{"cycle": 1, "hypothesis": "old idea", "decision": "REJECTED"}],
+        public_failures=[],
+        public_metrics={"hard_pass_rate": 0.8},
+        hidden_metrics={"hard_pass_rate": 0.7666666667},
+        index_builds_used=1,
+        max_index_builds=5,
+        coverage_floor=0.93,
+    )
+
+    assert "STOPPING RULE" in prompt
+    assert "MAY return `action=DONE` below the target" in prompt
+    assert "Do not invent a weak" in prompt
+    assert PLANNER_SCHEMA["properties"]["candidate_hypotheses"]["minItems"] == 0
+
+    hidden = supervisor.orchestrator.Metrics.from_summary({"hard_pass_rate": 0.80})
+    previous = supervisor._PLANNER_REQUESTED_DONE
+    try:
+        supervisor._PLANNER_REQUESTED_DONE = True
+        assert supervisor._goal_met_or_planner_exhausted(hidden=hidden, coverage_floor=0.93) is True
+    finally:
+        supervisor._PLANNER_REQUESTED_DONE = previous
