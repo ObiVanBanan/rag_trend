@@ -93,11 +93,14 @@ CORE PLANNING RULES
 - The failure taxonomy and research context are evidence and idea sources, not a required solution order.
 - Before selecting the experiment, consider at least 3 materially different candidate hypotheses. Put them in `candidate_hypotheses`, then choose the one with the best expected metric/information gain for this cycle.
 - Use the complete experiment history below. Explicitly state in `lesson_from_history` what prior results change your decision. Do not silently repeat a rejected idea.
+- Treat infrastructure/agent-contract BLOCKED outcomes as inconclusive about the scientific hypothesis. Learn from the protocol failure, but do not mark the underlying idea as disproven unless it actually reached evaluation.
 - A public case may expose a defect, but do not hardcode a test id, exact GOLD product id, or one-off benchmark string. The chosen hypothesis should plausibly improve a class of real inputs.
 - One cycle still tests one falsifiable hypothesis. It can change several implementation pieces when they are necessary to test one coherent architectural idea.
 - Use the installed OpenSpec planning skill `openspec-propose` from `.agents/skills/openspec-propose/SKILL.md`.
 - Create exactly one NEW OpenSpec change and stop at planning artifacts. Do not edit product code yourself.
 - The OpenSpec change name must be unique for this cycle and start with `cycle-{cycle:02d}-`. Never reuse or overwrite a previous cycle's OpenSpec change.
+- OpenSpec implementation tasks must contain only work the Implementer can actually perform: product code/config changes and focused tests. NEVER assign public harness evaluation, blind evaluation, supervisor aggregate metrics, promotion/rejection, or holdout access as Implementer tasks. The outer supervisor automatically performs public evaluation, Reviewer feedback, blind evaluation, and champion promotion after implementation.
+- Acceptance criteria may state the desired public/blind behavior, but they must not require the Implementer to obtain or inspect those supervisor-only results.
 - If OpenSpec would ask a minor clarification, answer it yourself from repository evidence and record the assumption.
 - Only return DONE when no higher-value hypothesis remains AND blind coverage is already at least {coverage_floor:.2%}.
 - Do not inspect or attempt to locate the hidden holdout. You are given aggregate hidden metrics only.
@@ -142,10 +145,12 @@ RULES
 - Run focused unit tests while working.
 - You may use DeepSeek through the project's existing environment/config if useful.
 - NEVER run a full catalog index rebuild yourself. If the completed change needs a rebuild, set `needs_reindex=true`; the outer supervisor owns the global rebuild budget.
+- The outer supervisor automatically runs the public harness and blind gate after your implementation. Do not try to access the hidden holdout or wait for supervisor metrics. Do not return `blocked` merely because public/blind acceptance metrics are unavailable to you; finish the implementation and local/focused tests, then let the supervisor evaluate it.
+- If an OpenSpec task accidentally asks you to obtain supervisor-only public/blind metrics, treat that part as an outer-supervisor acceptance criterion, not as an implementation blocker.
 - Do not inspect or search for the hidden final-check dataset, its path, labels, product ids, or per-case results.
 - Do not alter harness policy, hidden-check plumbing, GOLD/eval answers, or files under `harness_rag/`.
 - Do not run git commit/push/reset/checkout/rebase. The supervisor owns Git state.
-- Return blocked rather than fabricating success.
+- Return blocked only for a real implementation blocker, not for missing supervisor evaluation data.
 """
 
 
@@ -179,6 +184,8 @@ GIT DIFF
 {diff_text[:60000]}
 
 Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
 
 Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
 
