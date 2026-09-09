@@ -62,10 +62,36 @@ def _full_history(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [{key: row.get(key) for key in keys if key in row} for row in history]
 
 
+def _planner_created_one_new_cycle_change() -> bool:
+    """Planner may create one fresh cycle OpenSpec, never rewrite an old one."""
+    paths = orchestrator.changed_paths()
+    if not paths:
+        return False
+
+    roots: set[str] = set()
+    for path in paths:
+        parts = path.split("/")
+        if len(parts) < 4 or parts[0:2] != ["openspec", "changes"]:
+            return False
+        change_name = parts[2]
+        if not change_name.startswith("cycle-"):
+            return False
+        roots.add(f"openspec/changes/{change_name}")
+
+    if len(roots) != 1:
+        return False
+
+    root = next(iter(roots))
+    # A previous accepted experiment is tracked by Git. Planning must never edit it.
+    tracked = orchestrator.git("ls-files", root, check=False).stdout.strip()
+    return not tracked
+
+
 # The orchestrator resolves these globals at runtime, so the wrapper can enrich
-# memory without duplicating the orchestration loop.
+# memory and tighten the planning contract without duplicating the main loop.
 orchestrator._row = _rich_row
 orchestrator._compact_history = _full_history
+orchestrator.planner_changes_are_scoped = _planner_created_one_new_cycle_change
 
 
 def main() -> int:
