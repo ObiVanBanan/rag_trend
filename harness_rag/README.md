@@ -92,6 +92,7 @@ python -m pytest -q \
   tests/test_rag_harness_policy.py \
   tests/test_rag_harness_blind.py \
   tests/test_rag_harness_planner_memory.py \
+  tests/test_rag_harness_resume.py \
   tests/test_tender_unresolved_taxonomy.py
 ```
 
@@ -106,7 +107,20 @@ python scripts/run_rag_harness.py \
   --fresh
 ```
 
-Resume an interrupted campaign without `--fresh` only when the harness code and objective have not changed since that campaign began.
+### Resume an interrupted stage
+
+If Codex exits during Implementer, Reviewer or Fixer and the interrupted candidate is still present in the worktree, do **not** use `--fresh`. Pull harness-only updates if needed, keep/restore the candidate worktree, then run:
+
+```bash
+python scripts/run_rag_harness.py \
+  --holdout ~/rag-private/rag_hidden_holdout.json \
+  --push \
+  --resume
+```
+
+`--resume` reads the saved stage artifacts under `~/.rag-trend-harness/.../runs/NNN/`, resumes from the first missing stage, completes the public/blind gate and champion decision, and then continues with the next research cycle. A harness-only `git pull` after an interruption is accepted without invalidating the saved product metrics. Product-code changes in HEAD since the saved champion are not accepted automatically.
+
+If the interrupted candidate was stashed, restore that stash before `--resume` so the saved OpenSpec and candidate code are present in the worktree.
 
 ## Models
 
