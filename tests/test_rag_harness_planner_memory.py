@@ -37,6 +37,9 @@ def test_rich_row_preserves_plan_and_metric_memory() -> None:
             "expected_metric_gain": "+2 to +4 hard-pass cases",
             "lesson_from_history": "The previous local filter regressed safety.",
             "candidate_hypotheses": ["a", "b", "c"],
+            "used_external_research": True,
+            "research_sources": ["https://example.com/spec"],
+            "research_summary": "The source resolved the notation ambiguity.",
         },
         decision="REJECTED",
         reason="blind coverage regressed",
@@ -53,6 +56,9 @@ def test_rich_row_preserves_plan_and_metric_memory() -> None:
 
     assert row["plan_summary"]
     assert row["candidate_hypotheses"] == ["a", "b", "c"]
+    assert row["used_external_research"] is True
+    assert row["research_sources"] == ["https://example.com/spec"]
+    assert row["research_summary"] == "The source resolved the notation ambiguity."
     assert row["public_delta_vs_baseline"] > 0
     assert row["blind_delta_vs_baseline"] < 0
     assert row["champion_blind_metrics_after_decision"]["false_match_rate"] == 0.0
@@ -169,3 +175,64 @@ def test_planner_may_stop_below_target_when_hypotheses_are_exhausted() -> None:
         assert supervisor._goal_met_or_planner_exhausted(hidden=hidden, coverage_floor=0.93) is True
     finally:
         supervisor._PLANNER_REQUESTED_DONE = previous
+
+
+def test_planner_external_research_budget_is_bounded_and_explicit() -> None:
+    required = set(PLANNER_SCHEMA["required"])
+    assert {"used_external_research", "research_sources", "research_summary"}.issubset(required)
+    assert PLANNER_SCHEMA["properties"]["research_sources"]["maxItems"] == 4
+
+    prompt = supervisor._planner_prompt_with_exhaustion_stop(
+        cycle=9,
+        goal="Improve MVP accuracy.",
+        research_context="Read https://arxiv.org/abs/2405.15793 when relevant.",
+        taxonomy="{}",
+        history=[
+            {"cycle": 3, "used_external_research": True},
+            {"cycle": 4, "used_external_research": False},
+        ],
+        public_failures=[],
+        public_metrics={"hard_pass_rate": 0.83},
+        hidden_metrics={"hard_pass_rate": 0.87},
+        index_builds_used=0,
+        max_index_builds=5,
+        coverage_floor=0.93,
+    )
+
+    assert "2/3 research-enabled cycles remain" in prompt
+    assert "at most 4 distinct external sources" in prompt
+    assert "papers/articles already cited in RESEARCH CONTEXT" in prompt
+    assert "Do not perform a broad literature review by default" in prompt
+    assert supervisor._PLANNER_RESEARCH_NETWORK_ALLOWED is True
+
+
+def test_planner_network_is_disabled_after_research_budget_exhausted(monkeypatch) -> None:
+    prompt = supervisor._planner_prompt_with_exhaustion_stop(
+        cycle=12,
+        goal="Improve MVP accuracy.",
+        research_context="Evidence only.",
+        taxonomy="{}",
+        history=[
+            {"cycle": 3, "used_external_research": True},
+            {"cycle": 5, "used_external_research": True},
+            {"cycle": 8, "used_external_research": True},
+        ],
+        public_failures=[],
+        public_metrics={"hard_pass_rate": 0.83},
+        hidden_metrics={"hard_pass_rate": 0.87},
+        index_builds_used=0,
+        max_index_builds=5,
+        coverage_floor=0.93,
+    )
+    assert "research is disabled" in prompt
+    assert supervisor._PLANNER_RESEARCH_NETWORK_ALLOWED is False
+
+    captured = {}
+
+    def fake_run_codex(**kwargs):
+        captured.update(kwargs)
+        return {"action": "IMPLEMENT"}
+
+    monkeypatch.setattr(supervisor, "_ORIGINAL_RUN_CODEX", fake_run_codex)
+    supervisor._run_codex_with_done_tracking(role="planner", network=True)
+    assert captured["network"] is False
