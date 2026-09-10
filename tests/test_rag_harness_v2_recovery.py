@@ -63,6 +63,9 @@ def test_pause_infra_preserves_active_candidate_and_does_not_complete_cycle(
         "active": {"cycle": 1, "stage": "PUBLIC", "candidate_alias": "candidate_collection"},
     }
     active = dict(state["active"])
+    # In normal execution _execute_active creates the run directory before any
+    # stage can pause. Reproduce that runtime precondition in this unit test.
+    (tmp_path / "runs" / "001").mkdir(parents=True)
 
     result = v2._pause_infra(
         state_dir=tmp_path,
