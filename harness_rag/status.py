@@ -33,13 +33,32 @@ def _latest_safe_hidden_summary(run_dir: Path) -> dict[str, Any]:
     return dict(payload.get("summary") or {})
 
 
+def _legacy_campaign_pending(state: dict[str, Any]) -> bool:
+    history = [row for row in state.get("history") or [] if isinstance(row, dict)]
+    if not history or state.get("campaign_id") or state.get("active"):
+        return False
+    usage = dict(state.get("usage") or {})
+    if int(usage.get("agent_calls") or 0) > 0:
+        return False
+    return all(
+        row.get("attempt_id") is None
+        and row.get("experiment_id") is None
+        and row.get("scientific_iteration") is None
+        for row in history
+    )
+
+
 def _scientific_iterations(state: dict[str, Any]) -> int:
+    if _legacy_campaign_pending(state):
+        return 0
     if "scientific_iterations" in state:
         return int(state.get("scientific_iterations") or 0)
     return sum(1 for row in state.get("history") or [] if bool(row.get("scientifically_evaluated")))
 
 
 def _attempts_started(state: dict[str, Any]) -> int:
+    if _legacy_campaign_pending(state):
+        return 0
     if "attempts_started" in state:
         return int(state.get("attempts_started") or 0)
     return int(state.get("cycle") or 0)
@@ -59,12 +78,15 @@ def main() -> int:
     hidden = dict(state.get("champion_hidden") or {})
     usage = dict(state.get("usage") or {})
     active = dict(state.get("active") or {})
+    legacy_pending = _legacy_campaign_pending(state)
 
     print("=== HARNESS V2 ===")
     print("state:", root)
     print("campaign:", state.get("campaign_id"))
     print("attempts started:", _attempts_started(state))
     print("scientific iterations:", _scientific_iterations(state))
+    if legacy_pending:
+        print("legacy campaign rows awaiting automatic rehome:", len(state.get("history") or []))
     print("champion:", state.get("champion_commit"))
     print("public hard-pass:", _rate(public))
     print("hidden-validation hard-pass:", _rate(hidden))
@@ -105,7 +127,7 @@ def main() -> int:
             print("candidate hidden hard-pass:", _rate(hidden_candidate))
 
     print("\n=== CURRENT CAMPAIGN HISTORY ===")
-    history = list(state.get("history") or [])
+    history = [] if legacy_pending else list(state.get("history") or [])
     if not history:
         print("(no completed v2 attempts yet)")
     for row in history:
@@ -129,7 +151,9 @@ def main() -> int:
 
     print("\n=== HYPOTHESIS LEDGER ===")
     ledger = dict(state.get("hypothesis_ledger") or {})
-    if not ledger:
+    if not ledger and legacy_pending:
+        print("(will be rebuilt from legacy campaign on next harness run)")
+    elif not ledger:
         print("(empty)")
     for family, row in sorted(ledger.items()):
         print(
