@@ -46,6 +46,45 @@ def _persist_active_with_ids(state: dict[str, Any], state_path: Path, active: di
     _ORIGINAL_PERSIST_ACTIVE(state, state_path, active)
 
 
+def _looks_like_pre_runner_campaign(state: dict[str, Any]) -> bool:
+    """Detect an old 1-17 campaign that already carries STATE_VERSION=3.
+
+    The first v2 implementation bumped the state version before attempt/scientific
+    accounting existed. Such a state therefore bypasses the numeric-version
+    migration even though its history is still legacy-shaped. It is safe to
+    rehome only when no v2 campaign identity/calls/active attempt exist and none
+    of the history rows already carries the new attempt/scientific fields.
+    """
+    history = [row for row in state.get("history") or [] if isinstance(row, dict)]
+    if not history:
+        return False
+    if state.get("campaign_id") or state.get("active"):
+        return False
+    usage = dict(state.get("usage") or {})
+    if int(usage.get("agent_calls") or 0) > 0:
+        return False
+    if int(state.get("execution_counters_version") or 0) >= EXECUTION_COUNTERS_VERSION:
+        # A previous buggy runner invocation may have stamped counters onto the
+        # legacy history without actually starting a campaign. Treat that exact
+        # shape as legacy too when there are still no v2 row identifiers.
+        pass
+    return all(
+        row.get("attempt_id") is None
+        and row.get("experiment_id") is None
+        and row.get("scientific_iteration") is None
+        for row in history
+    )
+
+
+def _rehome_pre_runner_campaign(state: dict[str, Any]) -> dict[str, Any]:
+    migrated = core._new_state_from_legacy(state)
+    migrated["attempts_started"] = 0
+    migrated["scientific_iterations"] = 0
+    migrated["execution_counters_version"] = EXECUTION_COUNTERS_VERSION
+    migrated["push_pending"] = bool(state.get("push_pending", False))
+    return migrated
+
+
 def _ensure_execution_counters(state: dict[str, Any]) -> None:
     history = [row for row in state.get("history") or [] if isinstance(row, dict)]
     max_attempt = max(
@@ -196,6 +235,14 @@ def main() -> int:
             write_json(state_dir / "state.v1-backup.json", raw)
             state = core._new_state_from_legacy(raw)
             core._append_event(state_dir, "STATE_MIGRATED", from_version=raw.get("version"), legacy_cycles=len(raw.get("history") or []))
+        elif _looks_like_pre_runner_campaign(raw):
+            write_json(state_dir / "state.pre-v2-runner-backup.json", raw)
+            state = _rehome_pre_runner_campaign(raw)
+            core._append_event(
+                state_dir,
+                "LEGACY_CAMPAIGN_REHOMED",
+                legacy_cycles=len(raw.get("history") or []),
+            )
         else:
             state = raw
     else:
