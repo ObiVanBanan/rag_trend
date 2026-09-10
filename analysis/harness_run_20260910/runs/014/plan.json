@@ -1,0 +1,20 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-14-actuation-intent-retrieval-expansion",
+  "hypothesis": "A deterministic, additive retrieval representation that distinguishes an installed electric actuator from actuator-ready intent will improve candidate recall for explicit ball-valve control-state requests without changing final-selection behavior.",
+  "why_now": "Public failures include control/execution confusion, while prior selection, prompt, and index changes were neutral or harmful. Conservative query-time canonicalization is the only mechanism previously accepted on both public and blind metrics.",
+  "expected_effect": "Issue at most one state-specific alternate query alongside the original; preserve original text for reranking/output and retain existing deduplication, RRF, limits, and fail-open behavior.",
+  "expected_metric_gain": "+3.3–6.7 pp public hard-pass is plausible; blind improvement is uncertain but credible with no intended safety regression.",
+  "lesson_from_history": "Cycles 3–4 validated narrow additive canonicalization. Cycles 1, 2, 5, 6, 7, 8, and 9 made gating, prompt/selection, broad expansion, or index changes ineffective or harmful. Cycles 11–13 were infrastructure-inconclusive due to unavailable Qdrant, not evidence against their hypotheses.",
+  "candidate_hypotheses": [
+    "State-specific actuator terminology expansion at query time (selected).",
+    "Protected-file-safe flange subtype verification.",
+    "Structural candidate-pool diversification before reranking.",
+    "Guarded pipe-OD-to-DN alternate-query retry."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-14-actuation-intent-retrieval-expansion/.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}

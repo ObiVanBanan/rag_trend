@@ -1,0 +1,11 @@
+{
+  "decision": "REJECT",
+  "summary": "The added expansion is mechanically sound but its key semantic premise is not reliable in the current catalog, so it is not a safe state-specific retrieval improvement.",
+  "issues": [
+    "Catalog inspection shows the proposed `Управление` alternate is not a trustworthy installed-vs-ready discriminator: among ball-valve records named `под электропривод`, 426 carry `Управление: Электропривод` and 572 carry `Управление: Под электропривод`. Thus an installed-electric query can be pulled toward actuator-ready products through the exact field intended to distinguish them, with no compensating selection constraint.",
+    "The tests only prove that a canonical query is generated and passed to mocked retrieval. They do not establish that the alternate retrieves the correct state class, excludes the opposite state, or preserves the relevant candidate set against catalog-native contradictory values. Therefore they do not test the stated semantic hypothesis.",
+    "The public result retains a human-reject failure and supplies no demonstrated gain attributable to the change; given the catalog contradiction, this is material regression risk rather than an acceptable additive-recall experiment."
+  ],
+  "fix_plan": [],
+  "next_direction": "Treat control state as evidence from a validated, product-name/designation-derived signal (or a catalog audit with an explicit conflict policy), not from `Управление` alone. First measure agreement between tender wording, catalog name/designation, and property values; only then test a state-aware retriever plus a selection guard that rejects conflicts."
+}

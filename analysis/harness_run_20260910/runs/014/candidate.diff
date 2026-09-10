@@ -1,0 +1,235 @@
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca84..8b75139 100644
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -36,11 +36,32 @@ _SUPPORTED_ANCHOR_RE = re.compile(
+     r"\b(кран(?:\s+шаровой)?|клапан|задвижка|затвор|вентиль|фильтр|регулятор|фланец|муфта|переход|тройник|отвод)\b",
+     re.IGNORECASE,
+ )
++_BALL_VALVE_RE = re.compile(r"\bкран(?:\s+\S+){0,3}\s+шаровой\b|\bкран\s+шар\b", re.IGNORECASE)
+ _UNSUPPORTED_ANCHOR_RE = re.compile(
+     r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_STANDALONE_ACTUATOR_RE = re.compile(r"^\s*электропривод\b", re.IGNORECASE)
++_INSTALLED_ELECTRIC_ACTUATOR_RE = re.compile(
++    r"\b(?:"
++    r"с\s+электроприводом|"
++    r"снабж[её]н\w*\s+электроприводом|"
++    r"укомплектован\w*\s+электроприводом|"
++    r"оснащ[её]н\w*\s+электроприводом|"
++    r"электроприводн\w+|"
++    r"с\s+электрическ\w+\s+приводом"
++    r")\b",
++    re.IGNORECASE,
++)
++_ACTUATOR_READY_RE = re.compile(
++    r"\b(?:"
++    r"под\s+электропривод|"
++    r"для\s+установк\w*\s+электропривод\w*|"
++    r"под\s+установк\w*\s+электропривод\w*"
++    r")\b",
++    re.IGNORECASE,
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -62,6 +83,7 @@ def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+     canonical = _strip_quantity_noise(canonical)
+     canonical = _normalize_dn_pn(canonical)
+     canonical = _expand_joining_and_actuation(canonical)
++    canonical = _expand_ball_valve_actuation_intent(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+@@ -138,6 +160,28 @@ def _expand_connection_notation(text: str) -> str:
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _expand_ball_valve_actuation_intent(text: str) -> str:
++    if not _BALL_VALVE_RE.search(text) or _STANDALONE_ACTUATOR_RE.search(text):
++        return text
++
++    installed = _INSTALLED_ELECTRIC_ACTUATOR_RE.search(text) is not None
++    ready = _ACTUATOR_READY_RE.search(text) is not None
++    if installed == ready:
++        return text
++
++    if ready:
++        return _append_missing_terms(text, ("Под электропривод",))
++    return _append_missing_terms(text, ("Электропривод", "с электроприводом"))
++
++
++def _append_missing_terms(text: str, terms: tuple[str, ...]) -> str:
++    expanded = text
++    for term in terms:
++        if not re.search(rf"(?<!\w){re.escape(term)}(?!\w)", expanded, flags=re.IGNORECASE):
++            expanded = f"{expanded} {term}"
++    return expanded
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a3cdc9d..3cae688 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -167,3 +167,36 @@ def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
+     assert {1, 2, 4}.issubset(by_id)
+     assert by_id[1].name == "Original"
+     assert by_id[4].name == "Bm25 original"
++
++
++def test_hybrid_search_uses_actuation_state_alternate_without_extra_modality_credit():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    embedder = EchoEmbedder()
++    bm25 = VariantBM25Store()
++    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
++    original = "original"
++    canonical = "Кран шаровой DN 50 PN 16 с электроприводом Электропривод"
++
++    results = retriever.search(original, canonical_query=canonical)
++
++    assert embedder.calls == [original, canonical]
++    assert bm25.calls == [(original, 50), (canonical, 50)]
++    by_id = {candidate.ld_id: candidate for candidate in results}
++    assert by_id[2].dense_rank == 2
++    assert by_id[2].bm25_rank == 1
++    assert by_id[2].rrf_score == (1 / 62) + (1 / 61)
++
++
++def test_hybrid_search_keeps_original_actuation_candidates_when_alternate_fails():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(fail_on_canonical=True), settings)
++
++    results = retriever.search(
++        "original",
++        canonical_query="canonical",
++    )
++
++    by_id = {candidate.ld_id: candidate for candidate in results}
++    assert {1, 2, 4}.issubset(by_id)
++    assert by_id[1].name == "Original"
++    assert by_id[4].name == "Bm25 original"
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..26a5877 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -186,3 +186,56 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_match_one_hybrid_actuation_expansion_preserves_original_query_for_output_and_rerank():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="Кран с электроприводом", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="drive")], reason=None)
++    reranker = Reranker(result=rerank_result)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++    query = "  Кран шаровой DN50 PN16 с электроприводом  "
++
++    result = matcher.match_one_hybrid_with_rerank(query)
++
++    assert result.query == "Кран шаровой DN50 PN16 с электроприводом"
++    assert hybrid.calls == [
++        (
++            "Кран шаровой DN50 PN16 с электроприводом",
++            20,
++            "Кран шаровой DN 50 PN 16 с электроприводом Электропривод",
++        )
++    ]
++    assert reranker.calls[0][0] == "Кран шаровой DN50 PN16 с электроприводом"
++
++
++def test_match_many_hybrid_actuation_queries_cache_by_original_normalized_text():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
++
++    results = matcher.match_many_hybrid_with_rerank(
++        [
++            "Кран шаровой DN50 PN16 с электроприводом",
++            " Кран шаровой DN50 PN16 с электроприводом ",
++        ]
++    )
++
++    assert [result.query for result in results] == [
++        "Кран шаровой DN50 PN16 с электроприводом",
++        " Кран шаровой DN50 PN16 с электроприводом ",
++    ]
++    assert len(hybrid.calls) == 1
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570..c9af753 100644
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,54 @@ def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_installed_electric_actuator_ball_valve_adds_catalog_state_terms():
++    result = canonicalize_retrieval_query(
++        "Кран шаровой латунный муфт. DN25 PN16 11Б27П1 с электроприводом стандартное исполнение"
++    )
++
++    assert result.source_query == (
++        "Кран шаровой латунный муфт. DN25 PN16 11Б27П1 с электроприводом стандартное исполнение"
++    )
++    assert result.canonical_query == (
++        "Кран шаровой латунный муфтовый DN 25 PN 16 11Б27П1 "
++        "с электроприводом стандартное исполнение Электропривод"
++    )
++
++
++def test_actuator_ready_ball_valve_adds_only_ready_catalog_state_terms():
++    result = canonicalize_retrieval_query(
++        "Кран стальной шаровой фланцевый Ду80 Ру16 11с67п для установки электропривода"
++    )
++
++    assert result.canonical_query == (
++        "Кран стальной шаровой фланцевый DN 80 PN 16 11с67п "
++        "для установки электропривода Под электропривод"
++    )
++    assert "с электроприводом" not in result.canonical_query
++
++
++def test_actuation_state_expansion_retains_explicit_special_execution_without_substitution():
++    result = canonicalize_retrieval_query(
++        "Кран шаровой стальной фланцевый Ду100 Ру25 под электропривод подземное исполнение"
++    )
++
++    assert result.canonical_query == (
++        "Кран шаровой стальной фланцевый DN 100 PN 25 "
++        "под электропривод подземное исполнение"
++    )
++    assert "стандарт" not in result.canonical_query.lower()
++    assert "обычн" not in result.canonical_query.lower()
++    assert "с электроприводом" not in result.canonical_query
++
++
++def test_actuation_state_expansion_requires_explicit_supported_ball_valve_intent():
++    assert canonicalize_retrieval_query("Кран шаровой DN50 PN16 с приводом").canonical_query == "Кран шаровой DN 50 PN 16 с приводом"
++    assert canonicalize_retrieval_query("Кран шаровой DN50 PN16 электрический").canonical_query == "Кран шаровой DN 50 PN 16 электрический"
++    assert canonicalize_retrieval_query("Электропривод для крана шарового DN50 PN16").canonical_query == (
++        "Электропривод для крана шарового DN 50 PN 16"
++    )
++    assert canonicalize_retrieval_query("Клапан DN50 PN16 с электроприводом").canonical_query == (
++        "Клапан DN 50 PN 16 с электроприводом"
++    )

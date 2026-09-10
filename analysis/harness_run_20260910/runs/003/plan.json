@@ -1,0 +1,17 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-03-query-canonicalization",
+  "hypothesis": "Deterministic, domain-preserving query canonicalization before hybrid retrieval will improve matching of compact, mixed-script, and noisy tender nomenclature without changing final-selection semantics.",
+  "why_now": "Baseline failures show catalog-vocabulary gaps in terse technical notation and a mixed-script designation embedded in procurement prose; the matcher currently only normalizes whitespace. This is distinct from the two rejected compatibility interventions.",
+  "expected_effect": "Retrieve using the original query plus at most one safe canonical representation, deduplicate candidates per modality before RRF, and retain the original query for reranking and output.",
+  "expected_metric_gain": "+3–10 pp public hard-pass and +3–7 pp blind hard-pass, with no intended false-match increase.",
+  "lesson_from_history": "Cycle 1’s candidate filtering regressed public/blind coverage, and Cycle 2’s reranker compatibility evidence regressed public safety. This proposal changes only query-time candidate recall, preserves candidate decision semantics, and fails open to original retrieval.",
+  "candidate_hypotheses": [
+    "Deterministic technical-notation query canonicalization before hybrid retrieval (selected).",
+    "Schema expansion for flange subtype, temperature range, and pipe-OD semantics.",
+    "Index-time catalog-text enrichment with alias/designation fields and fusion tuning.",
+    "Explicit subject-validated mappings for legacy valve designations."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strictly validated all OpenSpec artifacts at openspec/changes/cycle-03-query-canonicalization/: proposal, retrieval-query-canonicalization spec, design, and implementation-only tasks. No product code was changed."
+}

@@ -1,0 +1,13 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-09-standard-bore-retrieval-canonicalization`. The retrieval canonicalizer now adds a single guarded standard-bore alternate for explicit ball-valve standard-execution/standard-passage wording, while blocking generic standard wording, other product families, unsupported text, and full/reduced-bore conflicts. Added focused regression coverage for exact canonical text, hybrid alternate querying/dedup/fail-open behavior, and matcher/serialization source-query preservation. OpenSpec tasks are 5/5 complete. No index rebuild is needed.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py",
+    "python -m pytest -q tests/test_hybrid_retriever.py",
+    "python -m pytest -q tests/test_matcher.py",
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py",
+    "python -m pytest -q  # 169 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

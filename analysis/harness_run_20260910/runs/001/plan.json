@@ -1,0 +1,17 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-01-constraint-aware-candidate-gating",
+  "hypothesis": "Filtering retrieved candidates that contradict explicit tender constraints before LLM reranking will reduce unsafe positive matches and improve hard-pass coverage.",
+  "why_now": "Production bypasses its existing structured constraint machinery, while public failures include deterministic-requirement violations and a human-rejected selection.",
+  "expected_effect": "Exclude known-incompatible candidates, abstain safely for explicit out-of-scope queries or exhausted compatible pools, and retain fail-open behavior for uncertain extraction.",
+  "expected_metric_gain": "Estimated +3–10 percentage points public hard-pass and +3–7 points blind hard-pass, with reduced human-reject risk.",
+  "lesson_from_history": "No prior cycles exist. Baseline evidence favors safety-aware candidate selection over retrieval tuning because no unresolved cases are proven retrieval misses.",
+  "candidate_hypotheses": [
+    "Constraint-aware pre-rerank candidate gating with safe fallback (selected).",
+    "Legacy/designation alias mapping for vendor and Soviet valve codes.",
+    "Index-time catalog text enrichment and hybrid retrieval/fusion tuning.",
+    "Schema expansion for flange subtype, temperature, and pipe-OD semantics."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strictly validated OpenSpec change with proposal, capability spec, design, and implementable focused-test tasks. It introduces tri-state compatibility gating, observable diagnostics, explicit out-of-scope abstention, and extractor failure fallback."
+}

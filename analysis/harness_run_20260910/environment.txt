@@ -1,0 +1,4 @@
+Python 3.12.1
+
+=== docker compose ps ===
+no configuration file provided: not found

@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "summary": "Fixed the reviewer’s boundary issue by requiring non-slash outer boundaries around the whole `фл/фл` pair in `src/nomenclature_matcher/query_canonicalization.py`. Added regression coverage in `tests/test_query_canonicalization.py` for `м/фл/фл`, `фл/фл/фл`, and a valid non-slash-delimited pair. No index rebuild is needed. Note: `tests/test_hybrid_retriever.py`, `tests/test_matcher.py`, and the OpenSpec change directory were already modified/untracked from the prior implementation and were left intact.",
+  "tests": [
+    "python -m pytest -q tests/test_hybrid_retriever.py tests/test_matcher.py: 19 passed",
+    "python -m pytest -q tests/test_query_canonicalization.py: 14 passed",
+    "python -m pytest -q: 168 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

@@ -1,0 +1,20 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-17-actuation-intent-retrieval-expansion",
+  "hypothesis": "Explicit installed-electric versus actuator-ready ball-valve wording can produce one bounded state-specific retrieval alternate that improves recall without changing selection behavior.",
+  "why_now": "Both control states appear in hard-gate core queries, catalog records explicitly encode them, and cycles 14–15 were infrastructure-inconclusive rather than scientific rejections.",
+  "expected_effect": "Source retrieval remains intact while a catalog-native control-state alternate can surface better candidates; reranking and output keep the source query.",
+  "expected_metric_gain": "+3.3–6.7 pp hard-pass coverage plausible; blind gain uncertain.",
+  "lesson_from_history": "Narrow additive canonicalization was the only accepted family. Gating, selection, prompt, index-enrichment, and diversification changes were neutral or harmful; this is an untested retry after Qdrant outages.",
+  "candidate_hypotheses": [
+    "State-specific installed-electric versus actuator-ready additive retrieval expansion (selected).",
+    "Guarded pipe-OD-to-DN retrieval normalization.",
+    "Weld-neck flange subtype verification.",
+    "Subject-validated designation equivalence mappings."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks under openspec/changes/cycle-17-actuation-intent-retrieval-expansion/.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}

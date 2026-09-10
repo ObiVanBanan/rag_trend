@@ -1,0 +1,14 @@
+{
+  "decision": "FIX",
+  "summary": "The target public query uses “Кран шаровый”, but the new guard recognizes only “Кран шаровой” (or “Шаровой кран”). Consequently the new expansion does not run for the stated motivating case, which remains human-rejected; the reported public gain cannot be attributed to this change.",
+  "issues": [
+    "`_BALL_VALVE_RE` omits the common “шаровый” form, so the core standard-execution query is ineligible.",
+    "Tests cover only “шаровой”; they do not cover the actual target wording or prove the alternate is generated for it."
+  ],
+  "fix_plan": [
+    "Extend the ball-valve guard to accept both `шаровой` and `шаровый` in either word order.",
+    "Add canonicalization and hybrid/matcher regression tests using “Кран шаровый … стандартное исполнение”, including the DN80/PN16 target-shaped query.",
+    "Re-run the public evaluation and compare the target case plus safety metrics with the champion."
+  ],
+  "next_direction": "Keep this as a bounded retrieval-vocabulary experiment, but establish that the guarded alternate actually fires for real tender spelling variants before interpreting aggregate metric movement as evidence."
+}

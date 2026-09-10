@@ -1,0 +1,7 @@
+{
+  "decision": "ACCEPT",
+  "summary": "The narrow WW expansion is a sound additive-retrieval experiment. It preserves source retrieval, reranker input, and returned query text; no index or selection logic changes. The implementation matches the stated scope and tests canonicalization, original-query preservation, deduplication, and alternate-query failure behavior.",
+  "issues": [],
+  "fix_plan": [],
+  "next_direction": "Use blind results to decide promotion. If rejected or neutral, retain the lesson that conservative additive terminology expansion is safe to test, but prioritize another independently evidenced notation or retrieval-recall class rather than broadening ambiguous connection codes."
+}

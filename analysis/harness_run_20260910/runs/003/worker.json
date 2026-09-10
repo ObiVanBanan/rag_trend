@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-03-query-canonicalization`: added deterministic query canonicalization, wired hybrid matching to pass at most one alternate retrieval query while preserving the original query for caching/reranking/results, and extended hybrid retrieval to retrieve original plus canonical forms with per-modality LD-id dedupe before existing RRF scoring. OpenSpec progress is 9/9 complete and `openspec validate cycle-03-query-canonicalization --strict` passes. No index rebuild is needed.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py: 19 passed",
+    "python -m pytest -q: 152 passed",
+    "openspec validate cycle-03-query-canonicalization --strict: passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

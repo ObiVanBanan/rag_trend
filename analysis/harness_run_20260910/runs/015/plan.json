@@ -1,0 +1,20 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-15-actuation-intent-retrieval-expansion",
+  "hypothesis": "Explicit installed-electric versus actuator-ready wording can produce a bounded alternate retrieval query that improves recall without changing selection behavior.",
+  "why_now": "Both control states occur in core cases, and Cycle 14 was infrastructure-inconclusive rather than evaluated.",
+  "expected_effect": "Better retrieval of the requested electric-control state while preserving source-query reranking, fusion, and fallback.",
+  "expected_metric_gain": "+3.3–6.7 pp hard-pass plausible; blind gain uncertain.",
+  "lesson_from_history": "Additive canonicalization was the only accepted family; gating, reranking, selection, and index changes were neutral or harmful. Cycle 14's Qdrant failure does not disprove this hypothesis.",
+  "candidate_hypotheses": [
+    "State-specific installed-electric versus actuator-ready retrieval expansion (selected).",
+    "Structural candidate-pool diversification before reranking.",
+    "Protected-file-safe flange weld-neck subtype verification.",
+    "Guarded pipe-OD-to-DN retrieval alternate."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, specification, design, and implementation-only tasks in openspec/changes/cycle-15-actuation-intent-retrieval-expansion/.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}

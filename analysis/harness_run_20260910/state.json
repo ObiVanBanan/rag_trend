@@ -1,0 +1,1729 @@
+{
+  "version": 2,
+  "started_at": "2026-09-09T13:19:15.069084Z",
+  "branch": "codex/rag-harness-rnd",
+  "baseline_commit": "ad2c6e0572553be74aa5dcae042855208d7f9a69",
+  "champion_commit": "d0712a9f39994d687f3b558e7ef9ba0677ef7aec",
+  "champion_collection_alias": null,
+  "cycle": 17,
+  "index_builds_used": 2,
+  "index_history": [
+    {
+      "reason": "implementer requested index rebuild",
+      "count": 1,
+      "collection": "rag_harness_c07_b1_58208b05"
+    },
+    {
+      "reason": "fixer requested index rebuild",
+      "count": 2,
+      "collection": "rag_harness_c07_b2_5a37156c"
+    }
+  ],
+  "baseline_public": {
+    "evaluated": 120,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8,
+    "core_pass_rate": 0.76,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.04,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.008333333333333333,
+    "human_reject_rate": 0.008333333333333333,
+    "known_positive_hit_rate": 0.4583333333333333,
+    "verdict_counts": {
+      "PASS": 29,
+      "FAIL_HUMAN_REJECT": 1,
+      "UNSCORED": 81,
+      "FAIL_WRONG_PRODUCT": 7,
+      "FAIL_WRONG_NOT_FOUND": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1
+    }
+  },
+  "baseline_hidden": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8,
+    "core_pass_rate": 0.76,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.04,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.03333333333333333,
+    "human_reject_rate": 0.03333333333333333,
+    "known_positive_hit_rate": 0.4666666666666667,
+    "verdict_counts": {
+      "PASS": 24,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_WRONG_PRODUCT": 3,
+      "FAIL_WRONG_NOT_FOUND": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1
+    }
+  },
+  "champion_public": {
+    "evaluated": 120,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8333333333333334,
+    "core_pass_rate": 0.8,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.008333333333333333,
+    "human_reject_rate": 0.008333333333333333,
+    "known_positive_hit_rate": 0.4166666666666667,
+    "verdict_counts": {
+      "PASS": 30,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+      "UNSCORED": 81,
+      "FAIL_WRONG_PRODUCT": 6,
+      "FAIL_PIPELINE": 1
+    }
+  },
+  "champion_hidden": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8666666666666667,
+    "core_pass_rate": 0.84,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.0,
+    "human_reject_rate": 0.0,
+    "known_positive_hit_rate": 0.4,
+    "verdict_counts": {
+      "PASS": 26,
+      "FAIL_WRONG_PRODUCT": 4
+    }
+  },
+  "champion_public_failures": [
+    {
+      "id": "gold_q002",
+      "verdict": "FAIL_HUMAN_REJECT",
+      "reason": "Returned product is explicitly HUMAN REJECT for this query."
+    },
+    {
+      "id": "gold_q005",
+      "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+      "reason": "Required fields are missing from the returned product; correctness is not provable."
+    },
+    {
+      "id": "gold_q006",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q008",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q009",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q010",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q011",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q012",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q013",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q014",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q015",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q016",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q017",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q018",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q019",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q020",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q022",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "gold_q023",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q024",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q025",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q026",
+      "verdict": "FAIL_PIPELINE",
+      "reason": "Unexpected pipeline status: RERANK_FAILED"
+    },
+    {
+      "id": "gold_q027",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "gold_q028",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q029",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q030",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q031",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q032",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q034",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q035",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q036",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q037",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q038",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q039",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q040",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q041",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q042",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q044",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q045",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q046",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q047",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q048",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q049",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q050",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q051",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q052",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q053",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q054",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q055",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q056",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q057",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q058",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q059",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q060",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q061",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q062",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q063",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q065",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q067",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q068",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q069",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q070",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q071",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q072",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q073",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q074",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q075",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q076",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q077",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q078",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q079",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q080",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q081",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q082",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q083",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q084",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q085",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q086",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q087",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q088",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q089",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q090",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q091",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q092",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q093",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q094",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "gold_q095",
+      "verdict": "UNSCORED",
+      "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+    },
+    {
+      "id": "tender_v1_003",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_004",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_006",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_019",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    }
+  ],
+  "history": [
+    {
+      "cycle": 1,
+      "hypothesis": "Filtering retrieved candidates that contradict explicit tender constraints before LLM reranking will reduce unsafe positive matches and improve hard-pass coverage.",
+      "change_name": "cycle-01-constraint-aware-candidate-gating",
+      "decision": "REJECTED",
+      "reason": "public coverage regressed",
+      "public_hard_pass_rate": 0.7333333333333333,
+      "blind_hard_pass_rate": 0.6333333333333333,
+      "index_builds_used": 0,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T15:17:50.590406Z",
+      "plan_summary": "Created and strictly validated OpenSpec change with proposal, capability spec, design, and implementable focused-test tasks. It introduces tri-state compatibility gating, observable diagnostics, explicit out-of-scope abstention, and extractor failure fallback.",
+      "expected_effect": "Exclude known-incompatible candidates, abstain safely for explicit out-of-scope queries or exhausted compatible pools, and retain fail-open behavior for uncertain extraction.",
+      "expected_metric_gain": "Estimated +3–10 percentage points public hard-pass and +3–7 points blind hard-pass, with reduced human-reject risk.",
+      "lesson_from_history": "No prior cycles exist. Baseline evidence favors safety-aware candidate selection over retrieval tuning because no unresolved cases are proven retrieval misses.",
+      "candidate_hypotheses": [
+        "Constraint-aware pre-rerank candidate gating with safe fallback (selected).",
+        "Legacy/designation alias mapping for vendor and Soviet valve codes.",
+        "Index-time catalog text enrichment and hybrid retrieval/fusion tuning.",
+        "Schema expansion for flange subtype, temperature, and pipe-OD semantics."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8,
+        "core_pass_rate": 0.76,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.04,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4583333333333333,
+        "verdict_counts": {
+          "PASS": 29,
+          "FAIL_HUMAN_REJECT": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 7,
+          "FAIL_WRONG_NOT_FOUND": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8,
+        "core_pass_rate": 0.76,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.04,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.03333333333333333,
+        "human_reject_rate": 0.03333333333333333,
+        "known_positive_hit_rate": 0.4666666666666667,
+        "verdict_counts": {
+          "PASS": 24,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_WRONG_PRODUCT": 3,
+          "FAIL_WRONG_NOT_FOUND": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1
+        }
+      },
+      "public_delta_vs_baseline": -0.06666666666666676,
+      "blind_delta_vs_baseline": -0.16666666666666674
+    },
+    {
+      "cycle": 2,
+      "hypothesis": "Advisory per-candidate compatibility evidence in reranker context will reduce unsafe specialized-variant selections without reducing candidate recall.",
+      "change_name": "cycle-02-compatibility-evidence-reranking",
+      "decision": "REJECTED",
+      "reason": "public safety metrics regressed",
+      "public_hard_pass_rate": 0.8,
+      "blind_hard_pass_rate": 0.8333333333333334,
+      "index_builds_used": 0,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T15:46:55.496860Z",
+      "plan_summary": "Created and validated proposal, spec, design, and implementation-only tasks under openspec/changes/cycle-02-compatibility-evidence-reranking/.",
+      "expected_effect": "Reranker sees satisfied, contradictory, and unverified requirements while retaining every retrieved candidate.",
+      "expected_metric_gain": "+3–10 pp public and +3–7 pp blind hard-pass; lower wrong-product/human-reject risk.",
+      "lesson_from_history": "Cycle 1’s fail-closed candidate gate regressed public and blind coverage, so this change neither filters nor reorders candidates and fails open on extraction errors.",
+      "candidate_hypotheses": [
+        "Advisory compatibility evidence for reranking (selected).",
+        "Legacy/designation alias normalization.",
+        "Schema expansion for flange, temperature, and pipe-OD semantics.",
+        "Index-time catalog enrichment and RRF tuning."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8,
+        "core_pass_rate": 0.76,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.04,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4583333333333333,
+        "verdict_counts": {
+          "PASS": 29,
+          "FAIL_HUMAN_REJECT": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 7,
+          "FAIL_WRONG_NOT_FOUND": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8,
+        "core_pass_rate": 0.76,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.04,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.03333333333333333,
+        "human_reject_rate": 0.03333333333333333,
+        "known_positive_hit_rate": 0.4666666666666667,
+        "verdict_counts": {
+          "PASS": 24,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_WRONG_PRODUCT": 3,
+          "FAIL_WRONG_NOT_FOUND": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1
+        }
+      },
+      "public_delta_vs_baseline": 0.0,
+      "blind_delta_vs_baseline": 0.033333333333333326
+    },
+    {
+      "cycle": 3,
+      "hypothesis": "Deterministic, domain-preserving query canonicalization before hybrid retrieval will improve matching of compact, mixed-script, and noisy tender nomenclature without changing final-selection semantics.",
+      "change_name": "cycle-03-query-canonicalization",
+      "decision": "ACCEPTED",
+      "reason": "candidate improves champion without regression",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 0,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T16:16:18.899867Z",
+      "plan_summary": "Created and strictly validated all OpenSpec artifacts at openspec/changes/cycle-03-query-canonicalization/: proposal, retrieval-query-canonicalization spec, design, and implementation-only tasks. No product code was changed.",
+      "expected_effect": "Retrieve using the original query plus at most one safe canonical representation, deduplicate candidates per modality before RRF, and retain the original query for reranking and output.",
+      "expected_metric_gain": "+3–10 pp public hard-pass and +3–7 pp blind hard-pass, with no intended false-match increase.",
+      "lesson_from_history": "Cycle 1’s candidate filtering regressed public/blind coverage, and Cycle 2’s reranker compatibility evidence regressed public safety. This proposal changes only query-time candidate recall, preserves candidate decision semantics, and fails open to original retrieval.",
+      "candidate_hypotheses": [
+        "Deterministic technical-notation query canonicalization before hybrid retrieval (selected).",
+        "Schema expansion for flange subtype, temperature range, and pipe-OD semantics.",
+        "Index-time catalog-text enrichment with alias/designation fields and fusion tuning.",
+        "Explicit subject-validated mappings for legacy valve designations."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.375,
+        "verdict_counts": {
+          "PASS": 29,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 8
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "hard_gate_cases": 30,
+        "hard_pass_rate": 0.8666666666666667,
+        "false_match_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "wrong_not_found_rate": 0.0,
+        "unknown_answer_rate": 0.0
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 4,
+      "hypothesis": "Expanding standalone WW (weld-weld) notation into Russian welded-connection vocabulary in the additive retrieval query will improve recall for terse technical tenders without changing selection semantics.",
+      "change_name": "cycle-04-connection-notation-canonicalization",
+      "decision": "ACCEPTED",
+      "reason": "candidate improves champion without regression",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 0,
+      "review_decision": "ACCEPT",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T16:29:16.189161Z",
+      "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-04-connection-notation-canonicalization/. No product code was changed.",
+      "expected_effect": "Surface welded candidates while preserving original retrieval, reranker input, output text, and fail-open behavior.",
+      "expected_metric_gain": "+3.3 pp public hard-pass is plausible; blind improvement is uncertain but credible for analogous notation.",
+      "lesson_from_history": "Cycles 1–2 showed selection-adjacent constraint changes can regress coverage/safety. Cycle 3 improved both public and blind metrics through additive deterministic canonicalization, so this is a narrow extension of the successful mechanism.",
+      "candidate_hypotheses": [
+        "Conservative WW connection-notation canonicalization (selected).",
+        "Add flange subtype semantics to the deterministic schema.",
+        "Add validated legacy designation mappings.",
+        "Post-rerank validation with fallback selection."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 5,
+      "hypothesis": "An evidence-first DeepSeek reranker rubric will reduce technically conflicting or unprovable final selections by prioritizing explicit tender requirements and catalog evidence over retrieval rank.",
+      "change_name": "cycle-05-evidence-first-reranker-rubric",
+      "decision": "REJECTED",
+      "reason": "blind safety metrics regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 0,
+      "review_decision": "ACCEPT",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T16:44:32.340375Z",
+      "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-05-evidence-first-reranker-rubric/. No product code or evaluation artifacts were changed.",
+      "expected_effect": "Better selection among retrieved close variants, especially explicit ball-valve passage/execution conflicts and incomplete candidate evidence, while preserving recall and output behavior.",
+      "expected_metric_gain": "+3.3–6.7 pp public hard-pass and approximately +3.3 pp blind hard-pass; safety metrics should not regress.",
+      "lesson_from_history": "Broad candidate gating (Cycle 1) and compatibility evidence injection (Cycle 2) regressed, so this change adds neither filtering nor extraction. Cycles 3–4 validated additive canonicalization but plateaued on aggregate metrics.",
+      "candidate_hypotheses": [
+        "Evidence-first reranker decision rubric for passage/execution and evidence completeness (selected).",
+        "Explicit flange-subtype schema and candidate interpretation.",
+        "Index-time catalog-text enrichment for aliases and normalized properties.",
+        "Additional compact connection/end-notation canonicalization."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 6,
+      "hypothesis": "Cleanly canonicalizing unambiguous repeated Russian flanged-end shorthand such as `фл/фл` into one catalog-native connection term improves candidate recall without changing selection semantics.",
+      "change_name": "cycle-06-symmetric-connection-canonicalization",
+      "decision": "REJECTED",
+      "reason": "blind safety metrics regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 0,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T17:03:42.641318Z",
+      "plan_summary": "Created and strict-validated proposal, specification, design, and implementation-only tasks in `openspec/changes/cycle-06-symmetric-connection-canonicalization/`. No product code was changed.",
+      "expected_effect": "Cleaner additive hybrid retrieval candidates while retaining original retrieval, RRF, reranker input, and result text.",
+      "expected_metric_gain": "Estimated +3.3 pp public hard-pass; uncertain but credible blind improvement with no intended safety regression.",
+      "lesson_from_history": "Selection-adjacent changes regressed in cycles 1, 2, and 5. Additive canonicalization was the only accepted mechanism in cycles 3–4. Broad `FF` expansion remains excluded because cycle 4 identified it as ambiguous.",
+      "candidate_hypotheses": [
+        "Conservative symmetric connection-shorthand canonicalization (selected).",
+        "Explicit flange-subtype schema expansion and catalog interpretation.",
+        "Index-time catalog representation enrichment with normalized structural fields.",
+        "Subject-validated legacy designation mapping for selected valve families."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 7,
+      "hypothesis": "A deterministic, execution-aware catalog document representation will improve retrieval of ordinary versus specialised ball-valve variants while preserving selection semantics.",
+      "change_name": "cycle-07-execution-aware-catalog-representation",
+      "decision": "REJECTED",
+      "reason": "blind coverage regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": "rag_harness_c07_b2_5a37156c",
+      "at": "2026-09-09T17:43:14.546516Z",
+      "plan_summary": "Created and strict-validated the complete OpenSpec change at openspec/changes/cycle-07-execution-aware-catalog-representation/: proposal, execution-aware-catalog-representation delta spec, design, and implementation-only focused tasks. No product code or evaluation artifacts were edited.",
+      "expected_effect": "Dense and BM25 retrieval both gain bounded Russian descriptors for explicit underground, regulating/Regula, cryogenic, gas-specific, electric-ready, ordinary, full-passage, and standard-passage evidence; raw catalog text, query processing, RRF, reranking, and final selection remain unchanged.",
+      "expected_metric_gain": "+3.3–6.7 percentage points hard-pass coverage, with no intended safety regression.",
+      "lesson_from_history": "Cycles 1, 2, and 5 established that candidate gating and selection/prompt changes can regress safety or coverage. Cycles 3–4 showed deterministic retrieval changes can help, while Cycle 6 showed narrow query-only expansion alone is not reliably sufficient. No prior cycle has tested catalog-side structural enrichment or used an index rebuild.",
+      "candidate_hypotheses": [
+        "Execution-aware catalog document enrichment with a bounded index rebuild (selected).",
+        "Flange-subtype schema expansion for weld-neck/butt-weld requirements.",
+        "Subject-validated legacy designation equivalence mappings.",
+        "A second reranker or post-rerank compatibility decision layer."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.0
+    },
+    {
+      "cycle": 8,
+      "hypothesis": "A fail-open deterministic post-rerank compatibility fallback will reduce explicit execution/control/bore conflicts by substituting only an already retrieved, fully evidenced compatible candidate.",
+      "change_name": "cycle-08-verifiable-selection-fallback",
+      "decision": "REJECTED",
+      "reason": "no measured improvement over champion",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T18:02:37.128978Z",
+      "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks at openspec/changes/cycle-08-verifiable-selection-fallback/. No product code was changed.",
+      "expected_effect": "Correct unsafe top selections while preserving the reranker outcome when no compatible, evidenced alternative exists.",
+      "expected_metric_gain": "+3.3–10 pp public hard-pass; +0–6.7 pp blind hard-pass.",
+      "lesson_from_history": "Cycle 1 broad filtering and Cycle 5 prompt-based selection changes regressed. This design never filters before reranking, uses literal deterministic cues, and falls back only to an existing compatible candidate. Cycle 7 index enrichment regressed, so no rebuild is requested.",
+      "candidate_hypotheses": [
+        "Fail-open deterministic post-rerank compatibility fallback (selected).",
+        "Flange-subtype schema expansion.",
+        "Subject-validated legacy designation mappings.",
+        "Catalog-side index enrichment or RRF tuning."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 9,
+      "hypothesis": "Explicit ball-valve standard-execution wording can be deterministically expanded into standard-bore catalog vocabulary to improve candidate recall without changing selection semantics.",
+      "change_name": "cycle-09-standard-bore-retrieval-canonicalization",
+      "decision": "REJECTED",
+      "reason": "no measured improvement over champion",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-09T18:22:35.561413Z",
+      "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks in openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/. No product code changed.",
+      "expected_effect": "Hybrid retrieval gains one guarded alternate query; original retrieval, reranker input, output text, fusion, and selection remain unchanged.",
+      "expected_metric_gain": "+3.3 pp public hard-pass plausible; blind gain uncertain but credible.",
+      "lesson_from_history": "Cycles 1, 2, 5, and 8 found selection-adjacent changes harmful or neutral. Additive canonicalization was accepted in cycles 3–4; broad shorthand expansion and index enrichment were rejected, so this is a distinct, narrow query-time experiment.",
+      "candidate_hypotheses": [
+        "Standard-execution to standard-bore canonicalization (selected).",
+        "Flange weld-neck subtype schema expansion.",
+        "Validated legacy designation mappings.",
+        "Hybrid depth/RRF tuning."
+      ],
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 10,
+      "hypothesis": "Explicitly model and affirmatively verify flange construction subtype so generic or flat flanges cannot satisfy weld-neck/butt-weld requirements.",
+      "change_name": "cycle-10-flange-subtype-schema",
+      "decision": "REJECTED",
+      "reason": "Interrupted candidate changed protected harness/GOLD files: ['src/nomenclature_matcher/golden_rules.py']",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": null,
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T03:48:53.396755Z",
+      "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-10-flange-subtype-schema/. No product code changed.",
+      "expected_effect": "Safely abstain from unproved explicit flange-subtype substitutions while preserving generic flange and non-flange behavior.",
+      "expected_metric_gain": "0–3.3 pp hard-pass; primary value is safety and information gain.",
+      "lesson_from_history": "Broad gating and selection/reranker changes regressed or were neutral; retrieval canonicalization plateaued and catalog enrichment regressed. This is a distinct, narrowly scoped deterministic requirement.",
+      "candidate_hypotheses": [
+        "Deterministic flange-subtype schema and affirmative catalog verification (selected).",
+        "Pipe-OD-to-DN normalization with rising-stem semantics.",
+        "Subject-matter-validated legacy designation mappings.",
+        "Hybrid candidate-depth or fusion tuning."
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "IMPLEMENTATION_OR_TEST",
+      "candidate_public_metrics": {},
+      "candidate_blind_evaluated": false
+    },
+    {
+      "cycle": 11,
+      "hypothesis": "A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.",
+      "change_name": "cycle-11-pipe-od-retrieval-normalization",
+      "decision": "IMPLEMENTATION_FAILED",
+      "reason": "Public eval after fixer failed: evaluation failed (1)\n/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_compatibility=False to skip version check.\n  show_warning(\nTraceback (most recent call last):\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 101, in map_httpcore_exceptions\n    yield\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 250, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 236, in handle_request\n    response = connection.handle_request(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 101, in handle_request\n    raise exc\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 78, in handle_request\n    stream = self._connect(request)\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 124, in _connect\n    stream = self._network_backend.connect_tcp(**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_backends/sync.py\", line 207, in connect_tcp\n    with map_exceptions(exc_map):\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_exceptions.py\", line 14, in map_exceptions\n    raise to_exc(exc) from exc\nhttpcore.ConnectError: [Errno 111] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 134, in send_inner\n    response = self._client.send(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_redirects(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 979, in _send_handling_redirects\n    response = self._send_single_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 1014, in _send_single_request\n    response = transport.handle_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 249, in handle_request\n    with map_httpcore_exceptions():\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 118, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ConnectError: [Errno 111] Connection refused\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 302, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 270, in main\n    results = matcher.match_many_hybrid_with_rerank([case[\"query\"] for case in cases])\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 133, in match_many_hybrid_with_rerank\n    return self._match_many_with(queries, self.match_one_hybrid_with_rerank)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 121, in _match_many_with\n    cache[normalized] = match_one(normalized)\n                        ^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 109, in match_one_hybrid_with_rerank\n    candidates = self.hybrid_retriever.search(\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 62, in search\n    dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 69, in _search_modality_variants\n    candidates = search_fn(query, limit)\n                 ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 16, in search_dense\n    hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/qdrant_store.py\", line 18, in search\n    return self.client.query_points(collection_name=self.settings.qdrant_collection_alias, query=vector, using=self.settings.qdrant_dense_vector_name, limit=limit).points\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_client.py\", line 423, in query_points\n    return self._client.query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py\", line 585, in query_points\n    query_result = self.http.search_api.query_points(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 783, in query_points\n    return self._build_for_query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 181, in _build_for_query_points\n    return self.api_client.request(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 95, in request\n    return self.send(request, type_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 112, in send\n    response = self.middleware(request, self.send_inner)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 149, in new_middleware\n    return middleware(request, inner_send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/context_headers.py\", line 39, in rest_headers_middleware\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 147, in inner_send\n    return current_middleware(request, call_next)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 250, in __call__\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 136, in send_inner\n    raise ResponseHandlingException(e)\nqdrant_client.http.exceptions.ResponseHandlingException: [Errno 111] Connection refused\n",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T03:57:12.841158Z",
+      "plan_summary": "Created and strict-validated proposal, behavior spec, design, and implementation-only tasks in openspec/changes/cycle-11-pipe-od-retrieval-normalization/. Tasks explicitly exclude GOLD/harness artifacts and supervisor evaluation.",
+      "expected_effect": "Add at most one DN-enriched retrieval query only for explicit, contextual, allowlisted pipe OD; preserve source retrieval, reranker input, RRF, and final selection.",
+      "expected_metric_gain": "+0–3.3 pp public and blind hard-pass coverage, with no intended safety regression.",
+      "lesson_from_history": "Selection-adjacent experiments regressed or were neutral, while additive canonicalization was accepted in cycles 3–4. Cycle 10 was blocked by a protected-file violation before evaluation, so it does not disprove schema expansion. Index enrichment regressed, so this avoids rebuilding.",
+      "candidate_hypotheses": [
+        "Guarded pipe-OD-to-DN additive retrieval normalization (selected).",
+        "Protected-file-safe flange subtype verification.",
+        "Subject-matter-validated legacy designation equivalences.",
+        "Hybrid candidate-depth or RRF tuning."
+      ],
+      "used_external_research": true,
+      "research_sources": [
+        "https://meganorm.ru/mega_doc/norm/gost_gosudarstvennyj-standart/0/gost_10704-91_mezhgosudarstvennyy_standart_truby_stalnye.html",
+        "https://tavago.ru/truby-i-fitingi/stalnye-truby/truby-stalnye-elektrosvarnye-gost-10704-91/truba-stal-elektrosvarnaya-pryamoshovnaya-dn-108kh3-5-du-100-gost-10704-91.html"
+      ],
+      "research_summary": "The GOST source lists 108 mm as a standard outside diameter; the pipe source identifies DN 108×3.5 as DN 100. The plan limits conversion to explicit OD context and this single documented mapping.",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "IMPLEMENTATION_OR_TEST",
+      "candidate_public_metrics": {},
+      "candidate_blind_evaluated": false
+    },
+    {
+      "cycle": 12,
+      "hypothesis": "Explicit flange construction subtype verification will prevent unproved flat, loose, counter, or generic flanges from satisfying weld-neck/butt-weld requirements.",
+      "change_name": "cycle-12-protected-flange-subtype-verification",
+      "decision": "IMPLEMENTATION_FAILED",
+      "reason": "Public eval after fixer failed: evaluation failed (1)\n/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_compatibility=False to skip version check.\n  show_warning(\nTraceback (most recent call last):\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 101, in map_httpcore_exceptions\n    yield\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 250, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 236, in handle_request\n    response = connection.handle_request(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 101, in handle_request\n    raise exc\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 78, in handle_request\n    stream = self._connect(request)\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 124, in _connect\n    stream = self._network_backend.connect_tcp(**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_backends/sync.py\", line 207, in connect_tcp\n    with map_exceptions(exc_map):\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_exceptions.py\", line 14, in map_exceptions\n    raise to_exc(exc) from exc\nhttpcore.ConnectError: [Errno 111] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 134, in send_inner\n    response = self._client.send(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_redirects(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 979, in _send_handling_redirects\n    response = self._send_single_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 1014, in _send_single_request\n    response = transport.handle_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 249, in handle_request\n    with map_httpcore_exceptions():\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 118, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ConnectError: [Errno 111] Connection refused\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 302, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 270, in main\n    results = matcher.match_many_hybrid_with_rerank([case[\"query\"] for case in cases])\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 171, in match_many_hybrid_with_rerank\n    return self._match_many_with(queries, self.match_one_hybrid_with_rerank)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 159, in _match_many_with\n    cache[normalized] = match_one(normalized)\n                        ^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 147, in match_one_hybrid_with_rerank\n    candidates = self.hybrid_retriever.search(\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 62, in search\n    dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 69, in _search_modality_variants\n    candidates = search_fn(query, limit)\n                 ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 16, in search_dense\n    hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/qdrant_store.py\", line 18, in search\n    return self.client.query_points(collection_name=self.settings.qdrant_collection_alias, query=vector, using=self.settings.qdrant_dense_vector_name, limit=limit).points\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_client.py\", line 423, in query_points\n    return self._client.query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py\", line 585, in query_points\n    query_result = self.http.search_api.query_points(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 783, in query_points\n    return self._build_for_query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 181, in _build_for_query_points\n    return self.api_client.request(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 95, in request\n    return self.send(request, type_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 112, in send\n    response = self.middleware(request, self.send_inner)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 149, in new_middleware\n    return middleware(request, inner_send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/context_headers.py\", line 39, in rest_headers_middleware\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 147, in inner_send\n    return current_middleware(request, call_next)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 250, in __call__\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 136, in send_inner\n    raise ResponseHandlingException(e)\nqdrant_client.http.exceptions.ResponseHandlingException: [Errno 111] Connection refused\n",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T04:06:51.909948Z",
+      "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-12-protected-flange-subtype-verification/.",
+      "expected_effect": "For explicit subtype queries, expose deterministic subtype evidence to reranking and return a match only for an affirmatively evidenced compatible selected candidate; preserve generic flange and non-flange behavior.",
+      "expected_metric_gain": "0–3.3 pp hard-pass coverage; primary value is reduced unsafe or unprovable selections.",
+      "lesson_from_history": "Broad gating and selection changes regressed or were neutral, retrieval canonicalization plateaued, and index enrichment regressed. This is a narrow, evidence-based retry of an unevaluated schema gap, not a repeat of the Cycle 10 contract failure.",
+      "candidate_hypotheses": [
+        "Protected-file-safe flange subtype verification (selected)",
+        "Guarded pipe-OD-to-DN alternate-query retry",
+        "Subject-matter-validated legacy designation equivalence mapping",
+        "Hybrid candidate-depth/RRF tuning"
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "IMPLEMENTATION_OR_TEST",
+      "candidate_public_metrics": {},
+      "candidate_blind_evaluated": false
+    },
+    {
+      "cycle": 13,
+      "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable ordinary/control variants currently crowded out by near-duplicate specialised variants.",
+      "change_name": "cycle-13-structural-candidate-diversification",
+      "decision": "IMPLEMENTATION_FAILED",
+      "reason": "Public eval after fixer failed: evaluation failed (1)\n/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_compatibility=False to skip version check.\n  show_warning(\nTraceback (most recent call last):\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 101, in map_httpcore_exceptions\n    yield\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 250, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 236, in handle_request\n    response = connection.handle_request(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 101, in handle_request\n    raise exc\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 78, in handle_request\n    stream = self._connect(request)\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 124, in _connect\n    stream = self._network_backend.connect_tcp(**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_backends/sync.py\", line 207, in connect_tcp\n    with map_exceptions(exc_map):\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_exceptions.py\", line 14, in map_exceptions\n    raise to_exc(exc) from exc\nhttpcore.ConnectError: [Errno 111] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 134, in send_inner\n    response = self._client.send(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_redirects(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 979, in _send_handling_redirects\n    response = self._send_single_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 1014, in _send_single_request\n    response = transport.handle_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 249, in handle_request\n    with map_httpcore_exceptions():\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 118, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ConnectError: [Errno 111] Connection refused\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 302, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 270, in main\n    results = matcher.match_many_hybrid_with_rerank([case[\"query\"] for case in cases])\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 133, in match_many_hybrid_with_rerank\n    return self._match_many_with(queries, self.match_one_hybrid_with_rerank)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 121, in _match_many_with\n    cache[normalized] = match_one(normalized)\n                        ^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 109, in match_one_hybrid_with_rerank\n    candidates = self.hybrid_retriever.search(\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 63, in search\n    dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 71, in _search_modality_variants\n    candidates = search_fn(query, limit)\n                 ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 17, in search_dense\n    hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/qdrant_store.py\", line 18, in search\n    return self.client.query_points(collection_name=self.settings.qdrant_collection_alias, query=vector, using=self.settings.qdrant_dense_vector_name, limit=limit).points\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_client.py\", line 423, in query_points\n    return self._client.query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py\", line 585, in query_points\n    query_result = self.http.search_api.query_points(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 783, in query_points\n    return self._build_for_query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 181, in _build_for_query_points\n    return self.api_client.request(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 95, in request\n    return self.send(request, type_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 112, in send\n    response = self.middleware(request, self.send_inner)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 149, in new_middleware\n    return middleware(request, inner_send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/context_headers.py\", line 39, in rest_headers_middleware\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 147, in inner_send\n    return current_middleware(request, call_next)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 250, in __call__\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 136, in send_inner\n    raise ResponseHandlingException(e)\nqdrant_client.http.exceptions.ResponseHandlingException: [Errno 111] Connection refused\n",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T04:16:19.819541Z",
+      "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks under openspec/changes/cycle-13-structural-candidate-diversification/.",
+      "expected_effect": "Keep the highest-RRF representative per reliable observable structural signature, then fill remaining reranker slots in RRF order.",
+      "expected_metric_gain": "+3.3–6.7 pp hard-pass plausible; blind gain uncertain with safety non-regression required.",
+      "lesson_from_history": "Selection, gating, prompt, and index-enrichment experiments regressed or were neutral. Cycles 11–12 were infrastructure-inconclusive, while the current redundancy evidence supports this new pre-rerank candidate-pool experiment.",
+      "candidate_hypotheses": [
+        "Structural candidate-pool diversification before the fixed reranker budget (selected).",
+        "Protected-file-safe flange-subtype verification retry.",
+        "Guarded pipe-OD-to-DN alternate-query retry.",
+        "Subject-matter-validated legacy designation mappings."
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "IMPLEMENTATION_OR_TEST",
+      "candidate_public_metrics": {},
+      "candidate_blind_evaluated": false
+    },
+    {
+      "cycle": 14,
+      "hypothesis": "A deterministic, additive retrieval representation that distinguishes an installed electric actuator from actuator-ready intent will improve candidate recall for explicit ball-valve control-state requests without changing final-selection behavior.",
+      "change_name": "cycle-14-actuation-intent-retrieval-expansion",
+      "decision": "IMPLEMENTATION_FAILED",
+      "reason": "Public eval after fixer failed: evaluation failed (1)\n/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_compatibility=False to skip version check.\n  show_warning(\nTraceback (most recent call last):\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 101, in map_httpcore_exceptions\n    yield\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 250, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 236, in handle_request\n    response = connection.handle_request(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 101, in handle_request\n    raise exc\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 78, in handle_request\n    stream = self._connect(request)\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 124, in _connect\n    stream = self._network_backend.connect_tcp(**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_backends/sync.py\", line 207, in connect_tcp\n    with map_exceptions(exc_map):\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_exceptions.py\", line 14, in map_exceptions\n    raise to_exc(exc) from exc\nhttpcore.ConnectError: [Errno 111] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 134, in send_inner\n    response = self._client.send(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_redirects(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 979, in _send_handling_redirects\n    response = self._send_single_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 1014, in _send_single_request\n    response = transport.handle_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 249, in handle_request\n    with map_httpcore_exceptions():\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 118, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ConnectError: [Errno 111] Connection refused\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 302, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 270, in main\n    results = matcher.match_many_hybrid_with_rerank([case[\"query\"] for case in cases])\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 133, in match_many_hybrid_with_rerank\n    return self._match_many_with(queries, self.match_one_hybrid_with_rerank)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 121, in _match_many_with\n    cache[normalized] = match_one(normalized)\n                        ^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 109, in match_one_hybrid_with_rerank\n    candidates = self.hybrid_retriever.search(\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 62, in search\n    dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 69, in _search_modality_variants\n    candidates = search_fn(query, limit)\n                 ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 16, in search_dense\n    hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/qdrant_store.py\", line 18, in search\n    return self.client.query_points(collection_name=self.settings.qdrant_collection_alias, query=vector, using=self.settings.qdrant_dense_vector_name, limit=limit).points\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_client.py\", line 423, in query_points\n    return self._client.query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py\", line 585, in query_points\n    query_result = self.http.search_api.query_points(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 783, in query_points\n    return self._build_for_query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 181, in _build_for_query_points\n    return self.api_client.request(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 95, in request\n    return self.send(request, type_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 112, in send\n    response = self.middleware(request, self.send_inner)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 149, in new_middleware\n    return middleware(request, inner_send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/context_headers.py\", line 39, in rest_headers_middleware\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 147, in inner_send\n    return current_middleware(request, call_next)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 250, in __call__\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 136, in send_inner\n    raise ResponseHandlingException(e)\nqdrant_client.http.exceptions.ResponseHandlingException: [Errno 111] Connection refused\n",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T04:25:24.928443Z",
+      "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-14-actuation-intent-retrieval-expansion/.",
+      "expected_effect": "Issue at most one state-specific alternate query alongside the original; preserve original text for reranking/output and retain existing deduplication, RRF, limits, and fail-open behavior.",
+      "expected_metric_gain": "+3.3–6.7 pp public hard-pass is plausible; blind improvement is uncertain but credible with no intended safety regression.",
+      "lesson_from_history": "Cycles 3–4 validated narrow additive canonicalization. Cycles 1, 2, 5, 6, 7, 8, and 9 made gating, prompt/selection, broad expansion, or index changes ineffective or harmful. Cycles 11–13 were infrastructure-inconclusive due to unavailable Qdrant, not evidence against their hypotheses.",
+      "candidate_hypotheses": [
+        "State-specific actuator terminology expansion at query time (selected).",
+        "Protected-file-safe flange subtype verification.",
+        "Structural candidate-pool diversification before reranking.",
+        "Guarded pipe-OD-to-DN alternate-query retry."
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "IMPLEMENTATION_OR_TEST",
+      "candidate_public_metrics": {},
+      "candidate_blind_evaluated": false
+    },
+    {
+      "cycle": 15,
+      "hypothesis": "Explicit installed-electric versus actuator-ready wording can produce a bounded alternate retrieval query that improves recall without changing selection behavior.",
+      "change_name": "cycle-15-actuation-intent-retrieval-expansion",
+      "decision": "IMPLEMENTATION_FAILED",
+      "reason": "Public eval after fixer failed: evaluation failed (1)\n/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_compatibility=False to skip version check.\n  show_warning(\nTraceback (most recent call last):\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 101, in map_httpcore_exceptions\n    yield\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 250, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py\", line 236, in handle_request\n    response = connection.handle_request(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 101, in handle_request\n    raise exc\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 78, in handle_request\n    stream = self._connect(request)\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py\", line 124, in _connect\n    stream = self._network_backend.connect_tcp(**kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_backends/sync.py\", line 207, in connect_tcp\n    with map_exceptions(exc_map):\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpcore/_exceptions.py\", line 14, in map_exceptions\n    raise to_exc(exc) from exc\nhttpcore.ConnectError: [Errno 111] Connection refused\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 134, in send_inner\n    response = self._client.send(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_redirects(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 979, in _send_handling_redirects\n    response = self._send_single_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_client.py\", line 1014, in _send_single_request\n    response = transport.handle_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 249, in handle_request\n    with map_httpcore_exceptions():\n  File \"/usr/local/python/3.12.1/lib/python3.12/contextlib.py\", line 158, in __exit__\n    self.gen.throw(value)\n  File \"/home/codespace/.local/lib/python3.12/site-packages/httpx/_transports/default.py\", line 118, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ConnectError: [Errno 111] Connection refused\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 302, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspaces/ML-Cancer-Data/scripts/eval_harness_gold.py\", line 270, in main\n    results = matcher.match_many_hybrid_with_rerank([case[\"query\"] for case in cases])\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 133, in match_many_hybrid_with_rerank\n    return self._match_many_with(queries, self.match_one_hybrid_with_rerank)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 121, in _match_many_with\n    cache[normalized] = match_one(normalized)\n                        ^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py\", line 109, in match_one_hybrid_with_rerank\n    candidates = self.hybrid_retriever.search(\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 62, in search\n    dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 69, in _search_modality_variants\n    candidates = search_fn(query, limit)\n                 ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/hybrid_retriever.py\", line 16, in search_dense\n    hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspaces/ML-Cancer-Data/src/nomenclature_matcher/qdrant_store.py\", line 18, in search\n    return self.client.query_points(collection_name=self.settings.qdrant_collection_alias, query=vector, using=self.settings.qdrant_dense_vector_name, limit=limit).points\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_client.py\", line 423, in query_points\n    return self._client.query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py\", line 585, in query_points\n    query_result = self.http.search_api.query_points(\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 783, in query_points\n    return self._build_for_query_points(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py\", line 181, in _build_for_query_points\n    return self.api_client.request(\n           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 95, in request\n    return self.send(request, type_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 112, in send\n    response = self.middleware(request, self.send_inner)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 149, in new_middleware\n    return middleware(request, inner_send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/context_headers.py\", line 39, in rest_headers_middleware\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 147, in inner_send\n    return current_middleware(request, call_next)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 250, in __call__\n    return call_next(request)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/http/api_client.py\", line 136, in send_inner\n    raise ResponseHandlingException(e)\nqdrant_client.http.exceptions.ResponseHandlingException: [Errno 111] Connection refused\n",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T04:33:21.798407Z",
+      "plan_summary": "Created and strict-validated proposal, specification, design, and implementation-only tasks in openspec/changes/cycle-15-actuation-intent-retrieval-expansion/.",
+      "expected_effect": "Better retrieval of the requested electric-control state while preserving source-query reranking, fusion, and fallback.",
+      "expected_metric_gain": "+3.3–6.7 pp hard-pass plausible; blind gain uncertain.",
+      "lesson_from_history": "Additive canonicalization was the only accepted family; gating, reranking, selection, and index changes were neutral or harmful. Cycle 14's Qdrant failure does not disprove this hypothesis.",
+      "candidate_hypotheses": [
+        "State-specific installed-electric versus actuator-ready retrieval expansion (selected).",
+        "Structural candidate-pool diversification before reranking.",
+        "Protected-file-safe flange weld-neck subtype verification.",
+        "Guarded pipe-OD-to-DN retrieval alternate."
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.033333333333333326,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "IMPLEMENTATION_OR_TEST",
+      "candidate_public_metrics": {},
+      "candidate_blind_evaluated": false
+    },
+    {
+      "cycle": 16,
+      "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable variants currently crowded out by near-duplicate catalog entries.",
+      "change_name": "cycle-16-structural-candidate-diversification",
+      "decision": "REJECTED",
+      "reason": "public coverage regressed",
+      "public_hard_pass_rate": 0.8,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "FIX",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T05:22:06.374242Z",
+      "plan_summary": "Created and strict-validated proposal, delta spec, design, and implementation-only tasks in openspec/changes/cycle-16-structural-candidate-diversification/. No product code was changed.",
+      "expected_effect": "Retain the highest-RRF representative per reliably evidenced structural signature, then fill remaining reranker capacity in existing RRF order.",
+      "expected_metric_gain": "+3.3–6.7 pp hard-pass coverage; no intended safety regression.",
+      "lesson_from_history": "Gating, prompts, selection fallbacks, and catalog enrichment were harmful or neutral. Cycles 11–15 were infrastructure-inconclusive; Cycle 13 did not test this hypothesis scientifically.",
+      "candidate_hypotheses": [
+        "Structural candidate-pool diversification before reranking (selected).",
+        "Guarded pipe-OD-to-DN alternate retrieval normalization retry.",
+        "Protected-file-safe flange weld-neck subtype verification retry.",
+        "Installed-electric versus actuator-ready alternate retrieval expansion retry."
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.0,
+      "blind_delta_vs_baseline": 0.06666666666666665
+    },
+    {
+      "cycle": 17,
+      "hypothesis": "Explicit installed-electric versus actuator-ready ball-valve wording can produce one bounded state-specific retrieval alternate that improves recall without changing selection behavior.",
+      "change_name": "cycle-17-actuation-intent-retrieval-expansion",
+      "decision": "REJECTED",
+      "reason": "The added expansion is mechanically sound but its key semantic premise is not reliable in the current catalog, so it is not a safe state-specific retrieval improvement.",
+      "public_hard_pass_rate": 0.8666666666666667,
+      "blind_hard_pass_rate": 0.8666666666666667,
+      "index_builds_used": 2,
+      "review_decision": "REJECT",
+      "candidate_collection_alias": null,
+      "at": "2026-09-10T05:33:48.574147Z",
+      "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks under openspec/changes/cycle-17-actuation-intent-retrieval-expansion/.",
+      "expected_effect": "Source retrieval remains intact while a catalog-native control-state alternate can surface better candidates; reranking and output keep the source query.",
+      "expected_metric_gain": "+3.3–6.7 pp hard-pass coverage plausible; blind gain uncertain.",
+      "lesson_from_history": "Narrow additive canonicalization was the only accepted family. Gating, selection, prompt, index-enrichment, and diversification changes were neutral or harmful; this is an untested retry after Qdrant outages.",
+      "candidate_hypotheses": [
+        "State-specific installed-electric versus actuator-ready additive retrieval expansion (selected).",
+        "Guarded pipe-OD-to-DN retrieval normalization.",
+        "Weld-neck flange subtype verification.",
+        "Subject-validated designation equivalence mappings."
+      ],
+      "used_external_research": false,
+      "research_sources": [],
+      "research_summary": "",
+      "champion_public_metrics_after_decision": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8333333333333334,
+        "core_pass_rate": 0.8,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.4166666666666667,
+        "verdict_counts": {
+          "PASS": 30,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 6,
+          "FAIL_PIPELINE": 1
+        }
+      },
+      "champion_blind_metrics_after_decision": {
+        "evaluated": 30,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.4,
+        "verdict_counts": {
+          "PASS": 26,
+          "FAIL_WRONG_PRODUCT": 4
+        }
+      },
+      "public_delta_vs_baseline": 0.06666666666666665,
+      "blind_delta_vs_baseline": 0.06666666666666665,
+      "failure_stage": "REVIEW",
+      "candidate_public_metrics": {
+        "evaluated": 120,
+        "hard_gate_cases": 30,
+        "core_cases": 25,
+        "negative_cases": 5,
+        "hard_pass_rate": 0.8666666666666667,
+        "core_pass_rate": 0.84,
+        "negative_pass_rate": 1.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.008333333333333333,
+        "human_reject_rate": 0.008333333333333333,
+        "known_positive_hit_rate": 0.5,
+        "verdict_counts": {
+          "PASS": 31,
+          "FAIL_HUMAN_REJECT": 1,
+          "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+          "UNSCORED": 81,
+          "FAIL_WRONG_PRODUCT": 4,
+          "FAIL_WRONG_NOT_FOUND": 2
+        }
+      },
+      "candidate_blind_evaluated": false
+    }
+  ],
+  "push_pending": true
+}

@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-01-constraint-aware-candidate-gating`. Added tri-state candidate compatibility checks, optional `MatchResult` constraint-gate diagnostics, hybrid pre-rerank filtering, explicit out-of-scope and exhausted-pool `NOT_FOUND` abstentions, fail-open behavior for extractor failure/ambiguity/uncertain scope/no usable constraints, and automatic DeepSeek constraint extractor wiring when configured. OpenSpec tasks are 8/8 complete and validation passes. No full index rebuild was run or required.",
+  "tests": [
+    "python -m pytest -q tests/test_matcher.py tests/test_query_constraints.py tests/test_harness_gold_calibration.py tests/test_serialization.py (35 passed)",
+    "python -m pytest -q (146 passed)",
+    "openspec validate cycle-01-constraint-aware-candidate-gating --strict (passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

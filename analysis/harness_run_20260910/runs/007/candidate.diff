@@ -1,0 +1,298 @@
+diff --git a/src/nomenclature_matcher/documents.py b/src/nomenclature_matcher/documents.py
+index 0b399ab..ebf1c04 100644
+--- a/src/nomenclature_matcher/documents.py
++++ b/src/nomenclature_matcher/documents.py
+@@ -21,6 +21,16 @@ _LEXICAL_PROPERTY_NAMES = {
+     "Тип прохода",
+ }
+ 
++_DESCRIPTOR_PROPERTY_NAMES = {"Тип продукта", "Тип прохода", "Управление"}
++
++_SPECIAL_EXECUTION_DESCRIPTORS = (
++    ("подземное исполнение", ("подзем",)),
++    ("регулирующее исполнение", ("regula", "регулиру")),
++    ("криогенное исполнение", ("криоген",)),
++    ("газовое исполнение", (" gas", " gas ", "газов")),
++    ("под электропривод", ("электропривод",)),
++)
++
+ 
+ def _properties(value: Any) -> list[dict[str, Any]]:
+     if isinstance(value, list):
+@@ -53,12 +63,58 @@ def _append_property_lines(parts: list[str], properties: list[dict[str, Any]], a
+         parts.append(f"{name}: {_format_values(values)}")
+ 
+ 
++def _property_text(properties: list[dict[str, Any]], allowed_names: set[str]) -> str:
++    parts: list[str] = []
++    for prop in properties:
++        name = prop.get("name")
++        if name in allowed_names:
++            values = prop.get("values", [])
++            if values not in (None, "", []):
++                parts.append(f"{name}: {_format_values(values)}")
++    return " ".join(parts)
++
++
++def _normalize_descriptor_source(text: str) -> str:
++    return f" {text.lower().replace('ё', 'е')} "
++
++
++def build_execution_descriptors(product: LDProduct) -> list[str]:
++    properties = _properties(product.properties)
++    product_type_source = _normalize_descriptor_source(
++        f"{product.name} {_property_text(properties, {'Тип продукта'})}"
++    )
++    if "кран" not in product_type_source or "шаров" not in product_type_source:
++        return []
++
++    evidence = _normalize_descriptor_source(
++        f"{product.name} {_property_text(properties, _DESCRIPTOR_PROPERTY_NAMES)}"
++    )
++    descriptors = [
++        descriptor
++        for descriptor, markers in _SPECIAL_EXECUTION_DESCRIPTORS
++        if any(marker in evidence for marker in markers)
++    ]
++    if not descriptors:
++        descriptors.append("стандартное исполнение")
++
++    passage = _normalize_descriptor_source(_property_text(properties, {"Тип прохода"}))
++    if any(marker in passage for marker in ("неполнопроход", "не полный", "редуц", "стандарт")):
++        descriptors.append("стандартный проход")
++    elif any(marker in passage for marker in ("полнопроход", "полный проход", "полный")):
++        descriptors.append("полнопроходной")
++
++    return descriptors
++
++
+ def build_search_text(product: LDProduct) -> str:
+     parts = [f"Название: {product.name}"]
+     for label, value in (("Артикул", product.article), ("DN", product.dn), ("PN", product.pn), ("Присоединение", product.joining_type)):
+         if value not in (None, ""):
+             parts.append(f"{label}: {value}")
+     _append_property_lines(parts, _properties(product.properties))
++    descriptors = build_execution_descriptors(product)
++    if descriptors:
++        parts.append(f"Исполнение: {', '.join(descriptors)}")
+     return "\n".join(parts)
+ 
+ 
+@@ -74,6 +130,9 @@ def build_lexical_text(product: LDProduct) -> str:
+     if product.joining_type not in (None, ""):
+         parts.append(str(product.joining_type))
+     _append_property_lines(parts, _properties(product.properties), _LEXICAL_PROPERTY_NAMES)
++    descriptors = build_execution_descriptors(product)
++    if descriptors:
++        parts.append(f"Исполнение: {', '.join(descriptors)}")
+     return "\n".join(parts)
+ 
+ 
+diff --git a/tests/test_bm25.py b/tests/test_bm25.py
+index 6b16814..3ad73c7 100644
+--- a/tests/test_bm25.py
++++ b/tests/test_bm25.py
+@@ -32,3 +32,41 @@ def test_bm25_omits_zero_and_negative_scores():
+ 
+     assert len(hits) == 3
+     assert all(hit.bm25_score > 0 for hit in hits)
++
++
++def test_bm25_indexes_execution_descriptors_for_comparable_ball_valves():
++    products = [
++        LDProduct(
++            1,
++            "Кран шаровой стальной DN80 PN16",
++            "A1",
++            dn="80",
++            pn="16",
++            joining_type="Фланцевое",
++            properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++        ),
++        LDProduct(
++            2,
++            "Кран шаровой стальной DN80 PN16 для подземной установки",
++            "A2",
++            dn="80",
++            pn="16",
++            joining_type="Фланцевое",
++            properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++        ),
++        LDProduct(
++            3,
++            "Кран шаровой стальной DN80 PN16 регулирующий",
++            "A3",
++            dn="80",
++            pn="16",
++            joining_type="Фланцевое",
++            properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++        ),
++    ]
++
++    store = BM25Store(products)
++    hits = store.search("подземное", limit=2)
++
++    assert hits[0].ld_id == 2
++    assert "Исполнение: подземное исполнение" in hits[0].search_text
+diff --git a/tests/test_documents.py b/tests/test_documents.py
+index 3e4c9ee..4624d82 100644
+--- a/tests/test_documents.py
++++ b/tests/test_documents.py
+@@ -1,6 +1,14 @@
+ import csv
+ 
+-from nomenclature_matcher.documents import build_lexical_text, build_search_text, load_products_from_csv, tokenize
++import pytest
++
++from nomenclature_matcher.documents import (
++    build_execution_descriptors,
++    build_lexical_text,
++    build_search_text,
++    load_products_from_csv,
++    tokenize,
++)
+ from nomenclature_matcher.models import LDProduct
+ 
+ 
+@@ -80,3 +88,141 @@ def test_build_lexical_text_keeps_compact_fields_and_excludes_noise():
+     assert "Тип продукта: Кран шаровой" in text
+     assert "Материал корпуса: Латунь ЛС59-1" in text
+     assert "Вес, кг" not in text
++
++
++@pytest.mark.parametrize(
++    ("product", "expected"),
++    [
++        (
++            LDProduct(
++                1,
++                "Кран шаровой LD стандартный",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["стандартное исполнение"],
++        ),
++        (
++            LDProduct(
++                2,
++                "Кран шаровой для подземной установки",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["подземное исполнение"],
++        ),
++        (
++            LDProduct(
++                3,
++                "Кран шаровой LD Regula",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["регулирующее исполнение"],
++        ),
++        (
++            LDProduct(
++                4,
++                "Кран шаровой регулирующий",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["регулирующее исполнение"],
++        ),
++        (
++            LDProduct(
++                5,
++                "Кран шаровой криогенный",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["криогенное исполнение"],
++        ),
++        (
++            LDProduct(
++                6,
++                "Кран шаровой LD Pride GAS",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["газовое исполнение"],
++        ),
++        (
++            LDProduct(
++                7,
++                "Кран шаровой",
++                properties={
++                    "properties": [
++                        {"name": "Тип продукта", "values": ["Кран шаровой"]},
++                        {"name": "Управление", "values": ["под электропривод"]},
++                    ]
++                },
++            ),
++            ["под электропривод"],
++        ),
++        (
++            LDProduct(
++                8,
++                "Кран шаровой",
++                properties={
++                    "properties": [
++                        {"name": "Тип продукта", "values": ["Кран шаровой"]},
++                        {"name": "Тип прохода", "values": ["Полнопроходной"]},
++                    ]
++                },
++            ),
++            ["стандартное исполнение", "полнопроходной"],
++        ),
++        (
++            LDProduct(
++                9,
++                "Кран шаровой регулирующий",
++                properties={
++                    "properties": [
++                        {"name": "Тип продукта", "values": ["Кран шаровой"]},
++                        {"name": "Тип прохода", "values": ["Неполнопроходной"]},
++                    ]
++                },
++            ),
++            ["регулирующее исполнение", "стандартный проход"],
++        ),
++        (
++            LDProduct(
++                10,
++                "Кран шаровой неизвестного исполнения",
++                properties={"properties": [{"name": "Тип продукта", "values": ["Кран шаровой"]}]},
++            ),
++            ["стандартное исполнение"],
++        ),
++    ],
++)
++def test_build_execution_descriptors_are_bounded_and_ordered(product, expected):
++    assert build_execution_descriptors(product) == expected
++
++
++def test_build_execution_descriptors_skip_non_ball_valves():
++    product = LDProduct(
++        1,
++        "Затвор дисковый подземный под электропривод",
++        properties={"properties": [{"name": "Тип продукта", "values": ["Затвор дисковый"]}]},
++    )
++
++    assert build_execution_descriptors(product) == []
++
++
++def test_execution_descriptors_are_additive_and_preserve_raw_catalog_text():
++    product = LDProduct(
++        1,
++        "Кран шаровой LD Regula Ду 50",
++        "A-REG",
++        dn="50",
++        properties={
++            "properties": [
++                {"name": "Тип продукта", "values": ["Кран шаровой"]},
++                {"name": "Тип прохода", "values": ["Редуцированный"]},
++            ]
++        },
++    )
++
++    search_text = build_search_text(product)
++    lexical_text = build_lexical_text(product)
++
++    for text in (search_text, lexical_text):
++        assert "Кран шаровой LD Regula Ду 50" in text
++        assert "Тип прохода: Редуцированный" in text
++        assert "Исполнение: регулирующее исполнение, стандартный проход" in text
++        assert "стандартное исполнение" not in text

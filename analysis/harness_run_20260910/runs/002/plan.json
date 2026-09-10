@@ -1,0 +1,17 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-02-compatibility-evidence-reranking",
+  "hypothesis": "Advisory per-candidate compatibility evidence in reranker context will reduce unsafe specialized-variant selections without reducing candidate recall.",
+  "why_now": "Scored public failures are wrong variant selections; no retrieval miss is evidenced. OpenSpec artifacts are complete and strictly validated.",
+  "expected_effect": "Reranker sees satisfied, contradictory, and unverified requirements while retaining every retrieved candidate.",
+  "expected_metric_gain": "+3–10 pp public and +3–7 pp blind hard-pass; lower wrong-product/human-reject risk.",
+  "lesson_from_history": "Cycle 1’s fail-closed candidate gate regressed public and blind coverage, so this change neither filters nor reorders candidates and fails open on extraction errors.",
+  "candidate_hypotheses": [
+    "Advisory compatibility evidence for reranking (selected).",
+    "Legacy/designation alias normalization.",
+    "Schema expansion for flange, temperature, and pipe-OD semantics.",
+    "Index-time catalog enrichment and RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and validated proposal, spec, design, and implementation-only tasks under openspec/changes/cycle-02-compatibility-evidence-reranking/."
+}

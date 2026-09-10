@@ -1,0 +1,15 @@
+{
+  "decision": "FIX",
+  "summary": "The additive representation is a plausible, general retrieval experiment, but descriptor classification is too permissive for a catalog-wide index rebuild and its tests do not demonstrate the stated retrieval separation robustly.",
+  "issues": [
+    "`\"регулиру\" in evidence` classifies negated text such as «нерегулируемый» or «не регулирующий» as `регулирующее исполнение`. This creates incorrect catalogue facts and can promote unsuitable products for regulating requests.",
+    "The ball-valve gate is substring-based (`\"кран\"` and `\"шаров\"` anywhere in name/type), so incidental text can receive execution descriptors. For index-wide enrichment, use token/phrase-aware product-type validation.",
+    "Tests largely assert generated strings on synthetic products. The only ranking test uses the exact injected word `подземное`; it does not establish ordinary-versus-specialised separation against realistic morphology, conflicts, negation, or source catalog records. Thus it insufficiently tests the hypothesis and safety claim."
+  ],
+  "fix_plan": [
+    "Make descriptor detection phrase/token-aware and explicitly exclude negated regulating evidence before assigning the regulating descriptor; tighten the ball-valve type predicate.",
+    "Add focused tests for negated regulating language, near-miss/non-ball-valve text, and conflicting descriptor evidence.",
+    "Add retrieval tests with realistic tender forms (including ordinary versus specialised competing products) that prove the enrichment changes ranking in the intended direction while preserving nonmatching variants; then rerun the stated focused suite and public evaluation."
+  ],
+  "next_direction": "Catalog-side enrichment remains a credible direction, but treat generated descriptors as normalized facts: require conservative evidence rules and demonstrate end-to-end candidate separation rather than only descriptor presence."
+}

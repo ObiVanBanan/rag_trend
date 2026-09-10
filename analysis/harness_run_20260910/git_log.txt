@@ -1,0 +1,40 @@
+d0712a9 (HEAD -> review/harness-20260910, codex/rag-harness-rnd) Allow compensation cycles after infrastructure failures
+6aeea96 Test bounded planner external research
+2442f81 Add bounded planner web research budget
+6a1c74e harness: cycle 04 cycle-04-connection-notation-canonicalization
+c79a965 harness: cycle 03 cycle-03-query-canonicalization
+6ece199 Test post-push harness recovery
+6a9146f Route resume through post-push recovery
+93d5552 Recover accepted cycle after push failure
+763852b Make harness pushes best effort
+768d455 Document stage-level harness resume
+4fd9287 Test stage-level harness resume
+0f53c75 Route interrupted runs through stage resume
+db80810 Add stage-level harness resume
+ad2c6e0 Test supervisor-owned evaluation contract
+9915471 Preserve blocked experiments and attempted metrics
+55853b5 Keep supervisor evaluation outside agent tasks
+8dce959 Test planner exhaustion stopping rule
+1116b9d Allow graceful early stop when research is exhausted
+a73d7d9 Allow planner to stop when ideas are exhausted
+ec9e81d Document metric-driven harness objective
+a4fab53 Test per-cycle OpenSpec isolation
+6b9bece Protect per-cycle OpenSpec history
+b560f36 Test planner freedom and experiment memory
+ac453f4 Expose complete experiment memory to planner
+dea2b6a Give planner broader search freedom
+3734aaa Turn research context into open hypothesis menu
+a450037 Broaden harness objective to MVP accuracy
+d635987 Fix blind holdout workflow
+c53e3e8 Add blind query decrypt helper
+ea1bc21 Add encrypted blind query map
+497cb56 Document private blind holdout workflow
+8196df9 Test private blind holdout builder
+a843886 Add blind holdout CLI
+7ef5c55 Add private blind holdout builder
+5768c45 Add harness baseline report
+e166189 Update tender harness gold data
+6d78404 Use canonical tender labels in combined harness
+8e02ea5 Test public coverage non-regression
+d45f21e Keep final policy compatible with blind-only hook
+7fe118a Make 93 percent gate apply to public and blind checks

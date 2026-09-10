@@ -1,0 +1,426 @@
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 971745f..3e4a209 100644
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -1,7 +1,9 @@
+ from dataclasses import replace
++from types import SimpleNamespace
+ 
+ from .models import MatchResult, SearchCandidate, SelectedMatch
+ from .query_canonicalization import canonicalize_retrieval_query
++from .query_constraints import evaluate_selection_compatibility, resolve_selection_requirements
+ 
+ 
+ class NomenclatureMatcher:
+@@ -35,7 +37,7 @@ class NomenclatureMatcher:
+             for index, hit in enumerate(hits, 1)
+         ]
+ 
+-    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
++    def _build_selected_match(self, candidate: SearchCandidate, item, *, selection_source: str = "reranker") -> SelectedMatch:
+         return SelectedMatch(
+             candidate_id=item.candidate_id,
+             article=candidate.article,
+@@ -50,8 +52,36 @@ class NomenclatureMatcher:
+             pn=candidate.pn,
+             joining_type=candidate.joining_type,
+             url=candidate.url,
++            selection_source=selection_source,
+         )
+ 
++    def _apply_selection_fallback(self, query: str, candidates: list[SearchCandidate], rerank_result):
++        if rerank_result.status != "MATCHED" or not rerank_result.selected:
++            return rerank_result.selected, "reranker"
++
++        requirements = resolve_selection_requirements(query)
++        selected_item = rerank_result.selected[0]
++        selected_candidate = candidates[selected_item.candidate_id - 1]
++        selected_compatibility = evaluate_selection_compatibility(selected_candidate, requirements)
++        if not selected_compatibility.has_contradiction:
++            return rerank_result.selected, "reranker"
++
++        for index, candidate in enumerate(candidates, 1):
++            compatibility = evaluate_selection_compatibility(candidate, requirements)
++            if compatibility.is_fully_compatible:
++                fallback_item = SimpleNamespace(
++                    candidate_id=index,
++                    confidence=selected_item.confidence,
++                    reason=(
++                        f"compatibility_fallback: replaced candidate "
++                        f"{selected_item.candidate_id}; contradictions={sorted(selected_compatibility.contradicted)}"
++                    ),
++                )
++                remaining = [item for item in rerank_result.selected if item.candidate_id != index]
++                return [fallback_item, *remaining], "compatibility_fallback"
++
++        return rerank_result.selected, "reranker"
++
+     def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+         if not candidates:
+             return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+@@ -68,11 +98,13 @@ class NomenclatureMatcher:
+                 candidates=candidates,
+                 reason=str(exc),
+             )
++        reranked_selection, selection_source = self._apply_selection_fallback(query, candidates, rerank_result)
+         selected = []
+-        for item in rerank_result.selected:
++        for position, item in enumerate(reranked_selection):
+             candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+-        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
++            item_source = selection_source if position == 0 else "reranker"
++            selected.append(self._build_selected_match(candidate, item, selection_source=item_source))
++        best = candidates[reranked_selection[0].candidate_id - 1] if reranked_selection else None
+         return MatchResult(
+             query=query,
+             status=rerank_result.status,
+@@ -81,6 +113,7 @@ class NomenclatureMatcher:
+             candidates=candidates,
+             selected=selected,
+             reason=rerank_result.reason,
++            selection_source=selection_source,
+         )
+ 
+     def match_one(self, query: str) -> MatchResult:
+diff --git a/src/nomenclature_matcher/models.py b/src/nomenclature_matcher/models.py
+index 4e470c3..a4fc5ef 100644
+--- a/src/nomenclature_matcher/models.py
++++ b/src/nomenclature_matcher/models.py
+@@ -73,6 +73,7 @@ class SelectedMatch:
+     pn: Any = None
+     joining_type: str | None = None
+     url: str | None = None
++    selection_source: str = "reranker"
+ 
+ 
+ @dataclass
+@@ -84,6 +85,7 @@ class MatchResult:
+     candidates: list[SearchCandidate] = field(default_factory=list)
+     selected: list[SelectedMatch] = field(default_factory=list)
+     reason: str | None = None
++    selection_source: str = "reranker"
+ 
+ 
+ @dataclass
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 3c52290..6f20faa 100644
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -2,7 +2,7 @@ from __future__ import annotations
+ 
+ import json
+ import re
+-from dataclasses import asdict, dataclass
++from dataclasses import asdict, dataclass, field
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -37,6 +37,28 @@ class QueryConstraints(BaseModel):
+     ambiguous: bool = False
+     comment: str = ""
+ 
++
++@dataclass(frozen=True)
++class SelectionRequirements:
++    valve_type: str | None = None
++    control: str | None = None
++    bore_type: str | None = None
++
++
++@dataclass(frozen=True)
++class SelectionCompatibility:
++    satisfied: dict[str, str] = field(default_factory=dict)
++    contradicted: dict[str, str] = field(default_factory=dict)
++    unknown: dict[str, str] = field(default_factory=dict)
++
++    @property
++    def has_contradiction(self) -> bool:
++        return bool(self.contradicted)
++
++    @property
++    def is_fully_compatible(self) -> bool:
++        return not self.contradicted and not self.unknown
++
+     @field_validator("dn")
+     @classmethod
+     def _validate_dn(cls, value: int | None) -> int | None:
+@@ -297,6 +319,8 @@ def canonical_bore_type(text: Any) -> str | None:
+         return "full"
+     if "редуц" in value or "неполнопроход" in value:
+         return "reduced"
++    if "стандартнопроход" in value or "стандартный проход" in value:
++        return "standard"
+     return None
+ 
+ 
+@@ -335,6 +359,78 @@ def candidate_control(product: LDProduct) -> str | None:
+     return None
+ 
+ 
++def resolve_selection_requirements(query: str) -> SelectionRequirements:
++    value = _norm(query)
++    is_ball_valve = "кран" in value and "шар" in value
++    valve_type = None
++    if is_ball_valve:
++        special = (
++            ("underground", ("подзем",)),
++            ("regulating", ("регулиру", "regula")),
++            ("cryogenic", ("криоген",)),
++            ("gas", ("газов", "для газа")),
++        )
++        for resolved, phrases in special:
++            if any(phrase in value for phrase in phrases):
++                valve_type = resolved
++                break
++        if valve_type is None:
++            valve_type = "standard"
++
++    control = None
++    if "под электропривод" in value:
++        control = "electric_ready"
++    elif "электропривод" in value:
++        control = "electric"
++
++    bore_type = canonical_bore_type(value)
++    return SelectionRequirements(valve_type=valve_type, control=control, bore_type=bore_type)
++
++
++def verifiable_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
++def verifiable_candidate_bore_type(product: LDProduct) -> str | None:
++    return candidate_bore_type(product)
++
++
++def verifiable_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    return candidate_valve_type(product)
++
++
++def evaluate_selection_compatibility(
++    product: LDProduct,
++    requirements: SelectionRequirements,
++) -> SelectionCompatibility:
++    satisfied: dict[str, str] = {}
++    contradicted: dict[str, str] = {}
++    unknown: dict[str, str] = {}
++
++    checks = (
++        ("valve_type", requirements.valve_type, verifiable_candidate_valve_type(product)),
++        ("control", requirements.control, verifiable_candidate_control(product)),
++        ("bore_type", requirements.bore_type, verifiable_candidate_bore_type(product)),
++    )
++    for field_name, expected, actual in checks:
++        if expected is None:
++            continue
++        detail = f"{actual} == {expected}"
++        if actual is None:
++            unknown[field_name] = detail
++        elif actual == expected:
++            satisfied[field_name] = detail
++        else:
++            contradicted[field_name] = detail
++    return SelectionCompatibility(satisfied=satisfied, contradicted=contradicted, unknown=unknown)
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f..03a49c8 100644
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -61,6 +61,7 @@ def selected_debug_payload(selected: SelectedMatch) -> dict[str, Any]:
+         "rrf_score": selected.rrf_score,
+         "llm_confidence": selected.llm_confidence,
+         "reason": selected.reason,
++        "selection_source": selected.selection_source,
+     }
+ 
+ 
+@@ -74,6 +75,7 @@ def match_result_payload(result: MatchResult, *, include_debug: bool = True) ->
+     if include_debug:
+         payload["debug"] = {
+             "reason": result.reason,
++            "selection_source": result.selection_source,
+             "candidates": [
+                 candidate_debug_payload(candidate, index)
+                 for index, candidate in enumerate(result.candidates, 1)
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..66dc80d 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -186,3 +186,100 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def search_candidate(ld_id, name, *, score=0.01, properties=None):
++    return SearchCandidate(
++        ld_id=ld_id,
++        name=name,
++        article=f"A{ld_id}",
++        score=score,
++        properties=properties or [{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++        rrf_score=score,
++    )
++
++
++def test_post_rerank_fallback_replaces_ordinary_query_underground_choice():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD подземный полнопроходной ручное управление", score=0.03),
++        search_candidate(2, "Кран шаровый LD фланцевый полнопроходной ручное управление", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой фланцевый полнопроходной",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[1]
++    assert result.selected[0].ld_id == 2
++    assert result.selected[0].selection_source == "compatibility_fallback"
++    assert result.selection_source == "compatibility_fallback"
++
++
++def test_post_rerank_fallback_replaces_electric_ready_for_installed_electric_query():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD под электропривод полнопроходной", score=0.03),
++        search_candidate(2, "Кран шаровый LD с электроприводом полнопроходной", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой фланцевый с электроприводом",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[1]
++
++
++def test_post_rerank_fallback_replaces_explicit_bore_contradiction():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD редуцированный ручное управление", score=0.03),
++        search_candidate(2, "Кран шаровый LD полнопроходной ручное управление", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой полнопроходной",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[1]
++
++
++def test_post_rerank_fallback_preserves_selection_when_no_compatible_alternative():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD подземный полнопроходной ручное управление", score=0.03),
++        search_candidate(2, "Кран шаровый LD фланцевый", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой полнопроходной",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[0]
++    assert result.selection_source == "reranker"
++    assert result.selected[0].selection_source == "reranker"
++
++
++def test_post_rerank_fallback_preserves_query_candidates_scores_and_reranker_call():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [search_candidate(1, "Кран шаровый LD фланцевый ручное управление", score=0.03)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++    reranker = Reranker(result=rerank_result)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker).rerank_candidates(
++        "Кран шаровой фланцевый",
++        candidates,
++    )
++
++    assert result.query == "Кран шаровой фланцевый"
++    assert result.candidates is candidates
++    assert result.selected[0].rrf_score == 0.03
++    assert reranker.calls == [("Кран шаровой фланцевый", candidates)]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 7c2d3b3..4af90aa 100644
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -2,7 +2,10 @@ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+     candidate_pn_mpa,
++    evaluate_selection_compatibility,
+     evaluate_product,
++    resolve_selection_requirements,
++    verifiable_candidate_control,
+ )
+ 
+ 
+@@ -186,3 +189,50 @@ def test_unspecified_fields_do_not_filter_candidates():
+         ),
+     )
+     assert result.matches is True
++
++
++def test_selection_requirements_distinguish_electric_ready_from_installed_electric():
++    ready = resolve_selection_requirements("Кран шаровой фланцевый под электропривод DN80")
++    electric = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом DN80")
++
++    assert ready.control == "electric_ready"
++    assert electric.control == "electric"
++
++
++def test_selection_requirements_allowlist_positive_absent_and_ambiguous_wording():
++    ordinary = resolve_selection_requirements("Кран шаровой фланцевый DN80 полнопроходной")
++    unsupported = resolve_selection_requirements("Арматура запорная DN80")
++    ambiguous_code = resolve_selection_requirements("КШЦФЭ DN80")
++
++    assert ordinary.valve_type == "standard"
++    assert ordinary.bore_type == "full"
++    assert unsupported == resolve_selection_requirements("")
++    assert ambiguous_code == resolve_selection_requirements("")
++
++
++def test_verifiable_candidate_control_does_not_default_missing_control_to_manual():
++    candidate = product(properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
++
++    assert verifiable_candidate_control(candidate) is None
++
++
++def test_selection_compatibility_reports_satisfied_contradicted_and_unknown():
++    requirements = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом полнопроходной")
++    satisfied = product(
++        name="Кран шаровый LD фланцевый с электроприводом полнопроходной",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    contradicted = product(
++        name="Кран шаровый LD фланцевый под электропривод редуцированный",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    unknown = product(
++        name="Кран шаровый LD фланцевый",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    assert evaluate_selection_compatibility(satisfied, requirements).is_fully_compatible
++    result = evaluate_selection_compatibility(contradicted, requirements)
++    assert set(result.contradicted) == {"control", "bore_type"}
++    result = evaluate_selection_compatibility(unknown, requirements)
++    assert set(result.unknown) == {"control", "bore_type"}

@@ -1,0 +1,20 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-12-protected-flange-subtype-verification",
+  "hypothesis": "Explicit flange construction subtype verification will prevent unproved flat, loose, counter, or generic flanges from satisfying weld-neck/butt-weld requirements.",
+  "why_now": "Cycle 10 was blocked by a protected-file violation before evaluation, so this high-confidence schema gap remains scientifically untested. The new plan confines changes to production code, prompt assets, and focused tests.",
+  "expected_effect": "For explicit subtype queries, expose deterministic subtype evidence to reranking and return a match only for an affirmatively evidenced compatible selected candidate; preserve generic flange and non-flange behavior.",
+  "expected_metric_gain": "0–3.3 pp hard-pass coverage; primary value is reduced unsafe or unprovable selections.",
+  "lesson_from_history": "Broad gating and selection changes regressed or were neutral, retrieval canonicalization plateaued, and index enrichment regressed. This is a narrow, evidence-based retry of an unevaluated schema gap, not a repeat of the Cycle 10 contract failure.",
+  "candidate_hypotheses": [
+    "Protected-file-safe flange subtype verification (selected)",
+    "Guarded pipe-OD-to-DN alternate-query retry",
+    "Subject-matter-validated legacy designation equivalence mapping",
+    "Hybrid candidate-depth/RRF tuning"
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-12-protected-flange-subtype-verification/.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}

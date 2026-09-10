@@ -1,0 +1,17 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-08-verifiable-selection-fallback",
+  "hypothesis": "A fail-open deterministic post-rerank compatibility fallback will reduce explicit execution/control/bore conflicts by substituting only an already retrieved, fully evidenced compatible candidate.",
+  "why_now": "Current evidence points to final-selection conflicts rather than retrieval misses; this is a materially different, bounded alternative to prior broad gating, prompt changes, and index enrichment.",
+  "expected_effect": "Correct unsafe top selections while preserving the reranker outcome when no compatible, evidenced alternative exists.",
+  "expected_metric_gain": "+3.3–10 pp public hard-pass; +0–6.7 pp blind hard-pass.",
+  "lesson_from_history": "Cycle 1 broad filtering and Cycle 5 prompt-based selection changes regressed. This design never filters before reranking, uses literal deterministic cues, and falls back only to an existing compatible candidate. Cycle 7 index enrichment regressed, so no rebuild is requested.",
+  "candidate_hypotheses": [
+    "Fail-open deterministic post-rerank compatibility fallback (selected).",
+    "Flange-subtype schema expansion.",
+    "Subject-validated legacy designation mappings.",
+    "Catalog-side index enrichment or RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks at openspec/changes/cycle-08-verifiable-selection-fallback/. No product code was changed."
+}

@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-14-actuation-intent-retrieval-expansion`. Added guarded query-time canonicalization for explicit ball-valve actuation state: installed electric actuator wording gains installed-electric catalog vocabulary, actuator-ready wording gains `Под электропривод`, and ambiguous/generic/unsupported cases stay no-op for state terms. Existing matcher and hybrid retriever behavior remains unchanged: original normalized tender text is still used for reranking, output, and duplicate-query caching, while the alternate is only passed as the additive retrieval representation. Marked all 6 OpenSpec tasks complete.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_matcher.py tests/test_hybrid_retriever.py (34 passed)",
+    "python -m pytest -q (171 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

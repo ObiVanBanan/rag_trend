@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "summary": "Fixed the reviewer’s concrete safety issue by expanding `StructuralSignature` to distinguish `thread_type`, `working_medium`, `material_grade`, and `designation` evidence before candidate collapsing. Added focused tests proving those fields affect signatures and that candidates differing only by those reviewed constraints remain inside the reranker budget while true duplicates are deferred.",
+  "tests": [
+    "python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py -> 19 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-02-compatibility-evidence-reranking`. Hybrid rerank now derives advisory per-candidate compatibility evidence from extracted query constraints, preserves the retrieved candidate list/order, and fails open to the prior reranker path on extraction/validation/evidence errors. The reranker accepts optional evidence, renders satisfied/contradictory/unverified blocks, and the system prompt now explicitly guides against selecting contradictory specialized ball-valve variants over compatible candidates. OpenSpec tasks are 8/8 complete and the change validates strictly.",
+  "tests": [
+    "python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py tests/test_reranker.py: 34 passed",
+    "python -m pytest -q: 149 passed",
+    "openspec validate cycle-02-compatibility-evidence-reranking --strict: passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

@@ -1,0 +1,250 @@
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca84..f8e0294 100644
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -36,6 +36,25 @@ _SUPPORTED_ANCHOR_RE = re.compile(
+     r"\b(кран(?:\s+шаровой)?|клапан|задвижка|затвор|вентиль|фильтр|регулятор|фланец|муфта|переход|тройник|отвод)\b",
+     re.IGNORECASE,
+ )
++_BALL_VALVE_RE = re.compile(r"\b(?:кран\s+шаровой|шаровой\s+кран)\b", re.IGNORECASE)
++_STANDARD_BORE_CONTEXT_RE = re.compile(
++    r"\b(?:"
++    r"стандартн(?:ое|ого|ом|ым|ый|ого)?\s+исполнен(?:ие|ия|ии|ием)|"
++    r"исполнен(?:ие|ия|ии|ием)\s+стандартн(?:ое|ого|ом|ым)|"
++    r"стандартн(?:ый|ого|ом|ым)\s+проход|"
++    r"стандартно\s*проходн\w*|"
++    r"стандартнопроходн\w*"
++    r")\b",
++    re.IGNORECASE,
++)
++_CONFLICTING_BORE_RE = re.compile(
++    r"\b(?:"
++    r"полнопроходн\w*|полно\s*проходн\w*|полн(?:ый|ого|ом|ым)\s+проход|"
++    r"редуцированн\w*|неполнопроходн\w*|неполно\s*проходн\w*|суженн\w*\s+проход"
++    r")\b",
++    re.IGNORECASE,
++)
++_STANDARD_BORE_TERMS = ("стандартнопроходной", "стандартный проход")
+ _UNSUPPORTED_ANCHOR_RE = re.compile(
+     r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
+     re.IGNORECASE,
+@@ -64,6 +83,7 @@ def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++    canonical = _expand_standard_bore(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +158,19 @@ def _expand_connection_notation(text: str) -> str:
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _expand_standard_bore(text: str) -> str:
++    if not _BALL_VALVE_RE.search(text):
++        return text
++    if not _STANDARD_BORE_CONTEXT_RE.search(text):
++        return text
++    if _CONFLICTING_BORE_RE.search(text):
++        return text
++    additions = [term for term in _STANDARD_BORE_TERMS if not re.search(rf"\b{term}\b", text, re.IGNORECASE)]
++    if not additions:
++        return text
++    return f"{text} {' '.join(additions)}"
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a3cdc9d..0de6590 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -37,13 +37,14 @@ class BM25Store:
+ 
+ 
+ class VariantQdrantStore:
+-    def __init__(self):
++    def __init__(self, original_query="original"):
+         self.calls = []
++        self.original_query = original_query
+ 
+     def search(self, vector, limit):
+         self.calls.append((vector, limit))
+         query = vector[0]
+-        if query == "original":
++        if query == self.original_query:
+             return [
+                 SimpleNamespace(score=0.7, payload={"ld_id": 1, "name": "Original", "article": "O", "search_text": "dense-o"}),
+                 SimpleNamespace(score=0.2, payload={"ld_id": 2, "name": "Dup", "article": "D", "search_text": "dense-o"}),
+@@ -55,15 +56,17 @@ class VariantQdrantStore:
+ 
+ 
+ class VariantBM25Store:
+-    def __init__(self, fail_on_canonical=False):
++    def __init__(self, fail_on_canonical=False, original_query="original", canonical_query="canonical"):
+         self.calls = []
+         self.fail_on_canonical = fail_on_canonical
++        self.original_query = original_query
++        self.canonical_query = canonical_query
+ 
+     def search(self, query, limit):
+         self.calls.append((query, limit))
+-        if query == "canonical" and self.fail_on_canonical:
++        if query == self.canonical_query and self.fail_on_canonical:
+             raise RuntimeError("bm25 down")
+-        if query == "original":
++        if query == self.original_query:
+             return [
+                 BM25Candidate(ld_id=2, name="Dup", article="D", bm25_score=0.6, search_text="bm25-o"),
+                 BM25Candidate(ld_id=4, name="Bm25 original", article="B", bm25_score=0.3, search_text="bm25-o"),
+@@ -133,6 +136,21 @@ def test_hybrid_search_uses_ww_expanded_alternate_and_dedupes_by_ld_id():
+     assert len({candidate.ld_id for candidate in results}) == len(results)
+ 
+ 
++def test_hybrid_search_uses_standard_bore_alternate_and_dedupes_by_ld_id():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    embedder = EchoEmbedder()
++    original = "Кран шаровой стандартное исполнение DN80 PN16"
++    canonical = "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход"
++    bm25 = VariantBM25Store(original_query=original, canonical_query=canonical)
++    retriever = HybridRetriever(embedder, VariantQdrantStore(original_query=original), bm25, settings)
++
++    results = retriever.search(original, canonical_query=canonical)
++
++    assert embedder.calls == [original, canonical]
++    assert bm25.calls == [(original, 50), (canonical, 50)]
++    assert len({candidate.ld_id for candidate in results}) == len(results)
++
++
+ def test_hybrid_search_merges_variants_per_modality_before_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
+@@ -167,3 +185,23 @@ def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
+     assert {1, 2, 4}.issubset(by_id)
+     assert by_id[1].name == "Original"
+     assert by_id[4].name == "Bm25 original"
++
++
++def test_hybrid_search_keeps_original_standard_bore_candidates_when_alternate_fails():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    original = "Кран шаровой стандартное исполнение DN80 PN16"
++    canonical = "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход"
++    retriever = HybridRetriever(
++        EchoEmbedder(),
++        VariantQdrantStore(original_query=original),
++        VariantBM25Store(fail_on_canonical=True, original_query=original, canonical_query=canonical),
++        settings,
++    )
++    results = retriever.search(
++        original,
++        canonical_query=canonical,
++    )
++    by_id = {candidate.ld_id: candidate for candidate in results}
++    assert {1, 2, 4}.issubset(by_id)
++    assert by_id[1].name == "Original"
++    assert by_id[4].name == "Bm25 original"
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..4ca3df4 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -1,6 +1,7 @@
+ from types import SimpleNamespace
+ from nomenclature_matcher.matcher import NomenclatureMatcher
+ from nomenclature_matcher.models import SearchCandidate
++from nomenclature_matcher.serialization import match_result_payload
+ 
+ 
+ class Embedder:
+@@ -186,3 +187,32 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_match_one_hybrid_standard_bore_expansion_preserves_original_query_for_output_and_rerank():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="Кран стандартнопроходной", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="standard")], reason=None)
++    reranker = Reranker(result=rerank_result)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++    query = "  Кран шаровой стандартное исполнение DN80 PN16  "
++
++    result = matcher.match_one_hybrid_with_rerank(query)
++    payload = match_result_payload(result)
++
++    assert result.query == "Кран шаровой стандартное исполнение DN80 PN16"
++    assert payload["query"] == "Кран шаровой стандартное исполнение DN80 PN16"
++    assert hybrid.calls == [
++        (
++            "Кран шаровой стандартное исполнение DN80 PN16",
++            20,
++            "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход",
++        )
++    ]
++    assert reranker.calls[0][0] == "Кран шаровой стандартное исполнение DN80 PN16"
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570..3d58201 100644
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -25,6 +25,30 @@ def test_standalone_ww_connection_code_is_case_insensitive():
+     assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+ 
+ 
++def test_ball_valve_standard_execution_adds_standard_bore_vocabulary():
++    result = canonicalize_retrieval_query("Кран шаровой стандартное исполнение Ду80 Ру16 фланцевый")
++    assert result.source_query == "Кран шаровой стандартное исполнение Ду80 Ру16 фланцевый"
++    assert (
++        result.canonical_query
++        == "Кран шаровой стандартное исполнение DN 80 PN 16 фланцевый стандартнопроходной стандартный проход"
++    )
++
++
++def test_ball_valve_standard_execution_phrase_order_is_supported():
++    result = canonicalize_retrieval_query("Шаровой кран DN50 PN16 исполнение стандартное муфт.")
++    assert result.source_query == "Шаровой кран DN50 PN16 исполнение стандартное муфт."
++    assert (
++        result.canonical_query
++        == "Шаровой кран DN 50 PN 16 исполнение стандартное муфтовый стандартнопроходной стандартный проход"
++    )
++
++
++def test_ball_valve_standard_passage_adds_missing_catalog_native_vocabulary():
++    result = canonicalize_retrieval_query("Кран шаровой стандартный проход DN25 PN40")
++    assert result.source_query == "Кран шаровой стандартный проход DN25 PN40"
++    assert result.canonical_query == "Кран шаровой стандартный проход DN 25 PN 40 стандартнопроходной"
++
++
+ def test_mixed_script_designation_token_is_normalized_without_losing_constraints():
+     result = canonicalize_retrieval_query("Клапан 15C65HЖ DN50 PN16 стальной")
+     assert result.canonical_query == "Клапан 15С65НЖ DN 50 PN 16 стальной"
+@@ -43,6 +67,23 @@ def test_unsupported_or_ambiguous_text_does_not_gain_catalog_domain_terms():
+     assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+ 
+ 
++def test_standard_bore_expansion_is_blocked_without_explicit_ball_valve_context():
++    assert canonicalize_retrieval_query("Кран шаровой стандартный DN80 PN16").canonical_query == "Кран шаровой стандартный DN 80 PN 16"
++    assert canonicalize_retrieval_query("Клапан стандартное исполнение DN80 PN16").canonical_query == "Клапан стандартное исполнение DN 80 PN 16"
++    assert canonicalize_retrieval_query("Поставка стандартное исполнение DN80 PN16").canonical_query == "Поставка стандартное исполнение DN 80 PN 16"
++
++
++def test_standard_bore_expansion_is_blocked_by_conflicting_bore_type():
++    assert (
++        canonicalize_retrieval_query("Кран шаровой стандартное исполнение полнопроходной DN80 PN16").canonical_query
++        == "Кран шаровой стандартное исполнение полнопроходной DN 80 PN 16"
++    )
++    assert (
++        canonicalize_retrieval_query("Кран шаровой стандартное исполнение редуцированный проход DN80 PN16").canonical_query
++        == "Кран шаровой стандартное исполнение редуцированный проход DN 80 PN 16"
++    )
++
++
+ def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Кран шаровой AWW DN100 PN25").canonical_query == "Кран шаровой AWW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Кран шаровой WW2 DN100 PN25").canonical_query == "Кран шаровой WW2 DN 100 PN 25"

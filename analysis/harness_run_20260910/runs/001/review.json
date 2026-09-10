@@ -1,0 +1,16 @@
+{
+  "decision": "FIX",
+  "summary": "The approach is general and appropriately safety-focused, but the compatibility gate can exclude candidates using a product-type comparison that is not an explicit usable constraint, violating its own fail-open contract.",
+  "issues": [
+    "`evaluate_candidate_compatibility()` always compares `product_type`, even when it is `other`. Yet `usable_constraint_fields()` deliberately treats `other` as unusable. Thus an in-scope extraction with `product_type='other'` plus DN/connection can reject all recognized catalog products solely on the non-constraint type value.",
+    "The type fallback treats any nonempty unclassifiable name as positive type evidence, making it `contradictory` rather than `unverifiable`. This conflicts with the stated requirement that incomplete/unparseable catalog metadata must remain eligible and plausibly contributes to the 28% public wrong-NOT_FOUND rate.",
+    "Diagnostic `candidate_id` values are original retrieval positions, while reranker candidate IDs are renumbered after filtering. This makes audit records misleading unless explicitly modeled as retrieval rank."
+  ],
+  "fix_plan": [
+    "Only evaluate product type when `constraints.product_type != 'other'`; otherwise omit its check entirely.",
+    "Classify an unrecognized candidate type as unverifiable unless there is explicit, reliable evidence for a different canonical type; add focused tests with nonempty but unclassifiable names/properties.",
+    "Either rename diagnostic `candidate_id` to `retrieval_rank` or record both original retrieval rank and post-gate reranker ID; test a case where an earlier candidate is excluded.",
+    "Re-run the public harness and inspect gate diagnostics by excluded field before considering promotion."
+  ],
+  "next_direction": "Constraint gating remains a credible direction, but prioritize fail-open handling for incomplete or uncanonical catalog metadata and use per-field exclusion/abstention counts to identify which constraint is driving wrong-NOT_FOUND outcomes."
+}

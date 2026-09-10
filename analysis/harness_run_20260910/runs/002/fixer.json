@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "summary": "Fixed the reviewer’s concrete issues in compatibility evidence. Reranker summaries now treat inferred standard valve type and inferred manual control as unverified unless explicitly documented. Requested designations now become contradictory only when the candidate has a documented comparable designation that differs; sparse records report the designation as unverified. Added/updated focused tests for sparse ball-valve evidence, inferred defaults, absent designations, and matcher evidence propagation. No index rebuild was run or required.",
+  "tests": [
+    "python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py",
+    "python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py tests/test_matcher.py",
+    "python -m pytest -q"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
