@@ -33,17 +33,19 @@ def _metrics(**overrides: float) -> Metrics:
     return Metrics.from_summary(payload)
 
 
-def test_v2_config_uses_seven_cycles_and_model_tiering() -> None:
+def test_v2_config_uses_research_first_model_tiering() -> None:
     config = json.loads((ROOT / "harness_rag" / "config.json").read_text(encoding="utf-8"))
 
-    assert config["version"] == 2
-    assert config["max_cycles"] == 7
-    assert config["planner_model"] == config["reviewer_model"] == "gpt-5.6-terra"
-    assert config["worker_model"] == config["fixer_model"] == "gpt-5.5"
-    assert config["max_agent_calls"] == 18
-    assert config["max_research_calls"] == 2
-    assert config["max_reviewer_calls"] == 3
-    assert config["max_fixer_calls"] == 2
+    assert config["version"] == 3
+    assert config["max_cycles"] == 5
+    assert config["research_model"] == config["planner_model"] == "gpt-5.6-terra"
+    assert config["research_reasoning_effort"] == config["planner_reasoning_effort"] == "medium"
+    assert config["worker_model"] == config["reviewer_model"] == "gpt-5.5"
+    assert config["worker_reasoning_effort"] == config["reviewer_reasoning_effort"] == "low"
+    assert config["max_agent_calls"] == 28
+    assert config["max_research_calls"] == 7
+    assert config["max_reviewer_calls"] == 7
+    assert config["max_fixer_calls"] == 0
 
 
 def test_v2_entrypoints_route_directly_to_v2() -> None:
