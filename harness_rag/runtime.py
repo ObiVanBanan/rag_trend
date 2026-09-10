@@ -210,9 +210,13 @@ def rebuild_index(
     env.pop("RAG_HARNESS_AGENT", None)
     env["QDRANT_COLLECTION_ALIAS"] = alias
     result = run([str(x) for x in config["index_command"]], check=False, env=env)
-    (run_dir / f"reindex_{used + 1}.log").write_text(result.stdout or "", encoding="utf-8")
+    log_path = run_dir / f"reindex_{used + 1}.log"
+    log_path.write_text(result.stdout or "", encoding="utf-8")
     if result.returncode != 0:
-        raise HarnessError("full index rebuild failed")
+        tail = (result.stdout or "")[-4000:]
+        raise HarnessError(
+            f"full index rebuild failed ({result.returncode}); see {log_path}\n{tail}"
+        )
 
     state["index_builds_used"] = used + 1
     state.setdefault("index_history", []).append(
