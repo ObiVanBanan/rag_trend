@@ -33,6 +33,18 @@ def _latest_safe_hidden_summary(run_dir: Path) -> dict[str, Any]:
     return dict(payload.get("summary") or {})
 
 
+def _scientific_iterations(state: dict[str, Any]) -> int:
+    if "scientific_iterations" in state:
+        return int(state.get("scientific_iterations") or 0)
+    return sum(1 for row in state.get("history") or [] if bool(row.get("scientifically_evaluated")))
+
+
+def _attempts_started(state: dict[str, Any]) -> int:
+    if "attempts_started" in state:
+        return int(state.get("attempts_started") or 0)
+    return int(state.get("cycle") or 0)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Show compact Harness v2 state, scores and model budget usage.")
     parser.add_argument("--state-dir", default=None)
@@ -51,7 +63,8 @@ def main() -> int:
     print("=== HARNESS V2 ===")
     print("state:", root)
     print("campaign:", state.get("campaign_id"))
-    print("completed cycles:", state.get("cycle"))
+    print("attempts started:", _attempts_started(state))
+    print("scientific iterations:", _scientific_iterations(state))
     print("champion:", state.get("champion_commit"))
     print("public hard-pass:", _rate(public))
     print("hidden-validation hard-pass:", _rate(hidden))
@@ -77,7 +90,8 @@ def main() -> int:
 
     if active:
         print("\n=== ACTIVE / PAUSED ===")
-        print("cycle:", active.get("cycle"))
+        print("attempt:", active.get("attempt_id", active.get("cycle")))
+        print("experiment:", active.get("experiment_id"))
         print("stage:", active.get("stage"))
         print("action:", active.get("action"))
         print("error:", active.get("paused_error_code"))
@@ -93,9 +107,10 @@ def main() -> int:
     print("\n=== CURRENT CAMPAIGN HISTORY ===")
     history = list(state.get("history") or [])
     if not history:
-        print("(no completed v2 cycles yet)")
+        print("(no completed v2 attempts yet)")
     for row in history:
-        cycle = row.get("cycle")
+        attempt = row.get("attempt_id", row.get("cycle"))
+        science = row.get("scientific_iteration")
         decision = row.get("decision")
         family = row.get("family")
         pub = row.get("public_hard_pass_rate")
@@ -104,8 +119,8 @@ def main() -> int:
         dh = row.get("hidden_delta_cases")
         code = row.get("error_code")
         print(
-            f"cycle {cycle}: {decision} family={family} public={pub} hidden={hid} "
-            f"delta_cases=({dp},{dh}) error={code}"
+            f"attempt {attempt}: {decision} science={science} family={family} public={pub} hidden={hid} "
+            f"delta_cases=({dp},{dh}) error={code} experiment={row.get('experiment_id')}"
         )
         if row.get("hypothesis"):
             print("  hypothesis:", row.get("hypothesis"))
