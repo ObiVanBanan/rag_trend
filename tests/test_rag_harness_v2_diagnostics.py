@@ -67,6 +67,22 @@ def test_hidden_safety_rejection_is_refined_without_changing_policy() -> None:
     assert "wrong_not_found_rate" in reason
 
 
+def test_flat_safe_candidate_reaches_cheap_validator() -> None:
+    champion_public = _metrics()
+    champion_hidden = _metrics(hard_pass_rate=0.8666666667)
+
+    accepted, reason = _accept_candidate(
+        candidate_public=champion_public,
+        candidate_hidden=champion_hidden,
+        champion_public=champion_public,
+        champion_hidden=champion_hidden,
+    )
+
+    assert accepted is True
+    assert "guardrails held flat" in reason
+    assert "cheap validator" in reason
+
+
 def test_safety_regression_helper_reports_all_regressed_metrics() -> None:
     champion = _metrics()
     candidate = _metrics(false_match_rate=0.1, human_reject_rate=0.2)

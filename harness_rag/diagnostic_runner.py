@@ -5,6 +5,7 @@ from typing import Any
 from . import v2 as core
 from . import v2_runner
 from .policy import Metrics
+from .research_first_runner import install_research_first
 
 
 _ORIGINAL_ACCEPT_CANDIDATE = core.accept_candidate
@@ -59,7 +60,7 @@ def _public_precheck(candidate: Metrics, champion: Metrics) -> tuple[bool, str]:
     regressions = _safety_regressions(candidate, champion)
     if regressions:
         return False, _safety_reason("public", candidate, champion)
-    return True, "public gate passed"
+    return True, "public regression guardrail passed"
 
 
 def _accept_candidate(
@@ -77,6 +78,13 @@ def _accept_candidate(
     )
     if accepted:
         return accepted, reason
+
+    # The old public/hidden sets are deliberately regression guardrails now.
+    # A safe flat result is allowed to reach the cheap validator, which judges
+    # whether the mechanism has credible value on the broader real-tender corpus.
+    if reason == "no measured improvement over champion":
+        return True, "benchmark guardrails held flat; defer real-tender incremental value to cheap validator"
+
     if reason == "public safety metrics regressed":
         return False, _safety_reason("public", candidate_public, champion_public)
     if reason == "blind safety metrics regressed":
@@ -167,8 +175,9 @@ def _rollback_and_record_diagnostic(
 
 
 def main() -> int:
-    # Keep the v2 stage engine and scientific accounting unchanged. These
-    # monkeypatches only enrich rejection reasons and terminal diagnostics.
+    # Install the simplified research-first pipeline, then retain metric-aware
+    # guardrails/diagnostics and scientific accounting from v2_runner.
+    install_research_first()
     core._public_precheck = _public_precheck
     core.accept_candidate = _accept_candidate
     core._rollback_and_record = _rollback_and_record_diagnostic
