@@ -19,7 +19,7 @@ PLANNER_V2_SCHEMA: dict[str, Any] = {
         "success_signal": {"type": "string"},
         "candidate_hypotheses": {
             "type": "array",
-            "minItems": 2,
+            "minItems": 0,
             "maxItems": 5,
             "items": {"type": "string"},
         },
@@ -152,7 +152,7 @@ CYCLE
 CORE CONTRACT
 - Read the repository before choosing a direction.
 - Choose the highest-value uncertainty or bottleneck, not the most familiar implementation pattern.
-- Compare at least two materially different hypothesis families before selecting one.
+- For IMPLEMENT, compare at least two materially different hypothesis families before selecting one and return them in `candidate_hypotheses`. For RESEARCH or DONE this list may be empty; do not invent alternatives merely to satisfy formatting.
 - Use the compact experiment memory and persistent hypothesis ledger. Do not treat infrastructure/protocol failures as evidence against a scientific hypothesis.
 - `unknown` is not `negative` and missing catalog evidence is not a default fact.
 - Public failures are development feedback; never hardcode benchmark ids, expected LD ids, or one-off benchmark strings.
