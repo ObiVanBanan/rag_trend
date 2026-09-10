@@ -125,6 +125,23 @@ REVIEW_V2_SCHEMA: dict[str, Any] = {
 }
 
 
+def _taxonomy_digest(raw: str) -> str:
+    """Keep high-signal taxonomy context in the prompt; details remain JIT-readable in repo."""
+    try:
+        payload = json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return raw[:4000]
+    if not isinstance(payload, dict):
+        return str(payload)[:4000]
+    digest = {
+        "semantics": payload.get("semantics"),
+        "summary": payload.get("summary"),
+        "recommended_priority": payload.get("recommended_priority"),
+        "details_file": "data/tender_queries_v1_unresolved_taxonomy.json",
+    }
+    return json.dumps(digest, ensure_ascii=False, indent=2)
+
+
 def planner_v2_prompt(
     *,
     cycle: int,
@@ -141,6 +158,11 @@ def planner_v2_prompt(
     unscored_count: int,
     budgets: dict[str, Any],
 ) -> str:
+    # `research_context` stays in the signature because the engine owns its path,
+    # but the full document is intentionally not copied into every strong-model
+    # prompt. Agents can read it from the repository only when it is relevant.
+    _ = research_context
+    taxonomy_digest = _taxonomy_digest(taxonomy)
     return f"""You are the Planner for Harness v2. Planning uses the strongest model; implementation is delegated to a cheaper model.
 
 GOAL
@@ -150,7 +172,7 @@ CYCLE
 {cycle}/{max_cycles}
 
 CORE CONTRACT
-- Read the repository before choosing a direction.
+- Read the repository before choosing a direction, but load detail just-in-time rather than rereading every large artifact.
 - Choose the highest-value uncertainty or bottleneck, not the most familiar implementation pattern.
 - For IMPLEMENT, compare at least two materially different hypothesis families before selecting one and return them in `candidate_hypotheses`. For RESEARCH or DONE this list may be empty; do not invent alternatives merely to satisfy formatting.
 - Use the compact experiment memory and persistent hypothesis ledger. Do not treat infrastructure/protocol failures as evidence against a scientific hypothesis.
@@ -175,15 +197,14 @@ RESEARCH ACTION
 - Do not create or modify OpenSpec/product files.
 - Use it only when repository evidence cannot settle a high-value premise.
 - Research calls remaining: {budgets.get('research_calls_remaining')}.
+- The source/idea library lives at `harness_rag/RESEARCH_CONTEXT.md`; read only the relevant section when deciding whether research is needed.
 
 RESOURCE STATE
 {json.dumps(budgets, ensure_ascii=False, indent=2)}
 
-RESEARCH CONTEXT (reference library; do not browse it unless RESEARCH is selected)
-{research_context}
-
-CURRENT FAILURE TAXONOMY
-{taxonomy}
+FAILURE TAXONOMY DIGEST
+{taxonomy_digest}
+Read `data/tender_queries_v1_unresolved_taxonomy.json` only if a selected direction needs per-case evidence.
 
 CURRENT CHAMPION PUBLIC METRICS
 {json.dumps(public_metrics, ensure_ascii=False, indent=2)}
@@ -211,6 +232,7 @@ Return the required JSON. For DONE or RESEARCH, `change_name` may be empty. For 
 
 
 def researcher_v2_prompt(*, question: str, research_context: str, prior_research: list[dict[str, Any]]) -> str:
+    _ = research_context
     return f"""You are the bounded Research step for Harness v2. Use the same strong reasoning model as planning, but do not edit repository files.
 
 QUESTION
@@ -218,14 +240,12 @@ QUESTION
 
 RULES
 - Resolve only this question. Do not perform a broad literature review.
+- Before browsing, inspect only the relevant section of `harness_rag/RESEARCH_CONTEXT.md` if it may contain a useful source or prior lesson.
 - Open at most 3 distinct external sources. Prefer primary standards, official manufacturer docs, papers, or authoritative technical documentation.
 - Stop as soon as the evidence is sufficient to accept, reject, or narrow the premise.
 - Record exact URLs and the specific claim each source supports. Distinguish primary/official from secondary/community evidence.
 - Do not inspect hidden holdouts, private paths, credentials, or benchmark answers.
 - Do not convert weak secondary evidence into a universal engineering rule.
-
-REFERENCE LIBRARY
-{research_context}
 
 PRIOR RESEARCH
 {json.dumps(prior_research, ensure_ascii=False, indent=2)}
