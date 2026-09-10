@@ -1,5 +1,10 @@
 {
-  "max_cycles": 15,
+  "version": 2,
+  "max_cycles": 7,
+  "max_agent_calls": 18,
+  "max_research_calls": 2,
+  "max_reviewer_calls": 3,
+  "max_fixer_calls": 2,
   "max_index_builds": 5,
   "coverage_floor": 0.93,
   "planner_model": "gpt-5.6-terra",
@@ -10,19 +15,17 @@
   "worker_reasoning_effort": "low",
   "fixer_model": "gpt-5.5",
   "fixer_reasoning_effort": "low",
+  "worker_network": true,
   "public_dataset": "data/harness_gold_combined.json",
   "taxonomy": "data/tender_queries_v1_unresolved_taxonomy.json",
   "test_command": ["python", "-m", "pytest", "-q"],
   "index_command": ["python", "scripts/build_index.py", "--csv", "ld_products_full_nomenclature.csv"],
-  "protected_from_planner": [
-    "src/",
-    "scripts/",
-    "tests/",
-    "data/"
-  ],
   "notes": {
-    "models": "Model aliases are the requested defaults. Override them on the CLI if the local Codex installation uses different aliases.",
-    "holdout": "The blind holdout is intentionally not configured here. Pass it at runtime from outside the repository.",
+    "models": "Planning, bounded research and review use the strongest configured model. Implementation and one-pass fixes use the cheaper configured model.",
+    "campaign": "Harness v2 runs at most seven campaign cycles. Infrastructure pauses do not advance a cycle; resume continues the saved stage.",
+    "holdout": "--holdout is adaptive hidden validation and stays outside the repository. --final-holdout is optional, sealed, distinct, and used only after the campaign reaches its goal.",
+    "research": "Research is a separate bounded action with at most two strong-model calls per campaign and at most three reported external sources per call.",
+    "review": "Reviewer and Fixer are conditional. Public and hidden metric gates run first so obviously bad candidates do not spend strong-model review budget.",
     "indexing": "Agents may request a rebuild but must not run a full rebuild themselves. The supervisor owns the global budget of five rebuilds."
   }
 }
