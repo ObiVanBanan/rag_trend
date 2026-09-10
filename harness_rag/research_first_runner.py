@@ -17,6 +17,14 @@ RESEARCH_QUERY_DATA = "data/tender_queries_kontur_5files.json.gz"
 RESEARCH_GOLD_DATA = "data/tender_queries_kontur_5files_labels_gold_v1.json.gz"
 RESEARCH_REVIEW_DATA = "data/tender_queries_kontur_5files_review_pool.json.gz"
 RESEARCH_PROVISIONAL_DATA = "data/tender_queries_kontur_5files_provisional_not_found.json.gz"
+RESEARCH_README = "data/tender_queries_kontur_5files_README.md"
+_HARNESS_DATA_FILES = {
+    RESEARCH_QUERY_DATA,
+    RESEARCH_GOLD_DATA,
+    RESEARCH_REVIEW_DATA,
+    RESEARCH_PROVISIONAL_DATA,
+    RESEARCH_README,
+}
 
 
 def _research_first_prompt(
@@ -224,6 +232,10 @@ def _run_research_first(
 
 
 def install_research_first() -> None:
+    # These data files are harness evidence, not product mutations. Mark them as
+    # harness-only so an existing external champion state can safely adopt a
+    # commit that only adds/changes this research corpus plus harness code.
+    core.HARNESS_ONLY_EXACT.update(_HARNESS_DATA_FILES)
     core._execute_active = _run_research_first
     core.planner_v2_prompt = _planner_after_research_prompt
     core.PLANNER_V2_SCHEMA = _planner_schema_after_research()

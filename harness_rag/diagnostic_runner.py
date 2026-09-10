@@ -79,10 +79,14 @@ def _accept_candidate(
     if accepted:
         return accepted, reason
 
-    # The old public/hidden sets are deliberately regression guardrails now.
-    # A safe flat result is allowed to reach the cheap validator, which judges
-    # whether the mechanism has credible value on the broader real-tender corpus.
+    # The old public/hidden sets are regression guardrails now. Only a genuinely
+    # flat-or-better result may reach the cheap real-tender validator; secondary
+    # benchmark degradation is still a rejection rather than being mislabeled flat.
     if reason == "no measured improvement over champion":
+        if candidate_public.public_score() < champion_public.public_score():
+            return False, "public secondary benchmark metrics regressed"
+        if candidate_hidden.public_score() < champion_hidden.public_score():
+            return False, "hidden validation secondary benchmark metrics regressed"
         return True, "benchmark guardrails held flat; defer real-tender incremental value to cheap validator"
 
     if reason == "public safety metrics regressed":

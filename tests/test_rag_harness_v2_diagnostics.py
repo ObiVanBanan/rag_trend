@@ -83,6 +83,22 @@ def test_flat_safe_candidate_reaches_cheap_validator() -> None:
     assert "cheap validator" in reason
 
 
+def test_secondary_benchmark_regression_does_not_masquerade_as_flat() -> None:
+    champion_public = _metrics()
+    champion_hidden = _metrics(hard_pass_rate=0.8666666667)
+    candidate_public = _metrics(unknown_answer_rate=0.1)
+
+    accepted, reason = _accept_candidate(
+        candidate_public=candidate_public,
+        candidate_hidden=champion_hidden,
+        champion_public=champion_public,
+        champion_hidden=champion_hidden,
+    )
+
+    assert accepted is False
+    assert reason == "public secondary benchmark metrics regressed"
+
+
 def test_safety_regression_helper_reports_all_regressed_metrics() -> None:
     champion = _metrics()
     candidate = _metrics(false_match_rate=0.1, human_reject_rate=0.2)
