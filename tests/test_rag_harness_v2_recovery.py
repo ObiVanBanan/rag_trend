@@ -14,6 +14,7 @@ def test_preflight_failure_spends_no_agent_call_or_cycle(monkeypatch, tmp_path: 
     holdout = tmp_path / "hidden.json"
     holdout.write_text("{}", encoding="utf-8")
     state_dir = tmp_path / "state"
+    agent_calls: list[str] = []
 
     monkeypatch.setattr(
         sys,
@@ -36,18 +37,18 @@ def test_preflight_failure_spends_no_agent_call_or_cycle(monkeypatch, tmp_path: 
     def fail_preflight(**kwargs):
         raise HarnessError("Qdrant unavailable at http://localhost:6333: connection refused")
 
+    def unexpected_agent_call(**kwargs):
+        agent_calls.append(str(kwargs.get("role")))
+        pytest.fail("preflight failure must happen before any LLM call")
+
     monkeypatch.setattr(v2, "_preflight", fail_preflight)
-    monkeypatch.setattr(
-        v2,
-        "_agent_call",
-        lambda **kwargs: pytest.fail("preflight failure must happen before any LLM call"),
-    )
+    monkeypatch.setattr(v2, "_agent_call", unexpected_agent_call)
 
     assert v2.main() == v2.TEMP_FAILURE_EXIT
-
-    state = json.loads((state_dir / "state.json").read_text(encoding="utf-8"))
-    assert state["cycle"] == 0
-    assert state["usage"]["agent_calls"] == 0
+    assert agent_calls == []
+    # A brand-new campaign has no durable state yet, so a failed preflight need
+    # not create state.json. Most importantly, no cycle or model call started.
+    assert not (state_dir / "state.json").exists()
     preflight = json.loads((state_dir / "preflight.json").read_text(encoding="utf-8"))
     assert preflight["ok"] is False
     assert preflight["error_code"].startswith("INFRA_")
