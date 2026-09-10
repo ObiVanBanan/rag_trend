@@ -15,11 +15,13 @@ ROOT = Path(__file__).resolve().parents[1]
 class EvaluationError(RuntimeError):
     """Typed evaluator failure with full diagnostics kept out of agent memory."""
 
-    def __init__(self, code: str, returncode: int, stdout: str) -> None:
+    def __init__(self, code: str, returncode: int, stdout: str, log_path: str | None = None) -> None:
         self.code = code
         self.returncode = returncode
         self.stdout = stdout
-        super().__init__(f"{code}: evaluation failed ({returncode})")
+        self.log_path = log_path
+        suffix = f"; see {log_path}" if log_path else ""
+        super().__init__(f"{code}: evaluation failed ({returncode}){suffix}")
 
 
 def _classify_eval_failure(stdout: str) -> str:
@@ -80,10 +82,14 @@ def run_eval(
         env=env,
     )
     if result.returncode != 0:
+        diagnostics = result.stdout or ""
+        log_path = output_dir / f"{tag}_error.log"
+        log_path.write_text(diagnostics, encoding="utf-8")
         raise EvaluationError(
-            _classify_eval_failure(result.stdout or ""),
+            _classify_eval_failure(diagnostics),
             result.returncode,
-            result.stdout or "",
+            diagnostics,
+            str(log_path),
         )
 
     payload = json.loads(output.read_text(encoding="utf-8"))
