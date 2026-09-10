@@ -30,6 +30,22 @@ def _experiment_id(row: dict[str, Any], active: dict[str, Any]) -> str:
     return f"{safe_family}-{digest}"
 
 
+_ORIGINAL_PERSIST_ACTIVE = core._persist_active
+
+
+def _persist_active_with_ids(state: dict[str, Any], state_path: Path, active: dict[str, Any]) -> None:
+    plan = dict(active.get("plan") or {})
+    if plan and not active.get("experiment_id"):
+        active["experiment_id"] = _experiment_id(
+            {
+                "family": plan.get("hypothesis_family") or "experiment",
+                "hypothesis": plan.get("hypothesis") or plan.get("research_question") or "",
+            },
+            active,
+        )
+    _ORIGINAL_PERSIST_ACTIVE(state, state_path, active)
+
+
 def _ensure_execution_counters(state: dict[str, Any]) -> None:
     history = [row for row in state.get("history") or [] if isinstance(row, dict)]
     max_attempt = max(
@@ -147,6 +163,7 @@ def main() -> int:
     # Reuse the proven stage engine, but replace completion accounting so the
     # scientific budget is independent from orchestration attempts.
     core._record_cycle = _record_cycle_scientific
+    core._persist_active = _persist_active_with_ids
 
     args = core._parser().parse_args()
     config = core._read_json(core.CONFIG_PATH)
