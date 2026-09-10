@@ -21,7 +21,11 @@ class EvaluationError(RuntimeError):
         self.stdout = stdout
         self.log_path = log_path
         suffix = f"; see {log_path}" if log_path else ""
-        super().__init__(f"{code}: evaluation failed ({returncode}){suffix}")
+        # Harness v2 detects dependency pauses from concise exception text. Keep
+        # the exact typed code while adding a stable infrastructure marker; the
+        # full provider/Qdrant traceback remains only in the run log.
+        marker = ": external dependency connection error" if code.startswith("INFRA_") else ""
+        super().__init__(f"{code}{marker}: evaluation failed ({returncode}){suffix}")
 
 
 def _classify_eval_failure(stdout: str) -> str:
@@ -37,6 +41,12 @@ def _classify_eval_failure(stdout: str) -> str:
     )
     if "qdrant" in text and any(marker in text for marker in connection_markers):
         return "INFRA_QDRANT_UNAVAILABLE"
+    if any(marker in text for marker in ("http 429", "status 429", "rate limit", "rate_limit", "quota", "too many requests")):
+        return "INFRA_MODEL_PROVIDER_LIMIT"
+    if any(marker in text for marker in ("http 401", "http 403", "status 401", "status 403", "permissiondenied", "forbidden")) and any(
+        provider in text for provider in ("openai", "deepseek", "api", "model")
+    ):
+        return "INFRA_MODEL_PROVIDER_AUTH"
     if any(marker in text for marker in ("temporary failure in name resolution", "name or service not known", "network is unreachable")):
         return "INFRA_NETWORK_UNAVAILABLE"
     if any(marker in text for marker in ("connecttimeout", "readtimeout", "timed out", "timeout")):
