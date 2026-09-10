@@ -250,8 +250,8 @@ def main() -> int:
     config = _read_json(CONFIG_PATH)
     _apply_cli_overrides(config, args)
 
-    if not 1 <= int(config["max_cycles"]) <= 15:
-        raise SystemExit("max_cycles must be in 1..15")
+    if not 1 <= int(config["max_cycles"]) <= 20:
+        raise SystemExit("max_cycles must be in 1..20")
     if not 0 <= int(config["max_index_builds"]) <= 5:
         raise SystemExit("max_index_builds must be in 0..5")
     if not clean():

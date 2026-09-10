@@ -28,3 +28,11 @@ The 93% value is a success target, not a requirement to burn all 15 cycles. The 
 The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
 
 The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+## Infrastructure compensation
+
+The normal scientific budget is 15 cycles. When a cycle reaches implementation
+but cannot be evaluated solely because required infrastructure is unavailable,
+such as Qdrant being down, the supervisor may run up to two replacement cycles
+beyond cycle 15. These are compensation for unevaluated infrastructure failures,
+not additional budget for repeatedly testing failed hypotheses.
