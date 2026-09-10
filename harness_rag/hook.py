@@ -132,7 +132,7 @@ def run_hidden_eval(
     tag: str,
     env_overrides: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    """Run adaptive hidden validation and retain aggregate metrics only."""
+    """Run hidden validation, delete rows, and persist only a safe aggregate."""
     result = run_eval(
         dataset=dataset,
         output_dir=output_dir,
@@ -142,7 +142,15 @@ def run_hidden_eval(
     raw_output = Path(result["raw_output"])
     summary = dict(result["summary"])
     raw_output.unlink(missing_ok=True)
-    return {"summary": summary}
+
+    # Keep aggregate candidate history inspectable after state.active is cleared.
+    # No hidden query text, labels, ids or per-case failures are retained here.
+    summary_output = output_dir / f"{tag}_summary.json"
+    summary_output.write_text(
+        json.dumps({"summary": summary}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return {"summary": summary, "summary_output": str(summary_output)}
 
 
 def check_dataset_outside_repo(dataset: Path) -> None:
