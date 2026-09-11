@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": [
+        "ACCEPT",
+        "FIX",
+        "REJECT"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fix_plan": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_direction": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision",
+    "summary",
+    "issues",
+    "fix_plan",
+    "next_direction"
+  ],
+  "additionalProperties": false
+}

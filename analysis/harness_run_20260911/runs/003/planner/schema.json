@@ -1,0 +1,110 @@
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "IMPLEMENT",
+        "DONE"
+      ]
+    },
+    "change_name": {
+      "type": "string"
+    },
+    "hypothesis_family": {
+      "type": "string"
+    },
+    "hypothesis": {
+      "type": "string"
+    },
+    "why_now": {
+      "type": "string"
+    },
+    "expected_effect": {
+      "type": "string"
+    },
+    "expected_cases_delta": {
+      "type": "integer",
+      "minimum": -30,
+      "maximum": 30
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "risk": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "success_signal": {
+      "type": "string"
+    },
+    "candidate_hypotheses": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "needs_reindex": {
+      "type": "boolean"
+    },
+    "planning_depth": {
+      "type": "string",
+      "enum": [
+        "MICRO",
+        "NORMAL",
+        "ARCHITECTURAL"
+      ]
+    },
+    "research_question": {
+      "type": "string"
+    },
+    "plan_summary": {
+      "type": "string"
+    },
+    "mechanism_family": {
+      "type": "string"
+    },
+    "history_relation": {
+      "type": "string",
+      "enum": [
+        "NEW_MECHANISM",
+        "NEW_LAYER",
+        "REFINEMENT",
+        "REPEAT",
+        "NONE"
+      ]
+    },
+    "information_gain": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "change_name",
+    "hypothesis_family",
+    "hypothesis",
+    "why_now",
+    "expected_effect",
+    "expected_cases_delta",
+    "confidence",
+    "risk",
+    "success_signal",
+    "candidate_hypotheses",
+    "needs_reindex",
+    "planning_depth",
+    "research_question",
+    "plan_summary",
+    "mechanism_family",
+    "history_relation",
+    "information_gain"
+  ],
+  "additionalProperties": false
+}

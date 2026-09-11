@@ -1,0 +1,1649 @@
+2026-09-10T17:50:27.366278Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a08c71-3bc0-7c53-87ba-d2d6d98983d2.tmp-1789062627009125742: line 2547: syntax error near unexpected token `('
+
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a08c71-3bc0-7c53-87ba-d2d6d98983d2
+--------
+user
+You are the Researcher for Harness v2. This research happens BEFORE the Planner chooses a hypothesis.
+
+PRODUCT GOAL
+# Goal
+
+Improve the usefulness, accuracy and reliability of the LD nomenclature-matching service on real incoming tender nomenclature.
+
+The product task is simple: a user supplies a tender nomenclature line, the service should find the most appropriate LD catalog product or useful set of candidates. If the available evidence is insufficient or no suitable LD product exists, an honest `NOT_FOUND`/uncertain outcome is better than confidently returning an unrelated product.
+
+The current matcher architecture is not sacred. Research and implementation may change query understanding, parsing, aliases, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, catalog/index representation, confidence logic, external enrichment, model choice, or the larger matching pipeline when evidence supports it.
+
+## Research-first cycle
+
+Every new attempt follows one simple sequence:
+
+1. **Research** — inspect the current champion, durable experiment memory and the real-tender working corpus. Use external sources only when useful. Identify recurring failure classes and promising solution directions before a hypothesis is selected.
+2. **Planner** — use the fresh research and the product goal to choose one bounded falsifiable implementation hypothesis, or stop with `DONE` when no credible direction remains.
+3. **Implementer** — implement only that hypothesis. The default worker is the cheaper `gpt-5.5` with low reasoning.
+4. **Test + evaluation** — run deterministic tests and the existing public/hidden regression gates. Rebuild the index only when required.
+5. **Cheap validator** — only candidates that survive the metric guardrails receive one `gpt-5.5` low read-only ACCEPT/REJECT mechanism/value check.
+6. **Promote or rollback** — an accepted candidate becomes the new champion. A rejected candidate rolls back to the current champion, not the original baseline.
+
+There is no mandatory second research pass, no strong Reviewer pass and no Fixer loop in the default pipeline.
+
+## Real-tender working corpus
+
+The primary material for discovering what to improve is the new Kontur tender corpus:
+
+- 253 unique real tender nomenclature rows;
+- 90 high-confidence first-pass labels: 72 `MATCHED`, 18 `NOT_FOUND`;
+- 130 unresolved/review cases;
+- 33 probable `NOT_FOUND` cases that still require stronger catalog evidence.
+
+The 90 first-pass labels are useful supporting evidence but are not claimed to be exhaustive final truth. The 130 + 33 unresolved cases are especially valuable for discovering missing capabilities. Research should reason about recurring classes of inputs rather than memorize individual rows.
+
+Runtime lookup of a manufacturer/model/designation on the public internet, followed by query enrichment before local LD retrieval, is an allowed hypothesis family when the data supports it. It is not a prescribed solution and should compete with simpler alternatives.
+
+## Benchmark role
+
+The existing manually verified public GOLD and adaptive hidden validation are **regression guardrails**, not the main research target. They are intentionally small and should not dominate hypothesis generation.
+
+Agents must not mine benchmark answer ids or one-off benchmark strings to choose fixes. The Planner receives aggregate benchmark metrics but not the public case-level failure list under the research-first runner.
+
+A candidate is rejected if it materially violates the existing public/hidden coverage or safety gates. A candidate whose old benchmark stays safely flat may continue to the cheap validator, because its main value may be on broader real-tender inputs not represented by the small benchmark.
+
+The optional sealed final holdout remains separate and is evaluated only at campaign end under the existing supervisor rules.
+
+## Evolution semantics
+
+The project evolves cumulatively:
+
+`champion -> hypothesis -> evaluate -> ACCEPT -> new champion -> next hypothesis`
+
+or
+
+`champion -> hypothesis -> evaluate -> REJECT -> rollback to champion -> next hypothesis`.
+
+Every new accepted experiment therefore builds on previously accepted improvements. The original baseline is historical reference, not the reset point for each cycle.
+
+## Guardrails
+
+- Preserve uncertainty: missing catalog evidence is not a negative fact and must not silently become a default.
+- Do not hardcode benchmark ids, GOLD answers, known LD ids or one-off tender strings.
+- Prefer mechanisms that plausibly improve a class of real tender inputs.
+- Do not return a product merely to avoid `NOT_FOUND`; low-value or technically incompatible matches are product failures.
+- Infrastructure/provider failures do not count as scientific evidence and must preserve the active stage for resume.
+- Respect agent-call, research-call and index-build budgets.
+
+
+ATTEMPT
+1
+
+CURRENT CHAMPION METRICS — REGRESSION GUARDRAILS, NOT THE RESEARCH TARGET
+Public: {'evaluated': 120, 'hard_gate_cases': 30, 'core_cases': 25, 'negative_cases': 5, 'hard_pass_rate': 0.8333333333333334, 'core_pass_rate': 0.8, 'negative_pass_rate': 1.0, 'wrong_not_found_rate': 0.0, 'false_match_rate': 0.0, 'unknown_answer_rate': 0.008333333333333333, 'human_reject_rate': 0.008333333333333333, 'known_positive_hit_rate': 0.4166666666666667, 'verdict_counts': {'PASS': 30, 'FAIL_HUMAN_REJECT': 1, 'FAIL_UNKNOWN_PRODUCT_DATA': 1, 'UNSCORED': 81, 'FAIL_WRONG_PRODUCT': 6, 'FAIL_PIPELINE': 1}}
+Hidden validation aggregate: {'hard_gate_cases': 30, 'hard_pass_rate': 0.8666666666666667, 'false_match_rate': 0.0, 'human_reject_rate': 0.0, 'wrong_not_found_rate': 0.0, 'unknown_answer_rate': 0.0}
+
+PRIMARY REAL-TENDER WORKING CORPUS
+- `data/tender_queries_kontur_5files_review_pool.json.gz` — 130 unresolved/review cases from real tenders.
+- `data/tender_queries_kontur_5files_provisional_not_found.json.gz` — 33 probable NOT_FOUND cases that still need stronger catalog evidence.
+- `data/tender_queries_kontur_5files.json.gz` — all 253 unique tender nomenclature rows.
+- `data/tender_queries_kontur_5files_labels_gold_v1.json.gz` — 90 high-confidence first-pass labels (72 MATCHED, 18 NOT_FOUND). Use only as a sanity/reference set; it is not the optimization target and is not claimed to be exhaustive final truth.
+
+The data files are gzip-compressed JSON to keep repository diffs small. Inspect them with Python/gzip or `gzip -dc`. Do not dump the whole corpus into context. Sample, group and inspect only enough rows to identify recurring failure classes and high-value opportunities.
+
+COMPACT EXPERIMENT EVIDENCE
+[{'cycle': 3, 'family': 'query_canonicalization', 'hypothesis': 'Deterministic, domain-preserving query canonicalization before hybrid retrieval will improve matching of compact, mixed-script, and noisy tender nomenclature without changing final-selection semantics.', 'decision': 'ACCEPTED', 'scientifically_evaluated': True, 'reason': 'candidate improves champion without regression', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Cycle 1’s candidate filtering regressed public/blind coverage, and Cycle 2’s reranker compatibility evidence regressed public safety. This proposal changes only query-time candidate recall, preserves candidate decision semantics, and fails open to original retrieval.', 'details_ref': 'legacy-cycle-3'}, {'cycle': 4, 'family': 'query_canonicalization', 'hypothesis': 'Expanding standalone WW (weld-weld) notation into Russian welded-connection vocabulary in the additive retrieval query will improve recall for terse technical tenders without changing selection semantics.', 'decision': 'ACCEPTED', 'scientifically_evaluated': True, 'reason': 'candidate improves champion without regression', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Cycles 1–2 showed selection-adjacent constraint changes can regress coverage/safety. Cycle 3 improved both public and blind metrics through additive deterministic canonicalization, so this is a narrow extension of the successful mechanism.', 'details_ref': 'legacy-cycle-4'}, {'cycle': 5, 'family': 'index_representation', 'hypothesis': 'An evidence-first DeepSeek reranker rubric will reduce technically conflicting or unprovable final selections by prioritizing explicit tender requirements and catalog evidence over retrieval rank.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'blind safety metrics regressed', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Broad candidate gating (Cycle 1) and compatibility evidence injection (Cycle 2) regressed, so this change adds neither filtering nor extraction. Cycles 3–4 validated additive canonicalization but plateaued on aggregate metrics.', 'details_ref': 'legacy-cycle-5'}, {'cycle': 6, 'family': 'schema_semantics', 'hypothesis': 'Cleanly canonicalizing unambiguous repeated Russian flanged-end shorthand such as `фл/фл` into one catalog-native connection term improves candidate recall without changing selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'blind safety metrics regressed', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Selection-adjacent changes regressed in cycles 1, 2, and 5. Additive canonicalization was the only accepted mechanism in cycles 3–4. Broad `FF` expansion remains excluded because cycle 4 identified it as ambiguous.', 'details_ref': 'legacy-cycle-6'}, {'cycle': 7, 'family': 'index_representation', 'hypothesis': 'A deterministic, execution-aware catalog document representation will improve retrieval of ordinary versus specialised ball-valve variants while preserving selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'blind coverage regressed', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8, 'lesson': 'Cycles 1, 2, and 5 established that candidate gating and selection/prompt changes can regress safety or coverage. Cycles 3–4 showed deterministic retrieval changes can help, while Cycle 6 showed narrow query-only expansion alone is not reliably sufficient. No prior cycle has tested catalog-side structural enrichment or used an index rebuild.', 'details_ref': 'legacy-cycle-7'}, {'cycle': 8, 'family': 'reranking', 'hypothesis': 'A fail-open deterministic post-rerank compatibility fallback will reduce explicit execution/control/bore conflicts by substituting only an already retrieved, fully evidenced compatible candidate.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'no measured improvement over champion', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Cycle 1 broad filtering and Cycle 5 prompt-based selection changes regressed. This design never filters before reranking, uses literal deterministic cues, and falls back only to an existing compatible candidate. Cycle 7 index enrichment regressed, so no rebuild is requested.', 'details_ref': 'legacy-cycle-8'}, {'cycle': 9, 'family': 'index_representation', 'hypothesis': 'Explicit ball-valve standard-execution wording can be deterministically expanded into standard-bore catalog vocabulary to improve candidate recall without changing selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'no measured improvement over champion', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Cycles 1, 2, 5, and 8 found selection-adjacent changes harmful or neutral. Additive canonicalization was accepted in cycles 3–4; broad shorthand expansion and index enrichment were rejected, so this is a distinct, narrow query-time experiment.', 'details_ref': 'legacy-cycle-9'}, {'cycle': 10, 'family': 'schema_semantics', 'hypothesis': 'Explicitly model and affirmatively verify flange construction subtype so generic or flat flanges cannot satisfy weld-neck/butt-weld requirements.', 'decision': 'REJECTED', 'scientifically_evaluated': False, 'error_code': 'EXECUTION_ERROR', 'reason': "Interrupted candidate changed protected harness/GOLD files: ['src/nomenclature_matcher/golden_rules.py']", 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Broad gating and selection/reranker changes regressed or were neutral; retrieval canonicalization plateaued and catalog enrichment regressed. This is a distinct, narrowly scoped deterministic requirement.', 'details_ref': 'legacy-cycle-10'}, {'cycle': 11, 'family': 'reranking', 'hypothesis': 'A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.', 'decision': 'IMPLEMENTATION_FAILED', 'scientifically_evaluated': False, 'error_code': 'INFRA_DEPENDENCY_UNAVAILABLE', 'reason': 'Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Selection-adjacent experiments regressed or were neutral, while additive canonicalization was accepted in cycles 3–4. Cycle 10 was blocked by a protected-file violation before evaluation, so it does not disprove schema expansion. Index enrichment regressed, so this avoids rebuilding.', 'details_ref': 'legacy-cycle-11'}, {'cycle': 12, 'family': 'schema_semantics', 'hypothesis': 'Explicit flange construction subtype verification will prevent unproved flat, loose, counter, or generic flanges from satisfying weld-neck/butt-weld requirements.', 'decision': 'IMPLEMENTATION_FAILED', 'scientifically_evaluated': False, 'error_code': 'INFRA_DEPENDENCY_UNAVAILABLE', 'reason': 'Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Broad gating and selection changes regressed or were neutral, retrieval canonicalization plateaued, and index enrichment regressed. This is a narrow, evidence-based retry of an unevaluated schema gap, not a repeat of the Cycle 10 contract failure.', 'details_ref': 'legacy-cycle-12'}, {'cycle': 13, 'family': 'candidate_diversification', 'hypothesis': 'Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable ordinary/control variants currently crowded out by near-duplicate specialised variants.', 'decision': 'IMPLEMENTATION_FAILED', 'scientifically_evaluated': False, 'error_code': 'INFRA_DEPENDENCY_UNAVAILABLE', 'reason': 'Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Selection, gating, prompt, and index-enrichment experiments regressed or were neutral. Cycles 11–12 were infrastructure-inconclusive, while the current redundancy evidence supports this new pre-rerank candidate-pool experiment.', 'details_ref': 'legacy-cycle-13'}, {'cycle': 14, 'family': 'actuation_semantics', 'hypothesis': 'A deterministic, additive retrieval representation that distinguishes an installed electric actuator from actuator-ready intent will improve candidate recall for explicit ball-valve control-state requests without changing final-selection behavior.', 'decision': 'IMPLEMENTATION_FAILED', 'scientifically_evaluated': False, 'error_code': 'INFRA_DEPENDENCY_UNAVAILABLE', 'reason': 'Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Cycles 3–4 validated narrow additive canonicalization. Cycles 1, 2, 5, 6, 7, 8, and 9 made gating, prompt/selection, broad expansion, or index changes ineffective or harmful. Cycles 11–13 were infrastructure-inconclusive due to unavailable Qdrant, not evidence against their hypotheses.', 'details_ref': 'legacy-cycle-14'}, {'cycle': 15, 'family': 'actuation_semantics', 'hypothesis': 'Explicit installed-electric versus actuator-ready wording can produce a bounded alternate retrieval query that improves recall without changing selection behavior.', 'decision': 'IMPLEMENTATION_FAILED', 'scientifically_evaluated': False, 'error_code': 'INFRA_DEPENDENCY_UNAVAILABLE', 'reason': 'Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': "Additive canonicalization was the only accepted family; gating, reranking, selection, and index changes were neutral or harmful. Cycle 14's Qdrant failure does not disprove this hypothesis.", 'details_ref': 'legacy-cycle-15'}, {'cycle': 16, 'family': 'candidate_diversification', 'hypothesis': 'Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable variants currently crowded out by near-duplicate catalog entries.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'public coverage regressed', 'public_hard_pass_rate': 0.8, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Gating, prompts, selection fallbacks, and catalog enrichment were harmful or neutral. Cycles 11–15 were infrastructure-inconclusive; Cycle 13 did not test this hypothesis scientifically.', 'details_ref': 'legacy-cycle-16'}, {'cycle': 17, 'family': 'actuation_semantics', 'hypothesis': 'Explicit installed-electric versus actuator-ready ball-valve wording can produce one bounded state-specific retrieval alternate that improves recall without changing selection behavior.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'reason': 'The added expansion is mechanically sound but its key semantic premise is not reliable in the current catalog, so it is not a safe state-specific retrieval improvement.', 'public_hard_pass_rate': 0.8666666666666667, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Narrow additive canonicalization was the only accepted family. Gating, selection, prompt, index-enrichment, and diversification changes were neutral or harmful; this is an untested retry after Qdrant outages.', 'details_ref': 'legacy-cycle-17'}, {'cycle': 1, 'family': 'alias_mapping', 'hypothesis': '30с41нж can be expanded only if an LD catalog family is technically equivalent to its defining construction.', 'decision': 'RESEARCHED', 'scientifically_evaluated': False, 'reason': 'Do not add a designation-to-LD gate-valve alias or treat LD ball valves as substitutions for 30с41нж. Match only if a tender explicitly permits an alternative valve type; otherwise this is a catalog no-match for the LD corpus.', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'lesson': 'Reject the premise of an LD-family equivalence. 30с41нж is a steel wedge-gate family at PN 1.6 MPa (PN16), offered across DN sizes; manufacturer documentation identifies its flanged version and wedge construction. One manufacturer explicitly calls it flanged with a rising stem. However, the supplied LD catalog contains no gate-valve products: its only names containing «задвижк» are six LD Стриж ball valves described as «под задвижку», all with interflange connections. A ball valve, even at ma...', 'details_ref': 'runs/001'}, {'cycle': 2, 'family': 'reranking', 'hypothesis': 'One bounded retry of an identical reranker request after transport or structured-output failure will recover transient `RERANK_FAILED` outcomes without changing retrieval or selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'error_code': 'PUBLIC_REGRESSION', 'reason': 'public safety metrics regressed', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'public_delta_cases': 0, 'hidden_delta_cases': 0, 'lesson': 'Candidate failed the cheap public gate; no reviewer or hidden-validation call was spent.', 'details_ref': 'runs/002'}, {'cycle': 1, 'family': 'alias_mapping', 'hypothesis': 'Unambiguous threaded endpoint and standard inch-size tender notation can be expanded into additive catalog-native threaded/DN retrieval vocabulary, improving viable ball-valve candidate recall without changing selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'error_code': 'METRIC_GATE_REJECT', 'reason': 'hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.040000 (delta +0.040000)', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'public_delta_cases': 0, 'hidden_delta_cases': 0, 'lesson': 'Candidate reached both metric sets but did not beat the current champion safely.', 'details_ref': 'runs/001'}, {'cycle': 2, 'family': 'alias_mapping', 'hypothesis': 'A deterministic, additive retrieval alternate that suppresses only safely identifiable supplier/model/order-code noise will improve recall for branded tender nomenclature while preserving explicit technical constraints and all final-selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'error_code': 'METRIC_GATE_REJECT', 'reason': 'hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.040000 (delta +0.040000)', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'public_delta_cases': 0, 'hidden_delta_cases': 0, 'lesson': 'Candidate reached both metric sets but did not beat the current champion safely.', 'details_ref': 'runs/002'}, {'cycle': 3, 'family': 'alias_mapping', 'hypothesis': 'For configured, trusted manufacturer/model sources, adding only explicitly evidenced generic product facts to one alternate retrieval query will improve recall on branded tender nomenclature without changing selection semantics.', 'decision': 'REJECTED', 'scientifically_evaluated': True, 'error_code': 'METRIC_GATE_REJECT', 'reason': 'hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.080000 (delta +0.080000)', 'public_hard_pass_rate': 0.8333333333333334, 'hidden_validation_hard_pass_rate': 0.8666666666666667, 'public_delta_cases': 0, 'hidden_delta_cases': 0, 'lesson': 'Candidate reached both metric sets but did not beat the current champion safely.', 'details_ref': 'runs/003'}]
+
+PRIOR RESEARCH
+[{'question': 'A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.', 'findings': 'The GOST source lists 108 mm as a standard outside diameter; the pipe source identifies DN 108×3.5 as DN 100. The plan limits conversion to explicit OD context and this single documented mapping.', 'sources': [{'url': 'https://meganorm.ru/mega_doc/norm/gost_gosudarstvennyj-standart/0/gost_10704-91_mezhgosudarstvennyy_standart_truby_stalnye.html'}, {'url': 'https://tavago.ru/truby-i-fitingi/stalnye-truby/truby-stalnye-elektrosvarnye-gost-10704-91/truba-stal-elektrosvarnaya-pryamoshovnaya-dn-108kh3-5-du-100-gost-10704-91.html'}], 'origin': 'legacy-cycle-11'}, {'question': 'Does the 30с41нж designation define a flanged, wedge-gate, rising-stem DN/PN class that has a technically equivalent LD catalog family, rather than only a superficially similar gate valve?', 'findings': 'Reject the premise of an LD-family equivalence. 30с41нж is a steel wedge-gate family at PN 1.6 MPa (PN16), offered across DN sizes; manufacturer documentation identifies its flanged version and wedge construction. One manufacturer explicitly calls it flanged with a rising stem. However, the supplied LD catalog contains no gate-valve products: its only names containing «задвижк» are six LD Стриж ball valves described as «под задвижку», all with interflange connections. A ball valve, even at matching DN/PN, is not technically equivalent to a flanged rising-stem wedge gate valve. Also, DN is not encoded as one fixed value in 30с41нж; it must be supplied separately.', 'decision_impact': 'Do not add a designation-to-LD gate-valve alias or treat LD ball valves as substitutions for 30с41нж. Match only if a tender explicitly permits an alternative valve type; otherwise this is a catalog no-match for the LD corpus.', 'unresolved': 'The designation’s exact connection configuration should still be verified against the procurement specification: the MZTA family page lists both welded and flanged connections, while the conventional 30с41нж product documentation describes the flanged rising-stem variant. This does not affect the lack of an LD wedge-gate family.', 'sources': [{'url': 'https://mztpa.ru/catalog/products/1/5/15', 'claim': 'Official manufacturer page: 30с41нж is a steel wedge-gate family at PN 1.6 MPa; it gives DN 50–400 examples, identifies flanged dimensions, and lists flanged and welded connection options for the family.', 'quality': 'official', 'confidence': 0.96}, {'url': 'https://www.ptza.ru/30s41nzh-zadvizhka-klinovaya/', 'claim': 'Official manufacturer page: 30с41нж is described as a flanged wedge gate valve with a rising stem, PN 1.6 MPa, with a DN range rather than one fixed DN.', 'quality': 'official', 'confidence': 0.94}], 'origin': 'cycle-01'}, {'question': 'What recurring real-tender failure classes suggest the next bounded hypothesis?', 'findings': 'Derived the 130 review cases from the intact full corpus minus the 90 labels and 33 provisional cases because the provided review-pool gzip has CRC/length corruption. Main classes: (1) 71 ball-valve rows, heavily concentrated in threaded inch-size, endpoint, handle, and third-party model nomenclature (IVR/VALTEC); current canonicalization produces no meaningful retrieval alternate for these. The LD catalog contains 647 brass ball valves and itself expresses inch↔DN forms, so this is a genuine catalog-language mismatch. (2) 33 filter and many service/maintenance rows (installation, removal, repair, ТО) are requests for work, consumables, or water-treatment equipment rather than a sellable LD catalog item; retrieval should not be pushed toward an unrelated product. (3) 20 butterfly-valve rows mix generic viable requests with third-party model/designation requests; 356 LD butterfly products exist, so model text may obscure otherwise useful family/DN/PN evidence. Promising directions: additive canonicalization of unambiguous threaded endpoint spellings (ВР/НР, вн-вн) and standard inch sizes into catalog-native DN/connection vocabulary; a conservative query-intent route for explicit service/maintenance actions; and a separately bounded manufacturer/model enrichment or model-token de-emphasis experiment for third-party branded products.', 'decision_impact': 'Prefer a retrieval-only, fail-open threaded/inch canonicalization experiment: it addresses the largest repeated viable-product class, aligns with the only previously accepted mechanism, and leaves reranking/selection unchanged. Keep service-intent routing as a distinct safety hypothesis rather than combining it, since prior selection-adjacent changes regressed. Treat external model lookup as lower-volume and higher-latency unless a later sample shows generic normalization cannot recover branded rows.', 'unresolved': 'The review-pool gzip is corrupt locally, though the full corpus supports exact reconstruction by id count. Need evaluate whether catalog-native endpoint/inch expansion improves candidate recall without crowding out candidates; do not assume branded models are technically interchangeable. Service rows may be procurement line items that intentionally include a product, so any intent router must be explicit-action-only and conservative.', 'sources': [], 'origin': 'attempt-01-research-first', 'kind': 'research-first'}, {'question': 'What recurring real-tender classes and current-pipeline gaps should inform the next bounded hypothesis?', 'findings': 'The intact corpus reconstructs 130 review rows (253 total minus 90 labelled and 33 provisional NOT_FOUND). Main classes: 53 ball-valve rows, including 42 threaded and 35 third-party-brand/model rows; 20 butterfly-valve rows, several branded; 33 filter rows, many cartridges/water-treatment rather than LD грязевики; and 18 explicit installation/repair/maintenance rows. The catalog has substantial ball-valve (14,433), butterfly-valve (356), and filter (129) coverage, but no matching third-party brand/model tokens (IVR, VALTEC, Tecofi, Kvant, etc.), so opaque model/order text can dominate retrieval despite otherwise usable generic requirements. Current canonicalization produces alternates for only 40/130 review rows. It also has a general lexical integrity flaw: its quantity/clause terminator can interpret the substring «ШТ.» inside a technical designation as a quantity marker, truncating «КШТ.11.050.025.ф/ф» to «Кран БИВАЛ К». The original query remains in retrieval, but the added alternate is degraded. Promising directions: (1) a bounded, additive model/order-token de-emphasis alternate that retains explicit product family, size, endpoint, material, control, and pressure facts without asserting cross-brand equivalence; (2) a generic token-boundary/quantity-parser correction so technical designations cannot be clipped; (3) separately, a conservative intent route for unambiguous service-only work or non-catalog consumables; (4) only if simpler normalization fails, runtime manufacturer/model enrichment for repeated branded families.', 'decision_impact': 'Prefer testing retrieval-only supplier/model-noise de-emphasis, with the untouched original query retained and no inferred specifications or final-selection changes. It targets a repeated 35-row class and differs from the previously rejected endpoint/inch expansion. Treat the designation-truncation repair as a small correctness fix or separate experiment. Keep service/consumable abstention isolated: some work lines include an underlying product, and prior selection-adjacent changes were risky.', 'unresolved': 'The review-pool gzip remains CRC-corrupt, though its intended set is exactly reconstructable from the other supplied files. Branded model strings may encode material, porting, or connection details not stated elsewhere; a de-emphasis alternate must therefore be additive and preserve all explicit non-model tokens. Filter rows need a product-vs-consumable distinction before any NOT_FOUND routing.', 'sources': [], 'origin': 'attempt-02-research-first', 'kind': 'research-first'}, {'question': 'What recurring real-tender failure classes and bounded directions should inform the next hypothesis?', 'findings': 'The intact corpus reconstructs the 130 review rows (253 total minus 90 labelled minus 33 provisional NOT_FOUND); the supplied review-pool gzip remains CRC-corrupt. The largest viable-looking unresolved class is branded threaded ball valves: 53 ball-valve rows, 42 with third-party brands, including 30 IVR rows. Current canonicalization emits an alternate for only 40/130 review rows, and none for representative IVR/VALTEC rows. Official manufacturer data shows the opaque IVR 954/956 codes carry material retrieval facts: full-bore threaded ball valve and F/F versus M/F endpoints; VALTEC VT.214 likewise identifies a ball valve with an internal-thread endpoint. LD has hundreds of brass threaded ball-valve products, including explicit В-В/В-Н and handle variants, so this is a real vocabulary/underspecification gap—not evidence that foreign branded products are automatically interchangeable with LD.\n\nA separate correctness defect is confirmed: the clause terminator treats the embedded «ШТ.» in a technical designation as a quantity token, reducing «Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ» to «Кран БИВАЛ К». This should be repaired by token-boundary parsing, not a designation-specific rule. The pool also contains 33 filter/water-treatment rows and explicit work rows; many are consumables or service requests, but a few service lines embed a product, so broad abstention is unsafe.\n\nPromising directions: (1) a bounded, fail-open runtime manufacturer/model enrichment path for extractable brand+model queries, using a trusted manufacturer source and adding only explicitly documented generic facts to an alternate retrieval query; retain the original query and final selection semantics. (2) A small generic quantity/clause-boundary correction that preserves technical designations in retrieval alternates. (3) A later conservative product-intent/uncertainty route restricted to unambiguous service-only or consumable-only queries. Do not repeat deterministic inch/endpoint expansion or generic supplier-token suppression: both have already been rejected by hidden safety gates.', 'decision_impact': 'The strongest new product opportunity is source-backed, additive enrichment of repeated branded model nomenclature, because a model code can resolve endpoint and bore facts that the tender omits. It has external dependency, latency, caching, and source-trust costs, and must never assert LD equivalence or override reranking. If the Planner wants the lowest-risk bounded experiment instead, select the generic designation/quantity parser repair; it is a correctness fix with narrower expected corpus impact. Keep service abstention separate from either retrieval experiment.', 'unresolved': 'Whether external enrichment improves LD candidate recall enough to justify runtime dependency is unmeasured; manufacturer documents establish source-product properties, not a suitable LD substitute. The CRC-corrupt review-pool artifact should be repaired separately, although its intended membership is reconstructable from the other corpus files.', 'sources': [{'url': 'https://www.ivrvalvole.it/media/pdf/schede/IVR_954_956_957.pdf', 'claim': 'Official IVR technical sheet identifies IVR 954/956/957 as full-bore threaded ball valves and distinguishes F/F, M/F, and M/M endpoints; it also provides Russian terminology.', 'quality': 'official', 'confidence': 0.98}, {'url': 'https://valtec.ru/document/Catalog_VALTEC.pdf?69a765ad99bad=', 'claim': 'Official VALTEC catalogue identifies VT.214 as a ball valve with a steel handle and internal-to-internal threaded connection.', 'quality': 'official', 'confidence': 0.95}], 'origin': 'attempt-03-research-first', 'kind': 'research-first'}]
+
+RESEARCH CONTRACT
+You are not choosing the next implementation. Your job is to build the best current causal understanding of the problem before the Planner chooses an experiment.
+
+Start with evidence synthesis, not idea generation.
+
+1. Inspect the current implementation, the real-task working corpus, compact experiment evidence, hypothesis/mechanism ledger available to the Planner, and prior research.
+2. Treat every scientifically evaluated experiment as evidence about the system: what causal intervention changed, what end-to-end behavior improved, what regressed, what stayed flat, and whether different implementations produced the same directional outcome.
+3. Group experiments by causal mechanism, not by filenames, feature names, or superficial implementation differences. If two changes act through essentially the same causal path, treat them as the same mechanism family.
+4. Look explicitly for cross-experiment patterns. Repeated similar outcome signatures are evidence about the current causal model even when individual hypotheses had different names.
+5. Do not optimize an intermediate metric in isolation. If a mechanism repeatedly improves an intermediate capability while failing end-to-end utility, reconsider the causal bottleneck instead of automatically proposing another nearby variant.
+6. Do not repeat a tested mechanism merely because another implementation is available. A refinement is worthwhile only when new evidence changes a causal premise, directly addresses an observed failure mechanism, or provides substantial new information.
+7. When a local family appears saturated, broaden the search space. Upstream, downstream, adjacent, or architectural mechanisms are admissible; current pipeline boundaries are not sacred.
+8. Prefer experiments with high expected information gain: ask which bounded experiment would most reduce uncertainty between competing explanations of observed behavior.
+9. Use real-task data to discover problem classes and practical value. Public and hidden-validation aggregates are regression evidence, not sources of benchmark-specific implementation ideas.
+10. Do not prescribe a favored architecture in advance. Query understanding, parsing, aliases, retrieval, reranking, catalog representation, model use, external data, runtime enrichment, confidence/decision logic, representation changes, or pipeline restructuring are admissible only when evidence supports them.
+11. Runtime lookup of a manufacturer/model/designation on the public internet and enrichment of an underspecified user query is allowed as one possible family, but it is NOT a prescribed answer.
+12. Use the internet only when it can materially improve the next decision. Open at most 3 external sources and prefer primary/official evidence.
+13. Do not edit repository files. Do not inspect hidden examples. Do not invent benchmark-specific rules or one-off mappings.
+
+OUTPUT CONTRACT
+- `evidence_patterns`: compact cross-experiment patterns. Cite prior experiment/cycle identifiers when available; distinguish observation from interpretation and give confidence.
+- `candidate_directions`: 2-4 materially meaningful directions when evidence supports them. For each, state a stable causal `mechanism_family`, its relation to history, the causal mechanism, competing explanation, falsifier, and expected information gain.
+- `findings`: concise synthesis of the strongest observations from code + real tender corpus + experiment evidence.
+- `decision_impact`: tell the Planner what uncertainty/trade-off deserves the next experiment, without selecting an implementation for it.
+- If evidence does not support another nearby refinement, say so explicitly. Do not manufacture novelty for its own sake.
+
+Return the required JSON only.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+codex
+{"question":"What causal mechanisms remain promising for improving real-tender LD matching after the current champion and prior experiments?","findings":"I’m inspecting the active pipeline and a compact sample of the real-tender corpus, then will synthesize only evidence-backed directions.","decision_impact":"Research in progress; no implementation choice is being made.","unresolved":"Whether remaining failures are primarily query representation, catalog coverage, or final decision calibration.","sources":[],"evidence_patterns":[],"candidate_directions":[]}
+exec
+/bin/bash -lc "pwd && rg --files src scripts data | sed -n '1,220p' && rg -n \"canonical|alternate|rerank|NOT_FOUND|quantity|clause|model|brand|hybrid\" src/nomenclature_matcher scripts -g '*.py'" in /workspaces/ML-Cancer-Data
+ exited 127 in 54ms:
+/workspaces/ML-Cancer-Data
+/bin/bash: line 1: rg: command not found
+/bin/bash: line 1: rg: command not found
+
+exec
+/bin/bash -lc "find src scripts data -type f | sed -n '1,240p'; grep -RInE \"canonical|alternate|rerank|NOT_FOUND|quantity|clause|model|brand|hybrid\" src/nomenclature_matcher scripts --include='*.py' | sed -n '1,320p'" in /workspaces/ML-Cancer-Data
+ succeeded in 65ms:
+src/nomenclature_matcher/query_constraints.py:12:from .models import LDProduct
+src/nomenclature_matcher/query_constraints.py:22:    model_config = ConfigDict(extra="forbid")
+src/nomenclature_matcher/query_constraints.py:68:            model=self.settings.deepseek_model,
+src/nomenclature_matcher/query_constraints.py:78:        return QueryConstraints.model_validate(json.loads(content))
+src/nomenclature_matcher/query_constraints.py:174:def canonical_product_type(text: str) -> str:
+src/nomenclature_matcher/query_constraints.py:202:        result = canonical_product_type(value)
+src/nomenclature_matcher/query_constraints.py:205:    return canonical_product_type(_product_text(product))
+src/nomenclature_matcher/query_constraints.py:208:def canonical_joining_type(text: Any) -> str | None:
+src/nomenclature_matcher/query_constraints.py:228:        canonical = canonical_joining_type(value)
+src/nomenclature_matcher/query_constraints.py:229:        if canonical not in {None, "other"}:
+src/nomenclature_matcher/query_constraints.py:230:            return canonical
+src/nomenclature_matcher/query_constraints.py:231:    return canonical_joining_type(product.joining_type)
+src/nomenclature_matcher/query_constraints.py:234:def canonical_thread_type(text: Any) -> str | None:
+src/nomenclature_matcher/query_constraints.py:256:        result = canonical_thread_type(value)
+src/nomenclature_matcher/query_constraints.py:262:def canonical_material(text: Any) -> str | None:
+src/nomenclature_matcher/query_constraints.py:281:        result = canonical_material(value)
+src/nomenclature_matcher/query_constraints.py:292:def canonical_bore_type(text: Any) -> str | None:
+src/nomenclature_matcher/query_constraints.py:305:        result = canonical_bore_type(value)
+src/nomenclature_matcher/query_constraints.py:311:def canonical_control(text: Any) -> str | None:
+src/nomenclature_matcher/query_constraints.py:330:        result = canonical_control(value)
+src/nomenclature_matcher/eval_v2_ground_truth.py:38:        "hybrid_rank": None,
+src/nomenclature_matcher/eval_v2_ground_truth.py:49:def build_expanded_hybrid_candidates(
+src/nomenclature_matcher/eval_v2_ground_truth.py:89:        candidate["hybrid_rank"] = None
+src/nomenclature_matcher/eval_v2_ground_truth.py:101:        candidate["hybrid_rank"] = index
+src/nomenclature_matcher/eval_v2_ground_truth.py:102:        if "hybrid" not in candidate["retrieval_sources"]:
+src/nomenclature_matcher/eval_v2_ground_truth.py:103:            candidate["retrieval_sources"].append("hybrid")
+src/nomenclature_matcher/eval_v2_ground_truth.py:107:            item["hybrid_rank"] is None,
+src/nomenclature_matcher/eval_v2_ground_truth.py:108:            item["hybrid_rank"] if item["hybrid_rank"] is not None else 10**9,
+src/nomenclature_matcher/eval_v2_ground_truth.py:126:    merged = build_expanded_hybrid_candidates(
+src/nomenclature_matcher/eval_v2.py:64:        "hybrid_rank": None,
+src/nomenclature_matcher/eval_v2.py:75:def merge_review_candidates(dense_candidates, bm25_candidates, hybrid_candidates, max_per_source: int = 10) -> list[dict]:
+src/nomenclature_matcher/eval_v2.py:80:        ("hybrid", hybrid_candidates, "hybrid_rank", "rrf_score"),
+src/nomenclature_matcher/eval_v2.py:96:                row["hybrid_rank"] = rank
+src/nomenclature_matcher/eval_v2.py:102:        hybrid_rank = item["hybrid_rank"] or 999
+src/nomenclature_matcher/eval_v2.py:105:        best_rank = min(hybrid_rank, dense_rank, bm25_rank)
+src/nomenclature_matcher/eval_v2.py:107:            0 if item["hybrid_rank"] is not None else 1,
+src/nomenclature_matcher/eval_v2.py:109:            hybrid_rank,
+src/nomenclature_matcher/eval_v2.py:124:        "hybrid_recovered_dense_miss": 0,
+src/nomenclature_matcher/eval_v2.py:131:        hybrid_hit = item.get("hybrid_hit") is True
+src/nomenclature_matcher/eval_v2.py:140:        if not dense_hit and bm25_hit and hybrid_hit:
+src/nomenclature_matcher/eval_v2.py:141:            summary["hybrid_recovered_dense_miss"] += 1
+src/nomenclature_matcher/query_canonicalization.py:49:    canonical_query: str | None = None
+src/nomenclature_matcher/query_canonicalization.py:52:def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+src/nomenclature_matcher/query_canonicalization.py:61:    canonical = _extract_supported_clause(source)
+src/nomenclature_matcher/query_canonicalization.py:62:    canonical = _strip_quantity_noise(canonical)
+src/nomenclature_matcher/query_canonicalization.py:63:    canonical = _normalize_dn_pn(canonical)
+src/nomenclature_matcher/query_canonicalization.py:64:    canonical = _expand_joining_and_actuation(canonical)
+src/nomenclature_matcher/query_canonicalization.py:66:        canonical = _expand_connection_notation(canonical)
+src/nomenclature_matcher/query_canonicalization.py:67:    canonical = _normalize_designation_confusables(canonical)
+src/nomenclature_matcher/query_canonicalization.py:68:    canonical = _cleanup_spacing(canonical)
+src/nomenclature_matcher/query_canonicalization.py:70:    if canonical == source or not _has_safe_alternate(source, canonical, has_supported_anchor):
+src/nomenclature_matcher/query_canonicalization.py:72:    return RetrievalQueryCanonicalization(source_query=source, canonical_query=canonical)
+src/nomenclature_matcher/query_canonicalization.py:75:def _extract_supported_clause(text: str) -> str:
+src/nomenclature_matcher/query_canonicalization.py:79:    start = _clause_start(text, anchor.start())
+src/nomenclature_matcher/query_canonicalization.py:80:    end = _clause_end(text, anchor.end())
+src/nomenclature_matcher/query_canonicalization.py:84:def _clause_start(text: str, anchor_start: int) -> int:
+src/nomenclature_matcher/query_canonicalization.py:93:def _clause_end(text: str, anchor_end: int) -> int:
+src/nomenclature_matcher/query_canonicalization.py:104:def _strip_quantity_noise(text: str) -> str:
+src/nomenclature_matcher/query_canonicalization.py:157:def _has_safe_alternate(source: str, canonical: str, has_supported_anchor: bool) -> bool:
+src/nomenclature_matcher/query_canonicalization.py:158:    if not canonical or canonical == source:
+src/nomenclature_matcher/query_canonicalization.py:162:    return bool(re.search(r"\b(?:DN|PN)\s+\d+", canonical))
+src/nomenclature_matcher/reranker.py:6:from .models import RerankedCandidate, RerankResult, SearchCandidate
+src/nomenclature_matcher/reranker.py:9:    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+src/nomenclature_matcher/reranker.py:30:        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+src/nomenclature_matcher/reranker.py:38:    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+src/nomenclature_matcher/reranker.py:40:            model=self.settings.deepseek_model,
+src/nomenclature_matcher/reranker.py:84:                'или {"status":"NOT_FOUND","selected":[],"reason":"..."}',
+src/nomenclature_matcher/reranker.py:85:                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+src/nomenclature_matcher/reranker.py:93:        if status not in {"MATCHED", "NOT_FOUND"}:
+src/nomenclature_matcher/reranker.py:94:            raise ValueError(f"Unsupported rerank status: {status!r}")
+src/nomenclature_matcher/reranker.py:112:            if len(selected) >= self.settings.rerank_result_limit:
+src/nomenclature_matcher/reranker.py:117:        return RerankResult(status="NOT_FOUND", selected=[], reason=reason)
+src/nomenclature_matcher/eval_utils.py:32:def reranker_accuracy(results: list[dict]) -> float | None:
+src/nomenclature_matcher/eval_utils.py:41:        elif item["deepseek_status"] == "NOT_FOUND":
+src/nomenclature_matcher/eval_utils.py:47:    return reranker_accuracy(results)
+src/nomenclature_matcher/eval_utils.py:63:    misses = sum(1 for item in results if item.get("error_type") == "WRONG_NOT_FOUND")
+src/nomenclature_matcher/eval_utils.py:68:    total = _verified_count(results, "NOT_FOUND")
+src/nomenclature_matcher/eval_utils.py:83:def reranker_accuracy_given_hybrid_hit(results: list[dict]) -> float | None:
+src/nomenclature_matcher/eval_utils.py:89:        and item["hybrid_hit"] is True
+src/nomenclature_matcher/eval_utils.py:102:    hybrid_hit: bool,
+src/nomenclature_matcher/eval_utils.py:103:    reranker_success: bool,
+src/nomenclature_matcher/eval_utils.py:109:        if not hybrid_hit:
+src/nomenclature_matcher/eval_utils.py:113:        if not reranker_success:
+src/nomenclature_matcher/eval_utils.py:114:            return "WRONG_NOT_FOUND" if deepseek_status == "NOT_FOUND" else "WRONG_LLM_SELECTION"
+src/nomenclature_matcher/eval_utils.py:118:    return "CORRECT_NOT_FOUND" if deepseek_status == "NOT_FOUND" else "FALSE_MATCH"
+src/nomenclature_matcher/qdrant_store.py:1:from qdrant_client import QdrantClient, models
+src/nomenclature_matcher/qdrant_store.py:12:            self.client.create_collection(name, vectors_config={self.settings.qdrant_dense_vector_name: models.VectorParams(size=self.settings.embedding_dimension, distance=models.Distance.COSINE)})
+src/nomenclature_matcher/qdrant_store.py:15:        self.client.upsert(self.settings.qdrant_collection_alias, points=models.Batch(ids=[p[0] for p in points], vectors={self.settings.qdrant_dense_vector_name: [p[1] for p in points]}, payloads=[p[2] for p in points]))
+src/nomenclature_matcher/experiments.py:62:            "hybrid_dense_limit": getattr(settings, "hybrid_dense_limit", None),
+src/nomenclature_matcher/experiments.py:63:            "hybrid_bm25_limit": getattr(settings, "hybrid_bm25_limit", None),
+src/nomenclature_matcher/experiments.py:64:            "hybrid_rerank_limit": getattr(settings, "hybrid_rerank_limit", None),
+src/nomenclature_matcher/experiments.py:66:            "rerank_result_limit": getattr(settings, "rerank_result_limit", None),
+src/nomenclature_matcher/experiments.py:71:            "embedding_model": getattr(settings, "embedding_model", None),
+src/nomenclature_matcher/experiments.py:77:            "model": getattr(settings, "deepseek_model", None),
+src/nomenclature_matcher/review_state.py:14:VALID_FINAL_STATUSES = {"MATCHED", "NOT_FOUND", "RETRIEVAL_MISS", "UNREVIEWED"}
+src/nomenclature_matcher/review_state.py:205:        "NOT_FOUND",
+src/nomenclature_matcher/review_state.py:219:    if final_status in {"NOT_FOUND", "RETRIEVAL_MISS"}:
+src/nomenclature_matcher/review_state.py:222:        if final_status == "NOT_FOUND" and not confirmed:
+src/nomenclature_matcher/review_state.py:223:            raise ValueError("NOT_FOUND finalization requires explicit confirmation")
+src/nomenclature_matcher/review_state.py:249:    if final_status not in {"MATCHED", "NOT_FOUND"}:
+src/nomenclature_matcher/hybrid_retriever.py:4:from .models import SearchCandidate
+src/nomenclature_matcher/hybrid_retriever.py:15:        limit = limit or self.settings.hybrid_dense_limit
+src/nomenclature_matcher/hybrid_retriever.py:38:        limit = limit or self.settings.hybrid_bm25_limit
+src/nomenclature_matcher/hybrid_retriever.py:60:    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+src/nomenclature_matcher/hybrid_retriever.py:61:        limit = limit or self.settings.hybrid_rerank_limit
+src/nomenclature_matcher/hybrid_retriever.py:62:        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+src/nomenclature_matcher/hybrid_retriever.py:63:        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+src/nomenclature_matcher/hybrid_retriever.py:68:    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+src/nomenclature_matcher/hybrid_retriever.py:70:        if not canonical_query or canonical_query == query:
+src/nomenclature_matcher/hybrid_retriever.py:73:            candidates = [*candidates, *search_fn(canonical_query, limit)]
+src/nomenclature_matcher/matcher.py:3:from .models import MatchResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/matcher.py:4:from .query_canonicalization import canonicalize_retrieval_query
+src/nomenclature_matcher/matcher.py:8:    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+src/nomenclature_matcher/matcher.py:10:        self.reranker = reranker
+src/nomenclature_matcher/matcher.py:11:        self.hybrid_retriever = hybrid_retriever
+src/nomenclature_matcher/matcher.py:55:    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+src/nomenclature_matcher/matcher.py:57:            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+src/nomenclature_matcher/matcher.py:58:        if self.reranker is None:
+src/nomenclature_matcher/matcher.py:61:            rerank_result = self.reranker.rerank(query, candidates)
+src/nomenclature_matcher/matcher.py:72:        for item in rerank_result.selected:
+src/nomenclature_matcher/matcher.py:75:        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+src/nomenclature_matcher/matcher.py:78:            status=rerank_result.status,
+src/nomenclature_matcher/matcher.py:80:            ld_product=best if rerank_result.status == "MATCHED" else None,
+src/nomenclature_matcher/matcher.py:83:            reason=rerank_result.reason,
+src/nomenclature_matcher/matcher.py:89:            return MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:92:        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+src/nomenclature_matcher/matcher.py:95:    def match_one_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:98:            return MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:99:        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+src/nomenclature_matcher/matcher.py:100:        return self.rerank_candidates(query, candidates)
+src/nomenclature_matcher/matcher.py:102:    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:103:        canonicalization = canonicalize_retrieval_query(query)
+src/nomenclature_matcher/matcher.py:104:        query = canonicalization.source_query
+src/nomenclature_matcher/matcher.py:106:            return MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:107:        if self.hybrid_retriever is None:
+src/nomenclature_matcher/matcher.py:109:        candidates = self.hybrid_retriever.search(
+src/nomenclature_matcher/matcher.py:111:            self.settings.hybrid_rerank_limit,
+src/nomenclature_matcher/matcher.py:112:            canonical_query=canonicalization.canonical_query,
+src/nomenclature_matcher/matcher.py:114:        return self.rerank_candidates(query, candidates)
+src/nomenclature_matcher/matcher.py:125:            else MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:132:    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+src/nomenclature_matcher/matcher.py:133:        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+src/nomenclature_matcher/harness_gold.py:7:from .models import LDProduct
+src/nomenclature_matcher/harness_gold.py:22:    payload = constraints.model_dump()
+src/nomenclature_matcher/harness_gold.py:34:    return GoldenQueryConstraints.model_validate(payload), notes
+src/nomenclature_matcher/harness_gold.py:67:    base_constraints = constraints.model_copy(update={"bore_type": None})
+src/nomenclature_matcher/indexer.py:1:from qdrant_client import models
+src/nomenclature_matcher/serialization.py:6:from .models import MatchResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/__init__.py:2:from .models import LDProduct, MatchResult, RerankResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/eval_dataset.py:14:    expected_status: Literal["MATCHED", "NOT_FOUND"] | None = None
+src/nomenclature_matcher/bm25_store.py:7:from .models import BM25Candidate, LDProduct
+src/nomenclature_matcher/bm25_store.py:53:        self.model = BM25Okapi(self.corpus)
+src/nomenclature_matcher/bm25_store.py:59:        scores = self.model.get_scores(query_tokens)
+src/nomenclature_matcher/settings.py:27:    embedding_model: str = "text-embedding-3-small"
+src/nomenclature_matcher/settings.py:34:    deepseek_model: str = "deepseek-v4-flash"
+src/nomenclature_matcher/settings.py:36:    reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
+src/nomenclature_matcher/settings.py:37:    hybrid_dense_limit: int = 50
+src/nomenclature_matcher/settings.py:38:    hybrid_bm25_limit: int = 50
+src/nomenclature_matcher/settings.py:39:    hybrid_rerank_limit: int = 20
+src/nomenclature_matcher/settings.py:41:    rerank_candidate_limit: int = 20
+src/nomenclature_matcher/settings.py:42:    rerank_result_limit: int = 3
+src/nomenclature_matcher/settings.py:45:    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
+src/nomenclature_matcher/documents.py:8:from .models import LDProduct
+src/nomenclature_matcher/embeddings.py:24:                    model=self.settings.embedding_model,
+src/nomenclature_matcher/deep_gold.py:7:from .query_constraints import canonical_product_type
+src/nomenclature_matcher/deep_gold.py:39:    `canonical_product_type()` quite reasonably classifies a standalone
+src/nomenclature_matcher/deep_gold.py:59:    result = canonical_product_type(value)
+src/nomenclature_matcher/golden_rules.py:12:from .models import LDProduct
+src/nomenclature_matcher/golden_rules.py:29:    canonical_control,
+src/nomenclature_matcher/golden_rules.py:39:    model_config = ConfigDict(extra="forbid")
+src/nomenclature_matcher/golden_rules.py:54:    reference_model: str | None = None
+src/nomenclature_matcher/golden_rules.py:72:            model=self.settings.deepseek_model,
+src/nomenclature_matcher/golden_rules.py:82:        constraints = GoldenQueryConstraints.model_validate(json.loads(content))
+src/nomenclature_matcher/golden_rules.py:111:def _detect_unmodeled_requirements(
+src/nomenclature_matcher/golden_rules.py:119:        ("temperature", r"температур|(?:до|не менее)\s*-?\d+\s*°?\s*[cс]\b", "temperature is not modeled"),
+src/nomenclature_matcher/golden_rules.py:120:        ("stem_height", r"\bн\s*=\s*\d+|шток\w*\s*\d+", "stem/installation height is not modeled"),
+src/nomenclature_matcher/golden_rules.py:121:        ("torque_nm", r"\b\d+(?:[.,]\d+)?\s*н\s*[·.*]?\s*м\b|\b\d+\s*нм\b", "actuator torque is not modeled"),
+src/nomenclature_matcher/golden_rules.py:122:        ("voltage", r"\b(?:12|24|110|220|230|380|400)\s*в\b", "actuator voltage is not modeled"),
+src/nomenclature_matcher/golden_rules.py:123:        ("standard", r"\bгост\s*[0-9-]+", "GOST/standard is not modeled"),
+src/nomenclature_matcher/golden_rules.py:124:        ("seal_material", r"\bepdm\b|\bnbr\b|\bptfe\b|\bфторопласт\w*\b", "seal material is not modeled"),
+src/nomenclature_matcher/golden_rules.py:125:        ("kit_contents", r"крепеж\w*|проклад\w*", "kit contents are not modeled"),
+src/nomenclature_matcher/golden_rules.py:126:        ("union_nut", r"накидн\w*\s+гайк\w*", "union nut execution is not modeled"),
+src/nomenclature_matcher/golden_rules.py:147:        model = re.search(r"\b(?:aox[-\s]?q(?:[-\s]?\d+)?|auma\w*)\b", value)
+src/nomenclature_matcher/golden_rules.py:148:        if model:
+src/nomenclature_matcher/golden_rules.py:149:            _append_unsupported(rows, "drive_model", model.group(0), "drive model/series is not modeled")
+src/nomenclature_matcher/golden_rules.py:171:            _append_unsupported(rows, "inch_size", inch.group(0), "inch-to-DN mapping is not modeled here")
+src/nomenclature_matcher/golden_rules.py:180:    payload = constraints.model_dump()
+src/nomenclature_matcher/golden_rules.py:182:    unsupported = [UnsupportedConstraint.model_validate(row) for row in payload["unsupported_constraints"]]
+src/nomenclature_matcher/golden_rules.py:208:        payload["reference_model"] = payload.get("reference_model") or constraints.valve_designation
+src/nomenclature_matcher/golden_rules.py:212:    reference_model = payload.get("reference_model")
+src/nomenclature_matcher/golden_rules.py:213:    if reference_model:
+src/nomenclature_matcher/golden_rules.py:216:            "reference_model",
+src/nomenclature_matcher/golden_rules.py:217:            reference_model,
+src/nomenclature_matcher/golden_rules.py:218:            "reference/competitor model equivalence is not deterministic",
+src/nomenclature_matcher/golden_rules.py:221:    _detect_unmodeled_requirements(query, constraints, unsupported)
+src/nomenclature_matcher/golden_rules.py:222:    payload["unsupported_constraints"] = [row.model_dump() for row in unsupported]
+src/nomenclature_matcher/golden_rules.py:224:    return GoldenQueryConstraints.model_validate(payload)
+src/nomenclature_matcher/golden_rules.py:235:        result = canonical_control(value)
+src/nomenclature_matcher/golden_rules.py:272:    # canonical type differs from the requested type (including `other`) cannot become
+src/nomenclature_matcher/models.py:81:    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+src/nomenclature_matcher/models.py:91:    status: Literal["MATCHED", "NOT_FOUND"]
+src/nomenclature_matcher/remaining_gold_review.py:25:    hybrid = candidate.get("hybrid_rank") or 999999
+src/nomenclature_matcher/remaining_gold_review.py:31:        0 if hybrid != 999999 else 1,
+src/nomenclature_matcher/remaining_gold_review.py:32:        min(hybrid, dense, bm25),
+src/nomenclature_matcher/remaining_gold_review.py:33:        hybrid,
+scripts/build_combined_harness_gold.py:27:        default=str(ROOT / "data" / "tender_queries_v1_canonical_labels.json"),
+scripts/match_batch.py:11:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+scripts/match_batch.py:14:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/match_batch.py:42:        reranker=DeepSeekReranker(settings),
+scripts/match_batch.py:43:        hybrid_retriever=HybridRetriever(embedder, qdrant_store, BM25Store(products), settings),
+scripts/match_batch.py:45:    results = matcher.match_many_hybrid_with_rerank(_read_queries(args.input))
+scripts/review_remaining_gold_top3.py:113:    elif status == "NOT_FOUND":
+scripts/review_remaining_gold_top3.py:117:            "expected_status": "NOT_FOUND",
+scripts/review_remaining_gold_top3.py:147:        "Если среди трёх нет подходящего товара — выбирай RETRIEVAL_MISS, а не NOT_FOUND."
+scripts/review_remaining_gold_top3.py:177:        1 for item in queries if query_state(state, item["id"]).get("final_status") == "NOT_FOUND"
+scripts/review_remaining_gold_top3.py:184:    cols[3].metric("NOT_FOUND", not_found)
+scripts/review_remaining_gold_top3.py:232:            for label, key in (("Hybrid", "hybrid_rank"), ("Dense", "dense_rank"), ("BM25", "bm25_rank")):
+scripts/review_remaining_gold_top3.py:290:            if c3.button("❌ NOT_FOUND", use_container_width=True, disabled=bool(accepts) or not confirm_not_found):
+scripts/review_remaining_gold_top3.py:291:                save_final(state, labels, qid, "NOT_FOUND", final_comment)
+scripts/build_harness_gold.py:118:    payload = constraints.model_dump()
+scripts/build_harness_gold.py:174:            "expected_status": "NOT_FOUND",
+scripts/build_harness_gold.py:197:        constraints = GoldenQueryConstraints.model_validate(parsed["constraints"])
+scripts/build_harness_gold.py:231:        "unsupported_constraints": [row.model_dump() for row in constraints.unsupported_constraints],
+scripts/build_harness_gold.py:255:            "negative": "Hard-gate explicit NOT_FOUND cases.",
+scripts/search.py:9:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+scripts/search.py:12:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/search.py:17:parser.add_argument("--mode", choices=["dense", "dense-rerank", "hybrid-rerank"], default="dense")
+scripts/search.py:23:reranker = DeepSeekReranker(settings) if args.mode in {"dense-rerank", "hybrid-rerank"} else None
+scripts/search.py:24:hybrid_retriever = None
+scripts/search.py:25:if args.mode == "hybrid-rerank":
+scripts/search.py:27:    hybrid_retriever = HybridRetriever(embedder, qdrant_store, BM25Store(products), settings)
+scripts/search.py:32:    reranker=reranker,
+scripts/search.py:33:    hybrid_retriever=hybrid_retriever,
+scripts/search.py:38:    elif args.mode == "dense-rerank":
+scripts/search.py:39:        result = matcher.match_one_with_rerank(args.query)
+scripts/search.py:41:        result = matcher.match_one_hybrid_with_rerank(args.query)
+scripts/search.py:48:elif args.mode == "dense-rerank":
+scripts/prepare_chatgpt_gold_batches.py:49:    hybrid = candidate.get("hybrid_rank") or 999999
+scripts/prepare_chatgpt_gold_batches.py:55:        0 if hybrid != 999999 else 1,
+scripts/prepare_chatgpt_gold_batches.py:56:        min(hybrid, dense, bm25),
+scripts/prepare_chatgpt_gold_batches.py:57:        hybrid,
+scripts/prepare_chatgpt_gold_batches.py:102:        "hybrid_rank": candidate.get("hybrid_rank"),
+scripts/annotate_golden.py:77:        ("hybrid_top20", "hybrid", "hybrid_rank", "rrf_score"),
+scripts/annotate_golden.py:95:                    "hybrid_rank": None,
+scripts/annotate_golden.py:117:        hybrid = row.get("hybrid_rank") or 999
+scripts/annotate_golden.py:120:        return (0 if hybrid != 999 else 1, min(hybrid, dense, bm25), hybrid, dense, bm25)
+scripts/annotate_golden.py:235:    query_state["completed"] = status in {"MATCHED", "NOT_FOUND", "RETRIEVAL_MISS"}
+scripts/annotate_golden.py:245:    elif status == "NOT_FOUND":
+scripts/annotate_golden.py:249:            "expected_status": "NOT_FOUND",
+scripts/annotate_golden.py:299:    for label, field in (("Hybrid", "hybrid_rank"), ("Dense", "dense_rank"), ("BM25", "bm25_rank")):
+scripts/annotate_golden.py:323:                "hybrid_rank": candidate.get("hybrid_rank"),
+scripts/annotate_golden.py:371:        ["Неразмеченные", "Все", "MATCHED", "NOT_FOUND", "RETRIEVAL_MISS"],
+scripts/annotate_golden.py:528:        "❌ Завершить NOT_FOUND",
+scripts/annotate_golden.py:533:            labels, labels_path, review_state, state_path, query_id, "NOT_FOUND", query_comment
+scripts/build_golden_100_canonical.py:26:        description="Merge all Golden-100 human review layers into one canonical label/review snapshot."
+scripts/build_golden_100_canonical.py:56:        default=str(ROOT / "data" / "golden_100_canonical_labels.json"),
+scripts/build_golden_100_canonical.py:60:        default=str(ROOT / "data" / "golden_100_canonical_human_review.json"),
+scripts/build_golden_100_canonical.py:64:        default=str(ROOT / "data" / "golden_100_canonical_summary.json"),
+scripts/build_golden_100_canonical.py:186:        elif label.get("expected_status") in {"MATCHED", "NOT_FOUND"}:
+scripts/build_golden_100_canonical.py:205:        if row.get("label_status") == "VERIFIED" and row.get("expected_status") == "NOT_FOUND"
+scripts/build_golden_100_canonical.py:233:            "verified_not_found": "Trusted negative: production should return NOT_FOUND.",
+scripts/eval_harness_gold.py:22:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+scripts/eval_harness_gold.py:25:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/eval_harness_gold.py:35:            "Run the current hybrid+reranker pipeline against constraint-based harness GOLD. "
+scripts/eval_harness_gold.py:76:    hybrid = HybridRetriever(embedder, qdrant_store, BM25Store(products), settings)
+scripts/eval_harness_gold.py:81:        reranker=DeepSeekReranker(settings),
+scripts/eval_harness_gold.py:82:        hybrid_retriever=hybrid,
+scripts/eval_harness_gold.py:86:def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
+scripts/eval_harness_gold.py:93:    return GoldenQueryConstraints.model_validate(payload)
+scripts/eval_harness_gold.py:130:        if result.status == "NOT_FOUND":
+scripts/eval_harness_gold.py:132:            row["reason"] = "Explicit negative correctly returned NOT_FOUND."
+scripts/eval_harness_gold.py:143:        row["reason"] = "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+scripts/eval_harness_gold.py:146:    if result.status == "NOT_FOUND":
+scripts/eval_harness_gold.py:147:        row["verdict"] = "FAIL_WRONG_NOT_FOUND"
+scripts/eval_harness_gold.py:176:    decision = evaluate_harness_product(product, _requirements_model(case))
+scripts/eval_harness_gold.py:210:    wrong_not_found = sum(row["verdict"] == "FAIL_WRONG_NOT_FOUND" for row in core)
+scripts/eval_harness_gold.py:270:    results = matcher.match_many_hybrid_with_rerank([case["query"] for case in cases])
+scripts/prepare_eval_v2_retrieval_miss_review.py:13:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+scripts/prepare_eval_v2_retrieval_miss_review.py:35:    hybrid_retriever = HybridRetriever(embedder, qdrant_store, bm25_store, settings)
+scripts/prepare_eval_v2_retrieval_miss_review.py:36:    matcher = NomenclatureMatcher(embedder, qdrant_store, settings, hybrid_retriever=hybrid_retriever)
+scripts/prepare_eval_v2_retrieval_miss_review.py:42:        lambda query, limit: hybrid_retriever.search_bm25(query, limit),
+scripts/prepare_eval_v2_review.py:12:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+scripts/prepare_eval_v2_review.py:29:    hybrid_retriever = HybridRetriever(embedder, qdrant_store, bm25_store, settings)
+scripts/prepare_eval_v2_review.py:30:    matcher = NomenclatureMatcher(embedder, qdrant_store, settings, hybrid_retriever=hybrid_retriever)
+scripts/prepare_eval_v2_review.py:40:        bm25_top10 = hybrid_retriever.search_bm25(query, 10)
+scripts/prepare_eval_v2_review.py:41:        hybrid_top10 = hybrid_retriever.search(query, 10)
+scripts/prepare_eval_v2_review.py:46:                "candidates": merge_review_candidates(dense_top10, bm25_top10, hybrid_top10),
+scripts/codex_loop.py:435:        # model was working, throw the attempt away and retry from the new HEAD.
+scripts/check_eval_v2_full_catalog.py:179:        "note": "Candidate generation only. A zero candidate count is evidence for NOT_FOUND only if these predicates faithfully encode the strict policy.",
+scripts/review_eval_v2.py:161:        elif mode == "Отклонённые" and final_status == "NOT_FOUND":
+scripts/review_eval_v2.py:230:    rank_cols[2].metric("Hybrid rank", _format_value(candidate.get("hybrid_rank")))
+scripts/review_eval_v2.py:354:    if action_cols[1].button("❌ NOT_FOUND", use_container_width=True, disabled=not_found_disabled):
+scripts/review_eval_v2.py:358:            "NOT_FOUND",
+scripts/prepare_review_candidates.py:16:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+scripts/prepare_review_candidates.py:89:    hybrid_retriever = HybridRetriever(embedder, qdrant_store, bm25_store, settings)
+scripts/prepare_review_candidates.py:94:        hybrid_retriever=hybrid_retriever,
+scripts/prepare_review_candidates.py:105:            "hybrid_rrf": True,
+scripts/prepare_review_candidates.py:106:            "llm_reranker": False,
+scripts/prepare_review_candidates.py:114:        bm25 = hybrid_retriever.search_bm25(query, args.top_k)
+scripts/prepare_review_candidates.py:115:        hybrid = hybrid_retriever.search(query, args.top_k)
+scripts/prepare_review_candidates.py:119:            hybrid,
+scripts/prepare_review_candidates.py:132:            f"dense={len(dense)} bm25={len(bm25)} hybrid={len(hybrid)} union={len(merged)}"
+scripts/auto_label_golden.py:143:            "constraints": constraints.model_dump(),
+scripts/auto_label_golden.py:169:                "AUTO_NOT_FOUND",
+scripts/auto_label_golden.py:171:                "NOT_FOUND",
+scripts/auto_label_golden.py:211:            f"Explicit query requirements are not modeled by deterministic rules: {names}.",
+scripts/auto_label_golden.py:287:        constraints = GoldenQueryConstraints.model_validate(parsed["constraints"])
+scripts/auto_label_golden.py:301:        if auto_status == "AUTO_NOT_FOUND":
+scripts/auto_label_golden.py:321:                "constraints": constraints.model_dump(),
+scripts/auto_label_golden.py:351:            "joining_type": "exact canonical match; missing -> UNKNOWN",
+scripts/auto_label_golden.py:418:        elif auto.get("auto_status") == "AUTO_NOT_FOUND":
+scripts/auto_label_golden.py:422:                "expected_status": "NOT_FOUND",
+scripts/build_tender_v1_harness_cases.py:105:        "--canonical-labels",
+scripts/build_tender_v1_harness_cases.py:106:        default=str(ROOT / "data" / "tender_queries_v1_canonical_labels.json"),
+scripts/build_tender_v1_harness_cases.py:166:    labels = _read_json(Path(args.canonical_labels))
+scripts/build_tender_v1_harness_cases.py:181:    # Refresh known-positive evidence for the original cases from canonical labels.
+scripts/build_tender_v1_harness_cases.py:185:            raise SystemExit(f"Existing tender harness case has no canonical verified label: {query_id}")
+scripts/build_tender_v1_harness_cases.py:192:            raise SystemExit(f"{query_id}: canonical tender label must be VERIFIED/MATCHED")
+scripts/build_tender_v1_harness_cases.py:209:            "Tender harness cases and canonical labels diverged: "
+scripts/eval.py:19:    reranker_accuracy,
+
+exec
+/bin/bash -lc "sed -n '1,240p' src/nomenclature_matcher/query_canonicalization.py; sed -n '1,180p' src/nomenclature_matcher/hybrid_retriever.py; sed -n '1,180p' src/nomenclature_matcher/matcher.py; sed -n '1,180p' src/nomenclature_matcher/documents.py; git status --short; find . -path '*runs*' -o -path '*ledger*' | sed -n '1,160p'" in /workspaces/ML-Cancer-Data
+ succeeded in 10ms:
+import ast
+import csv
+import re
+import json
+from pathlib import Path
+from typing import Any
+
+from .models import LDProduct
+
+_LEXICAL_PROPERTY_NAMES = {
+    "Тип продукта",
+    "Тип продукта AI",
+    "Материал корпуса",
+    "Присоединение",
+    "Номинальный диаметр, DN",
+    "Номинальное давление, МПа",
+    "Серия",
+    "Рабочая среда",
+    "Управление",
+    "Тип резьбы",
+    "Тип прохода",
+}
+
+
+def _properties(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return value
+    if not value:
+        return []
+    try:
+        data = ast.literal_eval(value) if isinstance(value, str) else value
+    except (ValueError, SyntaxError):
+        return []
+    return data.get("properties", []) if isinstance(data, dict) else []
+
+
+def _format_values(values: Any) -> str:
+    if isinstance(values, list):
+        return ", ".join(map(str, values))
+    return str(values)
+
+
+def _append_property_lines(parts: list[str], properties: list[dict[str, Any]], allowed_names: set[str] | None = None) -> None:
+    for prop in properties:
+        name = prop.get("name")
+        values = prop.get("values", [])
+        if not name or prop.get("is_system") or name in {"GUID", "updated_at", "is_system"}:
+            continue
+        if allowed_names is not None and name not in allowed_names:
+            continue
+        if values in (None, "", []):
+            continue
+        parts.append(f"{name}: {_format_values(values)}")
+
+
+def build_search_text(product: LDProduct) -> str:
+    parts = [f"Название: {product.name}"]
+    for label, value in (("Артикул", product.article), ("DN", product.dn), ("PN", product.pn), ("Присоединение", product.joining_type)):
+        if value not in (None, ""):
+            parts.append(f"{label}: {value}")
+    _append_property_lines(parts, _properties(product.properties))
+    return "\n".join(parts)
+
+
+def build_lexical_text(product: LDProduct) -> str:
+    parts = [product.name]
+    for value in (product.article,):
+        if value not in (None, ""):
+            parts.append(str(value))
+    if product.dn not in (None, ""):
+        parts.append(f"DN {product.dn}")
+    if product.pn not in (None, ""):
+        parts.append(f"PN {product.pn}")
+    if product.joining_type not in (None, ""):
+        parts.append(str(product.joining_type))
+    _append_property_lines(parts, _properties(product.properties), _LEXICAL_PROPERTY_NAMES)
+    return "\n".join(parts)
+
+
+def tokenize(text: str) -> list[str]:
+    normalized = text.lower().replace("ё", "е")
+    return [token for token in re.split(r"[^0-9a-zа-я]+", normalized) if token]
+
+
+def load_products_from_csv(path: str | Path) -> list[LDProduct]:
+    with Path(path).open("r", encoding="utf-8-sig", newline="") as stream:
+        return [LDProduct(id=int(row["id"]), name=row.get("name", ""), article=row.get("article") or None,
+                          price=row.get("price") or None, dn=row.get("dn") or None, pn=row.get("pn") or None,
+                          joining_type=row.get("joining_type") or None, url=row.get("url") or None,
+                          properties=_properties(row.get("properties_json"))) for row in csv.DictReader(stream)]
+
+exec
+/bin/bash -lc "python - <<'PY'
+import gzip,json,re,collections
+from pathlib import Path
+base=Path('data')
+def load(name):
+    with gzip.open(base/name,'rt',encoding='utf-8') as f:return json.load(f)
+all_rows=load('tender_queries_kontur_5files.json.gz')
+labels=load('tender_queries_kontur_5files_labels_gold_v1.json.gz')
+provisional=load('tender_queries_kontur_5files_provisional_not_found.json.gz')
+print('shapes',type(all_rows),len(all_rows),type(labels),len(labels),type(provisional),len(provisional))
+for label, rows in [('all',all_rows),('labels',labels),('provisional',provisional)]:
+ print('\\n',label,'first',json.dumps(rows[:2],ensure_ascii=False,indent=1)[:2400])
+# derive unknown IDs robustly
+print('keys',all_rows[0].keys())
+idkey='id' if 'id' in all_rows[0] else next(iter(all_rows[0]))
+labids={r[idkey] for r in labels}; proids={r[idkey] for r in provisional}
+review=[r for r in all_rows if r[idkey] not in labids|proids]
+print('ids',len(labids),len(proids),len(review),'overlap',len(labids&proids))
+qkey=next(k for k in all_rows[0] if k not in {idkey})
+# better locate query
+for k in all_rows[0]:
+ if isinstance(all_rows[0][k],str): qkey=k;break
+print('query key',qkey)
+features={
+ 'ball':r'шаров', 'butterfly':r'затвор', 'filter':r'фильтр|картридж|водоочист|осмос',
+ 'work':r'монтаж|демонтаж|ремонт|технич(?:еск)?.*обслуж|обслуживан|установк',
+ 'brand':r'\\b(?:ivr|valtec|tecofi|kvant|бивал|genebre|bugatti|broen|danfoss|auma)\\b',
+ 'thread':r'резьб|муфтов|\\b(?:вр|нр|вв|вн|ff|mf|f/f|m/f)\\b|дюйм|[0-9]+\\s*[\"″]',
+ 'designation':r'\\b[а-яa-z]{1,5}[.-]?\\d{1,}(?:[.-]\\d+){1,}',
+ 'service_only':r'"'^(?:работы|услуги|монтаж|демонтаж|ремонт|техническое обслуживание)'"',
+ 'technical':r'\\b(?:dn|ду|pn|ру)\\s*[-:]?\\s*\\d+',
+}
+for scope,rows in [('review',review),('prov',provisional),('label-match',[r for r in labels if str(r).find('MATCHED')>=0]),('all',all_rows)]:
+ print('\\n',scope,len(rows))
+ for n,p in features.items():print(n,sum(bool(re.search(p,str(r[qkey]),re.I)) for r in rows))
+ print('samples:')
+ for r in rows[:10]:print('-',r[qkey][:220])
+PY" in /workspaces/ML-Cancer-Data
+ exited 1 in 36ms:
+shapes <class 'list'> 253 <class 'dict'> 90 <class 'list'> 33
+
+ all first [
+ {
+  "id": "tender_ap123752_001",
+  "query": "Кран шаровой ВР ручка 1/2 IVR 954 №000002122678"
+ },
+ {
+  "id": "tender_ap123752_002",
+  "query": "Кран шаровый ВР ручка 1 IVR 954"
+ }
+]
+Traceback (most recent call last):
+  File "<stdin>", line 11, in <module>
+KeyError: slice(None, 2, None)
+
+exec
+/bin/bash -lc "python - <<'PY'
+import gzip,json,re,collections
+from pathlib import Path
+base=Path('data')
+def load(name):
+ with gzip.open(base/name,'rt',encoding='utf-8') as f:return json.load(f)
+def rows(x): return x if isinstance(x,list) else x.get('labels',x.get('items',[])) if isinstance(x,dict) else []
+A=load('tender_queries_kontur_5files.json.gz'); L=load('tender_queries_kontur_5files_labels_gold_v1.json.gz'); P=load('tender_queries_kontur_5files_provisional_not_found.json.gz')
+print('shapes',len(A),type(L),list(L)[:12],len(P))
+print('labels excerpt',json.dumps(L,ensure_ascii=False,indent=1)[:3200])
+print('provisional first',json.dumps(P[:2],ensure_ascii=False,indent=1)[:1800])
+# extract label id recursively simple expected dict keyed ids
+labids=set(L) if isinstance(L,dict) else {r['id'] for r in L}
+proids={r['id'] for r in P}
+R=[r for r in A if r['id'] not in labids|proids]
+print('sets',len(labids),len(proids),len(R),'overlap',len(labids&proids))
+features={'ball':r'шаров','butterfly':r'затвор','filter':r'фильтр|картридж|водоочист|осмос','work':r'монтаж|демонтаж|ремонт|технич(?:еск)?.*обслуж|обслуживан|установк','brand':r'\\b(?:ivr|valtec|tecofi|kvant|бивал|genebre|bugatti|broen|danfoss|auma)\\b','thread':r'резьб|муфтов|\\b(?:вр|нр|вв|вн|ff|mf)\\b|дюйм|[0-9]+\\s*[\"″]','designation':r'\\b[а-яa-z]{1,5}[.-]?\\d{1,}(?:[.-]\\d+){1,}','technical':r'\\b(?:dn|ду|pn|ру)\\s*[-:]?\\s*\\d+'}
+for scope,rs in [('review',R),('prov',P),('all',A)]:
+ print('\\n',scope,len(rs));
+ for n,p in features.items():print(n,sum(bool(re.search(p,r['query'],re.I)) for r in rs),end='; ')
+ print('\\n samples')
+ for r in rs[:16]:print('-',r['query'][:200])
+PY" in /workspaces/ML-Cancer-Data
+ succeeded in 91ms:
+shapes 253 <class 'dict'> ['tender_ap123752_001', 'tender_ap123752_003', 'tender_ap123752_006', 'tender_ap123752_010', 'tender_ap123752_015', 'tender_ap123752_023', 'tender_ap123752_024', 'tender_ap123752_025', 'tender_ap123752_028', 'tender_ap123752_029', 'tender_ap123752_030', 'tender_ap123752_038'] 33
+labels excerpt {
+ "tender_ap123752_001": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   17862
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_003": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   17862
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_006": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   18842,
+   4015,
+   4016
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_010": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   3269,
+   18648,
+   1731
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_015": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   18742,
+   3822
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_023": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   15531,
+   15258,
+   18458
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_024": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   1134,
+   18839,
+   15657
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_025": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   16432,
+   15257
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_028": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   6740,
+   6639,
+   18564
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tender_ap123752_029": {
+  "label_status": "VERIFIED",
+  "acceptable_ld_ids": [
+   16432,
+   16132
+  ],
+  "expected_status": "MATCHED",
+  "human_comment": "High-confidence first-pass GOLD: returned LD candidate matches the requested product family and all explicit DN/PN constraints visible in the tender line."
+ },
+ "tend
+provisional first [
+ {
+  "id": "tender_ap123752_050",
+  "query": "Задвижка DN 80 PN 8,0МПа УХЛ, с КОФ",
+  "suggested_status": "NOT_FOUND",
+  "reason": "No candidate of the requested product family appears in hybrid top-20. Kept out of VERIFIED GOLD until the full LD catalog is checked."
+ },
+ {
+  "id": "tender_ap123752_051",
+  "query": "Задвижка DN 80 PN 8,0МПа УХЛ с КОФ",
+  "suggested_status": "NOT_FOUND",
+  "reason": "No candidate of the requested product family appears in hybrid top-20. Kept out of VERIFIED GOLD until the full LD catalog is checked."
+ }
+]
+sets 90 33 130 overlap 0
+
+ review 130
+ball 53; butterfly 20; filter 33; work 11; brand 43; thread 50; designation 6; technical 33; 
+ samples
+- Кран шаровый ВР ручка 1 IVR 954
+- Затвор поворотный Р=16 бар Ду80 №000002542059
+- Кран VALTEC VT.214 3/4"
+- Затвор поворотный Р=16 бар Ду80
+- Кран шаровой ВР ручка 1 IVR 954 №000002122682
+- Кран VALTEC VT.214 3/4" №000001986072
+- Разборка фильтра смешанного действия диаметром до 1000мм
+- Кран шаровый ВР бабочка 3/4 IVR 954
+- Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/728 20 микрон
+- Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/728 5 микрон
+- Ремонт фильтра смешанного действия диаметром до 1000мм
+- Снятие фильтра смешанного действия диаметром до 1000мм
+- ТО фильтра муфтового сетчатого
+- Установка фильтра муфтового сетчатого
+- Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ
+- Кран АШС.П.-100/025-02А1
+
+ prov 33
+ball 0; butterfly 0; filter 0; work 4; brand 2; thread 2; designation 0; technical 8; 
+ samples
+- Задвижка DN 80 PN 8,0МПа УХЛ, с КОФ
+- Задвижка DN 80 PN 8,0МПа УХЛ с КОФ
+- Задвижка стальная Ду100 с КОФ
+- Задвижка стальная Ду80 с КОФ
+- Задвижка стальная Ду50 с КОФ
+- Задвижка фланцевая Ду100
+- Задвижка фланцевая Ду159
+- Задвижка d 100 мм, Ру 1,6 МПа
+- Воздухоотводчик автоматический латунный с резьбовым присоединением марки Wind производства Danfoss G 1/2
+- Воздухоотводчик автоматический латунный с резьбовым присоединением марки Wind Danfoss G 1/2
+- Задвижка параллельная с выдвижным шпинделем 30ч6бр, присоединение к трубопроводу фланцевое, номинальное давление 1,0 МПа, номинальный диаметр 80 мм
+- Задвижка параллельная с выдвижным шпинделем 30ч6бр, присоединение к трубопроводу фланцевое, номинальное давление 1,0 МПа, номинальный диаметр 50 мм
+- Задвижка параллельная с выдвижным шпинделем 30ч6бр, присоединение к трубопроводу фланцевое, номинальное давление 1,0 МПа, номинальный диаметр 100 мм
+- Задвижка клиновая с выдвижным шпинделем 30с41нж, присоединение к трубопроводу фланцевое, номинальное давление 1,6 МПа, номинальный диаметр 80 мм
+- Задвижка клиновая с выдвижным шпинделем 30с41нж, присоединение к трубопроводу фланцевое, номинальное давление 1,6 МПа, номинальный диаметр 250 мм
+- Задвижка клиновая с выдвижным шпинделем 30с41нж, присоединение к трубопроводу фланцевое, номинальное давление 1,6 МПа, номинальный диаметр 200 мм
+
+ all 253
+ball 92; butterfly 23; filter 39; work 25; brand 48; thread 63; designation 6; technical 94; 
+ samples
+- Кран шаровой ВР ручка 1/2 IVR 954 №000002122678
+- Кран шаровый ВР ручка 1 IVR 954
+- Кран шаровый ВР ручка 1/2 IVR 954
+- Затвор поворотный Р=16 бар Ду80 №000002542059
+- Кран VALTEC VT.214 3/4"
+- Затвор поворотный
+- Затвор поворотный Р=16 бар Ду80
+- Кран шаровой ВР ручка 1 IVR 954 №000002122682
+- Кран VALTEC VT.214 3/4" №000001986072
+- Кран шаровой КШ-50 диаметр 50 мм
+- Разборка фильтра смешанного действия диаметром до 1000мм
+- Кран шаровый ВР бабочка 3/4 IVR 954
+- Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/728 20 микрон
+- Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/728 5 микрон
+- Установка фильтра смешанного действия диаметром до 1000мм
+- Ремонт фильтра смешанного действия диаметром до 1000мм
+
+exec
+/bin/bash -lc "python - <<'PY'
+import gzip,json,re,csv,collections
+from pathlib import Path
+from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+base=Path('data')
+with gzip.open(base/'tender_queries_kontur_5files.json.gz','rt',encoding='utf-8') as f:A=json.load(f)
+with gzip.open(base/'tender_queries_kontur_5files_labels_gold_v1.json.gz','rt',encoding='utf-8') as f:L=json.load(f)
+with gzip.open(base/'tender_queries_kontur_5files_provisional_not_found.json.gz','rt',encoding='utf-8') as f:P=json.load(f)
+R=[x for x in A if x['id'] not in set(L)|{x['id'] for x in P}]
+for name,rs in [('review',R),('all',A),('matched',[x for x in A if L.get(x['id'],{}).get('expected_status')=='MATCHED'),('label_nf',[x for x in A if L.get(x['id'],{}).get('expected_status')=='NOT_FOUND')]:
+ alts=[(x,canonicalize_retrieval_query(x['query']).canonical_query) for x in rs]
+ print(name,'alternate',sum(y is not None for x,y in alts),'of',len(rs),'changed anchors',sum('кран' in x['query'].lower() and y is not None for x,y in alts))
+ print('canonical sample');
+ for x,y in [(x,y) for x,y in alts if y][:8]:print(x['id'],':',x['query'],'=>',y)
+# relevant review brand value distribution
+brandpat=re.compile(r'\\b(?:IVR|VALTEC|TECOFI|KVANT|БИВАЛ|GENEBRE|BUGATTI|BROEN|DANFOSS|AUMA)\\b',re.I)
+print('brands review',collections.Counter(m.group(0).upper() for x in R for m in brandpat.finditer(x['query'])))
+# technical designation truncates
+for x in R:
+ q=x['query']; c=canonicalize_retrieval_query(q).canonical_query
+ if 'КШТ.' in q or ('КШТ' in q and c):print('designation',q,'=>',c)
+# catalog summary
+path=Path('ld_products_full_nomenclature.csv')
+with path.open(encoding='utf-8-sig',newline='') as f: rows=list(csv.DictReader(f))
+print('catalog',len(rows))
+for n,p in {'ball':r'шаров','butterfly':r'затвор','filter':r'фильтр','gate':r'задвиж','brass_ball':r'шаров.*латун|латун.*шаров','thread':r'резьб|муфтов','ivr':r'\\bivr\\b','valtec':r'\\bvaltec\\b','tecofi':r'\\btecofi\\b','bival':r'\\bбивал\\b'}.items():
+ print(n,sum(bool(re.search(p,' '.join(str(v or '') for v in row.values()),re.I)) for row in rows))
+# matching evidence labels profile
+for s in ('MATCHED','NOT_FOUND'):
+ ids={i for i,v in L.items() if v['expected_status']==s}; qs=[x['query'] for x in A if x['id'] in ids]
+ print(s,len(qs),'ball',sum('шаров' in q.lower() for q in qs),'brand',sum(bool(brandpat.search(q)) for q in qs),'thread',sum(bool(re.search(r'вр|нр|\\d+[\"″]',q,re.I)) for q in qs))
+PY" in /workspaces/ML-Cancer-Data
+ exited 1 in 1ms:
+exec
+/bin/bash -lc "python - <<'PY'
+import gzip,json,re,csv,collections
+from pathlib import Path
+from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+base=Path('data')
+with gzip.open(base/'tender_queries_kontur_5files.json.gz','rt',encoding='utf-8') as f:A=json.load(f)
+with gzip.open(base/'tender_queries_kontur_5files_labels_gold_v1.json.gz','rt',encoding='utf-8') as f:L=json.load(f)
+with gzip.open(base/'tender_queries_kontur_5files_provisional_not_found.json.gz','rt',encoding='utf-8') as f:P=json.load(f)
+R=[x for x in A if x['id'] not in set(L)|{x['id'] for x in P}]
+groups=[('review',R),('all',A),('matched',[x for x in A if L.get(x['id'],{}).get('expected_status')=='MATCHED']),('label_nf',[x for x in A if L.get(x['id'],{}).get('expected_status')=='NOT_FOUND'])]
+for name,rs in groups:
+ alts=[(x,canonicalize_retrieval_query(x['query']).canonical_query) for x in rs]
+ print(name,'alternate',sum(y is not None for x,y in alts),'of',len(rs),'changed anchors',sum('кран' in x['query'].lower() and y is not None for x,y in alts))
+ print('canonical sample')
+ for x,y in [(x,y) for x,y in alts if y][:8]:print(x['id'],':',x['query'],'=>',y)
+brandpat=re.compile(r'\\b(?:IVR|VALTEC|TECOFI|KVANT|БИВАЛ|GENEBRE|BUGATTI|BROEN|DANFOSS|AUMA)\\b',re.I)
+print('brands review',collections.Counter(m.group(0).upper() for x in R for m in brandpat.finditer(x['query'])))
+for x in R:
+ q=x['query']; c=canonicalize_retrieval_query(q).canonical_query
+ if 'КШТ.' in q or ('КШТ' in q and c):print('designation',q,'=>',c)
+path=Path('ld_products_full_nomenclature.csv')
+with path.open(encoding='utf-8-sig',newline='') as f: rows=list(csv.DictReader(f))
+print('catalog',len(rows))
+for n,p in {'ball':r'шаров','butterfly':r'затвор','filter':r'фильтр','gate':r'задвиж','brass_ball':r'шаров.*латун|латун.*шаров','thread':r'резьб|муфтов','ivr':r'\\bivr\\b','valtec':r'\\bvaltec\\b','tecofi':r'\\btecofi\\b','bival':r'\\bбивал\\b'}.items():
+ print(n,sum(bool(re.search(p,' '.join(str(v or '') for v in row.values()),re.I)) for row in rows))
+for s in ('MATCHED','NOT_FOUND'):
+ ids={i for i,v in L.items() if v['expected_status']==s}; qs=[x['query'] for x in A if x['id'] in ids]
+ print(s,len(qs),'ball',sum('шаров' in q.lower() for q in qs),'brand',sum(bool(brandpat.search(q)) for q in qs),'thread',sum(bool(re.search(r'вр|нр|\\d+[\"″]',q,re.I)) for q in qs))
+PY" in /workspaces/ML-Cancer-Data
+ succeeded in 20685ms:
+review alternate 40 of 130 changed anchors 25
+canonical sample
+tender_ap123752_004 : Затвор поворотный Р=16 бар Ду80 №000002542059 => Затвор поворотный Р=16 бар DN 80 №000002542059
+tender_ap123752_007 : Затвор поворотный Р=16 бар Ду80 => Затвор поворотный Р=16 бар DN 80
+tender_ap123752_020 : Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ => Кран БИВАЛ К
+tender_ap123752_026 : Кран 11Б27п1 Ду20 Ру16 вода => Кран 11Б27п1 DN 20 PN 16 вода
+tender_ap123752_027 : Кран 11Б27п1 Ду25 Ру16 => Кран 11Б27п1 DN 25 PN 16
+tender_ap123752_039 : Фильтр сетч.IS40.03.0600.040.40. Ф/Ф DN40 => Фильтр сетч.IS40.03.0600.040.40. Ф/Ф DN 40
+tender_ap123752_046 : Кран шаровой латунь хром R850 красный ВР полнопроходной рычаг Ду 25мм Ру28 => Кран шаровой латунь хром R850 красный ВР полнопроходной рычаг Ду 25мм PN 28
+tender_ap123752_052 : Затвор. Затвор дисковый, Ду 40 => Затвор. Затвор дисковый,DN 40
+all alternate 124 of 253 changed anchors 72
+canonical sample
+tender_ap123752_004 : Затвор поворотный Р=16 бар Ду80 №000002542059 => Затвор поворотный Р=16 бар DN 80 №000002542059
+tender_ap123752_007 : Затвор поворотный Р=16 бар Ду80 => Затвор поворотный Р=16 бар DN 80
+tender_ap123752_020 : Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ => Кран БИВАЛ К
+tender_ap123752_023 : Кран шаровый Ду15 => Кран шаровый DN 15
+tender_ap123752_024 : Кран шаровый Ду32 => Кран шаровый DN 32
+tender_ap123752_025 : Кран шаровый Ду25 => Кран шаровый DN 25
+tender_ap123752_026 : Кран 11Б27п1 Ду20 Ру16 вода => Кран 11Б27п1 DN 20 PN 16 вода
+tender_ap123752_027 : Кран 11Б27п1 Ду25 Ру16 => Кран 11Б27п1 DN 25 PN 16
+matched alternate 52 of 72 changed anchors 47
+canonical sample
+tender_ap123752_023 : Кран шаровый Ду15 => Кран шаровый DN 15
+tender_ap123752_024 : Кран шаровый Ду32 => Кран шаровый DN 32
+tender_ap123752_025 : Кран шаровый Ду25 => Кран шаровый DN 25
+tender_ap123752_028 : Кран шаровой Dn 40 => Кран шаровой DN 40
+tender_ap123752_029 : Кран шаровой Dn 25 => Кран шаровой DN 25
+tender_ap123752_030 : Кран шаровой Dn 15 => Кран шаровой DN 15
+tender_ap123752_038 : Кран шаровый Ду25 Ру16 => Кран шаровый DN 25 PN 16
+tender_ap123752_060 : Кран шаровый фланцевый Ду50, Ру1,6 МПа => Кран шаровый фланцевый DN 50,PN 1,6 МПа
+label_nf alternate 8 of 18 changed anchors 0
+canonical sample
+tender_ap123105_012 : ТО запорной арматуры Ду 50. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена) => ТО запорной арматуры DN 50. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена)
+tender_ap123105_028 : ТО запорной арматуры Ду 150. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена) => ТО запорной арматуры DN 150. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена)
+tender_ap123105_035 : ТО запорной арматуры Ду 50. Проверка прокладочных соединений и сальникового уплотнения => ТО запорной арматуры DN 50. Проверка прокладочных соединений и сальникового уплотнения
+tender_ap123105_036 : ТО запорной арматуры Ду 25. Проверка прокладочных соединений и сальникового уплотнения => ТО запорной арматуры DN 25. Проверка прокладочных соединений и сальникового уплотнения
+tender_ap123105_041 : ТО запорной арматуры Ду 25. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена) => ТО запорной арматуры DN 25. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена)
+tender_ap123105_042 : ТО запорной арматуры Ду 25: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена) => ТО запорной арматуры DN 25: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена)
+tender_ap123105_043 : ТО запорной арматуры Ду 50: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена) => ТО запорной арматуры DN 50: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена)
+tender_ap123105_044 : Техническое обслуживание запорной арматуры Ду 25-150: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена) => Техническое обслуживание запорной арматуры DN 25-150: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена)
+brands review Counter({'IVR': 30, 'VALTEC': 5, 'KVANT': 4, 'TECOFI': 3, 'БИВАЛ': 1})
+designation Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ => Кран БИВАЛ К
+catalog 15788
+ball 14433
+butterfly 356
+filter 129
+gate 6
+brass_ball 658
+thread 1663
+ivr 0
+valtec 0
+tecofi 0
+bival 0
+MATCHED 72 ball 37 brand 3 thread 9
+NOT_FOUND 18 ball 2 brand 0 thread 0
+
+exec
+/bin/bash -lc "python - <<'PY'
+import gzip,json,re,csv,collections
+from pathlib import Path
+from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+base=Path('data')
+with gzip.open(base/'tender_queries_kontur_5files.json.gz','rt',encoding='utf-8') as f:A=json.load(f)
+with gzip.open(base/'tender_queries_kontur_5files_labels_gold_v1.json.gz','rt',encoding='utf-8') as f:L=json.load(f)
+with gzip.open(base/'tender_queries_kontur_5files_provisional_not_found.json.gz','rt',encoding='utf-8') as f:P=json.load(f)
+R=[x for x in A if x['id'] not in set(L)|{x['id'] for x in P}]
+groups=[('review',R),('all',A),('matched',[x for x in A if L.get(x['id'],{}).get('expected_status')=='MATCHED']),('label_nf',[x for x in A if L.get(x['id'],{}).get('expected_status')=='NOT_FOUND'])]
+for name,rs in groups:
+ alts=[(x,canonicalize_retrieval_query(x['query']).canonical_query) for x in rs]
+ print(name,'alternate',sum(y is not None for x,y in alts),'of',len(rs),'changed anchors',sum('кран' in x['query'].lower() and y is not None for x,y in alts))
+ print('canonical sample')
+ for x,y in [(x,y) for x,y in alts if y][:8]:print(x['id'],':',x['query'],'=>',y)
+brandpat=re.compile(r'\\b(?:IVR|VALTEC|TECOFI|KVANT|БИВАЛ|GENEBRE|BUGATTI|BROEN|DANFOSS|AUMA)\\b',re.I)
+print('brands review',collections.Counter(m.group(0).upper() for x in R for m in brandpat.finditer(x['query'])))
+for x in R:
+ q=x['query']; c=canonicalize_retrieval_query(q).canonical_query
+ if 'КШТ.' in q or ('КШТ' in q and c):print('designation',q,'=>',c)
+path=Path('ld_products_full_nomenclature.csv')
+with path.open(encoding='utf-8-sig',newline='') as f: rows=list(csv.DictReader(f))
+print('catalog',len(rows))
+for n,p in {'ball':r'шаров','butterfly':r'затвор','filter':r'фильтр','gate':r'задвиж','brass_ball':r'шаров.*латун|латун.*шаров','thread':r'резьб|муфтов','ivr':r'\\bivr\\b','valtec':r'\\bvaltec\\b','tecofi':r'\\btecofi\\b','bival':r'\\bбивал\\b'}.items():
+ print(n,sum(bool(re.search(p,' '.join(str(v or '') for v in row.values()),re.I)) for row in rows))
+for s in ('MATCHED','NOT_FOUND'):
+ ids={i for i,v in L.items() if v['expected_status']==s}; qs=[x['query'] for x in A if x['id'] in ids]
+ print(s,len(qs),'ball',sum('шаров' in q.lower() for q in qs),'brand',sum(bool(brandpat.search(q)) for q in qs),'thread',sum(bool(re.search(r'вр|нр|\\d+[\"″]',q,re.I)) for q in qs))
+PY" in /workspaces/ML-Cancer-Data
+ succeeded in 12276ms:
+review alternate 40 of 130 changed anchors 25
+canonical sample
+tender_ap123752_004 : Затвор поворотный Р=16 бар Ду80 №000002542059 => Затвор поворотный Р=16 бар DN 80 №000002542059
+tender_ap123752_007 : Затвор поворотный Р=16 бар Ду80 => Затвор поворотный Р=16 бар DN 80
+tender_ap123752_020 : Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ => Кран БИВАЛ К
+tender_ap123752_026 : Кран 11Б27п1 Ду20 Ру16 вода => Кран 11Б27п1 DN 20 PN 16 вода
+tender_ap123752_027 : Кран 11Б27п1 Ду25 Ру16 => Кран 11Б27п1 DN 25 PN 16
+tender_ap123752_039 : Фильтр сетч.IS40.03.0600.040.40. Ф/Ф DN40 => Фильтр сетч.IS40.03.0600.040.40. Ф/Ф DN 40
+tender_ap123752_046 : Кран шаровой латунь хром R850 красный ВР полнопроходной рычаг Ду 25мм Ру28 => Кран шаровой латунь хром R850 красный ВР полнопроходной рычаг Ду 25мм PN 28
+tender_ap123752_052 : Затвор. Затвор дисковый, Ду 40 => Затвор. Затвор дисковый,DN 40
+all alternate 124 of 253 changed anchors 72
+canonical sample
+tender_ap123752_004 : Затвор поворотный Р=16 бар Ду80 №000002542059 => Затвор поворотный Р=16 бар DN 80 №000002542059
+tender_ap123752_007 : Затвор поворотный Р=16 бар Ду80 => Затвор поворотный Р=16 бар DN 80
+tender_ap123752_020 : Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ => Кран БИВАЛ К
+tender_ap123752_023 : Кран шаровый Ду15 => Кран шаровый DN 15
+tender_ap123752_024 : Кран шаровый Ду32 => Кран шаровый DN 32
+tender_ap123752_025 : Кран шаровый Ду25 => Кран шаровый DN 25
+tender_ap123752_026 : Кран 11Б27п1 Ду20 Ру16 вода => Кран 11Б27п1 DN 20 PN 16 вода
+tender_ap123752_027 : Кран 11Б27п1 Ду25 Ру16 => Кран 11Б27п1 DN 25 PN 16
+matched alternate 52 of 72 changed anchors 47
+canonical sample
+tender_ap123752_023 : Кран шаровый Ду15 => Кран шаровый DN 15
+tender_ap123752_024 : Кран шаровый Ду32 => Кран шаровый DN 32
+tender_ap123752_025 : Кран шаровый Ду25 => Кран шаровый DN 25
+tender_ap123752_028 : Кран шаровой Dn 40 => Кран шаровой DN 40
+tender_ap123752_029 : Кран шаровой Dn 25 => Кран шаровой DN 25
+tender_ap123752_030 : Кран шаровой Dn 15 => Кран шаровой DN 15
+tender_ap123752_038 : Кран шаровый Ду25 Ру16 => Кран шаровый DN 25 PN 16
+tender_ap123752_060 : Кран шаровый фланцевый Ду50, Ру1,6 МПа => Кран шаровый фланцевый DN 50,PN 1,6 МПа
+label_nf alternate 8 of 18 changed anchors 0
+canonical sample
+tender_ap123105_012 : ТО запорной арматуры Ду 50. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена) => ТО запорной арматуры DN 50. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена)
+tender_ap123105_028 : ТО запорной арматуры Ду 150. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена) => ТО запорной арматуры DN 150. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена)
+tender_ap123105_035 : ТО запорной арматуры Ду 50. Проверка прокладочных соединений и сальникового уплотнения => ТО запорной арматуры DN 50. Проверка прокладочных соединений и сальникового уплотнения
+tender_ap123105_036 : ТО запорной арматуры Ду 25. Проверка прокладочных соединений и сальникового уплотнения => ТО запорной арматуры DN 25. Проверка прокладочных соединений и сальникового уплотнения
+tender_ap123105_041 : ТО запорной арматуры Ду 25. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена) => ТО запорной арматуры DN 25. Проверка прокладочных соединений и сальникового уплотнения (При необходимости замена)
+tender_ap123105_042 : ТО запорной арматуры Ду 25: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена) => ТО запорной арматуры DN 25: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена)
+tender_ap123105_043 : ТО запорной арматуры Ду 50: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена) => ТО запорной арматуры DN 50: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена)
+tender_ap123105_044 : Техническое обслуживание запорной арматуры Ду 25-150: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена) => Техническое обслуживание запорной арматуры DN 25-150: проверка прокладочных соединений и сальникового уплотнения (при необходимости замена)
+brands review Counter({'IVR': 30, 'VALTEC': 5, 'KVANT': 4, 'TECOFI': 3, 'БИВАЛ': 1})
+designation Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ => Кран БИВАЛ К
+catalog 15788
+ball 14433
+butterfly 356
+filter 129
+gate 6
+brass_ball 658
+thread 1663
+ivr 0
+valtec 0
+tecofi 0
+bival 0
+MATCHED 72 ball 37 brand 3 thread 9
+NOT_FOUND 18 ball 2 brand 0 thread 0
+
+exec
+/bin/bash -lc "python - <<'PY'
+import gzip,json,re,csv,collections
+from pathlib import Path
+with gzip.open('data/tender_queries_kontur_5files.json.gz','rt',encoding='utf-8') as f:A=json.load(f)
+with gzip.open('data/tender_queries_kontur_5files_labels_gold_v1.json.gz','rt',encoding='utf-8') as f:L=json.load(f)
+with gzip.open('data/tender_queries_kontur_5files_provisional_not_found.json.gz','rt',encoding='utf-8') as f:P=json.load(f)
+R=[x for x in A if x['id'] not in set(L)|{x['id'] for x in P}]
+for label,pat in [('filters',r'фильтр|картридж|водоочист|осмос'),('services',r'разборка|ремонт|снятие|\\bто\\b|установка|монтаж|демонтаж|обслуживан')]:
+ print('\\n'+label)
+ qs=[x['query'] for x in R if re.search(pat,x['query'],re.I)]
+ for q,n in collections.Counter(qs).most_common():print(n,q)
+with open('ld_products_full_nomenclature.csv',encoding='utf-8-sig',newline='') as f:rows=list(csv.DictReader(f))
+for label,pat in [('cartridge',r'картридж|эфг'),('water_treatment',r'водоочист|осмос|смешанн'),('service',r'ремонт|монтаж|демонтаж|обслуживан'),('filter',r'фильтр')]:
+ hits=[r for r in rows if re.search(pat,' '.join(str(x or '') for x in r.values()),re.I)]
+ print('\\ncatalog',label,len(hits))
+ for r in hits[:5]:print(r['name'][:180])
+PY" in /workspaces/ML-Cancer-Data
+ succeeded in 9909ms:
+
+filters
+1 Разборка фильтра смешанного действия диаметром до 1000мм
+1 Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/728 20 микрон
+1 Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/728 5 микрон
+1 Ремонт фильтра смешанного действия диаметром до 1000мм
+1 Снятие фильтра смешанного действия диаметром до 1000мм
+1 ТО фильтра муфтового сетчатого
+1 Установка фильтра муфтового сетчатого
+1 Снятие фильтра муфтового сетчатого
+1 Картридж PPS-10-20МКМ к фильтруПФ 250
+1 Картридж PPS-10-20МКМ к фильтру ПФ 250
+1 Картридж PPS-10-10МКМ к фильтру ПФ 250
+1 Фильтр сетч.IS40.03.0600.040.40. Ф/Ф DN40
+1 Фильтр воздушный SP-306
+1 Снятие фильтра сербенто-обменника диаметром до 1000мм (сорбционного с активированным углем)
+1 Разборка фильтра сербенто-обменника диаметром до 1000мм
+1 Фильтр тонкой очистки с фильтрующим картриджем ЭФГ 63/508-5 микрон
+1 Объем фильтрующей загрузки с активированным углем и обезжелезиванием
+1 Установка для обезжелезивания воды (фильтры обезжелезивания, коммуникации), производительность до 20 м3/ч
+1 Фильтрующий материал BIRM
+1 Фильтр HoneyWell F76S 1 1/2''AA
+1 Картридж PPS-10-10МКМ к фильтруПФ 250
+1 Снятие фильтра сорбенто-обменника диаметром до 1000мм (сорбционного с активированным углем)
+1 Разборка фильтра сорбенто-обменника диаметром до 1000мм
+1 Ремонт фильтра сорбенто-обменника диаметром до 1000мм
+1 Установка фильтра сорбенто-обменника диаметром до 1000мм
+1 замена фильтрующего элемента в газовом фильтре ГРУ
+1 Фильтрующая загрузка «Lewatit S1467» (смола катионит)
+1 Фильтр механический 1/2"
+1 Вкладыш фильтра в сборе (запасная сетка) для Honeywell F76S 500 мкм из нержавейки.
+1 Обследование состояния и техническое обслуживание оборудования механической фильтрации
+1 Обследование состояния и техническое обслуживание фильтров(замена вкладыша фильтра)
+1 Фильтрующая загрузка 'Lewatit S1467' (смола катионит)
+1 ТО фильтра осветления воды HFM-2472 WS: полная разборка и очистка; промывка фильтрующего материала; засыпка и сборка
+
+services
+1 Разборка фильтра смешанного действия диаметром до 1000мм
+1 Ремонт фильтра смешанного действия диаметром до 1000мм
+1 Снятие фильтра смешанного действия диаметром до 1000мм
+1 ТО фильтра муфтового сетчатого
+1 Установка фильтра муфтового сетчатого
+1 Снятие фильтра муфтового сетчатого
+1 Снятие фильтра сербенто-обменника диаметром до 1000мм (сорбционного с активированным углем)
+1 Разборка фильтра сербенто-обменника диаметром до 1000мм
+1 Снятие кранов шаровых DN15
+1 Установка кранов шаровых DN15
+1 Установка для обезжелезивания воды (фильтры обезжелезивания, коммуникации), производительность до 20 м3/ч
+1 Установка вентиля из чугуна и стали запорного и регулирующего фланцевого — Затворы дисковые, диаметром 50 мм
+1 Снятие фильтра сорбенто-обменника диаметром до 1000мм (сорбционного с активированным углем)
+1 Разборка фильтра сорбенто-обменника диаметром до 1000мм
+1 Ремонт фильтра сорбенто-обменника диаметром до 1000мм
+1 Установка фильтра сорбенто-обменника диаметром до 1000мм
+1 Обследование состояния и техническое обслуживание оборудования механической фильтрации
+1 Обследование состояния и техническое обслуживание фильтров(замена вкладыша фильтра)
+1 ТО фильтра осветления воды HFM-2472 WS: полная разборка и очистка; промывка фильтрующего материала; засыпка и сборка
+1 Установка вентилей, задвижек, затворов, клапанов обратных, кранов проходных на трубопроводах из стальных труб диаметром: до 50 мм
+1 Установка вентилей, задвижек, затворов, клапанов обратных, кранов проходных на трубопроводах из стальных труб диаметром: до 100 мм
+
+catalog cartridge 0
+
+catalog water_treatment 0
+
+catalog service 152
+Комплект ответных фланцев с прокладками и крепежем из стали 09Г2С Ду100 Ру16
+Комплект ответных фланцев с прокладками и крепежем из стали 09Г2С Ду100 Ру16 Исп.3
+Комплект ответных фланцев с прокладками и крепежем из стали 09Г2С Ду100 Ру16 Исп.E
+Комплект ответных фланцев с прокладками и крепежем из стали 09Г2С Ду100 Ру16 Исп.F
+Комплект ответных фланцев с прокладками и крепежем из стали 09Г2С Ду100 Ру25
+
+catalog filter 129
+Грязевик абонентский LD вертикальный приварной DN 100 PN 16
+Грязевик абонентский LD вертикальный приварной DN 125 PN 16
+Грязевик абонентский LD вертикальный приварной DN 150 PN 16
+Грязевик абонентский LD вертикальный приварной DN 200 PN16
+Грязевик абонентский LD вертикальный приварной DN 250 PN 16
+
+exec
+/bin/bash -lc "sed -n '1,260p' src/nomenclature_matcher/prompts/reranker_system.md; sed -n '1,360p' src/nomenclature_matcher/golden_rules.py; sed -n '1,160p' src/nomenclature_matcher/bm25_store.py; find data -maxdepth 3 -type f \\( -iname '*ledger*' -o -iname '*hypoth*' -o -path '*runs*' \\) -print" in /workspaces/ML-Cancer-Data
+ succeeded in 0ms:
+Ты выполняешь техническое сопоставление тендерной номенклатуры с товарами каталога.
+
+Тебе дан исходный запрос и список товаров-кандидатов, уже найденных поисковой системой.
+
+Твоя задача - выбрать наиболее подходящий товар или вернуть NOT_FOUND.
+
+Правила:
+
+1. Не придумывай характеристики, которых нет в запросе или описании товара.
+
+2. Сначала учитывай тип изделия.
+
+3. Учитывай DN, PN, тип присоединения, материал, исполнение, назначение и другие характеристики, если они указаны.
+
+4. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
+
+Например:
+- подземное исполнение;
+- ПЭ патрубки;
+- продувочные свечи;
+- специальный привод;
+- специальное климатическое исполнение;
+- нестандартное назначение.
+
+Если запрос обычный, предпочитай обычное исполнение специализированному при прочих равных.
+
+5. Dense score, BM25 score, ranks и RRF - только вспомогательные сигналы.
+
+6. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
+
+7. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
+
+8. Не выбирай кандидатов, которых нет во входном списке.
+
+Ответь только JSON без markdown.
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Literal
+
+from openai import OpenAI
+from pydantic import BaseModel, ConfigDict, Field
+
+from .models import LDProduct
+from .query_constraints import (
+    QueryConstraints,
+    _exact_token_match,
+    _medium_values,
+    _norm,
+    _property_values,
+    candidate_bore_type,
+    candidate_dn,
+    candidate_has_designation,
+    candidate_joining_type,
+    candidate_material,
+    candidate_material_text,
+    candidate_pn_mpa,
+    candidate_product_type,
+    candidate_thread_type,
+    candidate_valve_type,
+    canonical_control,
+)
+
+
+DEFAULT_GOLDEN_QUERY_PROMPT = (
+    Path(__file__).resolve().parent / "prompts" / "golden_query_constraints_system.md"
+)
+
+
+class UnsupportedConstraint(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    value: str | int | float | bool | None = None
+    reason: str = ""
+
+
+class GoldenQueryConstraints(QueryConstraints):
+    """Structured query facts used only for golden/silver dataset construction.
+
+    `unsupported_constraints` is deliberately first-class. If a tender line contains
+    a requirement that the deterministic catalog evaluator cannot verify, that query
+    must never be auto-promoted to a trusted label.
+    """
+
+    reference_model: str | None = None
+    unsupported_constraints: list[UnsupportedConstraint] = Field(default_factory=list)
+    parser_warnings: list[str] = Field(default_factory=list)
+
+
+class DeepSeekGoldenConstraintExtractor:
+    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+        self.settings = settings
+        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_GOLDEN_QUERY_PROMPT
+        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def extract(self, query: str) -> GoldenQueryConstraints:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": f"QUERY:\n{query}"},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        constraints = GoldenQueryConstraints.model_validate(json.loads(content))
+        return sanitize_golden_constraints(query, constraints)
+
+
+def _append_unsupported(
+    rows: list[UnsupportedConstraint],
+    name: str,
+    value: str | int | float | bool | None,
+    reason: str,
+) -> None:
+    # One logical unsupported requirement should appear only once in diagnostics,
+    # even when both DeepSeek and deterministic guards detect it with different text.
+    if any(row.name == name for row in rows):
+        return
+    rows.append(UnsupportedConstraint(name=name, value=value, reason=reason))
+
+
+def _material_is_explicit(query: str) -> bool:
+    value = _norm(query)
+    return bool(
+        re.search(
+            r"(?:\bстал(?:ь|и|ьн\w*)\b|\bст\.\s*(?:20|09г2с)|09г2с|"
+            r"\bлатун\w*\b|\bчугун\w*\b|\bнерж\w*\b|\baisi\s*\d+|"
+            r"\bпнд\b|полиэтилен)",
+            value,
+        )
+    )
+
+
+def _detect_unmodeled_requirements(
+    query: str,
+    constraints: GoldenQueryConstraints,
+    rows: list[UnsupportedConstraint],
+) -> None:
+    value = _norm(query)
+
+    patterns: tuple[tuple[str, str, str], ...] = (
+        ("temperature", r"температур|(?:до|не менее)\s*-?\d+\s*°?\s*[cс]\b", "temperature is not modeled"),
+        ("stem_height", r"\bн\s*=\s*\d+|шток\w*\s*\d+", "stem/installation height is not modeled"),
+        ("torque_nm", r"\b\d+(?:[.,]\d+)?\s*н\s*[·.*]?\s*м\b|\b\d+\s*нм\b", "actuator torque is not modeled"),
+        ("voltage", r"\b(?:12|24|110|220|230|380|400)\s*в\b", "actuator voltage is not modeled"),
+        ("standard", r"\bгост\s*[0-9-]+", "GOST/standard is not modeled"),
+        ("seal_material", r"\bepdm\b|\bnbr\b|\bptfe\b|\bфторопласт\w*\b", "seal material is not modeled"),
+        ("kit_contents", r"крепеж\w*|проклад\w*", "kit contents are not modeled"),
+        ("union_nut", r"накидн\w*\s+гайк\w*", "union nut execution is not modeled"),
+    )
+    for name, pattern, reason in patterns:
+        match = re.search(pattern, value)
+        if match:
+            _append_unsupported(rows, name, match.group(0), reason)
+
+    if constraints.product_type == "flange":
+        flange_subtype = re.search(
+            r"\b(плоск\w*|воротников\w*|свободн\w*|ответн\w*|тип\s*11)\b",
+            value,
+        )
+        if flange_subtype:
+            _append_unsupported(
+                rows,
+                "flange_subtype",
+                flange_subtype.group(0),
+                "flange subtype is not represented by the deterministic schema",
+            )
+
+    if constraints.product_type in {"actuator", "gearbox"}:
+        model = re.search(r"\b(?:aox[-\s]?q(?:[-\s]?\d+)?|auma\w*)\b", value)
+        if model:
+            _append_unsupported(rows, "drive_model", model.group(0), "drive model/series is not modeled")
+
+    diameter_pair = re.search(r"\b(?:dn|ду|д)\s*\d+\s*/\s*\d+", value)
+    if diameter_pair:
+        _append_unsupported(
+            rows,
+            "secondary_diameter_or_reduced_bore",
+            diameter_pair.group(0),
+            "two diameters need explicit domain interpretation",
+        )
+
+    if re.search(r"\b\d+\s*[-–]\s*\d+\s*мм\b", value):
+        _append_unsupported(
+            rows,
+            "diameter_range",
+            "range",
+            "multi-DN query cannot produce one exact golden set",
+        )
+
+    if constraints.dn is None:
+        inch = re.search(r"\b(?:1/2|3/4|1\s+1/4|1\s+1/2|2)\s*(?:\"|дюйм)?", value)
+        if inch:
+            _append_unsupported(rows, "inch_size", inch.group(0), "inch-to-DN mapping is not modeled here")
+
+
+def sanitize_golden_constraints(
+    query: str,
+    constraints: GoldenQueryConstraints,
+) -> GoldenQueryConstraints:
+    """Apply deterministic guards to LLM output before it can affect labels."""
+
+    payload = constraints.model_dump()
+    warnings = list(constraints.parser_warnings)
+    unsupported = [UnsupportedConstraint.model_validate(row) for row in payload["unsupported_constraints"]]
+    # Collapse duplicate names that may already have been returned by the parser.
+    deduped: list[UnsupportedConstraint] = []
+    for row in unsupported:
+        _append_unsupported(deduped, row.name, row.value, row.reason)
+    unsupported = deduped
+    value = _norm(query)
+
+    if constraints.body_material is not None and not _material_is_explicit(query):
+        warnings.append(
+            "body_material was inferred although the query contains no explicit material cue; field cleared"
+        )
+        payload["body_material"] = None
+        payload["body_material_grade"] = None
+
+    if constraints.body_material_grade is not None:
+        grade = _norm(constraints.body_material_grade)
+        if grade and grade not in value and not _material_is_explicit(query):
+            warnings.append(
+                "body_material_grade was inferred from a designation instead of explicit query text; field cleared"
+            )
+            payload["body_material_grade"] = None
+
+    analog_request = bool(re.search(r"\b(аналог|эквивалент)\w*\b", value))
+    competitor_hint = bool(re.search(r"\b(ридан|danfoss|гранв[эе]л|auma|aox)\b", value))
+    if constraints.valve_designation and analog_request and competitor_hint:
+        payload["reference_model"] = payload.get("reference_model") or constraints.valve_designation
+        payload["valve_designation"] = None
+        warnings.append("competitor/reference designation moved out of exact LD designation constraint")
+
+    reference_model = payload.get("reference_model")
+    if reference_model:
+        _append_unsupported(
+            unsupported,
+            "reference_model",
+            reference_model,
+            "reference/competitor model equivalence is not deterministic",
+        )
+
+    _detect_unmodeled_requirements(query, constraints, unsupported)
+    payload["unsupported_constraints"] = [row.model_dump() for row in unsupported]
+    payload["parser_warnings"] = sorted(set(warnings))
+    return GoldenQueryConstraints.model_validate(payload)
+
+
+def strict_candidate_control(product: LDProduct) -> str | None:
+    """Return only control that is actually present in product data.
+
+    The old research helper defaulted every ball valve with missing control metadata to
+    `manual`. That is useful as a search heuristic but unsafe for golden truth.
+    """
+
+    for value in [*_property_values(product, "Управление"), product.name]:
+        result = canonical_control(value)
+        if result:
+            return result
+    return None
+
+
+@dataclass(frozen=True)
+class GoldenMatchDecision:
+    status: Literal["PASS", "FAIL", "UNKNOWN"]
+    checks: dict[str, str]
+    unknown_fields: tuple[str, ...] = ()
+    failed_fields: tuple[str, ...] = ()
+
+    @property
+    def matches(self) -> bool:
+        return self.status == "PASS"
+
+
+def evaluate_product_strict(
+    product: LDProduct,
+    constraints: GoldenQueryConstraints,
+) -> GoldenMatchDecision:
+    checks: dict[str, str] = {}
+    unknown: list[str] = []
+    failed: list[str] = []
+
+    def exact(field: str, actual: Any, expected: Any, *, unknown_values: set[Any] | None = None) -> None:
+        if expected is None:
+            return
+        unknown_set = unknown_values or {None, ""}
+        checks[field] = f"{actual!r} == {expected!r}"
+        if actual in unknown_set:
+            unknown.append(field)
+        elif actual != expected:
+            failed.append(field)
+
+    # Product type is a coarse pre-filter, not an optional attribute. A product whose
+    # canonical type differs from the requested type (including `other`) cannot become
+    # UNKNOWN and poison the unresolved-candidate count for the whole catalog.
+    actual_type = candidate_product_type(product)
+    checks["product_type"] = f"{actual_type!r} == {constraints.product_type!r}"
+    if actual_type != constraints.product_type:
+        return GoldenMatchDecision(
+            status="FAIL",
+            checks=checks,
+            failed_fields=("product_type",),
+        )
+
+    if constraints.dn is not None:
+        exact("dn", candidate_dn(product), constraints.dn)
+
+    if constraints.pn_min_mpa is not None:
+        actual_pn = candidate_pn_mpa(product)
+        checks["pn"] = f"{actual_pn!r} >= {constraints.pn_min_mpa!r} MPa"
+        if actual_pn is None:
+            unknown.append("pn")
+        elif actual_pn + 1e-9 < constraints.pn_min_mpa:
+            failed.append("pn")
+
+    if constraints.joining_type is not None:
+        exact(
+            "joining_type",
+            candidate_joining_type(product),
+            constraints.joining_type,
+            unknown_values={None, "", "other"},
+        )
+
+    if constraints.thread_type is not None:
+        exact("thread_type", candidate_thread_type(product), constraints.thread_type)
+
+    if constraints.working_medium is not None:
+        expected_medium = _norm(constraints.working_medium)
+        actual_media = _medium_values(product)
+        checks["working_medium"] = f"{actual_media!r} contains exact {expected_medium!r}"
+        if not actual_media:
+            unknown.append("working_medium")
+        elif expected_medium not in actual_media:
+            failed.append("working_medium")
+
+    if constraints.valve_type is not None:
+        exact("valve_type", candidate_valve_type(product), constraints.valve_type)
+
+    if constraints.valve_designation is not None:
+        designation_ok = candidate_has_designation(product, constraints.valve_designation)
+        checks["valve_designation"] = (
+            f"exact normalized {constraints.valve_designation!r}: {designation_ok}"
+        )
+        if not designation_ok:
+            failed.append("valve_designation")
+
+    if constraints.body_material is not None:
+        exact("body_material", candidate_material(product), constraints.body_material)
+
+    if constraints.body_material_grade is not None:
+        expected_grade = _norm(constraints.body_material_grade)
+        actual_material_text = candidate_material_text(product)
+        checks["body_material_grade"] = f"exact {expected_grade!r} in {actual_material_text!r}"
+        if not _norm(actual_material_text):
+            unknown.append("body_material_grade")
+        elif not _exact_token_match(actual_material_text, expected_grade):
+            failed.append("body_material_grade")
+
+    if constraints.bore_type is not None:
+        exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+
+    if constraints.control is not None:
+        exact("control", strict_candidate_control(product), constraints.control)
+
+    if failed:
+        status: Literal["PASS", "FAIL", "UNKNOWN"] = "FAIL"
+    elif unknown:
+        status = "UNKNOWN"
+    else:
+        status = "PASS"
+    return GoldenMatchDecision(
+        status=status,
+        checks=checks,
+        unknown_fields=tuple(sorted(set(unknown))),
+        failed_fields=tuple(sorted(set(failed))),
+    )
+
+
+def classify_catalog_products(
+    products: list[LDProduct],
+    constraints: GoldenQueryConstraints,
+) -> tuple[list[LDProduct], list[LDProduct]]:
+from __future__ import annotations
+
+import math
+from collections import Counter, defaultdict
+
+from .documents import build_lexical_text, build_search_text, tokenize
+from .models import BM25Candidate, LDProduct
+
+try:  # pragma: no cover - exercised when dependency is installed
+    from rank_bm25 import BM25Okapi
+except ImportError:  # pragma: no cover - lightweight fallback for local runs
+    class BM25Okapi:
+        def __init__(self, corpus, k1: float = 1.5, b: float = 0.75):
+            self.corpus = corpus
+            self.k1 = k1
+            self.b = b
+            self.doc_freqs = [Counter(document) for document in corpus]
+            self.doc_len = [len(document) for document in corpus]
+            self.avgdl = sum(self.doc_len) / len(self.doc_len) if self.doc_len else 0.0
+            self.doc_count = len(corpus)
+            doc_freq = defaultdict(int)
+            for freqs in self.doc_freqs:
+                for token in freqs:
+                    doc_freq[token] += 1
+            self.idf = {
+                token: math.log(1 + (self.doc_count - freq + 0.5) / (freq + 0.5))
+                for token, freq in doc_freq.items()
+            }
+
+        def get_scores(self, query_tokens):
+            if not self.corpus:
+                return []
+            scores = [0.0] * self.doc_count
+            for token in query_tokens:
+                idf = self.idf.get(token)
+                if idf is None:
+                    continue
+                for index, freqs in enumerate(self.doc_freqs):
+                    freq = freqs.get(token, 0)
+                    if not freq:
+                        continue
+                    denom = freq + self.k1 * (1 - self.b + self.b * (self.doc_len[index] / self.avgdl if self.avgdl else 0.0))
+                    scores[index] += idf * (freq * (self.k1 + 1)) / denom
+            return scores
+
+
+class BM25Store:
+    def __init__(self, products: list[LDProduct]):
+        self.products = list(products)
+        self.lexical_texts = [build_lexical_text(product) for product in self.products]
+        self.search_texts = [build_search_text(product) for product in self.products]
+        self.corpus = [tokenize(text) for text in self.lexical_texts]
+        self.model = BM25Okapi(self.corpus)
+
+    def search(self, query: str, limit: int) -> list[BM25Candidate]:
+        query_tokens = tokenize(query)
+        if not query_tokens or not self.products or limit <= 0:
+            return []
+        scores = self.model.get_scores(query_tokens)
+        ranked = sorted(enumerate(scores), key=lambda item: item[1], reverse=True)[:limit]
+        results: list[BM25Candidate] = []
+        for index, score in ranked:
+            if score <= 0:
+                continue
+            product = self.products[index]
+            results.append(
+                BM25Candidate(
+                    ld_id=product.id,
+                    name=product.name,
+                    article=product.article,
+                    bm25_score=float(score),
+                    price=product.price,
+                    dn=product.dn,
+                    pn=product.pn,
+                    joining_type=product.joining_type,
+                    url=product.url,
+                    properties=product.properties if isinstance(product.properties, list) else None,
+                    search_text=self.search_texts[index],
+                )
+            )
+        return results
+
+exec
+/bin/bash -lc "python - <<'PY'
+import re
+s=' БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ'
+p=r'(?:[,;]\\s*)?(?:кол-?во|количество|шт\\.?|ед\\.?\\s*изм|для\\s+закуп|поставка|срок)\\b'
+m=re.search(p,s,re.I)
+print(m.group(0),m.span())
+for i,ch in enumerate(s): print(i,repr(ch),bool(re.match(r'\\w',ch)))
+PY" in /workspaces/ML-Cancer-Data
+ succeeded in 19ms:
+ШТ. (8, 11)
+0 ' ' False
+1 'Б' True
+2 'И' True
+3 'В' True
+4 'А' True
+5 'Л' True
+6 ' ' False
+7 'К' True
+8 'Ш' True
+9 'Т' True
+10 '.' False
+11 '1' True
+12 '1' True
+13 '.' False
+14 '0' True
+15 '5' True
+16 '0' True
+17 '.' False
+18 '0' True
+19 '2' True
+20 '5' True
+21 '.' False
+22 'ф' True
+23 '/' False
+24 'ф' True
+25 ' ' False
+26 '5' True
+27 '0' True
+28 'х' True
+29 '2' True
+30 '5' True
+31 ' ' False
+32 'К' True
+33 'О' True
+34 'Ф' True
+
+codex
+{"question":"What causal mechanisms remain promising for improving real-tender LD matching after the current champion and prior experiments?","findings":"The active production path retrieves with the original query plus at most one canonical alternate, fuses dense/BM25 candidates into a fixed top-20, then reranks against the untouched original query. Canonicalization is therefore retrieval-only and fail-open. In the reconstructed 130-row review set, 53 rows mention ball valves, 50 threaded/inch-style cues, 43 third-party brands (30 IVR), 33 filter/water-treatment rows, and 11 explicit service-action rows. Only 40/130 currently receive a canonical alternate. The catalog contains 15,788 products, including substantial ball-valve and butterfly coverage, but no IVR/VALTEC/TECOFI/БИВАЛ tokens; it has no cartridge or water-treatment products, while its 129 “filter” products are principally грязевики. A confirmed parser defect truncates “Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ” to “Кран БИВАЛ К”: the clause-end quantity pattern can recognize embedded “ШТ.” without a required leading token boundary. This is a general parsing error, not a one-off rule. No new evidence supports another branded-model suppression or source-enrichment refinement: three such attempts already increased hidden wrong-NOT_FOUND rate despite retaining original-query retrieval.","decision_impact":"The main uncertainty is whether useful unresolved value is constrained by loss of query evidence during normalization and late fusion, or by genuine catalog-scope/service-consumable requests that should produce uncertainty rather than more retrieval. The Planner should distinguish these mechanisms. Do not select another endpoint/inch, branded-token suppression, or manufacturer-model enrichment variant without new causal evidence; those paths are already tested and unsafe.","unresolved":"The review corpus is unresolved rather than outcome-labeled, so its category counts establish opportunity and scope but not end-to-end uplift. The supplied review-pool gzip remains corrupt; membership is reconstructable from the intact all-rows, labels, and provisional-NOT_FOUND files. It is also unmeasured whether correcting the canonical alternate changes the final top-20, because the original query is retained and may already supply the needed candidate.","sources":[],"evidence_patterns":[{"pattern":"Narrow additive retrieval normalization has conditional value; semantic expansion is not generally beneficial.","supporting_experiments":["legacy-cycle-3 ACCEPTED: deterministic query canonicalization improved safely.","legacy-cycle-4 ACCEPTED: standalone WW expansion improved safely.","legacy-cycle-6 REJECTED: flanged-shorthand canonicalization regressed hidden safety.","legacy-cycle-9 REJECTED: standard-bore wording expansion was neutral.","legacy-cycle-17 REJECTED: installed-electric versus actuator-ready alternate had an unreliable catalog semantic premise."],"interpretation":"The successful causal path is preservation/translation of unambiguous catalog vocabulary, not adding plausible domain semantics. The present parser truncation directly destroys source evidence inside that proven retrieval-only path, so repairing it is materially different from adding another alias.","confidence":0.94},{"pattern":"Changes that alter candidate composition or final compatibility selection have repeatedly failed to improve end-to-end utility.","supporting_experiments":["legacy cycles 1-2: broad filtering and compatibility-evidence intervention regressed.","legacy-cycle-5 REJECTED: evidence-first reranker rubric regressed blind safety.","legacy-cycle-8 REJECTED: deterministic post-rerank compatibility substitution was neutral.","legacy-cycle-16 REJECTED: candidate diversification regressed public coverage.","legacy-cycle-7 REJECTED: catalog structural representation reduced hidden coverage."],"interpretation":"The evidence does not show that more candidate filtering, compatibility gating, prompt changes, diversification, or catalog rewriting is the current bottleneck. A new decision/abstention layer would need a sharply separable request-intent signal, not generic technical compatibility rules.","confidence":0.91},{"pattern":"Branded tender nomenclature is common, but prior genericization and external-fact enrichment were unsafe.","supporting_experiments":["attempt-01 alias_mapping REJECTED: threaded/inch expansion increased hidden wrong-NOT_FOUND rate by 0.04.","attempt-02 alias_mapping REJECTED: supplier/model-noise suppression increased hidden wrong-NOT_FOUND rate by 0.04.","attempt-03 alias_mapping REJECTED: trusted manufacturer/model facts increased hidden wrong-NOT_FOUND rate by 0.08."],"interpretation":"Opaque brand/model text is a real corpus mismatch, but making it more generic or importing source facts did not establish LD interchangeability and degraded safety. This points to underspecification/equivalence uncertainty rather than a simple lexical-recall deficit.","confidence":0.96},{"pattern":"A distinct non-catalog/service class is large enough to compete with more retrieval work.","supporting_experiments":["Real-corpus inspection: 33 review rows are filter/water-treatment related; examples include cartridges, filter media, water-treatment units, and service work.","Catalog inspection: zero catalog texts contain cartridge/ЭФГ or water-treatment terms; 129 filter entries are largely грязевики.","Real-corpus inspection: 11 review rows explicitly request removal, repair, installation, or maintenance."],"interpretation":"For many rows, better retrieval cannot create a compatible sellable LD product. Yet action words alone are insufficient, because some installation/removal lines mention a product family; any intervention must establish service-only or absent-capability evidence affirmatively.","confidence":0.88}],"candidate_directions":[{"mechanism_family":"query_evidence_preservation","history_relation":"REFINEMENT","causal_mechanism":"Repair structural line-item/quantity boundary parsing so a canonical retrieval alternate cannot stop inside an alphanumeric technical designation; retain the raw query, all existing canonical transformations, and final reranking behavior.","competing_explanation":"Because raw-query retrieval remains active, the damaged alternate may not materially affect candidate availability or final selection; the observed defect may be operationally harmless on most rows.","falsifier":"A stratified real-tender retrieval comparison shows that preserving affected designations does not add or improve viable family-consistent candidates in the pre-rerank pool, while public/hidden gates remain flat.","information_gain":"High confidence in correctness and moderate information gain: it isolates whether an established successful mechanism is currently losing evidence through parsing rather than through retrieval or reranking."},{"mechanism_family":"query_variant_evidence_fusion","history_relation":"NEW_LAYER","causal_mechanism":"Represent original and canonical retrieval hits as separate evidence channels through fusion, rather than collapsing each modality to one locally best rank before RRF; reward candidates corroborated by both query forms without removing candidates or changing reranker semantics.","competing_explanation":"The primary limitation may be candidate absence or reranker choice, so preserving alternate-query corroboration may not alter the fixed top-20 meaningfully; candidate-composition changes have previously been risky.","falsifier":"On a real-tender stratification of rows with canonical alternates, variant-aware fusion does not improve family/constraint-consistent candidate presence or rank, or it breaches public/hidden coverage or safety gates.","information_gain":"Moderate-to-high: it tests an untried architectural implication of the accepted canonicalization mechanism while avoiding another semantic expansion or index rebuild."},{"mechanism_family":"catalog_scope_and_request_intent","history_relation":"NEW_LAYER","causal_mechanism":"Use affirmative evidence of service-only procurement or a request category absent from the LD product taxonomy to route toward an uncertain/NOT_FOUND outcome, while allowing lines that name an actual purchasable product to continue through ordinary retrieval.","competing_explanation":"Tender work descriptions can embed an intended product, and catalog lexical fields can be noisy; a router could convert recoverable matches into wrong NOT_FOUND, reproducing prior selection-adjacent regressions.","falsifier":"A manually reviewed non-benchmark sample shows material overlap between the proposed service/absent-category cues and viable LD product requests, or regression gates show increased wrong-NOT_FOUND.","information_gain":"High: it separates genuine catalog noncoverage from retrieval failure in the sizeable consumable, water-treatment, and service portion of the real corpus."}]}
+tokens used
+77,572
+{"question":"What causal mechanisms remain promising for improving real-tender LD matching after the current champion and prior experiments?","findings":"The active production path retrieves with the original query plus at most one canonical alternate, fuses dense/BM25 candidates into a fixed top-20, then reranks against the untouched original query. Canonicalization is therefore retrieval-only and fail-open. In the reconstructed 130-row review set, 53 rows mention ball valves, 50 threaded/inch-style cues, 43 third-party brands (30 IVR), 33 filter/water-treatment rows, and 11 explicit service-action rows. Only 40/130 currently receive a canonical alternate. The catalog contains 15,788 products, including substantial ball-valve and butterfly coverage, but no IVR/VALTEC/TECOFI/БИВАЛ tokens; it has no cartridge or water-treatment products, while its 129 “filter” products are principally грязевики. A confirmed parser defect truncates “Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ” to “Кран БИВАЛ К”: the clause-end quantity pattern can recognize embedded “ШТ.” without a required leading token boundary. This is a general parsing error, not a one-off rule. No new evidence supports another branded-model suppression or source-enrichment refinement: three such attempts already increased hidden wrong-NOT_FOUND rate despite retaining original-query retrieval.","decision_impact":"The main uncertainty is whether useful unresolved value is constrained by loss of query evidence during normalization and late fusion, or by genuine catalog-scope/service-consumable requests that should produce uncertainty rather than more retrieval. The Planner should distinguish these mechanisms. Do not select another endpoint/inch, branded-token suppression, or manufacturer-model enrichment variant without new causal evidence; those paths are already tested and unsafe.","unresolved":"The review corpus is unresolved rather than outcome-labeled, so its category counts establish opportunity and scope but not end-to-end uplift. The supplied review-pool gzip remains corrupt; membership is reconstructable from the intact all-rows, labels, and provisional-NOT_FOUND files. It is also unmeasured whether correcting the canonical alternate changes the final top-20, because the original query is retained and may already supply the needed candidate.","sources":[],"evidence_patterns":[{"pattern":"Narrow additive retrieval normalization has conditional value; semantic expansion is not generally beneficial.","supporting_experiments":["legacy-cycle-3 ACCEPTED: deterministic query canonicalization improved safely.","legacy-cycle-4 ACCEPTED: standalone WW expansion improved safely.","legacy-cycle-6 REJECTED: flanged-shorthand canonicalization regressed hidden safety.","legacy-cycle-9 REJECTED: standard-bore wording expansion was neutral.","legacy-cycle-17 REJECTED: installed-electric versus actuator-ready alternate had an unreliable catalog semantic premise."],"interpretation":"The successful causal path is preservation/translation of unambiguous catalog vocabulary, not adding plausible domain semantics. The present parser truncation directly destroys source evidence inside that proven retrieval-only path, so repairing it is materially different from adding another alias.","confidence":0.94},{"pattern":"Changes that alter candidate composition or final compatibility selection have repeatedly failed to improve end-to-end utility.","supporting_experiments":["legacy cycles 1-2: broad filtering and compatibility-evidence intervention regressed.","legacy-cycle-5 REJECTED: evidence-first reranker rubric regressed blind safety.","legacy-cycle-8 REJECTED: deterministic post-rerank compatibility substitution was neutral.","legacy-cycle-16 REJECTED: candidate diversification regressed public coverage.","legacy-cycle-7 REJECTED: catalog structural representation reduced hidden coverage."],"interpretation":"The evidence does not show that more candidate filtering, compatibility gating, prompt changes, diversification, or catalog rewriting is the current bottleneck. A new decision/abstention layer would need a sharply separable request-intent signal, not generic technical compatibility rules.","confidence":0.91},{"pattern":"Branded tender nomenclature is common, but prior genericization and external-fact enrichment were unsafe.","supporting_experiments":["attempt-01 alias_mapping REJECTED: threaded/inch expansion increased hidden wrong-NOT_FOUND rate by 0.04.","attempt-02 alias_mapping REJECTED: supplier/model-noise suppression increased hidden wrong-NOT_FOUND rate by 0.04.","attempt-03 alias_mapping REJECTED: trusted manufacturer/model facts increased hidden wrong-NOT_FOUND rate by 0.08."],"interpretation":"Opaque brand/model text is a real corpus mismatch, but making it more generic or importing source facts did not establish LD interchangeability and degraded safety. This points to underspecification/equivalence uncertainty rather than a simple lexical-recall deficit.","confidence":0.96},{"pattern":"A distinct non-catalog/service class is large enough to compete with more retrieval work.","supporting_experiments":["Real-corpus inspection: 33 review rows are filter/water-treatment related; examples include cartridges, filter media, water-treatment units, and service work.","Catalog inspection: zero catalog texts contain cartridge/ЭФГ or water-treatment terms; 129 filter entries are largely грязевики.","Real-corpus inspection: 11 review rows explicitly request removal, repair, installation, or maintenance."],"interpretation":"For many rows, better retrieval cannot create a compatible sellable LD product. Yet action words alone are insufficient, because some installation/removal lines mention a product family; any intervention must establish service-only or absent-capability evidence affirmatively.","confidence":0.88}],"candidate_directions":[{"mechanism_family":"query_evidence_preservation","history_relation":"REFINEMENT","causal_mechanism":"Repair structural line-item/quantity boundary parsing so a canonical retrieval alternate cannot stop inside an alphanumeric technical designation; retain the raw query, all existing canonical transformations, and final reranking behavior.","competing_explanation":"Because raw-query retrieval remains active, the damaged alternate may not materially affect candidate availability or final selection; the observed defect may be operationally harmless on most rows.","falsifier":"A stratified real-tender retrieval comparison shows that preserving affected designations does not add or improve viable family-consistent candidates in the pre-rerank pool, while public/hidden gates remain flat.","information_gain":"High confidence in correctness and moderate information gain: it isolates whether an established successful mechanism is currently losing evidence through parsing rather than through retrieval or reranking."},{"mechanism_family":"query_variant_evidence_fusion","history_relation":"NEW_LAYER","causal_mechanism":"Represent original and canonical retrieval hits as separate evidence channels through fusion, rather than collapsing each modality to one locally best rank before RRF; reward candidates corroborated by both query forms without removing candidates or changing reranker semantics.","competing_explanation":"The primary limitation may be candidate absence or reranker choice, so preserving alternate-query corroboration may not alter the fixed top-20 meaningfully; candidate-composition changes have previously been risky.","falsifier":"On a real-tender stratification of rows with canonical alternates, variant-aware fusion does not improve family/constraint-consistent candidate presence or rank, or it breaches public/hidden coverage or safety gates.","information_gain":"Moderate-to-high: it tests an untried architectural implication of the accepted canonicalization mechanism while avoiding another semantic expansion or index rebuild."},{"mechanism_family":"catalog_scope_and_request_intent","history_relation":"NEW_LAYER","causal_mechanism":"Use affirmative evidence of service-only procurement or a request category absent from the LD product taxonomy to route toward an uncertain/NOT_FOUND outcome, while allowing lines that name an actual purchasable product to continue through ordinary retrieval.","competing_explanation":"Tender work descriptions can embed an intended product, and catalog lexical fields can be noisy; a router could convert recoverable matches into wrong NOT_FOUND, reproducing prior selection-adjacent regressions.","falsifier":"A manually reviewed non-benchmark sample shows material overlap between the proposed service/absent-category cues and viable LD product requests, or regression gates show increased wrong-NOT_FOUND.","information_gain":"High: it separates genuine catalog noncoverage from retrieval failure in the sizeable consumable, water-treatment, and service portion of the real corpus."}]}

@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-15-actuation-intent-retrieval-expansion`. The canonicalizer now emits one additive alternate for explicit installed-electric actuator intent and one for actuator-ready intent, gated to supported product queries and conflict-neutral when both states appear. Existing hybrid retrieval and matcher behavior remains source-first: source query is preserved for reranking and `MatchResult.query`, with canonical alternate passed only to retrieval. OpenSpec tasks are marked 5/5 complete. No index rebuild is needed.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py: 32 passed",
+    "python -m pytest -q: 169 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

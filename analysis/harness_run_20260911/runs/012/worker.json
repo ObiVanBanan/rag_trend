@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-12-protected-flange-subtype-verification`. Added deterministic flange subtype recognition and evidence checks, exposed subtype labels to reranker prompts only for explicit subtype queries, and added matcher post-rerank validation that keeps the first compatible selected candidate or returns `NOT_FOUND` with a diagnostic reason. Updated the production reranker prompt and marked all 7 OpenSpec tasks complete. Changed files are limited to allowed production matcher/constraint/reranker modules, the reranker prompt asset, and focused tests.",
+  "tests": [
+    "python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py tests/test_matcher.py -> 41 passed",
+    "python -m pytest -q -> 174 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

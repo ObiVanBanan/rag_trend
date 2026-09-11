@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "IMPLEMENT",
+        "DONE"
+      ]
+    },
+    "change_name": {
+      "type": "string"
+    },
+    "hypothesis": {
+      "type": "string"
+    },
+    "why_now": {
+      "type": "string"
+    },
+    "expected_effect": {
+      "type": "string"
+    },
+    "expected_metric_gain": {
+      "type": "string"
+    },
+    "lesson_from_history": {
+      "type": "string"
+    },
+    "candidate_hypotheses": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 6,
+      "items": {
+        "type": "string"
+      }
+    },
+    "needs_reindex": {
+      "type": "boolean"
+    },
+    "plan_summary": {
+      "type": "string"
+    },
+    "used_external_research": {
+      "type": "boolean"
+    },
+    "research_sources": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "string"
+      }
+    },
+    "research_summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "change_name",
+    "hypothesis",
+    "why_now",
+    "expected_effect",
+    "expected_metric_gain",
+    "lesson_from_history",
+    "candidate_hypotheses",
+    "needs_reindex",
+    "plan_summary",
+    "used_external_research",
+    "research_sources",
+    "research_summary"
+  ],
+  "additionalProperties": false
+}

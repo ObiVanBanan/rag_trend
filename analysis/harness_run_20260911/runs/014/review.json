@@ -1,0 +1,16 @@
+{
+  "decision": "FIX",
+  "summary": "The implementation is narrowly scoped and preserves the original query for reranking/output, but its installed-actuator expansion can misclassify actuator-ready text due to overlapping phrase matching. Public evaluation is inconclusive because Qdrant was unavailable.",
+  "issues": [
+    "`_INSTALLED_ELECTRIC_ACTUATOR_RE` matches the substring `с электроприводом` inside `для установки электроприводом`-style wording if such inflected phrasing occurs, and more importantly the current ready patterns are incomplete for natural tender variants such as `с возможностью установки электропривода`; this risks treating an actuator-ready valve as installed or silently not expanding it.",
+    "The test suite validates only synthetic call flow and canonicalized strings; it does not directly test the key retrieval-recall claim with representative installed-versus-ready catalog candidates, nor does it test mutually exclusive classification across plausible linguistic variants.",
+    "The public harness could not run due to an unavailable Qdrant service, so no measured evidence currently supports promotion. This is not itself a rejection, but the classifier should be made robust before the supervisor evaluates it."
+  ],
+  "fix_plan": [
+    "Define actuation state using ordered, anchored phrase rules: detect actuator-ready intent first (including `для/под/с возможностью ... установки электропривода` variants), then detect installed state; return no alternate if both states are indicated or the wording remains ambiguous.",
+    "Add table-driven unit tests covering installed, ready, ambiguous/conflicting, standalone actuator-product, and ready variants; assert installed and ready expansions are mutually exclusive.",
+    "Add a focused retriever-level test fixture in which original retrieval misses or ranks lower the correct state-specific candidate and the alternate recovers it, while a ready query never receives installed-actuator vocabulary.",
+    "Re-run the focused and full unit suites; allow the supervisor’s normal public/blind evaluation to determine promotion when Qdrant is available."
+  ],
+  "next_direction": "Retain the principle of additive, query-only state canonicalization and original-query reranking. Treat current evaluation as infrastructure-inconclusive; if fixed rules show no measurable gain when services return, reject this direction rather than broadening state expansion without error evidence."
+}

@@ -1,0 +1,24 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "v2-cycle-01-query-evidence-preservation",
+  "hypothesis_family": "query_evidence_preservation",
+  "hypothesis": "Repair generic quantity/clause token boundaries so canonical retrieval alternates retain complete alphanumeric technical designations instead of truncating at embedded quantity-like fragments.",
+  "why_now": "Fresh corpus research confirms a structural evidence-loss bug in the accepted canonicalization layer. Semantic expansion, branded-model enrichment, candidate diversification, and selection-adjacent mechanisms have been neutral or unsafe.",
+  "expected_effect": "Preserve complete designation evidence in additive retrieval queries without changing original-query retrieval, reranking, selection, or indexes.",
+  "expected_cases_delta": 1,
+  "confidence": 0.63,
+  "risk": "low",
+  "success_signal": "Affected real-tender rows retain complete canonical designations and improve viable family-consistent pre-rerank candidates, with no public or hidden gate regression.",
+  "candidate_hypotheses": [
+    "Repair canonical-query quantity/clause token boundaries (selected).",
+    "Use query-variant-aware evidence fusion.",
+    "Route affirmatively evidenced service-only or catalog-absent requests to uncertainty."
+  ],
+  "needs_reindex": false,
+  "planning_depth": "MICRO",
+  "research_question": "",
+  "plan_summary": "Created and strictly validated OpenSpec change `v2-cycle-01-query-evidence-preservation` with proposal, design, capability spec, and focused implementation/test tasks.",
+  "mechanism_family": "query_evidence_preservation",
+  "history_relation": "REFINEMENT",
+  "information_gain": "Tests whether the successful canonicalization path is losing value through structural parsing loss rather than a remaining retrieval or reranking bottleneck."
+}

@@ -1,0 +1,13 @@
+{
+  "decision": "FIX",
+  "summary": "The approach is bounded and preserves source-query reranking, but a common installed-electric spelling is missed and the retrieval test only verifies plumbing, not state-specific recall.",
+  "issues": [
+    "`с эл.приводом` does not normalize or receive installed-electric expansion: the added regex accepts `прив.` but not the common full-word form `приводом`. Read-only execution produced `Кран ... с эл.приводом` without the installed-state terms, despite it expressing the hypothesis's explicit installed-electric intent.",
+    "`test_hybrid_search_uses_state_specific_alternate...` uses generic variant fixtures whose results do not depend on installed-versus-ready vocabulary. It proves both query calls occur, but not that each alternate can retrieve its corresponding control state."
+  ],
+  "fix_plan": [
+    "Extend the electric-abbreviation normalization to cover `с эл.приводом` and spaced variants such as `с эл. приводом`, then add canonicalization regression tests asserting installed-state expansion.",
+    "Replace or supplement the generic hybrid fixture with a query-sensitive fake store: assert installed and actuator-ready alternates each add a distinct state-specific candidate while preserving source candidates, deduplication, limits, and source-query reranking."
+  ],
+  "next_direction": "Treat actuator intent as a viable additive-recall feature only after covering real abbreviation variants and demonstrating state-sensitive candidate expansion; the unavailable Qdrant evaluation is infrastructure-inconclusive, not evidence against the hypothesis."
+}

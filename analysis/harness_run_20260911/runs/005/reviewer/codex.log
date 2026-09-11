@@ -1,0 +1,1730 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0870b-bc5f-7103-8e80-9535f34e13b2
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-05-evidence-first-reranker-rubric",
+  "hypothesis": "An evidence-first DeepSeek reranker rubric will reduce technically conflicting or unprovable final selections by prioritizing explicit tender requirements and catalog evidence over retrieval rank.",
+  "why_now": "Current scored failures are selection failures; no unresolved taxonomy case is proven to be a retrieval miss. The existing reranker prompt remains a general checklist.",
+  "expected_effect": "Better selection among retrieved close variants, especially explicit ball-valve passage/execution conflicts and incomplete candidate evidence, while preserving recall and output behavior.",
+  "expected_metric_gain": "+3.3–6.7 pp public hard-pass and approximately +3.3 pp blind hard-pass; safety metrics should not regress.",
+  "lesson_from_history": "Broad candidate gating (Cycle 1) and compatibility evidence injection (Cycle 2) regressed, so this change adds neither filtering nor extraction. Cycles 3–4 validated additive canonicalization but plateaued on aggregate metrics.",
+  "candidate_hypotheses": [
+    "Evidence-first reranker decision rubric for passage/execution and evidence completeness (selected).",
+    "Explicit flange-subtype schema and candidate interpretation.",
+    "Index-time catalog-text enrichment for aliases and normalized properties.",
+    "Additional compact connection/end-notation canonicalization."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-05-evidence-first-reranker-rubric/. No product code or evaluation artifacts were changed."
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-05-evidence-first-reranker-rubric`. Updated the versioned Russian reranker prompt with an evidence-first decision order, explicit contradiction handling, missing-evidence treatment, secondary retrieval-score usage, and bounded ball-valve passage/execution guidance. Added prompt-contract tests plus mocked reranker regressions for unchanged request configuration, candidate ordering, and existing `MATCHED`/`NOT_FOUND` parsing. Marked all OpenSpec tasks complete.",
+  "tests": [
+    "python -m pytest -q tests/test_reranker.py (13 passed)",
+    "python -m pytest -q tests/test_reranker.py tests/test_hybrid_retriever.py tests/test_serialization.py (23 passed)",
+    "python -m pytest -q (167 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.8333333333333334,
+  "core_pass_rate": 0.8,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.0,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.008333333333333333,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.375,
+  "verdict_counts": {
+    "PASS": 28,
+    "FAIL_HUMAN_REJECT": 1,
+    "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_PRODUCT": 7,
+    "FAIL_PIPELINE": 1,
+    "FAIL_WRONG_NOT_FOUND": 1
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q005",
+    "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+    "reason": "Required fields are missing from the returned product; correctness is not provable."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_PRODUCT",
+    "reason": "Returned product violates one or more deterministic GOLD requirements."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q025",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/prompts/reranker_system.md b/src/nomenclature_matcher/prompts/reranker_system.md
+index 08e907e..3dfac5c 100644
+--- a/src/nomenclature_matcher/prompts/reranker_system.md
++++ b/src/nomenclature_matcher/prompts/reranker_system.md
+@@ -4,15 +4,21 @@
+ 
+ Твоя задача - выбрать наиболее подходящий товар или вернуть NOT_FOUND.
+ 
+-Правила:
++Работай по порядку:
+ 
+-1. Не придумывай характеристики, которых нет в запросе или описании товара.
++1. Выдели только явные требования из исходного запроса: тип изделия, DN, PN, тип присоединения, материал, исполнение/проход, управление, назначение и другие прямо указанные характеристики.
+ 
+-2. Сначала учитывай тип изделия.
++2. Для каждого кандидата сравни эти требования с его name и supplied characteristics/Характеристики. Не придумывай характеристики, которых нет в запросе или описании товара. Отсутствующее доказательство считай непроверенным, а не подтвержденным значением.
+ 
+-3. Учитывай DN, PN, тип присоединения, материал, исполнение, назначение и другие характеристики, если они указаны.
++3. Сначала отсей прямые противоречия существенным явным требованиям: другой тип изделия, другой DN/PN, несовместимое присоединение, материал, исполнение, назначение или управление. Если кандидат прямо противоречит запросу, не выбирай его при наличии совместимого кандидата.
+ 
+-4. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
++4. Среди совместимых кандидатов предпочитай тот, который прямо подтверждает все явные технические требования запроса. Если один кандидат подтверждает требование, а другой оставляет его непроверенным, ставь подтвержденного выше. Неполные данные сами по себе не требуют NOT_FOUND, если кандидат разумно совместим.
++
++5. Для шаровых кранов различай явно запрошенный проход/исполнение: полнопроходной/полнопроходный, редуцированный/неполнопроходной и стандартный/обычный проход. Эти варианты взаимно различны, когда проход явно указан в запросе и явно указан у кандидата. Кандидат с противоположным указанным проходом не лучше совместимого обычного кандидата только потому, что он специализированный или выше в выдаче.
++
++6. Не выводи требование к проходу из общего запроса "кран шаровой" без слов про полный, редуцированный, неполнопроходной, стандартный или обычный проход/исполнение. Общие слова в названии кандидата не являются доказательством специального прохода, если запрос этого не требует.
++
++7. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
+ 
+ Например:
+ - подземное исполнение;
+@@ -24,12 +30,12 @@
+ 
+ Если запрос обычный, предпочитай обычное исполнение специализированному при прочих равных.
+ 
+-5. Dense score, BM25 score, ranks и RRF - только вспомогательные сигналы.
++8. Dense score, BM25 score, ranks и RRF используй только после технического сравнения как вторичные вспомогательные сигналы для близких совместимых кандидатов.
+ 
+-6. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
++9. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
+ 
+-7. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
++10. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
+ 
+-8. Не выбирай кандидатов, которых нет во входном списке.
++11. Не выбирай кандидатов, которых нет во входном списке.
+ 
+ Ответь только JSON без markdown.
+diff --git a/tests/test_reranker.py b/tests/test_reranker.py
+index 74329f2..0c3652a 100644
+--- a/tests/test_reranker.py
++++ b/tests/test_reranker.py
+@@ -4,7 +4,7 @@ from types import SimpleNamespace
+ import pytest
+ 
+ from nomenclature_matcher.models import SearchCandidate
+-from nomenclature_matcher.reranker import DeepSeekReranker
++from nomenclature_matcher.reranker import DeepSeekReranker, load_system_prompt
+ 
+ 
+ class FakeCompletions:
+@@ -52,6 +52,27 @@ def test_rerank_valid_matched():
+     assert [item.candidate_id for item in result.selected] == [2]
+ 
+ 
++def test_rerank_preserves_selected_candidate_ordering():
++    reranker = DeepSeekReranker(
++        settings(),
++        client=FakeClient(
++            content=json.dumps(
++                {
++                    "status": "MATCHED",
++                    "selected": [
++                        {"candidate_id": 2, "confidence": 0.91, "reason": "better evidence"},
++                        {"candidate_id": 1, "confidence": 0.72, "reason": "fallback"},
++                    ],
++                }
++            )
++        ),
++    )
++    result = reranker.rerank("query", candidates())
++    assert result.status == "MATCHED"
++    assert [item.candidate_id for item in result.selected] == [2, 1]
++    assert result.selected[0].reason == "better evidence"
++
++
+ def test_rerank_not_found():
+     reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+     result = reranker.rerank("query", candidates())
+@@ -60,6 +81,19 @@ def test_rerank_not_found():
+     assert result.reason == "no match"
+ 
+ 
++def test_rerank_uses_unchanged_model_request_configuration():
++    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
++    reranker = DeepSeekReranker(settings(), client=client)
++    reranker.rerank("query", candidates())
++
++    call = client.completions.calls[0]
++    assert call["model"] == "deepseek-v4-flash"
++    assert call["temperature"] == 0
++    assert call["response_format"] == {"type": "json_object"}
++    assert call["extra_body"] == {"thinking": {"type": "disabled"}}
++    assert [message["role"] for message in call["messages"]] == ["system", "user"]
++
++
+ def test_rerank_ignores_unknown_and_duplicate_ids():
+     reranker = DeepSeekReranker(
+         settings(),
+@@ -119,3 +153,58 @@ def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+     reranker.rerank("query", candidates())
+     messages = client.completions.calls[0]["messages"]
+     assert messages[0] == {"role": "system", "content": "custom system prompt"}
++
++
++def test_versioned_system_prompt_defines_evidence_first_ordering():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Выдели только явные требования",
++        "сравни эти требования",
++        "name и supplied characteristics/Характеристики",
++        "отсей прямые противоречия",
++        "Dense score, BM25 score, ranks и RRF",
++        "только после технического сравнения",
++        "вторичные вспомогательные сигналы",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_handles_missing_evidence_and_not_found_contract():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Отсутствующее доказательство считай непроверенным",
++        "Неполные данные сами по себе не требуют NOT_FOUND",
++        "разумно совместим",
++        "Верни NOT_FOUND только если кандидаты другого типа",
++        "явно не соответствуют существенным требованиям",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_distinguishes_explicit_ball_valve_passage_only():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Для шаровых кранов различай явно запрошенный проход/исполнение",
++        "полнопроходной/полнопроходный",
++        "редуцированный/неполнопроходной",
++        "стандартный/обычный проход",
++        "взаимно различны",
++        "Кандидат с противоположным указанным проходом",
++        "не лучше совместимого обычного кандидата",
++        "Не выводи требование к проходу из общего запроса \"кран шаровой\"",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_preserves_json_and_candidate_contract():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Не выбирай кандидатов, которых нет во входном списке",
++        "Ответь только JSON без markdown",
++        "Если среди кандидатов есть разумно совместимый товар, выбери лучший из них",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T16:41:28.754720Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a0870b-bc5f-7103-8e80-9535f34e13b2.tmp-1788972088416390477: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"ACCEPT","summary":"I’m reviewing the prompt change and its tests against the stated selection hypothesis; I will not inspect any hidden holdout data or modify files.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "git diff --check && git diff -- src/nomenclature_matcher/prompts/reranker_system.md tests/test_reranker.py && sed -n '1,260p' src/nomenclature_matcher/reranker.py && sed -n '1,240p' tests/test_reranker.py && rg -n \"rerank\\(|DeepSeekReranker|reranker_system|passage|полнопроход|редуцир\" src tests scripts" in /workspaces/ML-Cancer-Data
+ exited 127 in 15ms:
+diff --git a/src/nomenclature_matcher/prompts/reranker_system.md b/src/nomenclature_matcher/prompts/reranker_system.md
+index 08e907e..3dfac5c 100644
+--- a/src/nomenclature_matcher/prompts/reranker_system.md
++++ b/src/nomenclature_matcher/prompts/reranker_system.md
+@@ -4,15 +4,21 @@
+ 
+ Твоя задача - выбрать наиболее подходящий товар или вернуть NOT_FOUND.
+ 
+-Правила:
++Работай по порядку:
+ 
+-1. Не придумывай характеристики, которых нет в запросе или описании товара.
++1. Выдели только явные требования из исходного запроса: тип изделия, DN, PN, тип присоединения, материал, исполнение/проход, управление, назначение и другие прямо указанные характеристики.
+ 
+-2. Сначала учитывай тип изделия.
++2. Для каждого кандидата сравни эти требования с его name и supplied characteristics/Характеристики. Не придумывай характеристики, которых нет в запросе или описании товара. Отсутствующее доказательство считай непроверенным, а не подтвержденным значением.
+ 
+-3. Учитывай DN, PN, тип присоединения, материал, исполнение, назначение и другие характеристики, если они указаны.
++3. Сначала отсей прямые противоречия существенным явным требованиям: другой тип изделия, другой DN/PN, несовместимое присоединение, материал, исполнение, назначение или управление. Если кандидат прямо противоречит запросу, не выбирай его при наличии совместимого кандидата.
+ 
+-4. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
++4. Среди совместимых кандидатов предпочитай тот, который прямо подтверждает все явные технические требования запроса. Если один кандидат подтверждает требование, а другой оставляет его непроверенным, ставь подтвержденного выше. Неполные данные сами по себе не требуют NOT_FOUND, если кандидат разумно совместим.
++
++5. Для шаровых кранов различай явно запрошенный проход/исполнение: полнопроходной/полнопроходный, редуцированный/неполнопроходной и стандартный/обычный проход. Эти варианты взаимно различны, когда проход явно указан в запросе и явно указан у кандидата. Кандидат с противоположным указанным проходом не лучше совместимого обычного кандидата только потому, что он специализированный или выше в выдаче.
++
++6. Не выводи требование к проходу из общего запроса "кран шаровой" без слов про полный, редуцированный, неполнопроходной, стандартный или обычный проход/исполнение. Общие слова в названии кандидата не являются доказательством специального прохода, если запрос этого не требует.
++
++7. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
+ 
+ Например:
+ - подземное исполнение;
+@@ -24,12 +30,12 @@
+ 
+ Если запрос обычный, предпочитай обычное исполнение специализированному при прочих равных.
+ 
+-5. Dense score, BM25 score, ranks и RRF - только вспомогательные сигналы.
++8. Dense score, BM25 score, ranks и RRF используй только после технического сравнения как вторичные вспомогательные сигналы для близких совместимых кандидатов.
+ 
+-6. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
++9. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
+ 
+-7. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
++10. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
+ 
+-8. Не выбирай кандидатов, которых нет во входном списке.
++11. Не выбирай кандидатов, которых нет во входном списке.
+ 
+ Ответь только JSON без markdown.
+diff --git a/tests/test_reranker.py b/tests/test_reranker.py
+index 74329f2..0c3652a 100644
+--- a/tests/test_reranker.py
++++ b/tests/test_reranker.py
+@@ -4,7 +4,7 @@ from types import SimpleNamespace
+ import pytest
+ 
+ from nomenclature_matcher.models import SearchCandidate
+-from nomenclature_matcher.reranker import DeepSeekReranker
++from nomenclature_matcher.reranker import DeepSeekReranker, load_system_prompt
+ 
+ 
+ class FakeCompletions:
+@@ -52,6 +52,27 @@ def test_rerank_valid_matched():
+     assert [item.candidate_id for item in result.selected] == [2]
+ 
+ 
++def test_rerank_preserves_selected_candidate_ordering():
++    reranker = DeepSeekReranker(
++        settings(),
++        client=FakeClient(
++            content=json.dumps(
++                {
++                    "status": "MATCHED",
++                    "selected": [
++                        {"candidate_id": 2, "confidence": 0.91, "reason": "better evidence"},
++                        {"candidate_id": 1, "confidence": 0.72, "reason": "fallback"},
++                    ],
++                }
++            )
++        ),
++    )
++    result = reranker.rerank("query", candidates())
++    assert result.status == "MATCHED"
++    assert [item.candidate_id for item in result.selected] == [2, 1]
++    assert result.selected[0].reason == "better evidence"
++
++
+ def test_rerank_not_found():
+     reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+     result = reranker.rerank("query", candidates())
+@@ -60,6 +81,19 @@ def test_rerank_not_found():
+     assert result.reason == "no match"
+ 
+ 
++def test_rerank_uses_unchanged_model_request_configuration():
++    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
++    reranker = DeepSeekReranker(settings(), client=client)
++    reranker.rerank("query", candidates())
++
++    call = client.completions.calls[0]
++    assert call["model"] == "deepseek-v4-flash"
++    assert call["temperature"] == 0
++    assert call["response_format"] == {"type": "json_object"}
++    assert call["extra_body"] == {"thinking": {"type": "disabled"}}
++    assert [message["role"] for message in call["messages"]] == ["system", "user"]
++
++
+ def test_rerank_ignores_unknown_and_duplicate_ids():
+     reranker = DeepSeekReranker(
+         settings(),
+@@ -119,3 +153,58 @@ def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+     reranker.rerank("query", candidates())
+     messages = client.completions.calls[0]["messages"]
+     assert messages[0] == {"role": "system", "content": "custom system prompt"}
++
++
++def test_versioned_system_prompt_defines_evidence_first_ordering():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Выдели только явные требования",
++        "сравни эти требования",
++        "name и supplied characteristics/Характеристики",
++        "отсей прямые противоречия",
++        "Dense score, BM25 score, ranks и RRF",
++        "только после технического сравнения",
++        "вторичные вспомогательные сигналы",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_handles_missing_evidence_and_not_found_contract():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Отсутствующее доказательство считай непроверенным",
++        "Неполные данные сами по себе не требуют NOT_FOUND",
++        "разумно совместим",
++        "Верни NOT_FOUND только если кандидаты другого типа",
++        "явно не соответствуют существенным требованиям",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_distinguishes_explicit_ball_valve_passage_only():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Для шаровых кранов различай явно запрошенный проход/исполнение",
++        "полнопроходной/полнопроходный",
++        "редуцированный/неполнопроходной",
++        "стандартный/обычный проход",
++        "взаимно различны",
++        "Кандидат с противоположным указанным проходом",
++        "не лучше совместимого обычного кандидата",
++        "Не выводи требование к проходу из общего запроса \"кран шаровой\"",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_preserves_json_and_candidate_contract():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Не выбирай кандидатов, которых нет во входном списке",
++        "Ответь только JSON без markdown",
++        "Если среди кандидатов есть разумно совместимый товар, выбери лучший из них",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
+import json
+from pathlib import Path
+
+from openai import OpenAI
+
+from .models import RerankedCandidate, RerankResult, SearchCandidate
+
+DEFAULT_RERANKER_SYSTEM_PROMPT_PATH = (
+    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+)
+
+
+def load_system_prompt(path: str | Path | None = None) -> str:
+    prompt_path = Path(path) if path else DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    if not prompt_path.is_absolute():
+        cwd_path = Path.cwd() / prompt_path
+        package_path = Path(__file__).resolve().parent / prompt_path
+        if cwd_path.exists():
+            prompt_path = cwd_path
+        elif package_path.exists():
+            prompt_path = package_path
+        else:
+            prompt_path = DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    return prompt_path.read_text(encoding="utf-8").strip()
+
+
+class DeepSeekReranker:
+    def __init__(self, settings, client=None):
+        self.settings = settings
+        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+        self.system_prompt = load_system_prompt(self.system_prompt_path)
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": self._build_prompt(query, candidates)},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return self._parse_result(content, len(candidates))
+
+    def _build_prompt(self, query: str, candidates: list[SearchCandidate]) -> str:
+        blocks = [f"QUERY:\n{query}", "", "CANDIDATES:"]
+        for index, candidate in enumerate(candidates, 1):
+            dense_rank = candidate.dense_rank if candidate.dense_rank is not None else "-"
+            dense_score = f"{candidate.dense_score:.4f}" if candidate.dense_score is not None else "-"
+            bm25_rank = candidate.bm25_rank if candidate.bm25_rank is not None else "-"
+            bm25_score = f"{candidate.bm25_score:.4f}" if candidate.bm25_score is not None else "-"
+            rrf_score = f"{candidate.rrf_score:.6f}" if candidate.rrf_score is not None else "-"
+            blocks.extend(
+                [
+                    "",
+                    f"CANDIDATE {index}",
+                    f"candidate_id: {index}",
+                    f"ld_id: {candidate.ld_id}",
+                    f"article: {candidate.article or ''}",
+                    f"name: {candidate.name}",
+                    f"dense_rank: {dense_rank}",
+                    f"dense_score: {dense_score}",
+                    f"bm25_rank: {bm25_rank}",
+                    f"bm25_score: {bm25_score}",
+                    f"rrf_score: {rrf_score}",
+                    f"retrieval_sources: {', '.join(candidate.retrieval_sources) or '-'}",
+                    "",
+                    "Характеристики:",
+                    candidate.search_text or candidate.name,
+                ]
+            )
+        blocks.extend(
+            [
+                "",
+                "Верни JSON формата:",
+                '{"status":"MATCHED","selected":[{"candidate_id":1,"confidence":0.95,"reason":"..."}],"reason":"..."}',
+                'или {"status":"NOT_FOUND","selected":[],"reason":"..."}',
+                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+            ]
+        )
+        return "\n".join(blocks)
+
+    def _parse_result(self, content: str, candidate_count: int) -> RerankResult:
+        payload = json.loads(content)
+        status = payload.get("status")
+        if status not in {"MATCHED", "NOT_FOUND"}:
+            raise ValueError(f"Unsupported rerank status: {status!r}")
+        selected = []
+        seen = set()
+        for item in payload.get("selected", []):
+            candidate_id = item.get("candidate_id")
+            if not isinstance(candidate_id, int) or not (1 <= candidate_id <= candidate_count):
+                continue
+            if candidate_id in seen:
+                continue
+            seen.add(candidate_id)
+            confidence = item.get("confidence")
+            if confidence is not None:
+                try:
+                    confidence = float(confidence)
+                except (TypeError, ValueError):
+                    confidence = None
+            reason = str(item.get("reason") or "")
+            selected.append(RerankedCandidate(candidate_id=candidate_id, confidence=confidence, reason=reason))
+            if len(selected) >= self.settings.rerank_result_limit:
+                break
+        reason = payload.get("reason")
+        if selected:
+            return RerankResult(status="MATCHED", selected=selected, reason=reason)
+        return RerankResult(status="NOT_FOUND", selected=[], reason=reason)
+import json
+from types import SimpleNamespace
+
+import pytest
+
+from nomenclature_matcher.models import SearchCandidate
+from nomenclature_matcher.reranker import DeepSeekReranker, load_system_prompt
+
+
+class FakeCompletions:
+    def __init__(self, content=None, error=None):
+        self.content = content
+        self.error = error
+        self.calls = []
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        if self.error:
+            raise self.error
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=SimpleNamespace(content=self.content))]
+        )
+
+
+class FakeClient:
+    def __init__(self, content=None, error=None):
+        self.completions = FakeCompletions(content=content, error=error)
+        self.chat = SimpleNamespace(completions=self.completions)
+
+
+def settings():
+    return SimpleNamespace(
+        deepseek_api_key="x",
+        deepseek_base_url="https://api.deepseek.com/v1",
+        deepseek_model="deepseek-v4-flash",
+        deepseek_timeout_seconds=20,
+        rerank_result_limit=3,
+    )
+
+
+def candidates():
+    return [
+        SearchCandidate(ld_id=1, name="A", article="A1", score=0.7, search_text="DN: 50"),
+        SearchCandidate(ld_id=2, name="B", article="B1", score=0.8, search_text="DN: 80"),
+    ]
+
+
+def test_rerank_valid_matched():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}]})))
+    result = reranker.rerank("query", candidates())
+    assert result.status == "MATCHED"
+    assert [item.candidate_id for item in result.selected] == [2]
+
+
+def test_rerank_preserves_selected_candidate_ordering():
+    reranker = DeepSeekReranker(
+        settings(),
+        client=FakeClient(
+            content=json.dumps(
+                {
+                    "status": "MATCHED",
+                    "selected": [
+                        {"candidate_id": 2, "confidence": 0.91, "reason": "better evidence"},
+                        {"candidate_id": 1, "confidence": 0.72, "reason": "fallback"},
+                    ],
+                }
+            )
+        ),
+    )
+    result = reranker.rerank("query", candidates())
+    assert result.status == "MATCHED"
+    assert [item.candidate_id for item in result.selected] == [2, 1]
+    assert result.selected[0].reason == "better evidence"
+
+
+def test_rerank_not_found():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+    result = reranker.rerank("query", candidates())
+    assert result.status == "NOT_FOUND"
+    assert result.selected == []
+    assert result.reason == "no match"
+
+
+def test_rerank_uses_unchanged_model_request_configuration():
+    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
+    reranker = DeepSeekReranker(settings(), client=client)
+    reranker.rerank("query", candidates())
+
+    call = client.completions.calls[0]
+    assert call["model"] == "deepseek-v4-flash"
+    assert call["temperature"] == 0
+    assert call["response_format"] == {"type": "json_object"}
+    assert call["extra_body"] == {"thinking": {"type": "disabled"}}
+    assert [message["role"] for message in call["messages"]] == ["system", "user"]
+
+
+def test_rerank_ignores_unknown_and_duplicate_ids():
+    reranker = DeepSeekReranker(
+        settings(),
+        client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}, {"candidate_id": 2}, {"candidate_id": 999}]})),
+    )
+    result = reranker.rerank("query", candidates())
+    assert result.status == "MATCHED"
+    assert [item.candidate_id for item in result.selected] == [2]
+
+
+def test_rerank_invalid_json_raises():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{bad json"))
+    with pytest.raises(json.JSONDecodeError):
+        reranker.rerank("query", candidates())
+
+
+def test_rerank_timeout_raises():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(error=TimeoutError("timeout")))
+    with pytest.raises(TimeoutError):
+        reranker.rerank("query", candidates())
+
+
+def test_build_prompt_includes_hybrid_retrieval_signals():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{}"))
+    prompt = reranker._build_prompt(
+        "query",
+        [
+            SearchCandidate(
+                ld_id=1,
+                name="A",
+                article="A1",
+                score=0.03,
+                dense_score=0.9,
+                dense_rank=2,
+                bm25_score=1.7,
+                bm25_rank=1,
+                rrf_score=0.03125,
+                retrieval_sources=["dense", "bm25"],
+                search_text="DN: 25",
+            )
+        ],
+    )
+    assert "dense_rank: 2" in prompt
+    assert "vector_score:" not in prompt
+    assert "bm25_rank: 1" in prompt
+    assert "rrf_score: 0.031250" in prompt
+    assert "retrieval_sources: dense, bm25" in prompt
+
+
+def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+    prompt = tmp_path / "system.md"
+    prompt.write_text("custom system prompt", encoding="utf-8")
+    custom_settings = settings()
+    custom_settings.reranker_system_prompt_path = str(prompt)
+    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
+    reranker = DeepSeekReranker(custom_settings, client=client)
+    reranker.rerank("query", candidates())
+    messages = client.completions.calls[0]["messages"]
+    assert messages[0] == {"role": "system", "content": "custom system prompt"}
+
+
+def test_versioned_system_prompt_defines_evidence_first_ordering():
+    prompt = load_system_prompt()
+    required_fragments = [
+        "Выдели только явные требования",
+        "сравни эти требования",
+        "name и supplied characteristics/Характеристики",
+        "отсей прямые противоречия",
+        "Dense score, BM25 score, ranks и RRF",
+        "только после технического сравнения",
+        "вторичные вспомогательные сигналы",
+    ]
+    for fragment in required_fragments:
+        assert fragment in prompt
+
+
+def test_versioned_system_prompt_handles_missing_evidence_and_not_found_contract():
+    prompt = load_system_prompt()
+    required_fragments = [
+        "Отсутствующее доказательство считай непроверенным",
+        "Неполные данные сами по себе не требуют NOT_FOUND",
+        "разумно совместим",
+        "Верни NOT_FOUND только если кандидаты другого типа",
+        "явно не соответствуют существенным требованиям",
+    ]
+    for fragment in required_fragments:
+        assert fragment in prompt
+
+
+def test_versioned_system_prompt_distinguishes_explicit_ball_valve_passage_only():
+    prompt = load_system_prompt()
+    required_fragments = [
+        "Для шаровых кранов различай явно запрошенный проход/исполнение",
+        "полнопроходной/полнопроходный",
+        "редуцированный/неполнопроходной",
+        "стандартный/обычный проход",
+        "взаимно различны",
+        "Кандидат с противоположным указанным проходом",
+        "не лучше совместимого обычного кандидата",
+        "Не выводи требование к проходу из общего запроса \"кран шаровой\"",
+    ]
+    for fragment in required_fragments:
+        assert fragment in prompt
+
+
+def test_versioned_system_prompt_preserves_json_and_candidate_contract():
+    prompt = load_system_prompt()
+    required_fragments = [
+        "Не выбирай кандидатов, которых нет во входном списке",
+        "Ответь только JSON без markdown",
+        "Если среди кандидатов есть разумно совместимый товар, выбери лучший из них",
+    ]
+    for fragment in required_fragments:
+        assert fragment in prompt
+/bin/bash: line 1: rg: command not found
+
+exec
+/bin/bash -lc "find tests src scripts -type f -name '*.py' -print0 | xargs -0 grep -nE 'gold_q002|gold_q005|gold_q022|human.reject|HUMAN_REJECT|FAIL_WRONG_PRODUCT|rerank' | head -240; find data -maxdepth 3 -type f -printf '%p\\n' | head -100; git status --short" in /workspaces/ML-Cancer-Data
+ succeeded in 87ms:
+tests/test_hybrid_retriever.py:87:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:100:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=1, rrf_k=60)
+tests/test_hybrid_retriever.py:106:    settings = SimpleNamespace(hybrid_dense_limit=7, hybrid_bm25_limit=8, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:122:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:137:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:152:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:160:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_eval_v2.py:5:from nomenclature_matcher.eval_utils import classify_error_type, recall_at_20, reranker_accuracy
+tests/test_eval_v2.py:133:    assert reranker_accuracy(results) == 1.0
+tests/test_eval_v2.py:143:        reranker_success=True,
+tests/test_eval_v2.py:154:                "reranker_success": True,
+tests/test_eval_utils.py:8:    reranker_accuracy,
+tests/test_eval_utils.py:9:    reranker_accuracy_given_hybrid_hit,
+tests/test_eval_utils.py:40:def test_not_found_counts_as_reranker_success():
+tests/test_eval_utils.py:60:    assert reranker_accuracy(results) == 1.0
+tests/test_eval_utils.py:61:    assert reranker_accuracy_given_hybrid_hit(results) == 1.0
+tests/test_eval_utils.py:87:    assert reranker_accuracy(results) == 1.0
+tests/test_eval_utils.py:98:            reranker_success=True,
+tests/test_eval_utils.py:110:            reranker_success=True,
+tests/test_eval_utils.py:122:            reranker_success=True,
+tests/test_eval_utils.py:134:            reranker_success=False,
+tests/test_eval_utils.py:146:            reranker_success=False,
+tests/test_eval_utils.py:158:            reranker_success=False,
+tests/test_eval_utils.py:170:            reranker_success=True,
+tests/test_eval_utils.py:182:            reranker_success=False,
+tests/test_eval_utils.py:194:            reranker_success=False,
+tests/test_eval_utils.py:206:            reranker_success=None,
+tests/test_experiments.py:13:        hybrid_rerank_limit=20,
+tests/test_experiments.py:15:        rerank_result_limit=3,
+tests/test_experiments.py:38:        configuration={"retrieval": {"hybrid_rerank_limit": 20}},
+tests/test_rag_harness_policy.py:14:        "human_reject_rate": 0.0,
+tests/test_rag_harness_policy.py:100:def test_final_goal_requires_93_percent_and_no_false_or_human_reject() -> None:
+tests/test_rag_harness_policy.py:104:    assert not final_goal_met(hidden=_metrics(hard_pass_rate=0.95, human_reject_rate=0.01), coverage_floor=0.93)
+tests/test_reranker.py:7:from nomenclature_matcher.reranker import DeepSeekReranker, load_system_prompt
+tests/test_reranker.py:37:        rerank_result_limit=3,
+tests/test_reranker.py:48:def test_rerank_valid_matched():
+tests/test_reranker.py:49:    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}]})))
+tests/test_reranker.py:50:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:55:def test_rerank_preserves_selected_candidate_ordering():
+tests/test_reranker.py:56:    reranker = DeepSeekReranker(
+tests/test_reranker.py:70:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:76:def test_rerank_not_found():
+tests/test_reranker.py:77:    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+tests/test_reranker.py:78:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:84:def test_rerank_uses_unchanged_model_request_configuration():
+tests/test_reranker.py:86:    reranker = DeepSeekReranker(settings(), client=client)
+tests/test_reranker.py:87:    reranker.rerank("query", candidates())
+tests/test_reranker.py:97:def test_rerank_ignores_unknown_and_duplicate_ids():
+tests/test_reranker.py:98:    reranker = DeepSeekReranker(
+tests/test_reranker.py:102:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:107:def test_rerank_invalid_json_raises():
+tests/test_reranker.py:108:    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{bad json"))
+tests/test_reranker.py:110:        reranker.rerank("query", candidates())
+tests/test_reranker.py:113:def test_rerank_timeout_raises():
+tests/test_reranker.py:114:    reranker = DeepSeekReranker(settings(), client=FakeClient(error=TimeoutError("timeout")))
+tests/test_reranker.py:116:        reranker.rerank("query", candidates())
+tests/test_reranker.py:120:    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{}"))
+tests/test_reranker.py:121:    prompt = reranker._build_prompt(
+tests/test_reranker.py:146:def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+tests/test_reranker.py:150:    custom_settings.reranker_system_prompt_path = str(prompt)
+tests/test_reranker.py:152:    reranker = DeepSeekReranker(custom_settings, client=client)
+tests/test_reranker.py:153:    reranker.rerank("query", candidates())
+tests/test_matcher.py:22:    def rerank(self, query, candidates):
+tests/test_matcher.py:78:def test_match_one_with_rerank_selects_llm_candidate():
+tests/test_matcher.py:79:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:80:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:81:    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(result=rerank_result)).match_one_with_rerank("query")
+tests/test_matcher.py:87:def test_match_one_with_rerank_handles_invalid_json_or_timeout():
+tests/test_matcher.py:88:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:89:    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank("query")
+tests/test_matcher.py:95:def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+tests/test_matcher.py:99:        rerank_candidate_limit=20,
+tests/test_matcher.py:100:        hybrid_rerank_limit=20,
+tests/test_matcher.py:117:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:119:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+tests/test_matcher.py:120:    result = matcher.match_one_hybrid_with_rerank("  query  ")
+tests/test_matcher.py:130:def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+tests/test_matcher.py:134:        rerank_candidate_limit=20,
+tests/test_matcher.py:135:        hybrid_rerank_limit=20,
+tests/test_matcher.py:138:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:140:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+tests/test_matcher.py:141:    results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+tests/test_matcher.py:146:def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
+tests/test_matcher.py:150:        rerank_candidate_limit=20,
+tests/test_matcher.py:151:        hybrid_rerank_limit=20,
+tests/test_matcher.py:154:    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
+tests/test_matcher.py:155:    reranker = Reranker(result=rerank_result)
+tests/test_matcher.py:157:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+tests/test_matcher.py:158:    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
+tests/test_matcher.py:161:    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"
+tests/test_matcher.py:164:def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_rerank():
+tests/test_matcher.py:168:        rerank_candidate_limit=20,
+tests/test_matcher.py:169:        hybrid_rerank_limit=20,
+tests/test_matcher.py:172:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="ww")], reason=None)
+tests/test_matcher.py:173:    reranker = Reranker(result=rerank_result)
+tests/test_matcher.py:175:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+tests/test_matcher.py:178:    result = matcher.match_one_hybrid_with_rerank(query)
+tests/test_matcher.py:188:    assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
+tests/test_harness_gold_calibration.py:73:def test_human_reject_overrides_generic_constraint_match():
+tests/test_harness_gold_calibration.py:76:        "id": "gold_q002",
+tests/test_harness_gold_calibration.py:98:    assert row["verdict"] == "FAIL_HUMAN_REJECT"
+tests/test_harness_gold_calibration.py:99:    assert row["decision_source"] == "HUMAN_REJECT"
+src/nomenclature_matcher/reranker.py:9:    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+src/nomenclature_matcher/reranker.py:30:        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+src/nomenclature_matcher/reranker.py:38:    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+src/nomenclature_matcher/reranker.py:85:                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+src/nomenclature_matcher/reranker.py:94:            raise ValueError(f"Unsupported rerank status: {status!r}")
+src/nomenclature_matcher/reranker.py:112:            if len(selected) >= self.settings.rerank_result_limit:
+src/nomenclature_matcher/eval_utils.py:32:def reranker_accuracy(results: list[dict]) -> float | None:
+src/nomenclature_matcher/eval_utils.py:47:    return reranker_accuracy(results)
+src/nomenclature_matcher/eval_utils.py:83:def reranker_accuracy_given_hybrid_hit(results: list[dict]) -> float | None:
+src/nomenclature_matcher/eval_utils.py:103:    reranker_success: bool,
+src/nomenclature_matcher/eval_utils.py:113:        if not reranker_success:
+src/nomenclature_matcher/experiments.py:64:            "hybrid_rerank_limit": getattr(settings, "hybrid_rerank_limit", None),
+src/nomenclature_matcher/experiments.py:66:            "rerank_result_limit": getattr(settings, "rerank_result_limit", None),
+src/nomenclature_matcher/hybrid_retriever.py:61:        limit = limit or self.settings.hybrid_rerank_limit
+src/nomenclature_matcher/matcher.py:8:    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+src/nomenclature_matcher/matcher.py:10:        self.reranker = reranker
+src/nomenclature_matcher/matcher.py:55:    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+src/nomenclature_matcher/matcher.py:58:        if self.reranker is None:
+src/nomenclature_matcher/matcher.py:61:            rerank_result = self.reranker.rerank(query, candidates)
+src/nomenclature_matcher/matcher.py:72:        for item in rerank_result.selected:
+src/nomenclature_matcher/matcher.py:75:        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+src/nomenclature_matcher/matcher.py:78:            status=rerank_result.status,
+src/nomenclature_matcher/matcher.py:80:            ld_product=best if rerank_result.status == "MATCHED" else None,
+src/nomenclature_matcher/matcher.py:83:            reason=rerank_result.reason,
+src/nomenclature_matcher/matcher.py:95:    def match_one_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:99:        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+src/nomenclature_matcher/matcher.py:100:        return self.rerank_candidates(query, candidates)
+src/nomenclature_matcher/matcher.py:102:    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:111:            self.settings.hybrid_rerank_limit,
+src/nomenclature_matcher/matcher.py:114:        return self.rerank_candidates(query, candidates)
+src/nomenclature_matcher/matcher.py:132:    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+src/nomenclature_matcher/matcher.py:133:        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+src/nomenclature_matcher/settings.py:36:    reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
+src/nomenclature_matcher/settings.py:39:    hybrid_rerank_limit: int = 20
+src/nomenclature_matcher/settings.py:41:    rerank_candidate_limit: int = 20
+src/nomenclature_matcher/settings.py:42:    rerank_result_limit: int = 3
+scripts/match_batch.py:14:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/match_batch.py:42:        reranker=DeepSeekReranker(settings),
+scripts/match_batch.py:45:    results = matcher.match_many_hybrid_with_rerank(_read_queries(args.input))
+scripts/search.py:12:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/search.py:17:parser.add_argument("--mode", choices=["dense", "dense-rerank", "hybrid-rerank"], default="dense")
+scripts/search.py:23:reranker = DeepSeekReranker(settings) if args.mode in {"dense-rerank", "hybrid-rerank"} else None
+scripts/search.py:25:if args.mode == "hybrid-rerank":
+scripts/search.py:32:    reranker=reranker,
+scripts/search.py:38:    elif args.mode == "dense-rerank":
+scripts/search.py:39:        result = matcher.match_one_with_rerank(args.query)
+scripts/search.py:41:        result = matcher.match_one_hybrid_with_rerank(args.query)
+scripts/search.py:48:elif args.mode == "dense-rerank":
+scripts/eval_harness_gold.py:25:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/eval_harness_gold.py:35:            "Run the current hybrid+reranker pipeline against constraint-based harness GOLD. "
+scripts/eval_harness_gold.py:81:        reranker=DeepSeekReranker(settings),
+scripts/eval_harness_gold.py:166:        row["verdict"] = "FAIL_HUMAN_REJECT"
+scripts/eval_harness_gold.py:168:        row["decision_source"] = "HUMAN_REJECT"
+scripts/eval_harness_gold.py:191:        row["verdict"] = "FAIL_WRONG_PRODUCT"
+scripts/eval_harness_gold.py:216:    human_reject = sum(row["verdict"] == "FAIL_HUMAN_REJECT" for row in rows)
+scripts/eval_harness_gold.py:230:        "human_reject_rate": _rate(human_reject, len(rows)),
+scripts/eval_harness_gold.py:270:    results = matcher.match_many_hybrid_with_rerank([case["query"] for case in cases])
+scripts/prepare_review_candidates.py:106:            "llm_reranker": False,
+scripts/eval.py:19:    reranker_accuracy,
+scripts/eval.py:20:    reranker_accuracy_given_hybrid_hit,
+scripts/eval.py:28:from nomenclature_matcher.reranker import DeepSeekReranker
+scripts/eval.py:98:    parser.add_argument("--hypothesis", default="MVP baseline for hybrid retrieval, reranker, and LLM selection.")
+scripts/eval.py:123:        reranker=DeepSeekReranker(settings),
+scripts/eval.py:138:        dense_top20 = matcher._search_candidates(query, settings.hybrid_rerank_limit)
+scripts/eval.py:139:        bm25_top20 = hybrid_retriever.search_bm25(query, settings.hybrid_rerank_limit)
+scripts/eval.py:140:        hybrid_top20 = hybrid_retriever.search(query, settings.hybrid_rerank_limit)
+scripts/eval.py:141:        deepseek_result = matcher.rerank_candidates(query, hybrid_top20)
+scripts/eval.py:152:            reranker_success = (
+scripts/eval.py:163:                reranker_success=reranker_success,
+scripts/eval.py:170:            reranker_success = None
+scripts/eval.py:193:                "reranker_success": reranker_success,
+scripts/eval.py:220:        "reranker_accuracy": reranker_accuracy(results),
+scripts/eval.py:221:        "reranker_accuracy_given_hybrid_hit": reranker_accuracy_given_hybrid_hit(results),
+scripts/eval.py:241:        prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+scripts/eval.py:272:        ("Reranker accuracy given retrieval hit", "reranker_accuracy_given_hybrid_hit"),
+data/eval_v2_retrieval_miss_candidates.json
+data/golden_100_manual_corrections.json
+data/golden_100_auto_label_report.json
+data/tender_queries_v1.json
+data/golden_100_human_review.json
+data/tender_queries_v1_deep_chatgpt_accepts.json
+data/golden_100_chatgpt_verified_labels.json
+data/harness_baseline.json
+data/eval_v2_retrieval_miss_human_review.json
+data/golden_100_chatgpt_accepts_human_review.json
+data/tender_real_queries_v1.json
+data/harness_gold_eval.json
+data/golden_100_chatgpt_accepts.json
+data/golden_100_query_constraints.json
+data/harness_gold_core.json
+data/harness_gold_negative.json
+data/golden_review_candidates.json
+data/tender_queries_v1_unresolved_taxonomy.json
+data/tender_queries_v1_deep_verified_labels.json
+data/eval_v2_assistant_review_proposals.json
+data/eval_results.json
+data/tender_queries_v1_candidates.json
+data/eval_queries_v2.json
+data/eval_v2_human_review.json
+data/harness_gold_combined.json
+data/eval_labels.json
+data/golden_100_labels.json
+data/tender_queries_v1_chatgpt_human_review.json
+data/chatgpt_gold_batches/batch_02_011_020.json
+data/chatgpt_gold_batches/batch_05_041_050.json
+data/chatgpt_gold_batches/batch_09_081_090.json
+data/chatgpt_gold_batches/batch_04_031_040.json
+data/chatgpt_gold_batches/batch_08_071_080.json
+data/chatgpt_gold_batches/manifest.json
+data/chatgpt_gold_batches/batch_03_021_030.json
+data/chatgpt_gold_batches/batch_10_091_100.json
+data/chatgpt_gold_batches/batch_07_061_070.json
+data/chatgpt_gold_batches/batch_01_001_010.json
+data/chatgpt_gold_batches/batch_06_051_060.json
+data/tender_queries_v1_harness_cases.json
+data/eval_queries.json
+data/harness_gold_extended.json
+data/моя_разметка.md
+data/tender_queries_v1_deep_chatgpt_human_review.json
+data/tender_queries_v1_chatgpt_accepts.json
+data/harness_gold_combined_extended.json
+data/eval_queries.txt
+data/harness_gold_combined_negative.json
+data/eval_v2_review_candidates.json
+data/tender_queries_v1_canonical_labels.json
+data/harness_gold.json
+data/eval_v2_full_catalog_candidates.json
+data/experiments/2026-09-07-mvp-baseline/results.json
+data/experiments/2026-09-07-mvp-baseline/experiment.md
+data/experiments/TEMPLATE.md
+data/golden_100_auto_labels.json
+data/golden_100_remaining_top3_labels.json
+data/golden_100_review_candidates.json
+data/eval_labels_v2.json
+data/golden_100_remaining_top3_human_review.json
+data/harness_gold_combined_core.json
+data/tender_queries_v1_verified_labels.json
+data/golden_queries_100.json
+data/tender_queries_v1_deep_candidates.json
+data/harness_gold_combined_eval.json
+ M src/nomenclature_matcher/prompts/reranker_system.md
+ M tests/test_reranker.py
+?? openspec/changes/cycle-05-evidence-first-reranker-rubric/
+
+exec
+/bin/bash -lc "sed -n '1,330p' scripts/eval_harness_gold.py; sed -n '1,180p' data/harness_baseline.json; find openspec/changes/cycle-05-evidence-first-reranker-rubric -maxdepth 2 -type f -print -exec sed -n '1,80p' {} \\;" in /workspaces/ML-Cancer-Data
+ succeeded in 24ms:
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from nomenclature_matcher.bm25_store import BM25Store
+from nomenclature_matcher.documents import load_products_from_csv
+from nomenclature_matcher.embeddings import OpenAIEmbedder
+from nomenclature_matcher.golden_rules import GoldenQueryConstraints, golden_product_snapshot
+from nomenclature_matcher.harness_gold import (
+    evaluate_harness_product,
+    harness_candidate_bore_type,
+    human_grade_for_returned_id,
+)
+from nomenclature_matcher.hybrid_retriever import HybridRetriever
+from nomenclature_matcher.matcher import NomenclatureMatcher
+from nomenclature_matcher.qdrant_store import QdrantStore
+from nomenclature_matcher.reranker import DeepSeekReranker
+from nomenclature_matcher.settings import Settings
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run the current hybrid+reranker pipeline against constraint-based harness GOLD. "
+            "Human candidate grades take priority over generic constraint evaluation."
+        )
+    )
+    parser.add_argument("--dataset", default=str(ROOT / "data" / "harness_gold.json"))
+    parser.add_argument("--csv", default=str(ROOT / "ld_products_full_nomenclature.csv"))
+    parser.add_argument("--output", default=str(ROOT / "data" / "harness_gold_eval.json"))
+    parser.add_argument("--include-extended", action="store_true")
+    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--min-hard-pass-rate", type=float, default=None)
+    parser.add_argument("--max-wrong-not-found-rate", type=float, default=None)
+    parser.add_argument("--max-false-match-rate", type=float, default=None)
+    parser.add_argument("--max-unknown-answer-rate", type=float, default=None)
+    return parser
+
+
+def _read_json(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _write_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _portable_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT.resolve()))
+    except ValueError:
+        return str(path)
+
+
+def _build_matcher(products, settings: Settings) -> NomenclatureMatcher:
+    embedder = OpenAIEmbedder(settings)
+    qdrant_store = QdrantStore(settings)
+    hybrid = HybridRetriever(embedder, qdrant_store, BM25Store(products), settings)
+    return NomenclatureMatcher(
+        embedder,
+        qdrant_store,
+        settings,
+        reranker=DeepSeekReranker(settings),
+        hybrid_retriever=hybrid,
+    )
+
+
+def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
+    requirements = case.get("requirements", {})
+    payload = {
+        "product_type": requirements.get("product_type", "other"),
+        "catalog_scope": "in_scope",
+        **requirements,
+    }
+    return GoldenQueryConstraints.model_validate(payload)
+
+
+def _returned_product_snapshot(product) -> dict[str, Any]:
+    snapshot = golden_product_snapshot(product)
+    snapshot["harness_bore_type"] = harness_candidate_bore_type(product)
+    return snapshot
+
+
+def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any]) -> dict[str, Any]:
+    split = case["split"]
+    expected_status = case.get("expected_status")
+    known_positive_ids = {int(value) for value in case.get("known_positive_ids", [])}
+    returned_ld_id = result.ld_product.ld_id if result.ld_product is not None else None
+
+    row: dict[str, Any] = {
+        "id": case["id"],
+        "query": case["query"],
+        "split": split,
+        "hard_gate": bool(case.get("hard_gate")),
+        "expected_status": expected_status,
+        "actual_status": result.status,
+        "returned_ld_id": returned_ld_id,
+        "known_positive_eligible": bool(known_positive_ids),
+        "known_positive_hit": bool(returned_ld_id is not None and returned_ld_id in known_positive_ids),
+        "human_grade": human_grade_for_returned_id(case, returned_ld_id),
+        "verdict": "UNSCORED",
+        "reason": "",
+    }
+
+    product = None
+    if returned_ld_id is not None:
+        product = products_by_id.get(int(returned_ld_id))
+        if product is not None:
+            row["returned_product"] = _returned_product_snapshot(product)
+
+    if split == "NEGATIVE":
+        if result.status == "NOT_FOUND":
+            row["verdict"] = "PASS"
+            row["reason"] = "Explicit negative correctly returned NOT_FOUND."
+        elif result.status == "MATCHED":
+            row["verdict"] = "FAIL_FALSE_MATCH"
+            row["reason"] = "Explicit negative returned a catalog product."
+        else:
+            row["verdict"] = "FAIL_PIPELINE"
+            row["reason"] = f"Unexpected pipeline status: {result.status}"
+        return row
+
+    if expected_status != "MATCHED":
+        row["verdict"] = "UNSCORED"
+        row["reason"] = "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+        return row
+
+    if result.status == "NOT_FOUND":
+        row["verdict"] = "FAIL_WRONG_NOT_FOUND"
+        row["reason"] = "Constraint-based GOLD has catalog evidence for a matching product."
+        return row
+    if result.status != "MATCHED" or result.ld_product is None:
+        row["verdict"] = "FAIL_PIPELINE"
+        row["reason"] = f"Unexpected pipeline status: {result.status}"
+        return row
+    if product is None:
+        row["verdict"] = "FAIL_MISSING_CATALOG_PRODUCT"
+        row["reason"] = "Returned LD id is not present in the catalog snapshot used by the evaluator."
+        return row
+
+    human_grade = row["human_grade"]
+    if human_grade == "ACCEPT":
+        row["verdict"] = "PASS"
+        row["reason"] = "Returned product is explicitly HUMAN ACCEPT for this query."
+        row["decision_source"] = "HUMAN_ACCEPT"
+        return row
+    if human_grade == "REJECT":
+        row["verdict"] = "FAIL_HUMAN_REJECT"
+        row["reason"] = "Returned product is explicitly HUMAN REJECT for this query."
+        row["decision_source"] = "HUMAN_REJECT"
+        return row
+    if human_grade == "UNSURE":
+        row["verdict"] = "UNKNOWN_HUMAN"
+        row["reason"] = "Returned product was explicitly marked HUMAN UNSURE; do not count it as PASS."
+        row["decision_source"] = "HUMAN_UNSURE"
+        return row
+
+    decision = evaluate_harness_product(product, _requirements_model(case))
+    row["decision_source"] = "CONSTRAINTS"
+    row["requirement_decision"] = {
+        "status": decision.status,
+        "checks": decision.checks,
+        "unknown_fields": list(decision.unknown_fields),
+        "failed_fields": list(decision.failed_fields),
+    }
+    if decision.status == "PASS":
+        row["verdict"] = "PASS"
+        row["reason"] = "Returned product satisfies all deterministic GOLD requirements."
+    elif decision.status == "UNKNOWN":
+        row["verdict"] = "FAIL_UNKNOWN_PRODUCT_DATA" if case.get("hard_gate") else "UNKNOWN"
+        row["reason"] = "Required fields are missing from the returned product; correctness is not provable."
+    else:
+        row["verdict"] = "FAIL_WRONG_PRODUCT"
+        row["reason"] = "Returned product violates one or more deterministic GOLD requirements."
+    return row
+
+
+def _rate(numerator: int, denominator: int) -> float | None:
+    return numerator / denominator if denominator else None
+
+
+def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    verdicts = Counter(row["verdict"] for row in rows)
+    hard = [row for row in rows if row.get("hard_gate")]
+    core = [row for row in rows if row.get("split") == "CORE"]
+    negative = [row for row in rows if row.get("split") == "NEGATIVE"]
+    known_positive_eligible = [row for row in rows if row.get("known_positive_eligible")]
+
+    hard_pass = sum(row["verdict"] == "PASS" for row in hard)
+    core_pass = sum(row["verdict"] == "PASS" for row in core)
+    negative_pass = sum(row["verdict"] == "PASS" for row in negative)
+    wrong_not_found = sum(row["verdict"] == "FAIL_WRONG_NOT_FOUND" for row in core)
+    false_match = sum(row["verdict"] == "FAIL_FALSE_MATCH" for row in negative)
+    unknown_answer = sum(
+        row["verdict"] in {"FAIL_UNKNOWN_PRODUCT_DATA", "UNKNOWN", "UNKNOWN_HUMAN"}
+        for row in rows
+    )
+    human_reject = sum(row["verdict"] == "FAIL_HUMAN_REJECT" for row in rows)
+    known_positive_hit = sum(bool(row.get("known_positive_hit")) for row in known_positive_eligible)
+
+    return {
+        "evaluated": len(rows),
+        "hard_gate_cases": len(hard),
+        "core_cases": len(core),
+        "negative_cases": len(negative),
+        "hard_pass_rate": _rate(hard_pass, len(hard)),
+        "core_pass_rate": _rate(core_pass, len(core)),
+        "negative_pass_rate": _rate(negative_pass, len(negative)),
+        "wrong_not_found_rate": _rate(wrong_not_found, len(core)),
+        "false_match_rate": _rate(false_match, len(negative)),
+        "unknown_answer_rate": _rate(unknown_answer, len(rows)),
+        "human_reject_rate": _rate(human_reject, len(rows)),
+        "known_positive_hit_rate": _rate(known_positive_hit, len(known_positive_eligible)),
+        "verdict_counts": dict(verdicts),
+    }
+
+
+def _threshold_failures(summary: dict[str, Any], args: argparse.Namespace) -> list[str]:
+    failures: list[str] = []
+    checks = (
+        ("hard_pass_rate", args.min_hard_pass_rate, lambda actual, limit: actual < limit, ">="),
+        ("wrong_not_found_rate", args.max_wrong_not_found_rate, lambda actual, limit: actual > limit, "<="),
+        ("false_match_rate", args.max_false_match_rate, lambda actual, limit: actual > limit, "<="),
+        ("unknown_answer_rate", args.max_unknown_answer_rate, lambda actual, limit: actual > limit, "<="),
+    )
+    for metric, limit, failed, op in checks:
+        if limit is None:
+            continue
+        actual = summary.get(metric)
+        if actual is None or failed(actual, limit):
+            failures.append(f"{metric}={actual} must be {op} {limit}")
+    return failures
+
+
+def main() -> int:
+    args = _parser().parse_args()
+    if args.limit is not None and args.limit <= 0:
+        raise SystemExit("--limit must be > 0")
+
+    dataset_path = Path(args.dataset)
+    dataset = _read_json(dataset_path)
+    cases = dataset.get("cases", [])
+    if not args.include_extended:
+        cases = [case for case in cases if case.get("split") in {"CORE", "NEGATIVE"}]
+    if args.limit is not None:
+        cases = cases[: args.limit]
+
+    products = load_products_from_csv(args.csv)
+    products_by_id = {int(product.id): product for product in products}
+    settings = Settings()
+    matcher = _build_matcher(products, settings)
+    results = matcher.match_many_hybrid_with_rerank([case["query"] for case in cases])
+
+    rows: list[dict[str, Any]] = []
+    for case, result in zip(cases, results, strict=True):
+        row = _evaluate_case(case, result, products_by_id)
+        rows.append(row)
+        print(
+            f"{case['id']}: {row['verdict']} status={result.status} "
+            f"ld_id={row['returned_ld_id']} human={row.get('human_grade')}"
+        )
+
+    summary = _summary(rows)
+    threshold_failures = _threshold_failures(summary, args)
+    payload = {
+        "generated_at": _now(),
+        "dataset": _portable_path(dataset_path),
+        "summary": summary,
+        "threshold_failures": threshold_failures,
+        "results": rows,
+    }
+    _write_json(Path(args.output), payload)
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    print(f"Saved: {args.output}")
+    if threshold_failures:
+        print("Gate failed:")
+        for failure in threshold_failures:
+            print(f"- {failure}")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+{
+  "generated_at": "2026-09-09T09:29:18.287889Z",
+  "dataset": "data/harness_gold_combined.json",
+  "summary": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8,
+    "core_pass_rate": 0.76,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.04,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.03333333333333333,
+    "human_reject_rate": 0.03333333333333333,
+    "known_positive_hit_rate": 0.5333333333333333,
+    "verdict_counts": {
+      "PASS": 24,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_WRONG_PRODUCT": 3,
+      "FAIL_WRONG_NOT_FOUND": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1
+    }
+  },
+  "threshold_failures": [],
+  "results": [
+    {
+      "id": "gold_q001",
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1930,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 1930,
+        "article": "21100500162MULD000000000",
+        "name": "Кран шаровый 11с67п КШРФ из стали 20 Ду50 Ру1,6МПа полнопроходной",
+        "dn": 50,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q002",
+      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15870,
+      "known_positive_eligible": true,
+      "known_positive_hit": false,
+      "human_grade": "REJECT",
+      "verdict": "FAIL_HUMAN_REJECT",
+      "reason": "Returned product is explicitly HUMAN REJECT for this query.",
+      "returned_product": {
+        "ld_id": 15870,
+        "article": "11100800162MULD000003000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду80 Ру1,6МПа полнопроходной L = 300",
+        "dn": 80,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "HUMAN_REJECT"
+    },
+    {
+      "id": "gold_q003",
+      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 16201,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 16201,
+        "article": "11111009252MULD00000000C",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду100/80 Ру2,5МПа с комплектом ответных фланцев, прокладками и крепежом",
+        "dn": 100,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": null,
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": null
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q004",
+      "query": "Кран шаровой Ду150 Ру16 фланцевый с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 2742,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 2742,
+        "article": "11111509252RULD000000000",
+        "name": "Кран шаровый LD КШЦФР из стали 20 Ду150/125 Ру2,5МПа с редуктором",
+        "dn": 150,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": null,
+        "control": "gearbox",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": null
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q005",
+      "query": "Кран шаровый стальной DN200 PN16 полнопроходной фл/фл",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1251,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "human_grade": null,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "returned_product": {
+        "ld_id": 1251,
+        "article": "11112000162MULD000000000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа полнопроходной",
+        "dn": 200,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+openspec/changes/cycle-05-evidence-first-reranker-rubric/.openspec.yaml
+schema: spec-driven
+created: 2026-09-09
+openspec/changes/cycle-05-evidence-first-reranker-rubric/design.md
+## Context
+
+See `proposal.md` for the motivation. The production path retrieves hybrid candidates and sends the source tender plus each candidate's name, catalog search text, and retrieval evidence to the DeepSeek reranker. Its current versioned system prompt lists general considerations but has no ordered comparison procedure for close technical variants. Existing harness helpers can distinguish explicit ball-valve passage types, but those helpers are evaluation-only and are not part of production matching.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Make candidate comparison in the existing reranker prompt explicit, reproducible, and grounded in fields already provided to the model.
+- Address an input class: explicit ball-valve passage/execution terminology and close catalog variants with complete versus incomplete technical evidence.
+- Preserve candidate recall and all current result and failure semantics so the experiment isolates LLM selection judgment.
+
+**Non-Goals:**
+
+- Do not import harness labels or harness-only calibration code into production.
+- Do not add structured extraction, deterministic validation, filtering, post-selection replacement, new DeepSeek calls, prompt-time product lookup, or any ID-specific rule.
+- Do not change retrieval queries, candidate limits, RRF, reranker model/settings, output schema, catalog documents, or the index.
+
+## Decisions
+
+### Encode an ordered comparison procedure in the existing system prompt
+
+Rewrite the existing Russian system prompt as a compact decision rubric: identify explicit request facts; compare them against the candidate name and characteristics; reject direct contradictions; prefer a directly evidenced compatible candidate over an unverified one; use retrieval evidence only after technical comparison. The wording must continue to favor a reasonable compatible result over `NOT_FOUND`, so incompleteness alone does not create a blanket abstention rule.
+
+This uses already supplied candidate evidence and one existing LLM call. Adding a live query-constraint extractor or a second verifier call is rejected because it introduces failure modes, cost, and a broader experimental variable. Implementing deterministic output gating is also rejected: Cycle 1's broad pre-rerank gate reduced both coverage and blind performance.
+
+### Treat stated passage types as conflicting only when tender semantics are explicit
+
+The rubric names full, reduced, and standard passage/execution for ball valves and directs the model to distinguish stated alternatives. It must not infer a passage requirement from a generic ball-valve request and must not treat generic words in a candidate title as proof of a requested passage type.
+
+Broadly mapping legacy valve designations or changing product families is rejected because the unresolved taxonomy says those equivalences remain unvalidated. Adding flange subtype is a plausible future schema experiment but targets extended/unsupported data rather than the present scored selection mechanism.
+
+### Test the prompt contract without live model evaluation
+
+Add tests that load the versioned prompt and assert it contains the evidence-first ordering, explicit passage/execution distinction, direct-contradiction handling, and existing `NOT_FOUND`/JSON rules. Keep mocked reranker tests focused on unchanged request configuration and response parsing/selection order.
+
+The implementer must not run public or blind harness evaluation, inspect holdout data, or assert benchmark-specific outcomes. The outer supervisor owns those measurements.
+
+## Risks / Trade-offs
+
+- [A stricter-sounding rubric increases `NOT_FOUND`] → Preserve the existing compatible-candidate preference and state that missing evidence is not a universal rejection criterion.
+- [The model misreads prose despite the rubric] → Keep temperature, candidate context, and JSON parsing unchanged; use outer measured promotion rather than claiming deterministic safety.
+- [Passage terminology varies by supplier] → Restrict the rule to explicit full/reduced/standard wording and retain generic-query behavior.
+- [Prompt edits are difficult to unit-test semantically] → Test the versioned prompt's required decision-contract clauses and the unchanged mocked request/response behavior.
+
+## Migration Plan
+
+1. Update only the versioned reranker system prompt with the approved evidence-first comparison rubric.
+2. Add focused prompt-contract and mocked reranker regression tests.
+3. Run the focused tests and `python -m pytest -q`.
+4. The outer supervisor performs public evaluation, review, blind evaluation, and promotion/rejection.
+5. Roll back by restoring the prior prompt content; no index, data, or schema migration is required.
+openspec/changes/cycle-05-evidence-first-reranker-rubric/tasks.md
+## 1. Evidence-first reranker rubric
+
+- [x] 1.1 Update the versioned Russian reranker system prompt with the ordered evidence-first comparison procedure: identify explicit tender requirements, compare them against supplied candidate evidence, reject direct contradictions, and use retrieval ranks only as secondary signals; verify the prompt still requires JSON-only output and preserves the compatible-candidate-over-`NOT_FOUND` principle.
+- [x] 1.2 Add the bounded ball-valve passage/execution guidance for explicit full, reduced, and standard terminology, including that a stated conflicting passage type is not preferable merely because it is specialized or highly ranked; verify generic ball-valve requests do not gain an inferred passage requirement by prompt-contract tests.
+
+## 2. Focused regression coverage
+
+- [x] 2.1 Add focused tests that load the versioned prompt and assert the required evidence ordering, missing-evidence treatment, explicit passage/execution distinction, contradiction handling, JSON contract, and existing `NOT_FOUND` rule are present without asserting any benchmark query, catalog ID, or GOLD result.
+- [x] 2.2 Extend mocked reranker tests to verify the unchanged model request configuration and selected candidate-id ordering remain intact after the prompt update; verify response parsing still handles `MATCHED` and `NOT_FOUND` under the existing contract.
+
+## 3. Verification
+
+- [x] 3.1 Run the focused reranker and matcher tests, then run `python -m pytest -q`; resolve product-code or test failures without adding candidate filtering, a second model call, harness-label imports, catalog-ID mappings, or retrieval/index changes.
+openspec/changes/cycle-05-evidence-first-reranker-rubric/proposal.md
+## Why
+
+The current champion's remaining scored failures are final-selection failures: it can select a technically conflicting ball-valve variant or a candidate whose required attributes cannot be evidenced, although the catalog has compatible products. The current reranker instruction is a general checklist, so a bounded evidence-first decision rubric is the highest-value experiment without changing candidate recall, index state, or fallback semantics.
+
+## What Changes
+
+- Replace the generic reranker decision guidance with a structured, evidence-first rubric for comparing the original tender request to catalog candidate fields.
+- Require the reranker to distinguish explicitly requested ball-valve passage/execution semantics (full, reduced, or standard passage) from generic product wording, and to avoid treating a specialized variant as a substitute for an ordinary requested execution.
+- Require selection reasoning to prefer a candidate that evidences every explicit material requirement when such a candidate is present, while preserving the existing rule to return `NOT_FOUND` only when no reasonable compatible candidate is available.
+- Keep the candidate set, retrieval representations, model/API parameters, JSON response contract, selected-candidate ordering, and matcher fallback behavior unchanged.
+- Add focused prompt-contract and mocked reranker regression tests; do not add benchmark identifiers, catalog IDs, or a product lookup table to the prompt or code.
+
+## Capabilities
+
+### New Capabilities
+
+- `evidence-first-reranker-rubric`: Provides a reproducible candidate-comparison rubric for the existing LLM reranker when tender requirements are explicit and catalog evidence differs between close variants.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected package configuration: `src/nomenclature_matcher/prompts/reranker_system.md`, with a focused prompt-loading or rendering adjustment only if needed to make the rubric observable in tests.
+- Affected tests: `tests/test_reranker.py` and, if needed, mocked matcher integration tests that prove existing result ordering and fallback behavior are unchanged.
+- No change to retrieval/index text, embedding model, Qdrant payload or collection, BM25 corpus, DeepSeek request parameters, candidate limits, schemas, or a full index rebuild.
+
+codex
+{"decision":"ACCEPT","summary":"The evidence-first prompt is a bounded, general selection improvement with no retrieval/index or safety-semantic changes. It is not benchmark-ID-specific, and the supplied public results improve hard-pass coverage from the repository baseline’s 80.0% (24/30) to 83.3% (25/30), with negative pass remaining 100% and no increase in human-reject count.","issues":[],"fix_plan":[],"next_direction":"Treat this as a validated prompt-level selection gain. Next, investigate remaining scored failures by separating candidate-availability/data-evidence problems from reranker selection errors before proposing another prompt rewrite; retain the public failure cases only as class-level diagnostic evidence, never as ID-specific logic."}
+tokens used
+40,264
+{"decision":"ACCEPT","summary":"The evidence-first prompt is a bounded, general selection improvement with no retrieval/index or safety-semantic changes. It is not benchmark-ID-specific, and the supplied public results improve hard-pass coverage from the repository baseline’s 80.0% (24/30) to 83.3% (25/30), with negative pass remaining 100% and no increase in human-reject count.","issues":[],"fix_plan":[],"next_direction":"Treat this as a validated prompt-level selection gain. Next, investigate remaining scored failures by separating candidate-availability/data-evidence problems from reranker selection errors before proposing another prompt rewrite; retain the public failure cases only as class-level diagnostic evidence, never as ID-specific logic."}

@@ -1,0 +1,783 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a08718-1253-7f72-a039-cc502010a29f
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-06-symmetric-connection-canonicalization",
+  "hypothesis": "Cleanly canonicalizing unambiguous repeated Russian flanged-end shorthand such as `фл/фл` into one catalog-native connection term improves candidate recall without changing selection semantics.",
+  "why_now": "The current canonicalizer produces `фланцевый/фланцевый` for this real tender shorthand; a current hard-gate failure uses it. The change is bounded, query-time only, and preserves the champion path.",
+  "expected_effect": "Cleaner additive hybrid retrieval candidates while retaining original retrieval, RRF, reranker input, and result text.",
+  "expected_metric_gain": "Estimated +3.3 pp public hard-pass; uncertain but credible blind improvement with no intended safety regression.",
+  "lesson_from_history": "Selection-adjacent changes regressed in cycles 1, 2, and 5. Additive canonicalization was the only accepted mechanism in cycles 3–4. Broad `FF` expansion remains excluded because cycle 4 identified it as ambiguous.",
+  "candidate_hypotheses": [
+    "Conservative symmetric connection-shorthand canonicalization (selected).",
+    "Explicit flange-subtype schema expansion and catalog interpretation.",
+    "Index-time catalog representation enrichment with normalized structural fields.",
+    "Subject-validated legacy designation mapping for selected valve families."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, specification, design, and implementation-only tasks in `openspec/changes/cycle-06-symmetric-connection-canonicalization/`. No product code was changed."
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-06-symmetric-connection-canonicalization`. Added whole-pair `фл/фл` canonicalization gated by supported catalog anchors, before generic joining expansion, producing a single `фланцевый` term. Tightened the generic `фл` expansion so slash-adjacent mixed or embedded forms do not infer/collapse connection meaning. Added focused canonicalization, hybrid retriever, and matcher regression tests. OpenSpec progress is 5/5 complete.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py (13 passed)",
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py (32 passed)",
+    "python -m pytest -q (167 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.8333333333333334,
+  "core_pass_rate": 0.8,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.0,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.008333333333333333,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.4166666666666667,
+  "verdict_counts": {
+    "PASS": 30,
+    "FAIL_HUMAN_REJECT": 1,
+    "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_PRODUCT": 7
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q005",
+    "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+    "reason": "Required fields are missing from the returned product; correctness is not provable."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_PRODUCT",
+    "reason": "Returned product violates one or more deterministic GOLD requirements."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q025",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca84..b5e0f94 100644
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,10 @@ _UNSUPPORTED_ANCHOR_RE = re.compile(
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_SYMMETRIC_FLANGED_RE = re.compile(
++    r"(?<![A-Za-zА-Яа-яЁё0-9])фл\.?\s*/\s*фл\.?(?![A-Za-zА-Яа-яЁё0-9])",
++    re.IGNORECASE,
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -61,6 +65,8 @@ def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+     canonical = _extract_supported_clause(source)
+     canonical = _strip_quantity_noise(canonical)
+     canonical = _normalize_dn_pn(canonical)
++    if has_supported_anchor:
++        canonical = _expand_symmetric_connection_shorthand(canonical)
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
+@@ -121,7 +127,7 @@ def _normalize_dn_pn(text: str) -> str:
+ 
+ def _expand_joining_and_actuation(text: str) -> str:
+     replacements = (
+-        (r"(?<!\w)фл\.?(?!\w)", "фланцевый"),
++        (r"(?<![\w/])фл\.?(?![\w/])", "фланцевый"),
+         (r"\bм/ф\b", "муфтовый фланцевый"),
+         (r"(?<!\w)муфт\.?(?!\w)", "муфтовый"),
+         (r"(?<!\w)резьб\.?(?!\w)", "резьбовой"),
+@@ -134,6 +140,10 @@ def _expand_joining_and_actuation(text: str) -> str:
+     return text
+ 
+ 
++def _expand_symmetric_connection_shorthand(text: str) -> str:
++    return _SYMMETRIC_FLANGED_RE.sub("фланцевый", text)
++
++
+ def _expand_connection_notation(text: str) -> str:
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a3cdc9d..ece1cd6 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -133,6 +133,21 @@ def test_hybrid_search_uses_ww_expanded_alternate_and_dedupes_by_ld_id():
+     assert len({candidate.ld_id for candidate in results}) == len(results)
+ 
+ 
++def test_hybrid_search_uses_symmetric_flanged_alternate_and_dedupes_by_ld_id():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    embedder = EchoEmbedder()
++    bm25 = VariantBM25Store()
++    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
++    original = "Кран шаровой фл/фл DN100 PN16"
++    canonical = "Кран шаровой фланцевый DN 100 PN 16"
++
++    results = retriever.search(original, canonical_query=canonical)
++
++    assert embedder.calls == [original, canonical]
++    assert bm25.calls == [(original, 50), (canonical, 50)]
++    assert len({candidate.ld_id for candidate in results}) == len(results)
++
++
+ def test_hybrid_search_merges_variants_per_modality_before_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..5d021b3 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -186,3 +186,30 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_match_one_hybrid_symmetric_flanged_alternate_preserves_original_query_for_output_and_rerank():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="Кран фланцевый", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="flanged")], reason=None)
++    reranker = Reranker(result=rerank_result)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++    query = "  Кран шаровой фл/фл DN100 PN16  "
++
++    result = matcher.match_one_hybrid_with_rerank(query)
++
++    assert result.query == "Кран шаровой фл/фл DN100 PN16"
++    assert hybrid.calls == [
++        (
++            "Кран шаровой фл/фл DN100 PN16",
++            20,
++            "Кран шаровой фланцевый DN 100 PN 16",
++        )
++    ]
++    assert reranker.calls[0][0] == "Кран шаровой фл/фл DN100 PN16"
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570..9667ee2 100644
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -13,6 +13,18 @@ def test_compact_dn_pn_and_joining_abbreviation_are_normalized():
+     assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16"
+ 
+ 
++def test_symmetric_flanged_shorthand_is_canonicalized_once():
++    result = canonicalize_retrieval_query("Кран шаровой фл/фл Ду80 Ру16 стальной")
++    assert result.source_query == "Кран шаровой фл/фл Ду80 Ру16 стальной"
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16 стальной"
++    assert result.canonical_query.count("фланцевый") == 1
++
++
++def test_symmetric_flanged_shorthand_accepts_case_dots_and_spaces():
++    result = canonicalize_retrieval_query("Задвижка ФЛ. / фл. DN100 PN16")
++    assert result.canonical_query == "Задвижка фланцевый DN 100 PN 16"
++
++
+ def test_standalone_ww_connection_code_adds_welded_vocabulary():
+     result = canonicalize_retrieval_query("Кран шаровой WW DN100 PN25")
+     assert result.source_query == "Кран шаровой WW DN100 PN25"
+@@ -49,6 +61,20 @@ def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Кран шаровой FF DN100 PN25").canonical_query == "Кран шаровой FF DN 100 PN 25"
+ 
+ 
++def test_symmetric_flanged_shorthand_keeps_strict_boundaries_and_allowlist():
++    assert canonicalize_retrieval_query("Кран шаровой афл/фл DN100 PN16").canonical_query == "Кран шаровой афл/фл DN 100 PN 16"
++    assert canonicalize_retrieval_query("Кран шаровой фл/флан DN100 PN16").canonical_query == "Кран шаровой фл/флан DN 100 PN 16"
++    assert canonicalize_retrieval_query("Кран шаровой м/ф DN100 PN16").canonical_query == "Кран шаровой муфтовый фланцевый DN 100 PN 16"
++    assert canonicalize_retrieval_query("Кран шаровой FF/FF DN100 PN16").canonical_query == "Кран шаровой FF/FF DN 100 PN 16"
++
++
++def test_symmetric_flanged_shorthand_requires_supported_product_anchor():
++    result = canonicalize_retrieval_query("Поставка фл/фл DN100 PN16")
++    assert result.canonical_query == "Поставка фл/фл DN 100 PN 16"
++    assert "фланцевый" not in result.canonical_query
++    assert canonicalize_retrieval_query("Насос фл/фл DN100 PN16").canonical_query is None
++
++
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T16:54:57.182771Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a08718-1253-7f72-a039-cc502010a29f.tmp-1788972896852715739: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"FIX","summary":"I’ll inspect the surrounding canonicalization and retrieval flow, plus the relevant tests, without modifying files or accessing any holdout data.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "sed -n '1,240p' src/nomenclature_matcher/query_canonicalization.py && sed -n '1,280p' src/nomenclature_matcher/hybrid_retriever.py && sed -n '1,260p' tests/test_query_canonicalization.py && git diff --check && git status --short" in /workspaces/ML-Cancer-Data
+ succeeded in 17ms:
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+
+
+_DESIGNATION_CONFUSABLES = str.maketrans(
+    {
+        "A": "А",
+        "B": "В",
+        "C": "С",
+        "E": "Е",
+        "H": "Н",
+        "K": "К",
+        "M": "М",
+        "O": "О",
+        "P": "Р",
+        "T": "Т",
+        "X": "Х",
+        "Y": "У",
+        "a": "а",
+        "c": "с",
+        "e": "е",
+        "k": "к",
+        "m": "м",
+        "o": "о",
+        "p": "р",
+        "x": "х",
+        "y": "у",
+    }
+)
+_CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
+_LATIN_RE = re.compile(r"[A-Za-z]")
+_LETTER_DIGIT_RE = re.compile(r"(?=.*[A-Za-zА-Яа-яЁё])(?=.*\d)[A-Za-zА-Яа-яЁё0-9./_-]+")
+_SUPPORTED_ANCHOR_RE = re.compile(
+    r"\b(кран(?:\s+шаровой)?|клапан|задвижка|затвор|вентиль|фильтр|регулятор|фланец|муфта|переход|тройник|отвод)\b",
+    re.IGNORECASE,
+)
+_UNSUPPORTED_ANCHOR_RE = re.compile(
+    r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
+    re.IGNORECASE,
+)
+_STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
+_SYMMETRIC_FLANGED_RE = re.compile(
+    r"(?<![A-Za-zА-Яа-яЁё0-9])фл\.?\s*/\s*фл\.?(?![A-Za-zА-Яа-яЁё0-9])",
+    re.IGNORECASE,
+)
+
+
+@dataclass(frozen=True)
+class RetrievalQueryCanonicalization:
+    source_query: str
+    canonical_query: str | None = None
+
+
+def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+    source = " ".join(query.split())
+    if not source:
+        return RetrievalQueryCanonicalization(source_query="")
+
+    if _UNSUPPORTED_ANCHOR_RE.search(source) and not _SUPPORTED_ANCHOR_RE.search(source):
+        return RetrievalQueryCanonicalization(source_query=source)
+
+    has_supported_anchor = _SUPPORTED_ANCHOR_RE.search(source) is not None
+    canonical = _extract_supported_clause(source)
+    canonical = _strip_quantity_noise(canonical)
+    canonical = _normalize_dn_pn(canonical)
+    if has_supported_anchor:
+        canonical = _expand_symmetric_connection_shorthand(canonical)
+    canonical = _expand_joining_and_actuation(canonical)
+    if has_supported_anchor:
+        canonical = _expand_connection_notation(canonical)
+    canonical = _normalize_designation_confusables(canonical)
+    canonical = _cleanup_spacing(canonical)
+
+    if canonical == source or not _has_safe_alternate(source, canonical, has_supported_anchor):
+        return RetrievalQueryCanonicalization(source_query=source)
+    return RetrievalQueryCanonicalization(source_query=source, canonical_query=canonical)
+
+
+def _extract_supported_clause(text: str) -> str:
+    anchor = _SUPPORTED_ANCHOR_RE.search(text)
+    if not anchor:
+        return text
+    start = _clause_start(text, anchor.start())
+    end = _clause_end(text, anchor.end())
+    return text[start:end].strip(" ,;:.")
+
+
+def _clause_start(text: str, anchor_start: int) -> int:
+    left = text[:anchor_start]
+    matches = list(re.finditer(r"(?:^|[.;])\s*(?:поз\.?\s*)?\d+\s*[-.):]\s*", left, re.IGNORECASE))
+    if matches:
+        return matches[-1].end()
+    punctuation = max(left.rfind(";"), left.rfind("."))
+    return punctuation + 1 if punctuation >= 0 else 0
+
+
+def _clause_end(text: str, anchor_end: int) -> int:
+    tail = text[anchor_end:]
+    stop = re.search(r"(?:[,;]\s*)?(?:кол-?во|количество|шт\.?|ед\.?\s*изм|для\s+закуп|поставка|срок)\b", tail, re.IGNORECASE)
+    punctuation_positions = [pos for pos in (tail.find(";"),) if pos >= 0]
+    positions = []
+    if stop:
+        positions.append(stop.start())
+    positions.extend(punctuation_positions)
+    return anchor_end + min(positions) if positions else len(text)
+
+
+def _strip_quantity_noise(text: str) -> str:
+    text = re.sub(r"[,;]?\s*(?:кол-?во|количество)\s*[:\-]?\s*\d+(?:[.,]\d+)?\s*(?:шт\.?|ед\.?)?\b.*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"[,;]?\s+\d+(?:[.,]\d+)?\s*(?:шт\.?|ед\.?)\s*$", "", text, flags=re.IGNORECASE)
+    return text
+
+
+def _normalize_dn_pn(text: str) -> str:
+    text = re.sub(r"\bDу\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDу(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bДу\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bДу(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDN\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bPN\s*[-:]?\s*(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bРу\s*[-:]?\s*(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bРу(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    return text
+
+
+def _expand_joining_and_actuation(text: str) -> str:
+    replacements = (
+        (r"(?<![\w/])фл\.?(?![\w/])", "фланцевый"),
+        (r"\bм/ф\b", "муфтовый фланцевый"),
+        (r"(?<!\w)муфт\.?(?!\w)", "муфтовый"),
+        (r"(?<!\w)резьб\.?(?!\w)", "резьбовой"),
+        (r"(?<!\w)эл\.?\s*прив\.?(?!\w)", "электропривод"),
+        (r"(?<!\w)прив\.?(?!\w)", "привод"),
+        (r"\bэ/п\b", "электропривод"),
+    )
+    for pattern, replacement in replacements:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
+
+
+def _expand_symmetric_connection_shorthand(text: str) -> str:
+    return _SYMMETRIC_FLANGED_RE.sub("фланцевый", text)
+
+
+def _expand_connection_notation(text: str) -> str:
+    return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+
+
+def _normalize_designation_confusables(text: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(0)
+        if _CYRILLIC_RE.search(token) and _LATIN_RE.search(token):
+            return token.translate(_DESIGNATION_CONFUSABLES)
+        return token
+
+    return _LETTER_DIGIT_RE.sub(replace, text)
+
+
+def _cleanup_spacing(text: str) -> str:
+    text = re.sub(r"\s+([,;:])", r"\1", text)
+    text = re.sub(r"([,(])\s+", r"\1", text)
+    return " ".join(text.split()).strip(" ,;:.")
+
+
+def _has_safe_alternate(source: str, canonical: str, has_supported_anchor: bool) -> bool:
+    if not canonical or canonical == source:
+        return False
+    if has_supported_anchor:
+        return True
+    return bool(re.search(r"\b(?:DN|PN)\s+\d+", canonical))
+from __future__ import annotations
+
+from .bm25_store import BM25Store
+from .models import SearchCandidate
+
+
+class HybridRetriever:
+    def __init__(self, embedder, qdrant_store, bm25_store: BM25Store, settings):
+        self.embedder = embedder
+        self.qdrant_store = qdrant_store
+        self.bm25_store = bm25_store
+        self.settings = settings
+
+    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_dense_limit
+        hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search_bm25(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_bm25_limit
+        hits = self.bm25_store.search(query, limit)
+        return [
+            SearchCandidate(
+                ld_id=hit.ld_id,
+                name=hit.name,
+                article=hit.article,
+                score=float(hit.bm25_score),
+                price=hit.price,
+                dn=hit.dn,
+                pn=hit.pn,
+                joining_type=hit.joining_type,
+                url=hit.url,
+                properties=hit.properties,
+                search_text=hit.search_text,
+                bm25_score=float(hit.bm25_score),
+                bm25_rank=index,
+                retrieval_sources=["bm25"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_rerank_limit
+        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+        merged = self._merge_candidates(dense_candidates, bm25_candidates)
+        self._apply_rrf(merged)
+        return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
+
+    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+        candidates = search_fn(query, limit)
+        if not canonical_query or canonical_query == query:
+            return candidates
+        try:
+            candidates = [*candidates, *search_fn(canonical_query, limit)]
+        except Exception:
+            return candidates
+        return list(self._merge_modality_candidates(candidates).values())
+
+    def _merge_modality_candidates(self, candidates: list[SearchCandidate]) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None or self._is_stronger_modality_hit(candidate, existing):
+                merged[candidate.ld_id] = candidate
+        return merged
+
+    def _is_stronger_modality_hit(self, candidate: SearchCandidate, existing: SearchCandidate) -> bool:
+        if candidate.dense_rank is not None or existing.dense_rank is not None:
+            candidate_rank = candidate.dense_rank if candidate.dense_rank is not None else 10**9
+            existing_rank = existing.dense_rank if existing.dense_rank is not None else 10**9
+            if candidate_rank != existing_rank:
+                return candidate_rank < existing_rank
+            return (candidate.dense_score or float("-inf")) > (existing.dense_score or float("-inf"))
+        candidate_rank = candidate.bm25_rank if candidate.bm25_rank is not None else 10**9
+        existing_rank = existing.bm25_rank if existing.bm25_rank is not None else 10**9
+        if candidate_rank != existing_rank:
+            return candidate_rank < existing_rank
+        return (candidate.bm25_score or float("-inf")) > (existing.bm25_score or float("-inf"))
+
+    def _merge_candidates(
+        self,
+        dense_candidates: list[SearchCandidate],
+        bm25_candidates: list[SearchCandidate],
+    ) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in dense_candidates:
+            merged[candidate.ld_id] = candidate
+        for candidate in bm25_candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None:
+                merged[candidate.ld_id] = candidate
+                continue
+            merged[candidate.ld_id] = self._merge_pair(existing, candidate)
+        return merged
+
+    def _merge_pair(self, dense_candidate: SearchCandidate, bm25_candidate: SearchCandidate) -> SearchCandidate:
+        sources = list(dict.fromkeys([*dense_candidate.retrieval_sources, *bm25_candidate.retrieval_sources]))
+        return SearchCandidate(
+            ld_id=dense_candidate.ld_id,
+            name=dense_candidate.name or bm25_candidate.name,
+            article=dense_candidate.article or bm25_candidate.article,
+            score=dense_candidate.score if dense_candidate.score is not None else bm25_candidate.score,
+            price=dense_candidate.price if dense_candidate.price is not None else bm25_candidate.price,
+            dn=dense_candidate.dn if dense_candidate.dn is not None else bm25_candidate.dn,
+            pn=dense_candidate.pn if dense_candidate.pn is not None else bm25_candidate.pn,
+            joining_type=dense_candidate.joining_type if dense_candidate.joining_type is not None else bm25_candidate.joining_type,
+            url=dense_candidate.url if dense_candidate.url is not None else bm25_candidate.url,
+            properties=dense_candidate.properties if dense_candidate.properties is not None else bm25_candidate.properties,
+            search_text=dense_candidate.search_text or bm25_candidate.search_text,
+            dense_score=dense_candidate.dense_score,
+            dense_rank=dense_candidate.dense_rank,
+            bm25_score=bm25_candidate.bm25_score,
+            bm25_rank=bm25_candidate.bm25_rank,
+            rrf_score=None,
+            retrieval_sources=sources,
+        )
+
+    def _apply_rrf(self, candidates: dict[int, SearchCandidate]) -> None:
+        rrf_k = self.settings.rrf_k
+        for candidate in candidates.values():
+            score = 0.0
+            if candidate.dense_rank is not None:
+                score += 1.0 / (rrf_k + candidate.dense_rank)
+            if candidate.bm25_rank is not None:
+                score += 1.0 / (rrf_k + candidate.bm25_rank)
+            candidate.rrf_score = score
+            candidate.score = score
+from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+
+
+def test_blank_and_unchanged_queries_have_no_canonical_alternate():
+    assert canonicalize_retrieval_query("   ").source_query == ""
+    result = canonicalize_retrieval_query("Кран шаровой DN 80 PN 16 фланцевый")
+    assert result.source_query == "Кран шаровой DN 80 PN 16 фланцевый"
+    assert result.canonical_query is None
+
+
+def test_compact_dn_pn_and_joining_abbreviation_are_normalized():
+    result = canonicalize_retrieval_query("Кран шаровой фл. Ду80 Ру16")
+    assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16"
+
+
+def test_symmetric_flanged_shorthand_is_canonicalized_once():
+    result = canonicalize_retrieval_query("Кран шаровой фл/фл Ду80 Ру16 стальной")
+    assert result.source_query == "Кран шаровой фл/фл Ду80 Ру16 стальной"
+    assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16 стальной"
+    assert result.canonical_query.count("фланцевый") == 1
+
+
+def test_symmetric_flanged_shorthand_accepts_case_dots_and_spaces():
+    result = canonicalize_retrieval_query("Задвижка ФЛ. / фл. DN100 PN16")
+    assert result.canonical_query == "Задвижка фланцевый DN 100 PN 16"
+
+
+def test_standalone_ww_connection_code_adds_welded_vocabulary():
+    result = canonicalize_retrieval_query("Кран шаровой WW DN100 PN25")
+    assert result.source_query == "Кран шаровой WW DN100 PN25"
+    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+
+def test_standalone_ww_connection_code_is_case_insensitive():
+    result = canonicalize_retrieval_query("Кран шаровой wW Ду100 Ру25")
+    assert result.source_query == "Кран шаровой wW Ду100 Ру25"
+    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+
+def test_mixed_script_designation_token_is_normalized_without_losing_constraints():
+    result = canonicalize_retrieval_query("Клапан 15C65HЖ DN50 PN16 стальной")
+    assert result.canonical_query == "Клапан 15С65НЖ DN 50 PN 16 стальной"
+
+
+def test_long_tender_prose_extracts_supported_item_clause_and_quantity_noise():
+    result = canonicalize_retrieval_query(
+        "Поставка оборудования; поз. 12 - Кран латунный шаровой муфт. Ду25 Ру16, количество 4 шт. срок 10 дней"
+    )
+    assert result.source_query.startswith("Поставка оборудования")
+    assert result.canonical_query == "Кран латунный шаровой муфтовый DN 25 PN 16"
+
+
+def test_unsupported_or_ambiguous_text_does_not_gain_catalog_domain_terms():
+    assert canonicalize_retrieval_query("Насос циркуляционный Ду25 2 шт").canonical_query is None
+    assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+
+
+def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+    assert canonicalize_retrieval_query("Кран шаровой AWW DN100 PN25").canonical_query == "Кран шаровой AWW DN 100 PN 25"
+    assert canonicalize_retrieval_query("Кран шаровой WW2 DN100 PN25").canonical_query == "Кран шаровой WW2 DN 100 PN 25"
+    assert canonicalize_retrieval_query("Кран шаровой FF DN100 PN25").canonical_query == "Кран шаровой FF DN 100 PN 25"
+
+
+def test_symmetric_flanged_shorthand_keeps_strict_boundaries_and_allowlist():
+    assert canonicalize_retrieval_query("Кран шаровой афл/фл DN100 PN16").canonical_query == "Кран шаровой афл/фл DN 100 PN 16"
+    assert canonicalize_retrieval_query("Кран шаровой фл/флан DN100 PN16").canonical_query == "Кран шаровой фл/флан DN 100 PN 16"
+    assert canonicalize_retrieval_query("Кран шаровой м/ф DN100 PN16").canonical_query == "Кран шаровой муфтовый фланцевый DN 100 PN 16"
+    assert canonicalize_retrieval_query("Кран шаровой FF/FF DN100 PN16").canonical_query == "Кран шаровой FF/FF DN 100 PN 16"
+
+
+def test_symmetric_flanged_shorthand_requires_supported_product_anchor():
+    result = canonicalize_retrieval_query("Поставка фл/фл DN100 PN16")
+    assert result.canonical_query == "Поставка фл/фл DN 100 PN 16"
+    assert "фланцевый" not in result.canonical_query
+    assert canonicalize_retrieval_query("Насос фл/фл DN100 PN16").canonical_query is None
+
+
+def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+    assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+    assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
+ M src/nomenclature_matcher/query_canonicalization.py
+ M tests/test_hybrid_retriever.py
+ M tests/test_matcher.py
+ M tests/test_query_canonicalization.py
+?? openspec/changes/cycle-06-symmetric-connection-canonicalization/
+
+codex
+{"decision":"FIX","summary":"The additive retrieval approach is sound and bounded, but the pair regex can partially rewrite longer slash-delimited connection expressions, creating a misleading canonical query.","issues":["`_SYMMETRIC_FLANGED_RE` permits `/` at both outer boundaries. For example, `фл/фл/фл` becomes `фланцевый/фл`, and `м/фл/фл` can become `м/фланцевый`. These are not unambiguous symmetric pairs and violate the stated conservative scope.","The tests prove canonical-string formation and that both query variants are issued, but do not cover these slash-adjacent near-misses. They therefore do not fully establish the claimed strict boundaries."],"fix_plan":["Require non-slash outer boundaries for the whole `фл/фл` pair, so it cannot match inside a larger slash chain.","Add regression tests for leading- and trailing-slash chains such as `м/фл/фл`, `фл/фл/фл`, and a delimited valid pair.","Re-run the focused canonicalization, hybrid/matcher, and full test suites before submitting to the blind gate."],"next_direction":"Keep pursuing additive, query-time normalization for genuinely unambiguous Russian tender shorthand; explicitly test delimiters because connection notation is commonly slash-composed and partial rewrites can silently distort constraints."}
+tokens used
+25,646
+{"decision":"FIX","summary":"The additive retrieval approach is sound and bounded, but the pair regex can partially rewrite longer slash-delimited connection expressions, creating a misleading canonical query.","issues":["`_SYMMETRIC_FLANGED_RE` permits `/` at both outer boundaries. For example, `фл/фл/фл` becomes `фланцевый/фл`, and `м/фл/фл` can become `м/фланцевый`. These are not unambiguous symmetric pairs and violate the stated conservative scope.","The tests prove canonical-string formation and that both query variants are issued, but do not cover these slash-adjacent near-misses. They therefore do not fully establish the claimed strict boundaries."],"fix_plan":["Require non-slash outer boundaries for the whole `фл/фл` pair, so it cannot match inside a larger slash chain.","Add regression tests for leading- and trailing-slash chains such as `м/фл/фл`, `фл/фл/фл`, and a delimited valid pair.","Re-run the focused canonicalization, hybrid/matcher, and full test suites before submitting to the blind gate."],"next_direction":"Keep pursuing additive, query-time normalization for genuinely unambiguous Russian tender shorthand; explicitly test delimiters because connection notation is commonly slash-composed and partial rewrites can silently distort constraints."}

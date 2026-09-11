@@ -1,0 +1,3706 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR] (network access enabled)
+reasoning effort: low
+reasoning summaries: none
+session id: 01a08971-eb27-7c92-bfe3-8b1f3026bef7
+--------
+user
+You are the Implementer.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+PLAN
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-11-pipe-od-retrieval-normalization",
+  "hypothesis": "A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.",
+  "why_now": "Current canonicalization explicitly does not interpret pipe OD. This is the documented remaining parser-miss class, and technical evidence supports the exact initial OD 108 mm to DN 100 mapping.",
+  "expected_effect": "Add at most one DN-enriched retrieval query only for explicit, contextual, allowlisted pipe OD; preserve source retrieval, reranker input, RRF, and final selection.",
+  "expected_metric_gain": "+0–3.3 pp public and blind hard-pass coverage, with no intended safety regression.",
+  "lesson_from_history": "Selection-adjacent experiments regressed or were neutral, while additive canonicalization was accepted in cycles 3–4. Cycle 10 was blocked by a protected-file violation before evaluation, so it does not disprove schema expansion. Index enrichment regressed, so this avoids rebuilding.",
+  "candidate_hypotheses": [
+    "Guarded pipe-OD-to-DN additive retrieval normalization (selected).",
+    "Protected-file-safe flange subtype verification.",
+    "Subject-matter-validated legacy designation equivalences.",
+    "Hybrid candidate-depth or RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, behavior spec, design, and implementation-only tasks in openspec/changes/cycle-11-pipe-od-retrieval-normalization/. Tasks explicitly exclude GOLD/harness artifacts and supervisor evaluation.",
+  "used_external_research": true,
+  "research_sources": [
+    "https://meganorm.ru/mega_doc/norm/gost_gosudarstvennyj-standart/0/gost_10704-91_mezhgosudarstvennyy_standart_truby_stalnye.html",
+    "https://tavago.ru/truby-i-fitingi/stalnye-truby/truby-stalnye-elektrosvarnye-gost-10704-91/truba-stal-elektrosvarnaya-pryamoshovnaya-dn-108kh3-5-du-100-gost-10704-91.html"
+  ],
+  "research_summary": "The GOST source lists 108 mm as a standard outside diameter; the pipe source identifies DN 108×3.5 as DN 100. The plan limits conversion to explicit OD context and this single documented mapping."
+}
+
+RULES
+- Read the OpenSpec change named `cycle-11-pipe-od-retrieval-normalization` and use the installed `openspec-apply-change` skill.
+- Implement the hypothesis completely. You are free to change any product-code component required by that hypothesis; the current MVP architecture is not protected.
+- Do not expand into unrelated cleanup or hardcode benchmark ids/answers.
+- Run focused unit tests while working.
+- You may use DeepSeek through the project's existing environment/config if useful.
+- NEVER run a full catalog index rebuild yourself. If the completed change needs a rebuild, set `needs_reindex=true`; the outer supervisor owns the global rebuild budget.
+- The outer supervisor automatically runs the public harness and blind gate after your implementation. Do not try to access the hidden holdout or wait for supervisor metrics. Do not return `blocked` merely because public/blind acceptance metrics are unavailable to you; finish the implementation and local/focused tests, then let the supervisor evaluate it.
+- If an OpenSpec task accidentally asks you to obtain supervisor-only public/blind metrics, treat that part as an outer-supervisor acceptance criterion, not as an implementation blocker.
+- Do not inspect or search for the hidden final-check dataset, its path, labels, product ids, or per-case results.
+- Do not alter harness policy, hidden-check plumbing, GOLD/eval answers, or files under `harness_rag/`.
+- Do not run git commit/push/reset/checkout/rebase. The supervisor owns Git state.
+- Return blocked only for a real implementation blocker, not for missing supervisor evaluation data.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-10T03:52:19.763281Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a08971-eb27-7c92-bfe3-8b1f3026bef7.tmp-1789012339499064645: line 2547: syntax error near unexpected token `('
+
+codex
+{"status":"complete","summary":"I’ll read the OpenSpec apply-change instructions and the cycle-11 artifacts first, then implement only the scoped retrieval normalization change and run focused tests.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,240p' /workspaces/ML-Cancer-Data/.agents/skills/openspec-apply-change/SKILL.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'find openspec/changes/cycle-11-pipe-od-retrieval-normalization -maxdepth 3 -type f | sort' in /workspaces/ML-Cancer-Data
+ succeeded in 79ms:
+---
+name: openspec-apply-change
+description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.
+allowed-tools: Bash(openspec:*)
+license: MIT
+compatibility: Requires openspec CLI.
+metadata:
+  author: openspec
+  version: "1.0"
+  generatedBy: "1.12.0"
+---
+
+Implement tasks from an OpenSpec change.
+
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+
+**Input**: Optionally specify a change name (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Steps**
+
+1. **Select the change**
+
+   If a name is provided, use it. Otherwise:
+   - Infer from conversation context if the user mentioned a change
+   - Auto-select if only one active change exists
+   - If ambiguous, run `openspec list --json` to get available changes and ask the user to select one
+
+   Always announce: "Using change: <name>" and how to override (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) <other>`).
+
+2. **Check status to understand the schema**
+   ```bash
+   openspec status --change "<name>" --json
+   ```
+   Parse the JSON to understand:
+   - `schemaName`: The workflow being used (e.g., "spec-driven")
+   - `planningHome`, `changeRoot`, and `actionContext`: planning scope and edit constraints
+   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+
+3. **Get apply instructions**
+
+   ```bash
+   openspec instructions apply --change "<name>" --json
+   ```
+
+   This returns:
+   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
+   - Progress (total, complete, remaining)
+   - Task list with status
+   - Dynamic instruction based on current state
+   - Optional `context`: current required project instruction input from the selected root
+   - Optional `operationGuidance`: current advisory guidance for apply
+
+   **Handle states:**
+   - If `state: "blocked"` (missing artifacts): show message, suggest using `$openspec-continue-change (Codex) or /openspec-continue-change (other agents)` (if it is not installed, run `openspec status --change "<name>" --json` to see the next artifact and `openspec instructions <artifact-id> --change "<name>" --json` for how to create it)
+   - If `state: "all_done"`: congratulate, suggest archive
+   - Otherwise: proceed to implementation
+
+   Treat `context` as a required prompt-level input. Read and consider it, and
+   apply relevant project facts, conventions, and constraints while implementing.
+   Treat `operationGuidance` as optional additive advice. Read and consider every
+   entry, and follow entries that are applicable and compatible with the built-in
+   workflow.
+
+   Keep both fields separate from CLI-returned state, missing artifacts, tasks,
+   progress, `contextFiles`, and the built-in `instruction`. They are not
+   evidence of task completion, do not replace the built-in instruction, and do
+   not permit bypassing a blocked state. If context conflicts with the built-in
+   instruction, an explicit user choice, or a CLI-controlled value, report the
+   conflict and preserve the controlling value. If guidance is inapplicable or
+   conflicts with those controlling inputs, do not follow it and explain why.
+   These are prompt-level behavior contracts, not enforceable checks.
+
+4. **Read context files**
+
+   Read every file path listed under `contextFiles` from the apply instructions output.
+   The files depend on the schema being used:
+   - **spec-driven**: proposal, specs, design, tasks
+   - Other schemas: follow the contextFiles from CLI output
+
+   Do not copy `context` or `operationGuidance` verbatim into implementation
+   files or planning artifacts unless the user separately asks for that content.
+
+5. **Show current progress**
+
+   Display:
+   - Schema being used
+   - Progress: "N/M tasks complete"
+   - Remaining tasks overview
+   - Dynamic instruction from CLI
+
+6. **Implement tasks (loop until done or blocked)**
+
+   For each pending task:
+   - Show which task is being worked on
+   - Make the code changes required
+   - Keep changes minimal and focused
+   - Mark task complete in the tasks file: `- [ ]` → `- [x]`
+   - Continue to next task
+
+   **Pause if:**
+   - Task is unclear → ask for clarification
+   - Implementation reveals a design issue → suggest updating artifacts
+   - A task needs work beyond what the spec and tasks describe, or you are tempted to drop, narrow, defer, or accept exceptions to specified behavior to make it fit → surface the added scope and ask; do not absorb it silently
+   - Error or blocker encountered → report and wait for guidance
+   - User interrupts
+
+7. **On completion or pause, show status**
+
+   Display:
+   - Tasks completed this session
+   - Overall progress: "N/M tasks complete"
+   - If all done: suggest archive
+   - If paused: explain why and wait for guidance
+
+**Output During Implementation**
+
+```
+## Implementing: <change-name> (schema: <schema-name>)
+
+Working on task 3/7: <task description>
+[...implementation happening...]
+✓ Task complete
+
+Working on task 4/7: <task description>
+[...implementation happening...]
+✓ Task complete
+```
+
+**Output On Completion**
+
+```
+## Implementation Complete
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 7/7 tasks complete ✓
+
+### Completed This Session
+- [x] Task 1
+- [x] Task 2
+...
+
+All tasks complete! You can archive this change with `$openspec-archive-change (Codex) or /openspec-archive-change (other agents)`.
+```
+
+**Output On Pause (Issue Encountered)**
+
+```
+## Implementation Paused
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 4/7 tasks complete
+
+### Issue Encountered
+<description of the issue>
+
+**Options:**
+1. <option 1>
+2. <option 2>
+3. Other approach
+
+What would you like to do?
+```
+
+**Guardrails**
+- Keep going through tasks until done or blocked
+- Always read context files before starting (from the apply instructions output)
+- If task is ambiguous, pause and ask before implementing
+- If implementation reveals issues, pause and suggest artifact updates
+- Keep code changes minimal and scoped to each task
+- Update task checkbox immediately after completing each task
+- Pause on errors, blockers, or unclear requirements - don't guess
+- When a task needs work beyond what the spec describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
+- Only mark a task `- [x]` when its specified behavior is fully implemented, not when it is partially done or deferred
+- Use contextFiles from CLI output, don't assume specific file names
+- Do not use context or operation guidance as proof that a task is complete
+- Apply relevant project context; report conflicts with controlling workflow inputs
+- Consider every guidance entry; explain any inapplicable or conflicting advice
+- Do not copy runtime context or operation guidance into implementation files or planning artifacts
+- Preserve CLI-controlled blocked/ready/all-done behavior and completion criteria
+
+**Fluid Workflow Integration**
+
+This skill supports the "actions on a change" model:
+
+- **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+
+ succeeded in 67ms:
+openspec/changes/cycle-11-pipe-od-retrieval-normalization/.openspec.yaml
+openspec/changes/cycle-11-pipe-od-retrieval-normalization/design.md
+openspec/changes/cycle-11-pipe-od-retrieval-normalization/proposal.md
+openspec/changes/cycle-11-pipe-od-retrieval-normalization/specs/pipe-od-retrieval-normalization/spec.md
+openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+
+codex
+{"status":"complete","summary":"Using change: cycle-11-pipe-od-retrieval-normalization. I’m pulling the OpenSpec status and apply instructions now so the implementation follows the declared task list instead of guessing from the summary.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'openspec status --change "cycle-11-pipe-od-retrieval-normalization" --json' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'openspec instructions apply --change "cycle-11-pipe-od-retrieval-normalization" --json' in /workspaces/ML-Cancer-Data
+ succeeded in 1049ms:
+{
+  "changeName": "cycle-11-pipe-od-retrieval-normalization",
+  "changeDir": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/proposal.md"
+    ],
+    "specs": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/specs/pipe-od-retrieval-normalization/spec.md"
+    ],
+    "design": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/design.md"
+    ],
+    "tasks": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 5,
+    "complete": 0,
+    "remaining": 5
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.",
+      "done": false
+    },
+    {
+      "id": "2",
+      "description": "1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.",
+      "done": false
+    },
+    {
+      "id": "3",
+      "description": "2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.",
+      "done": false
+    },
+    {
+      "id": "4",
+      "description": "2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.",
+      "done": false
+    },
+    {
+      "id": "5",
+      "description": "3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.",
+      "done": false
+    }
+  ],
+  "state": "ready",
+  "instruction": "Read context files, work through pending tasks, mark complete as you go.\nPause if you hit blockers or need clarification.",
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+ succeeded in 1088ms:
+{
+  "changeName": "cycle-11-pipe-od-retrieval-normalization",
+  "schemaName": "spec-driven",
+  "planningHome": {
+    "kind": "repo",
+    "root": "/workspaces/ML-Cancer-Data",
+    "changesDir": "/workspaces/ML-Cancer-Data/openspec/changes",
+    "defaultSchema": "spec-driven"
+  },
+  "changeRoot": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization",
+  "artifactPaths": {
+    "proposal": {
+      "outputPath": "proposal.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/proposal.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/proposal.md"
+      ]
+    },
+    "specs": {
+      "outputPath": "specs/**/*.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/specs/**/*.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/specs/pipe-od-retrieval-normalization/spec.md"
+      ]
+    },
+    "design": {
+      "outputPath": "design.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/design.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/design.md"
+      ]
+    },
+    "tasks": {
+      "outputPath": "tasks.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md"
+      ]
+    }
+  },
+  "isPlanningComplete": true,
+  "isComplete": true,
+  "applyRequires": [
+    "tasks"
+  ],
+  "nextSteps": [
+    "All planning artifacts are complete. Run openspec instructions apply --change \"cycle-11-pipe-od-retrieval-normalization\" --json to inspect implementation progress."
+  ],
+  "actionContext": {
+    "mode": "repo-local",
+    "sourceOfTruth": "repo",
+    "planningArtifacts": [
+      "proposal",
+      "specs",
+      "design",
+      "tasks"
+    ],
+    "linkedContext": [],
+    "allowedEditRoots": [
+      "/workspaces/ML-Cancer-Data"
+    ],
+    "requiresAffectedAreaSelection": false,
+    "constraints": [
+      "Repo-local change artifacts and implementation edits are scoped to this project."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "proposal",
+      "outputPath": "proposal.md",
+      "status": "done",
+      "requires": []
+    },
+    {
+      "id": "specs",
+      "outputPath": "specs/**/*.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "design",
+      "outputPath": "design.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "tasks",
+      "outputPath": "tasks.md",
+      "status": "done",
+      "requires": [
+        "specs",
+        "design"
+      ]
+    }
+  ],
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+codex
+{"status":"complete","summary":"Schema is spec-driven with 0/5 tasks complete. I’m reading the proposal, design, spec, and task file completely before touching product code.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,260p' openspec/changes/cycle-11-pipe-od-retrieval-normalization/proposal.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,280p' openspec/changes/cycle-11-pipe-od-retrieval-normalization/design.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,320p' openspec/changes/cycle-11-pipe-od-retrieval-normalization/specs/pipe-od-retrieval-normalization/spec.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,220p' openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md" in /workspaces/ML-Cancer-Data
+ succeeded in 291ms:
+## Why
+
+The hybrid matcher can normalize explicit DN notation, but it deliberately does not interpret a tender's pipe outside diameter as a nominal diameter. That leaves a recurring, standards-based tender notation class without its catalog-native size term; current evidence supports a narrowly guarded OD 108 mm to DN 100 mapping for welded steel pipe, so an additive retrieval experiment is warranted without changing final selection.
+
+## What Changes
+
+- Add deterministic recognition of an explicitly marked pipe outside diameter in supported valve-family queries that do not already state a DN.
+- Convert only an allowlisted, documented OD-to-DN relationship into an additional canonical retrieval query while preserving the original OD wording and all other tender constraints.
+- Keep original retrieval, DeepSeek reranking input, returned query text, RRF behavior, and final-selection logic unchanged.
+- Refuse conversion for bare numbers, ambiguous dimensions, unsupported product text, conflicting explicit DN, or OD values not in the approved mapping table.
+
+## Capabilities
+
+### New Capabilities
+
+- `pipe-od-retrieval-normalization`: Provides bounded, standards-backed translation of unambiguous pipe outside-diameter tender notation into an additive DN-oriented retrieval representation.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected package code: `query_canonicalization.py` and its focused tests; existing matcher and hybrid-retriever integration will consume the existing canonical-query contract unchanged.
+- No catalog CSV, index representation, Qdrant collection, embedding configuration, model prompt, or external dependency changes are required.
+- No harness/GOLD files, evaluation artifacts, or supervisor-only evaluation workflow are in scope.
+
+ succeeded in 283ms:
+## 1. Guarded OD Recognition
+
+- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+
+## 2. Regression Coverage
+
+- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+
+## 3. Verification
+
+- [ ] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
+
+ succeeded in 306ms:
+## Context
+
+See `proposal.md` for motivation. The accepted canonicalization path already builds one optional alternate query and `HybridRetriever` deduplicates source and alternate hits by LD id within each modality before applying RRF. The canonicalizer currently has safe transformations for explicit DN/PN and deliberately has no pipe-OD rule. `deep_gold.extract_tender_dn` also intentionally refuses to treat a bare diameter as DN, so this change must not alter that evaluation helper or its protected GOLD-adjacent files.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Add one independently testable OD recognition boundary to query-time canonicalization.
+- Limit conversions to documented mappings and contexts that identify a pipe/line size rather than a generic product dimension.
+- Preserve the source representation and existing fail-open, candidate-deduplication behavior.
+
+**Non-Goals:**
+
+- Do not change constraint extraction, GOLD construction/evaluation, catalog data, scoring, candidate limits, reranker prompts, or final selection.
+- Do not infer DN for arbitrary nominal dimensions, introduce a comprehensive pipe-standard engine, or assert competitor-to-LD product equivalence.
+- Do not edit `golden_rules.py`, `deep_gold.py`, public datasets, harness files, or any supervisor-owned artifact.
+
+## Decisions
+
+### Use an allowlisted OD-to-DN mapping only after contextual recognition
+
+Add a small immutable mapping to the canonicalization boundary, initially containing only the researched relationship `108 mm -> DN 100`. Recognition requires a supported valve-family anchor, no explicit DN already present, one unambiguous diameter expression with a millimetre unit, and pipe-size context: an explicit outer/pipe diameter phrase, `Дн`, or a standalone `d` dimension associated with a connected valve line (for example a flanged or welded gate/valve request). The alternate preserves the original diameter text and appends `DN 100` rather than replacing anything.
+
+This deliberately permits the common concise tender style while refusing generic measurements. A broad nearest-size conversion was rejected because OD depends on pipe standard and wall/connection context. Requiring only an explicit `наружный диаметр` phrase was also rejected because it would not cover the established concise `d ... мм` tender notation class.
+
+### Give explicit DN precedence and reject ambiguity
+
+Run OD recognition after existing DN normalization. If normalized source/canonical text already contains an explicit DN, contains more than one OD-like dimension, lacks the unit/context, or the candidate OD is unmapped, make no OD-derived change. Existing non-OD canonicalization can still apply; there is no new alternate solely from the rejected OD.
+
+This prevents a tender from acquiring competing nominal sizes and preserves the present behavior for the many queries whose dimensions are not pipe OD.
+
+### Reuse the existing additive retrieval contract
+
+Keep the `RetrievalQueryCanonicalization` result shape and current hybrid retrieval integration. The canonicalizer can incorporate the DN enrichment into its single canonical representation; no second alternate query, RRF term, reindex, or new diagnostic payload is introduced. The reranker receives the whitespace-normalized source query exactly as today.
+
+Changing fusion weights or allowing a separate OD query was rejected because it would confound a parser experiment with candidate-score changes and could inflate a product surfaced by two equivalent representations.
+
+## Risks / Trade-offs
+
+- [A concise `d` expression denotes a non-pipe dimension] → require a supported valve and connection/pipe context, one millimetre-qualified dimension, no explicit DN, and an allowlisted exact OD; retain source retrieval and do not alter selection.
+- [The mapping is incorrectly generalized across pipe standards] → restrict the first table to the researched 108-to-100 relationship and require future mappings to be separately documented and tested.
+- [The alternate adds latency or a poor candidate] → use the existing maximum of one alternate call and per-modality deduplication; outer evaluation decides promotion.
+- [Tests accidentally alter protected benchmark material] → keep new test data as local synthetic fixtures in `tests/test_query_canonicalization.py`; do not modify GOLD/harness modules or data files.
+
+## Migration Plan
+
+1. Add the pure guarded mapping and OD-context recognition to query canonicalization.
+2. Add focused synthetic tests for the allowed mapping, safety refusals, source preservation, and existing hybrid fail-open behavior.
+3. Run the focused test module and `python -m pytest -q`; do not run or modify supervisor evaluation workflows as an implementation task.
+4. Roll back by removing the mapping/rule; no persisted data, index, or collection migration exists.
+
+ succeeded in 321ms:
+## Purpose
+
+Provide a conservative catalog-native size representation when a supported valve tender specifies a standard pipe outside diameter instead of an explicit nominal diameter.
+
+## ADDED Requirements
+
+### Requirement: Produce a guarded OD-to-DN retrieval alternate
+
+For a supported valve-family tender that has no explicit DN, the system SHALL provide at most one additional retrieval representation when it contains exactly one explicit pipe-diameter cue and that OD occurs in the approved standards-backed mapping table. The alternate SHALL retain the source wording and all explicit product, pressure, material, connection, control, designation, and construction terms while adding the mapped DN term. The original normalized tender query SHALL remain available for original retrieval, reranking, and returned result text.
+
+#### Scenario: Standard pipe OD in a valve tender
+
+- **WHEN** a supported valve tender without an explicit DN contains a single recognized pipe-OD expression for an approved OD value
+- **THEN** the system provides one distinct alternate representation that retains the OD expression and adds its mapped DN
+
+#### Scenario: Explicit DN takes precedence
+
+- **WHEN** a supported valve tender contains both an explicit DN and a recognized pipe-OD expression
+- **THEN** the system does not derive or add a second DN from the OD expression
+
+### Requirement: Refuse ambiguous diameter conversion
+
+The system SHALL NOT infer DN from a bare number, a non-pipe dimension, multiple competing diameter expressions, an OD value outside the approved table, or an unsupported/no-product query. When no other existing canonicalization applies, it SHALL not emit an OD-derived alternate query.
+
+#### Scenario: Unmapped or ambiguous dimension
+
+- **WHEN** a tender has an unapproved OD, more than one possible pipe diameter, or a dimension without an explicit supported OD cue
+- **THEN** the system does not add a DN term based on that dimension
+
+#### Scenario: Unsupported product text
+
+- **WHEN** an unsupported or no-product query contains an OD-like number with millimetres
+- **THEN** the system does not create a catalog-domain DN alternate on that basis
+
+### Requirement: Keep OD expansion additive and fail-open
+
+The system SHALL use an OD-derived representation only as an additional retrieval input, at most once per query, and SHALL retain usable original-query candidates if alternate retrieval is unavailable or fails. It SHALL not add duplicate candidates or extra retrieval-modality scoring solely because a result appears through both source and OD-derived representations.
+
+#### Scenario: Alternate retrieval failure
+
+- **WHEN** retrieval of the OD-derived representation fails after original-query retrieval succeeds
+- **THEN** matching continues with the original-query candidate set
+
+codex
+{"status":"complete","summary":"The scope is narrow: query-time canonicalization plus synthetic tests, no matcher API or index changes. I’m locating the current canonicalization boundary and related tests before editing.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "rg -n \"canonical|RetrievalQueryCanonicalization|DN|PN\" src/nomenclature_matcher tests/test_query_canonicalization.py tests -g '"'!harness_rag/**'"'" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' src/nomenclature_matcher/query_canonicalization.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,320p' tests/test_query_canonicalization.py" in /workspaces/ML-Cancer-Data
+ exited 127 in 168ms:
+/bin/bash: line 1: rg: command not found
+
+ succeeded in 169ms:
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+
+
+_DESIGNATION_CONFUSABLES = str.maketrans(
+    {
+        "A": "А",
+        "B": "В",
+        "C": "С",
+        "E": "Е",
+        "H": "Н",
+        "K": "К",
+        "M": "М",
+        "O": "О",
+        "P": "Р",
+        "T": "Т",
+        "X": "Х",
+        "Y": "У",
+        "a": "а",
+        "c": "с",
+        "e": "е",
+        "k": "к",
+        "m": "м",
+        "o": "о",
+        "p": "р",
+        "x": "х",
+        "y": "у",
+    }
+)
+_CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
+_LATIN_RE = re.compile(r"[A-Za-z]")
+_LETTER_DIGIT_RE = re.compile(r"(?=.*[A-Za-zА-Яа-яЁё])(?=.*\d)[A-Za-zА-Яа-яЁё0-9./_-]+")
+_SUPPORTED_ANCHOR_RE = re.compile(
+    r"\b(кран(?:\s+шаровой)?|клапан|задвижка|затвор|вентиль|фильтр|регулятор|фланец|муфта|переход|тройник|отвод)\b",
+    re.IGNORECASE,
+)
+_UNSUPPORTED_ANCHOR_RE = re.compile(
+    r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
+    re.IGNORECASE,
+)
+_STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class RetrievalQueryCanonicalization:
+    source_query: str
+    canonical_query: str | None = None
+
+
+def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+    source = " ".join(query.split())
+    if not source:
+        return RetrievalQueryCanonicalization(source_query="")
+
+    if _UNSUPPORTED_ANCHOR_RE.search(source) and not _SUPPORTED_ANCHOR_RE.search(source):
+        return RetrievalQueryCanonicalization(source_query=source)
+
+    has_supported_anchor = _SUPPORTED_ANCHOR_RE.search(source) is not None
+    canonical = _extract_supported_clause(source)
+    canonical = _strip_quantity_noise(canonical)
+    canonical = _normalize_dn_pn(canonical)
+    canonical = _expand_joining_and_actuation(canonical)
+    if has_supported_anchor:
+        canonical = _expand_connection_notation(canonical)
+    canonical = _normalize_designation_confusables(canonical)
+    canonical = _cleanup_spacing(canonical)
+
+    if canonical == source or not _has_safe_alternate(source, canonical, has_supported_anchor):
+        return RetrievalQueryCanonicalization(source_query=source)
+    return RetrievalQueryCanonicalization(source_query=source, canonical_query=canonical)
+
+
+def _extract_supported_clause(text: str) -> str:
+    anchor = _SUPPORTED_ANCHOR_RE.search(text)
+    if not anchor:
+        return text
+    start = _clause_start(text, anchor.start())
+    end = _clause_end(text, anchor.end())
+    return text[start:end].strip(" ,;:.")
+
+
+def _clause_start(text: str, anchor_start: int) -> int:
+    left = text[:anchor_start]
+    matches = list(re.finditer(r"(?:^|[.;])\s*(?:поз\.?\s*)?\d+\s*[-.):]\s*", left, re.IGNORECASE))
+    if matches:
+        return matches[-1].end()
+    punctuation = max(left.rfind(";"), left.rfind("."))
+    return punctuation + 1 if punctuation >= 0 else 0
+
+
+def _clause_end(text: str, anchor_end: int) -> int:
+    tail = text[anchor_end:]
+    stop = re.search(r"(?:[,;]\s*)?(?:кол-?во|количество|шт\.?|ед\.?\s*изм|для\s+закуп|поставка|срок)\b", tail, re.IGNORECASE)
+    punctuation_positions = [pos for pos in (tail.find(";"),) if pos >= 0]
+    positions = []
+    if stop:
+        positions.append(stop.start())
+    positions.extend(punctuation_positions)
+    return anchor_end + min(positions) if positions else len(text)
+
+
+def _strip_quantity_noise(text: str) -> str:
+    text = re.sub(r"[,;]?\s*(?:кол-?во|количество)\s*[:\-]?\s*\d+(?:[.,]\d+)?\s*(?:шт\.?|ед\.?)?\b.*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"[,;]?\s+\d+(?:[.,]\d+)?\s*(?:шт\.?|ед\.?)\s*$", "", text, flags=re.IGNORECASE)
+    return text
+
+
+def _normalize_dn_pn(text: str) -> str:
+    text = re.sub(r"\bDу\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDу(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bДу\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bДу(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDN\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bPN\s*[-:]?\s*(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bРу\s*[-:]?\s*(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bРу(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    return text
+
+
+def _expand_joining_and_actuation(text: str) -> str:
+    replacements = (
+        (r"(?<!\w)фл\.?(?!\w)", "фланцевый"),
+        (r"\bм/ф\b", "муфтовый фланцевый"),
+        (r"(?<!\w)муфт\.?(?!\w)", "муфтовый"),
+        (r"(?<!\w)резьб\.?(?!\w)", "резьбовой"),
+        (r"(?<!\w)эл\.?\s*прив\.?(?!\w)", "электропривод"),
+        (r"(?<!\w)прив\.?(?!\w)", "привод"),
+        (r"\bэ/п\b", "электропривод"),
+    )
+    for pattern, replacement in replacements:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
+
+
+def _expand_connection_notation(text: str) -> str:
+    return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+
+
+def _normalize_designation_confusables(text: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(0)
+        if _CYRILLIC_RE.search(token) and _LATIN_RE.search(token):
+            return token.translate(_DESIGNATION_CONFUSABLES)
+        return token
+
+    return _LETTER_DIGIT_RE.sub(replace, text)
+
+
+def _cleanup_spacing(text: str) -> str:
+    text = re.sub(r"\s+([,;:])", r"\1", text)
+    text = re.sub(r"([,(])\s+", r"\1", text)
+    return " ".join(text.split()).strip(" ,;:.")
+
+
+def _has_safe_alternate(source: str, canonical: str, has_supported_anchor: bool) -> bool:
+    if not canonical or canonical == source:
+        return False
+    if has_supported_anchor:
+        return True
+    return bool(re.search(r"\b(?:DN|PN)\s+\d+", canonical))
+
+ succeeded in 154ms:
+from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+
+
+def test_blank_and_unchanged_queries_have_no_canonical_alternate():
+    assert canonicalize_retrieval_query("   ").source_query == ""
+    result = canonicalize_retrieval_query("Кран шаровой DN 80 PN 16 фланцевый")
+    assert result.source_query == "Кран шаровой DN 80 PN 16 фланцевый"
+    assert result.canonical_query is None
+
+
+def test_compact_dn_pn_and_joining_abbreviation_are_normalized():
+    result = canonicalize_retrieval_query("Кран шаровой фл. Ду80 Ру16")
+    assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16"
+
+
+def test_standalone_ww_connection_code_adds_welded_vocabulary():
+    result = canonicalize_retrieval_query("Кран шаровой WW DN100 PN25")
+    assert result.source_query == "Кран шаровой WW DN100 PN25"
+    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+
+def test_standalone_ww_connection_code_is_case_insensitive():
+    result = canonicalize_retrieval_query("Кран шаровой wW Ду100 Ру25")
+    assert result.source_query == "Кран шаровой wW Ду100 Ру25"
+    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+
+
+def test_mixed_script_designation_token_is_normalized_without_losing_constraints():
+    result = canonicalize_retrieval_query("Клапан 15C65HЖ DN50 PN16 стальной")
+    assert result.canonical_query == "Клапан 15С65НЖ DN 50 PN 16 стальной"
+
+
+def test_long_tender_prose_extracts_supported_item_clause_and_quantity_noise():
+    result = canonicalize_retrieval_query(
+        "Поставка оборудования; поз. 12 - Кран латунный шаровой муфт. Ду25 Ру16, количество 4 шт. срок 10 дней"
+    )
+    assert result.source_query.startswith("Поставка оборудования")
+    assert result.canonical_query == "Кран латунный шаровой муфтовый DN 25 PN 16"
+
+
+def test_unsupported_or_ambiguous_text_does_not_gain_catalog_domain_terms():
+    assert canonicalize_retrieval_query("Насос циркуляционный Ду25 2 шт").canonical_query is None
+    assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+
+
+def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+    assert canonicalize_retrieval_query("Кран шаровой AWW DN100 PN25").canonical_query == "Кран шаровой AWW DN 100 PN 25"
+    assert canonicalize_retrieval_query("Кран шаровой WW2 DN100 PN25").canonical_query == "Кран шаровой WW2 DN 100 PN 25"
+    assert canonicalize_retrieval_query("Кран шаровой FF DN100 PN25").canonical_query == "Кран шаровой FF DN 100 PN 25"
+
+
+def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+    assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+    assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
+
+codex
+{"status":"complete","summary":"The current result type already supports one optional alternate, and the existing tests confirm source preservation. I’m adding a guarded OD recognizer after DN/PN normalization so explicit DN can take precedence and the alternate stays additive.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "find tests src/nomenclature_matcher -type f | xargs grep -n \"canonicalize_retrieval_query\\|RetrievalQueryCanonicalization\\|canonical_query\\|HybridRetriever\\|Matcher\"" in /workspaces/ML-Cancer-Data
+ succeeded in 38ms:
+tests/test_hybrid_retriever.py:4:from nomenclature_matcher.hybrid_retriever import HybridRetriever
+tests/test_hybrid_retriever.py:88:    retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+tests/test_hybrid_retriever.py:101:    retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+tests/test_hybrid_retriever.py:109:    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
+tests/test_hybrid_retriever.py:110:    retriever.search("original", canonical_query="canonical")
+tests/test_hybrid_retriever.py:116:    HybridRetriever(embedder, VariantQdrantStore(), bm25, settings).search("original", canonical_query="original")
+tests/test_hybrid_retriever.py:125:    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
+tests/test_hybrid_retriever.py:129:    results = retriever.search(original, canonical_query=canonical)
+tests/test_hybrid_retriever.py:138:    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
+tests/test_hybrid_retriever.py:139:    results = retriever.search("original", canonical_query="canonical")
+tests/test_hybrid_retriever.py:153:    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(fail_on_canonical=True), settings)
+tests/test_hybrid_retriever.py:154:    results = retriever.search("original", canonical_query="canonical")
+tests/test_hybrid_retriever.py:161:    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(fail_on_canonical=True), settings)
+tests/test_hybrid_retriever.py:164:        canonical_query="canonical",
+grep: tests/__pycache__/test_hybrid_retriever.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_query_canonicalization.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_matcher.cpython-312.pyc: binary file matches
+grep: tests/__pycache__/test_matcher.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_hybrid_retriever.cpython-312.pyc: binary file matches
+tests/test_query_canonicalization.py:1:from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+tests/test_query_canonicalization.py:5:    assert canonicalize_retrieval_query("   ").source_query == ""
+tests/test_query_canonicalization.py:6:    result = canonicalize_retrieval_query("Кран шаровой DN 80 PN 16 фланцевый")
+tests/test_query_canonicalization.py:8:    assert result.canonical_query is None
+tests/test_query_canonicalization.py:12:    result = canonicalize_retrieval_query("Кран шаровой фл. Ду80 Ру16")
+tests/test_query_canonicalization.py:13:    assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16"
+tests/test_query_canonicalization.py:17:    result = canonicalize_retrieval_query("Кран шаровой WW DN100 PN25")
+tests/test_query_canonicalization.py:19:    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+tests/test_query_canonicalization.py:23:    result = canonicalize_retrieval_query("Кран шаровой wW Ду100 Ру25")
+tests/test_query_canonicalization.py:25:    assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+tests/test_query_canonicalization.py:29:    result = canonicalize_retrieval_query("Клапан 15C65HЖ DN50 PN16 стальной")
+tests/test_query_canonicalization.py:30:    assert result.canonical_query == "Клапан 15С65НЖ DN 50 PN 16 стальной"
+tests/test_query_canonicalization.py:34:    result = canonicalize_retrieval_query(
+tests/test_query_canonicalization.py:38:    assert result.canonical_query == "Кран латунный шаровой муфтовый DN 25 PN 16"
+tests/test_query_canonicalization.py:42:    assert canonicalize_retrieval_query("Насос циркуляционный Ду25 2 шт").canonical_query is None
+tests/test_query_canonicalization.py:43:    assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+tests/test_query_canonicalization.py:47:    assert canonicalize_retrieval_query("Кран шаровой AWW DN100 PN25").canonical_query == "Кран шаровой AWW DN 100 PN 25"
+tests/test_query_canonicalization.py:48:    assert canonicalize_retrieval_query("Кран шаровой WW2 DN100 PN25").canonical_query == "Кран шаровой WW2 DN 100 PN 25"
+tests/test_query_canonicalization.py:49:    assert canonicalize_retrieval_query("Кран шаровой FF DN100 PN25").canonical_query == "Кран шаровой FF DN 100 PN 25"
+tests/test_query_canonicalization.py:53:    assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+tests/test_query_canonicalization.py:54:    assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
+tests/test_matcher.py:2:from nomenclature_matcher.matcher import NomenclatureMatcher
+tests/test_matcher.py:29:class HybridRetriever:
+tests/test_matcher.py:34:    def search(self, query, limit, canonical_query=None):
+tests/test_matcher.py:35:        self.calls.append((query, limit, canonical_query))
+tests/test_matcher.py:46:    matcher = NomenclatureMatcher(embedder, store, settings)
+tests/test_matcher.py:56:    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", "same", "   ", "other"])
+tests/test_matcher.py:65:    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", " same ", "same"])
+tests/test_matcher.py:74:    result = NomenclatureMatcher(Embedder(), Store([]), settings).match_one("query")
+tests/test_matcher.py:81:    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(result=rerank_result)).match_one_with_rerank("query")
+tests/test_matcher.py:89:    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank(grep: src/nomenclature_matcher/__pycache__/__init__.cpython-312.pyc: binary file matches
+"query")
+tests/test_matcher.py:118:    hybrid = HybridRetriever(candidates)
+tests/test_matcher.py:119:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+tests/test_matcher.py:139:    hybrid = HybridRetriever(candidates)
+tests/test_matcher.py:140:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+tests/test_matcher.py:146:def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
+tests/test_matcher.py:156:    hybrid = HybridRetriever(candidates)
+tests/test_matcher.py:157:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+tests/test_matcher.py:174:    hybrid = HybridRetriever(candidates)
+tests/test_matcher.py:175:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+src/nomenclature_matcher/query_canonicalization.py:47:class RetrievalQueryCanonicalization:
+src/nomenclature_matcher/query_canonicalization.py:49:    canonical_query: str | None = None
+src/nomenclature_matcher/query_canonicalization.py:52:def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+src/nomenclature_matcher/query_canonicalization.py:55:        return RetrievalQueryCanonicalization(source_query="")
+src/nomenclature_matcher/query_canonicalization.py:58:        return RetrievalQueryCanonicalization(source_query=source)
+src/nomenclature_matcher/query_canonicalization.py:71:        return RetrievalQueryCanonicalization(source_query=source)
+src/nomenclature_matcher/query_canonicalization.py:72:    return RetrievalQueryCanonicalization(source_query=source, canonical_query=canonical)
+src/nomenclature_matcher/hybrid_retriever.py:7:class HybridRetriever:
+src/nomenclature_matcher/hybrid_retriever.py:60:    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+src/nomenclature_matcher/hybrid_retriever.py:62:        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+src/nomenclature_matcher/hybrid_retriever.py:63:        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+src/nomenclature_matcher/hybrid_retriever.py:68:    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+src/nomenclature_matcher/hybrid_retriever.py:70:        if not canonical_query or canonical_query == query:
+src/nomenclature_matcher/hybrid_retriever.py:73:            candidates = [*candidates, *search_fn(canonical_query, limit)]
+src/nomenclature_matcher/matcher.py:4:from .query_canonicalization import canonicalize_retrieval_query
+src/nomenclature_matcher/matcher.py:7:class NomenclatureMatcher:
+src/nomenclature_matcher/matcher.py:103:        canonicalization = canonicalize_retrieval_query(query)
+src/nomenclature_matcher/matcher.py:112:            canonical_query=canonicalization.canonical_query,
+src/nomenclature_matcher/__init__.py:1:from .matcher import NomenclatureMatcher
+src/nomenclature_matcher/__init__.py:4:__all__ = ["LDProduct", "MatchResult", "NomenclatureMatcher", "RerankResult", "SearchCandidate", "SelectedMatch"]
+grep: src/nomenclature_matcher/__pycache__/query_canonicalization.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/matcher.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/hybrid_retriever.cpython-312.pyc: binary file matches
+
+codex
+{"status":"complete","summary":"I’m going to patch the canonicalizer with a small immutable 108->DN100 table, contextual cue detection, explicit-DN precedence, and ambiguity checks. Then I’ll add synthetic tests that assert both the allowed alternate and refusal cases.","tests":[],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/query_canonicalization.py
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+
+codex
+{"status":"complete","summary":"The product change is in place. I’m extending the canonicalization tests now with allowed OD cases, explicit DN precedence, unmapped/multiple/bare refusals, and source-preservation checks.","tests":[],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_query_canonicalization.py
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+codex
+{"status":"complete","summary":"Tasks 1.1, 1.2, and 2.1 are implemented in code and tests. I’m running the focused canonicalization tests first so any parser-boundary issues are quick to isolate.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest tests/test_query_canonicalization.py -q' in /workspaces/ML-Cancer-Data
+ succeeded in 410ms:
+...............                                                          [100%]
+15 passed in 0.05s
+
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+codex
+{"status":"complete","summary":"Focused canonicalization tests pass: 15 passed. I’m marking the completed OpenSpec tasks and then checking the hybrid/matcher tests to confirm the one-alternate contract is unchanged.","tests":["python -m pytest tests/test_query_canonicalization.py -q"],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..6d523e3a0d7b0f029f161e0a58720400a5335d96
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,11 +1,11 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+ - [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..6d523e3a0d7b0f029f161e0a58720400a5335d96
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,11 +1,11 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+ - [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+exec
+/bin/bash -lc 'python -m pytest tests/test_hybrid_retriever.py tests/test_matcher.py -q' in /workspaces/ML-Cancer-Data
+ succeeded in 438ms:
+.................                                                        [100%]
+17 passed in 0.13s
+
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..6d523e3a0d7b0f029f161e0a58720400a5335d96
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,11 +1,11 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+ - [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+codex
+{"status":"complete","summary":"Hybrid and matcher tests pass unchanged: 17 passed. I’m marking the contract-confirmation task, then I’ll run the full test suite and address only product-code or focused-test failures if any appear.","tests":["python -m pytest tests/test_query_canonicalization.py -q","python -m pytest tests/test_hybrid_retriever.py tests/test_matcher.py -q"],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..6fa9f42150cc12d181b558658bf30280fdd42ea7
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,12 +1,12 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..6fa9f42150cc12d181b558658bf30280fdd42ea7
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,12 +1,12 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+exec
+/bin/bash -lc 'python -m pytest -q' in /workspaces/ML-Cancer-Data
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..6fa9f42150cc12d181b558658bf30280fdd42ea7
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,12 +1,12 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+ succeeded in 3003ms:
+........................................................................ [ 42%]
+........................................................................ [ 85%]
+.........................                                                [100%]
+169 passed in 2.38s
+
+codex
+{"status":"complete","summary":"Full test suite passes: 169 passed. I’m marking the final verification task and doing a quick status check for the exact files changed.","tests":["python -m pytest tests/test_query_canonicalization.py -q","python -m pytest tests/test_hybrid_retriever.py tests/test_matcher.py -q","python -m pytest -q"],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..87b24962604f37e9f98ace2bf6bd1d59897a0237
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
++- [x] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..87b24962604f37e9f98ace2bf6bd1d59897a0237
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
++- [x] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+exec
+/bin/bash -lc 'openspec instructions apply --change "cycle-11-pipe-od-retrieval-normalization" --json' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git diff -- src/nomenclature_matcher/query_canonicalization.py tests/test_query_canonicalization.py openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git status --short' in /workspaces/ML-Cancer-Data
+ succeeded in 178ms:
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca84..6c3c535 100644
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@ _UNSUPPORTED_ANCHOR_RE = re.compile(
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@ def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@ def _expand_connection_notation(text: str) -> str:
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570..15e947f 100644
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@ def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+ succeeded in 185ms:
+ M src/nomenclature_matcher/query_canonicalization.py
+ M tests/test_query_canonicalization.py
+?? openspec/changes/cycle-11-pipe-od-retrieval-normalization/
+
+ succeeded in 876ms:
+{
+  "changeName": "cycle-11-pipe-od-retrieval-normalization",
+  "changeDir": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/proposal.md"
+    ],
+    "specs": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/specs/pipe-od-retrieval-normalization/spec.md"
+    ],
+    "design": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/design.md"
+    ],
+    "tasks": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 5,
+    "complete": 5,
+    "remaining": 0
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.",
+      "done": true
+    },
+    {
+      "id": "2",
+      "description": "1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.",
+      "done": true
+    },
+    {
+      "id": "3",
+      "description": "2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.",
+      "done": true
+    },
+    {
+      "id": "4",
+      "description": "2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.",
+      "done": true
+    },
+    {
+      "id": "5",
+      "description": "3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.",
+      "done": true
+    }
+  ],
+  "state": "all_done",
+  "instruction": "All tasks are complete! This change is ready to be archived.\nConsider running tests and reviewing the changes before archiving.",
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..87b24962604f37e9f98ace2bf6bd1d59897a0237
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
++- [x] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+codex
+{"status":"complete","summary":"OpenSpec reports all 5 tasks complete. I’m doing one final validation of the change artifacts so the supervisor gets a clean handoff.","tests":["python -m pytest tests/test_query_canonicalization.py -q","python -m pytest tests/test_hybrid_retriever.py tests/test_matcher.py -q","python -m pytest -q"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'openspec validate cycle-11-pipe-od-retrieval-normalization --strict' in /workspaces/ML-Cancer-Data
+ succeeded in 652ms:
+Change 'cycle-11-pipe-od-retrieval-normalization' is valid
+
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..87b24962604f37e9f98ace2bf6bd1d59897a0237
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
++- [x] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+codex
+{"status":"complete","summary":"Implemented cycle-11 pipe OD retrieval normalization. The canonicalizer now adds a single guarded DN-enriched alternate for supported valve-family queries with one explicit, millimetre-qualified pipe OD cue using the allowlisted 108 mm -> DN 100 mapping. It preserves the source query, refuses explicit DN conflicts, unmapped/bare/unqualified/multiple dimensions, and unsupported/no-product text. No matcher, hybrid retriever, index, catalog, GOLD, or harness files were changed. OpenSpec tasks are 5/5 complete and strict validation passes.","tests":["python -m pytest tests/test_query_canonicalization.py -q (15 passed)","python -m pytest tests/test_hybrid_retriever.py tests/test_matcher.py -q (17 passed)","python -m pytest -q (169 passed)","openspec validate cycle-11-pipe-od-retrieval-normalization --strict"],"needs_reindex":false,"blocker":""}
+diff --git a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+index 1e6915f65c38b7fc2945caf8debbf1e644cf46d5..87b24962604f37e9f98ace2bf6bd1d59897a0237
+--- a/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
++++ b/openspec/changes/cycle-11-pipe-od-retrieval-normalization/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Guarded OD Recognition
+ 
+-- [ ] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
+-- [ ] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
++- [x] 1.1 Extend the query-time canonicalization boundary with the documented exact `108 mm -> DN 100` allowlist and contextual OD recognition; verify a synthetic supported flanged or welded valve request with one millimetre-qualified OD and no DN produces one source-preserving DN-enriched alternate.
++- [x] 1.2 Enforce refusal rules for explicit DN, unapproved OD values, bare/unqualified dimensions, multiple competing dimensions, and unsupported/no-product text; verify focused unit tests assert that none gains an OD-derived DN term.
+ 
+ ## 2. Regression Coverage
+ 
+-- [ ] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
+-- [ ] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
++- [x] 2.1 Add focused synthetic tests in the canonicalization test module covering concise `d ... мм`, explicit outer/pipe diameter wording, retention of PN/construction/designation terms, and the existing source-query contract; verify `python -m pytest tests/test_query_canonicalization.py -q` passes.
++- [x] 2.2 Confirm the canonicalization result remains a single optional alternate and does not require matcher or hybrid-retriever API, RRF, reranker, index, catalog, or GOLD/harness changes; verify existing hybrid/matcher tests pass unchanged.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
++- [x] 3.1 Run `python -m pytest -q` and resolve product-code or focused-test failures while keeping edits restricted to query-time canonicalization and its focused tests.
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca8465fb64f6f01705e940702520bc1e6dcba..6c3c535f28c125629f9d232af104b57cb31e3d8c
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -41,6 +41,29 @@
+     re.IGNORECASE,
+ )
+ _STANDALONE_WW_RE = re.compile(r"(?<![A-Za-zА-Яа-яЁё0-9])WW(?![A-Za-zА-Яа-яЁё0-9])", re.IGNORECASE)
++_PIPE_OD_TO_DN = {108: "DN 100"}
++_EXPLICIT_DN_RE = re.compile(r"\bDN\s+\d+\b", re.IGNORECASE)
++_MM_DIMENSION_RE = re.compile(r"(?<!\d)(\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b", re.IGNORECASE)
++_PIPE_CONTEXT_RE = re.compile(
++    r"\b(?:труб\w*|pipe|line|фланц\w*|привар\w*|свар\w*|weld\w*)\b",
++    re.IGNORECASE,
++)
++_PIPE_OD_CUE_PATTERNS = (
++    re.compile(
++        r"\b(?:наружн\w*\s+диаметр|диаметр\s+труб\w*|труб\w*\s+диаметр|pipe\s+od|outer\s+diameter|od)\b"
++        r"[^0-9]{0,24}"
++        r"(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])дн\.?\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++    re.compile(
++        r"(?<![A-Za-zА-Яа-яЁё0-9])[dд]\s*[:=\-]?\s*(?P<value>\d+(?:[.,]\d+)?)\s*(?:мм|mm)\b",
++        re.IGNORECASE,
++    ),
++)
+ 
+ 
+ @dataclass(frozen=True)
+@@ -64,6 +87,7 @@
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++        canonical = _append_pipe_od_dn_alternate(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +162,50 @@
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _append_pipe_od_dn_alternate(text: str) -> str:
++    if _EXPLICIT_DN_RE.search(text):
++        return text
++
++    values = [match.group(1) for match in _MM_DIMENSION_RE.finditer(text)]
++    if len(values) != 1:
++        return text
++
++    od_values: list[int] = []
++    for pattern in _PIPE_OD_CUE_PATTERNS:
++        for match in pattern.finditer(text):
++            parsed = _parse_integral_mm(match.group("value"))
++            if parsed is not None:
++                od_values.append(parsed)
++
++    if len(od_values) != 1:
++        return text
++
++    od = od_values[0]
++    dn = _PIPE_OD_TO_DN.get(od)
++    if dn is None:
++        return text
++
++    if not _has_pipe_od_context(text):
++        return text
++
++    return f"{text} {dn}"
++
++
++def _parse_integral_mm(value: str) -> int | None:
++    normalized = value.replace(",", ".")
++    try:
++        numeric = float(normalized)
++    except ValueError:
++        return None
++    if not numeric.is_integer():
++        return None
++    return int(numeric)
++
++
++def _has_pipe_od_context(text: str) -> bool:
++    return _PIPE_CONTEXT_RE.search(text) is not None
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570a2ce41c6320a6308bf30be1cd4ef51197..15e947fa72980a2e3e4e3c5609e4898aa5ba06a8
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -52,3 +52,49 @@
+ def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
++
++
++def test_pipe_od_d_dimension_adds_source_preserving_dn_alternate():
++    result = canonicalize_retrieval_query("Кран шаровой фл. d 108 мм Ру16 стальной 11с67п")
++
++    assert result.source_query == "Кран шаровой фл. d 108 мм Ру16 стальной 11с67п"
++    assert result.canonical_query == "Кран шаровой фланцевый d 108 мм PN 16 стальной 11с67п DN 100"
++
++
++def test_pipe_od_explicit_outer_diameter_wording_adds_dn_and_keeps_constraints():
++    result = canonicalize_retrieval_query("Задвижка стальная приварная наружный диаметр 108 мм PN25 клиновая")
++
++    assert result.canonical_query == "Задвижка стальная приварная наружный диаметр 108 мм PN 25 клиновая DN 100"
++
++
++def test_pipe_od_pipe_diameter_wording_adds_dn_without_connection_term():
++    result = canonicalize_retrieval_query("Клапан обратный диаметр трубы 108 мм Ру16")
++
++    assert result.canonical_query == "Клапан обратный диаметр трубы 108 мм PN 16 DN 100"
++
++
++def test_pipe_od_refuses_when_explicit_dn_is_present():
++    result = canonicalize_retrieval_query("Кран шаровой фланцевый Ду80 d 108 мм Ру16")
++
++    assert result.canonical_query == "Кран шаровой фланцевый DN 80 d 108 мм PN 16"
++    assert "DN 100" not in result.canonical_query
++
++
++def test_pipe_od_refuses_unmapped_bare_unqualified_and_multiple_dimensions():
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 110 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 110 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый 108 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый 108 мм PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 PN 16"
++    )
++    assert canonicalize_retrieval_query("Кран шаровой фланцевый d 108 мм L 200 мм Ру16").canonical_query == (
++        "Кран шаровой фланцевый d 108 мм L 200 мм PN 16"
++    )
++
++
++def test_pipe_od_refuses_unsupported_or_no_product_text():
++    assert canonicalize_retrieval_query("Насос фланцевый d 108 мм Ру16").canonical_query is None
++    assert canonicalize_retrieval_query("Поставка наружный диаметр трубы 108 мм").canonical_query is None
+
+tokens used
+48,238
+{"status":"complete","summary":"Implemented cycle-11 pipe OD retrieval normalization. The canonicalizer now adds a single guarded DN-enriched alternate for supported valve-family queries with one explicit, millimetre-qualified pipe OD cue using the allowlisted 108 mm -> DN 100 mapping. It preserves the source query, refuses explicit DN conflicts, unmapped/bare/unqualified/multiple dimensions, and unsupported/no-product text. No matcher, hybrid retriever, index, catalog, GOLD, or harness files were changed. OpenSpec tasks are 5/5 complete and strict validation passes.","tests":["python -m pytest tests/test_query_canonicalization.py -q (15 passed)","python -m pytest tests/test_hybrid_retriever.py tests/test_matcher.py -q (17 passed)","python -m pytest -q (169 passed)","openspec validate cycle-11-pipe-od-retrieval-normalization --strict"],"needs_reindex":false,"blocker":""}

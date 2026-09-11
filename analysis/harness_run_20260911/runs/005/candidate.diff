@@ -1,0 +1,168 @@
+diff --git a/src/nomenclature_matcher/prompts/reranker_system.md b/src/nomenclature_matcher/prompts/reranker_system.md
+index 08e907e..3dfac5c 100644
+--- a/src/nomenclature_matcher/prompts/reranker_system.md
++++ b/src/nomenclature_matcher/prompts/reranker_system.md
+@@ -4,15 +4,21 @@
+ 
+ Твоя задача - выбрать наиболее подходящий товар или вернуть NOT_FOUND.
+ 
+-Правила:
++Работай по порядку:
+ 
+-1. Не придумывай характеристики, которых нет в запросе или описании товара.
++1. Выдели только явные требования из исходного запроса: тип изделия, DN, PN, тип присоединения, материал, исполнение/проход, управление, назначение и другие прямо указанные характеристики.
+ 
+-2. Сначала учитывай тип изделия.
++2. Для каждого кандидата сравни эти требования с его name и supplied characteristics/Характеристики. Не придумывай характеристики, которых нет в запросе или описании товара. Отсутствующее доказательство считай непроверенным, а не подтвержденным значением.
+ 
+-3. Учитывай DN, PN, тип присоединения, материал, исполнение, назначение и другие характеристики, если они указаны.
++3. Сначала отсей прямые противоречия существенным явным требованиям: другой тип изделия, другой DN/PN, несовместимое присоединение, материал, исполнение, назначение или управление. Если кандидат прямо противоречит запросу, не выбирай его при наличии совместимого кандидата.
+ 
+-4. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
++4. Среди совместимых кандидатов предпочитай тот, который прямо подтверждает все явные технические требования запроса. Если один кандидат подтверждает требование, а другой оставляет его непроверенным, ставь подтвержденного выше. Неполные данные сами по себе не требуют NOT_FOUND, если кандидат разумно совместим.
++
++5. Для шаровых кранов различай явно запрошенный проход/исполнение: полнопроходной/полнопроходный, редуцированный/неполнопроходной и стандартный/обычный проход. Эти варианты взаимно различны, когда проход явно указан в запросе и явно указан у кандидата. Кандидат с противоположным указанным проходом не лучше совместимого обычного кандидата только потому, что он специализированный или выше в выдаче.
++
++6. Не выводи требование к проходу из общего запроса "кран шаровой" без слов про полный, редуцированный, неполнопроходной, стандартный или обычный проход/исполнение. Общие слова в названии кандидата не являются доказательством специального прохода, если запрос этого не требует.
++
++7. Дополнительная специализация товара не является преимуществом, если пользователь ее не запросил.
+ 
+ Например:
+ - подземное исполнение;
+@@ -24,12 +30,12 @@
+ 
+ Если запрос обычный, предпочитай обычное исполнение специализированному при прочих равных.
+ 
+-5. Dense score, BM25 score, ranks и RRF - только вспомогательные сигналы.
++8. Dense score, BM25 score, ranks и RRF используй только после технического сравнения как вторичные вспомогательные сигналы для близких совместимых кандидатов.
+ 
+-6. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
++9. Главный бизнес-риск MVP - вернуть NOT_FOUND, когда подходящий товар есть среди кандидатов. Если среди кандидатов есть разумно совместимый товар, выбери лучший из них.
+ 
+-7. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
++10. Верни NOT_FOUND только если кандидаты другого типа или явно не соответствуют существенным требованиям запроса.
+ 
+-8. Не выбирай кандидатов, которых нет во входном списке.
++11. Не выбирай кандидатов, которых нет во входном списке.
+ 
+ Ответь только JSON без markdown.
+diff --git a/tests/test_reranker.py b/tests/test_reranker.py
+index 74329f2..0c3652a 100644
+--- a/tests/test_reranker.py
++++ b/tests/test_reranker.py
+@@ -4,7 +4,7 @@ from types import SimpleNamespace
+ import pytest
+ 
+ from nomenclature_matcher.models import SearchCandidate
+-from nomenclature_matcher.reranker import DeepSeekReranker
++from nomenclature_matcher.reranker import DeepSeekReranker, load_system_prompt
+ 
+ 
+ class FakeCompletions:
+@@ -52,6 +52,27 @@ def test_rerank_valid_matched():
+     assert [item.candidate_id for item in result.selected] == [2]
+ 
+ 
++def test_rerank_preserves_selected_candidate_ordering():
++    reranker = DeepSeekReranker(
++        settings(),
++        client=FakeClient(
++            content=json.dumps(
++                {
++                    "status": "MATCHED",
++                    "selected": [
++                        {"candidate_id": 2, "confidence": 0.91, "reason": "better evidence"},
++                        {"candidate_id": 1, "confidence": 0.72, "reason": "fallback"},
++                    ],
++                }
++            )
++        ),
++    )
++    result = reranker.rerank("query", candidates())
++    assert result.status == "MATCHED"
++    assert [item.candidate_id for item in result.selected] == [2, 1]
++    assert result.selected[0].reason == "better evidence"
++
++
+ def test_rerank_not_found():
+     reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+     result = reranker.rerank("query", candidates())
+@@ -60,6 +81,19 @@ def test_rerank_not_found():
+     assert result.reason == "no match"
+ 
+ 
++def test_rerank_uses_unchanged_model_request_configuration():
++    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
++    reranker = DeepSeekReranker(settings(), client=client)
++    reranker.rerank("query", candidates())
++
++    call = client.completions.calls[0]
++    assert call["model"] == "deepseek-v4-flash"
++    assert call["temperature"] == 0
++    assert call["response_format"] == {"type": "json_object"}
++    assert call["extra_body"] == {"thinking": {"type": "disabled"}}
++    assert [message["role"] for message in call["messages"]] == ["system", "user"]
++
++
+ def test_rerank_ignores_unknown_and_duplicate_ids():
+     reranker = DeepSeekReranker(
+         settings(),
+@@ -119,3 +153,58 @@ def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+     reranker.rerank("query", candidates())
+     messages = client.completions.calls[0]["messages"]
+     assert messages[0] == {"role": "system", "content": "custom system prompt"}
++
++
++def test_versioned_system_prompt_defines_evidence_first_ordering():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Выдели только явные требования",
++        "сравни эти требования",
++        "name и supplied characteristics/Характеристики",
++        "отсей прямые противоречия",
++        "Dense score, BM25 score, ranks и RRF",
++        "только после технического сравнения",
++        "вторичные вспомогательные сигналы",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_handles_missing_evidence_and_not_found_contract():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Отсутствующее доказательство считай непроверенным",
++        "Неполные данные сами по себе не требуют NOT_FOUND",
++        "разумно совместим",
++        "Верни NOT_FOUND только если кандидаты другого типа",
++        "явно не соответствуют существенным требованиям",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_distinguishes_explicit_ball_valve_passage_only():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Для шаровых кранов различай явно запрошенный проход/исполнение",
++        "полнопроходной/полнопроходный",
++        "редуцированный/неполнопроходной",
++        "стандартный/обычный проход",
++        "взаимно различны",
++        "Кандидат с противоположным указанным проходом",
++        "не лучше совместимого обычного кандидата",
++        "Не выводи требование к проходу из общего запроса \"кран шаровой\"",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt
++
++
++def test_versioned_system_prompt_preserves_json_and_candidate_contract():
++    prompt = load_system_prompt()
++    required_fragments = [
++        "Не выбирай кандидатов, которых нет во входном списке",
++        "Ответь только JSON без markdown",
++        "Если среди кандидатов есть разумно совместимый товар, выбери лучший из них",
++    ]
++    for fragment in required_fragments:
++        assert fragment in prompt

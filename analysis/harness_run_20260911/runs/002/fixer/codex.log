@@ -1,0 +1,3976 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR] (network access enabled)
+reasoning effort: low
+reasoning summaries: none
+session id: 01a086ce-0c51-7882-9f55-f02cd2e5c9e6
+--------
+user
+You are the Fixer. Another agent implemented the hypothesis and a read-only Reviewer produced a correction plan.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL PLAN
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-02-compatibility-evidence-reranking",
+  "hypothesis": "Advisory per-candidate compatibility evidence in reranker context will reduce unsafe specialized-variant selections without reducing candidate recall.",
+  "why_now": "Scored public failures are wrong variant selections; no retrieval miss is evidenced. OpenSpec artifacts are complete and strictly validated.",
+  "expected_effect": "Reranker sees satisfied, contradictory, and unverified requirements while retaining every retrieved candidate.",
+  "expected_metric_gain": "+3–10 pp public and +3–7 pp blind hard-pass; lower wrong-product/human-reject risk.",
+  "lesson_from_history": "Cycle 1’s fail-closed candidate gate regressed public and blind coverage, so this change neither filters nor reorders candidates and fails open on extraction errors.",
+  "candidate_hypotheses": [
+    "Advisory compatibility evidence for reranking (selected).",
+    "Legacy/designation alias normalization.",
+    "Schema expansion for flange, temperature, and pipe-OD semantics.",
+    "Index-time catalog enrichment and RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and validated proposal, spec, design, and implementation-only tasks under openspec/changes/cycle-02-compatibility-evidence-reranking/."
+}
+
+REVIEW
+{
+  "decision": "FIX",
+  "summary": "The approach is a plausible general MVP improvement and preserves retrieval candidates, but the evidence labels overstate what the catalog explicitly proves. That can make the reranker confidently avoid valid sparse-catalog candidates, undermining the stated advisory/fail-open safety goal.",
+  "issues": [
+    "`compatibility_summary` labels heuristic defaults as `satisfied` catalog evidence: `candidate_valve_type()` treats absence of special keywords as `standard`, and `candidate_control()` defaults every ball valve to `manual`. These are useful inferences, not explicitly confirmed catalog facts.",
+    "A missing requested designation is always labeled `contradictory`, even when the candidate has no identifiable designation in its article/name/series fields. This conflicts with the prompt contract that unavailable catalog attributes are `unverified`, and may suppress a valid candidate due to incomplete metadata.",
+    "The new tests validate evidence rendering and candidate-list preservation, but do not cover the important sparse-data distinction above. Thus they do not adequately test the reliability claim behind the hypothesis."
+  ],
+  "fix_plan": [
+    "Refactor compatibility evidence to distinguish explicit catalog confirmation/contradiction from heuristic inference; emit unavailable or inference-only attributes as `unverified` (or a clearly separate advisory category), not `satisfied`/`contradictory`.",
+    "For requested designations, mark a candidate contradictory only when a comparable documented designation is present and differs; otherwise mark it unverified.",
+    "Add focused tests for generic/sparse ball-valve records, inferred standard/manual values, and absent candidate designations, then rerun the public measurement before promotion."
+  ],
+  "next_direction": "Compatibility evidence remains a credible reranking direction, but its value depends on conservative evidence provenance: explicit metadata contradictions are high-signal; inferred defaults and absent fields must not be presented as hard catalog facts."
+}
+
+RULES
+- Fix only the Reviewer's concrete issues. Do not introduce a new hypothesis.
+- Preserve the general MVP-level intent; do not turn the fix into a benchmark-specific special case.
+- Run focused tests.
+- NEVER run a full catalog index rebuild yourself. If fixes require one, set `needs_reindex=true` and let the supervisor do it.
+- Do not inspect or search for the hidden final-check dataset.
+- Do not alter harness policy, GOLD/eval answers, or files under `harness_rag/`.
+- Do not run git commit/push/reset/checkout/rebase.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T15:34:05.911260Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a086ce-0c51-7882-9f55-f02cd2e5c9e6.tmp-1788968045653414788: line 2547: syntax error near unexpected token `('
+
+codex
+{"status":"blocked","summary":"Need inspect repo before patching.","tests":[],"needs_reindex":false,"blocker":"No actions taken yet."}
+codex
+{"status":"complete","summary":"I’ll inspect the implementation touched by cycle 02 and its tests, then patch only the evidence-provenance issues the reviewer called out.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'rg -n "compatibility_summary|candidate_valve_type|candidate_control|designation" src tests openspec/changes/cycle-02-compatibility-evidence-reranking -S' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git status --short' in /workspaces/ML-Cancer-Data
+ succeeded in 74ms:
+ M src/nomenclature_matcher/matcher.py
+ M src/nomenclature_matcher/prompts/reranker_system.md
+ M src/nomenclature_matcher/query_constraints.py
+ M src/nomenclature_matcher/reranker.py
+ M tests/test_matcher.py
+ M tests/test_query_constraints.py
+ M tests/test_reranker.py
+?? openspec/changes/cycle-02-compatibility-evidence-reranking/
+
+ exited 127 in 86ms:
+/bin/bash: line 1: rg: command not found
+
+codex
+{"status":"complete","summary":"`rg` is unavailable in this environment, so I’m using shell/grep fallbacks. The worktree already contains the other agent’s uncommitted cycle-02 changes; I’ll work with those rather than reverting anything.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "grep -RIn \"compatibility_summary\\|candidate_valve_type\\|candidate_control\\|designation\" src tests openspec/changes/cycle-02-compatibility-evidence-reranking 2>/dev/null" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' src/nomenclature_matcher/query_constraints.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' tests/test_query_constraints.py" in /workspaces/ML-Cancer-Data
+ succeeded in 157ms:
+src/nomenclature_matcher/query_constraints.py:31:    valve_designation: str | None = None
+src/nomenclature_matcher/query_constraints.py:113:    """Match an exact designation while ignoring punctuation inside it.
+src/nomenclature_matcher/query_constraints.py:339:def candidate_control(product: LDProduct) -> str | None:
+src/nomenclature_matcher/query_constraints.py:349:def candidate_valve_type(product: LDProduct) -> str | None:
+src/nomenclature_matcher/query_constraints.py:364:def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+src/nomenclature_matcher/query_constraints.py:365:    expected = _compact(designation)
+src/nomenclature_matcher/query_constraints.py:428:        actual_valve_type = candidate_valve_type(product)
+src/nomenclature_matcher/query_constraints.py:433:    if constraints.valve_designation is not None:
+src/nomenclature_matcher/query_constraints.py:434:        designation_ok = candidate_has_designation(product, constraints.valve_designation)
+src/nomenclature_matcher/query_constraints.py:435:        checks["valve_designation"] = f"exact normalized {constraints.valve_designation}: {designation_ok}"
+src/nomenclature_matcher/query_constraints.py:436:        if not designation_ok:
+src/nomenclature_matcher/query_constraints.py:460:        actual_control = candidate_control(product)
+src/nomenclature_matcher/query_constraints.py:468:def compatibility_summary(product: LDProduct, constraints: QueryConstraints) -> CompatibilitySummary:
+src/nomenclature_matcher/query_constraints.py:508:    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
+src/nomenclature_matcher/query_constraints.py:510:    if constraints.valve_designation is not None:
+src/nomenclature_matcher/query_constraints.py:511:        if candidate_has_designation(product, constraints.valve_designation):
+src/nomenclature_matcher/query_constraints.py:512:            satisfied.append(f"valve_designation: {constraints.valve_designation}")
+src/nomenclature_matcher/query_constraints.py:514:            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+src/nomenclature_matcher/query_constraints.py:529:    exact("control", candidate_control(product), constraints.control)
+src/nomenclature_matcher/query_constraints.py:549:        "valve_type": candidate_valve_type(product),
+src/nomenclature_matcher/query_constraints.py:552:        "control": candidate_control(product),
+src/nomenclature_matcher/matcher.py:7:    compatibility_summary,
+src/nomenclature_matcher/matcher.py:94:            index: compatibility_summary(self._candidate_product(candidate), constraints)
+src/nomenclature_matcher/deep_gold.py:63:def normalize_tender_designation(value: str) -> str:
+src/nomenclature_matcher/deep_gold.py:64:    """Normalize a tender designation for exact catalog matching.
+src/nomenclature_matcher/golden_rules.py:21:    candidate_has_designation,
+src/nomenclature_matcher/golden_rules.py:28:    candidate_valve_type,
+src/nomenclature_matcher/golden_rules.py:201:                "body_material_grade was inferred from a designation instead of explicit query text; field cleared"
+src/nomenclature_matcher/golden_rules.py:207:    if constraints.valve_designation and analog_request and competitor_hint:
+src/nomenclature_matcher/golden_rules.py:208:        payload["reference_model"] = payload.get("reference_model") or constraints.valve_designation
+src/nomenclature_matcher/golden_rules.py:209:        payload["valve_designation"] = None
+src/nomenclature_matcher/golden_rules.py:210:        warnings.append("competitor/reference designation moved out of exact LD designation constraint")
+src/nomenclature_matcher/golden_rules.py:227:def strict_candidate_control(product: LDProduct) -> str | None:
+src/nomenclature_matcher/golden_rules.py:315:        exact("valve_type", candidate_valve_type(product), constraints.valve_type)
+src/nomenclature_matcher/golden_rules.py:317:    if constraints.valve_designation is not None:
+src/nomenclature_matcher/golden_rules.py:318:        designation_ok = candidate_has_designation(product, constraints.valve_designation)
+src/nomenclature_matcher/golden_rules.py:319:        checks["valve_designation"] = (
+src/nomenclature_matcher/golden_rules.py:320:            f"exact normalized {constraints.valve_designation!r}: {designation_ok}"
+src/nomenclature_matcher/golden_rules.py:322:        if not designation_ok:
+src/nomenclature_matcher/golden_rules.py:323:            failed.append("valve_designation")
+src/nomenclature_matcher/golden_rules.py:341:        exact("control", strict_candidate_control(product), constraints.control)
+src/nomenclature_matcher/golden_rules.py:389:        "valve_type": candidate_valve_type(product),
+src/nomenclature_matcher/golden_rules.py:392:        "control": strict_candidate_control(product),
+src/nomenclature_matcher/prompts/query_constraints_system.md:15:  "valve_designation": "11с39п|null",
+src/nomenclature_matcher/prompts/query_constraints_system.md:48:8. valve_designation — точное обозначение/тип/модель крана, только если оно явно написано в запросе. Примеры: 11с39п, 11б27п1, КШЦФ, КШЦП, КШ.Ф.050.080-02. Сохраняй исходное обозначение без додумывания. Если такого обозначения нет — null. В дальнейшем оно должно находиться в обозначении/артикуле/названии товара после нормализации регистра и пунктуации.
+src/nomenclature_matcher/prompts/query_constraints_system.md:69:14. comment должен явно перечислить: DN exact; PN как нижнюю границу; присоединение exact; среда exact если указана; valve_designation exact если указано; материал/проход/управление exact если указаны, иначе соответствующее поле не ограничивает выбор. Для ball_valve без специального типа поясни, что требуется standard.
+src/nomenclature_matcher/prompts/golden_query_constraints_system.md:17:  "valve_designation": "КШЦФ|null",
+src/nomenclature_matcher/prompts/golden_query_constraints_system.md:41:8. valve_designation — только точное LD-совместимое обозначение/код, явно написанное в запросе: например 11с39п, 11б27п1, КШЦФ, КШЦП, КШ.Ф.050.080-02. Не расшифровывай код. Если это модель конкурента/референс (`JiP-R`, `Danfoss`, `Гранвэл`, `AUMA`, `AOX`) или запрос содержит `аналог/эквивалент`, клади такую модель в reference_model, а не в valve_designation.
+tests/test_harness_gold.py:14:        "valve_designation": None,
+tests/test_query_constraints.py:5:    compatibility_summary,
+tests/test_query_constraints.py:46:        "valve_designation": None,
+tests/test_query_constraints.py:136:def test_compatibility_summary_marks_satisfied_contradictory_and_unverified():
+tests/test_query_constraints.py:143:    ordinary_summary = compatibility_summary(ordinary, constraints(valve_type="standard"))
+tests/test_query_constraints.py:144:    underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+tests/test_query_constraints.py:145:    unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+tests/test_query_constraints.py:160:def test_exact_valve_designation_is_required_when_present_in_query():
+tests/test_query_constraints.py:164:    assert evaluate_product(kshcf, constraints(valve_designation="КШЦФ")).matches is True
+tests/test_query_constraints.py:165:    assert evaluate_product(kshcfe, constraints(valve_designation="КШЦФ")).matches is False
+tests/test_query_constraints.py:166:    assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+tests/test_query_constraints.py:169:def test_designation_normalizes_punctuation_and_case():
+tests/test_query_constraints.py:180:        constraints(valve_designation="кшф20001602"),
+tests/test_tender_deep_review.py:3:    normalize_tender_designation,
+tests/test_tender_deep_review.py:29:def test_designation_normalizes_observed_latin_c_homoglyph() -> None:
+tests/test_tender_deep_review.py:30:    assert normalize_tender_designation("11c67п") == "11с67п"
+tests/test_tender_deep_review.py:31:    assert normalize_tender_designation("11С67П") == "11с67п"
+tests/test_tender_deep_review.py:32:    assert normalize_tender_designation("30с41нж") == "30с41нж"
+tests/test_golden_rules.py:6:    strict_candidate_control,
+tests/test_golden_rules.py:42:    assert strict_candidate_control(candidate) is None
+tests/test_golden_rules.py:70:        valve_designation="30с41нж",
+tests/test_golden_rules.py:102:def test_competitor_reference_is_not_exact_ld_designation():
+tests/test_golden_rules.py:109:        valve_designation="JiP-R Standard FF",
+tests/test_golden_rules.py:116:    assert sanitized.valve_designation is None
+
+ succeeded in 173ms:
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+from openai import OpenAI
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from .models import LDProduct
+
+
+DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
+    Path(__file__).resolve().parent / "prompts" / "query_constraints_system.md"
+)
+_ALNUM_RU = "0-9a-zа-я"
+
+
+class QueryConstraints(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_type: str
+    dn: int | None = None
+    pn_min_mpa: float | None = None
+    joining_type: str | None = None
+    thread_type: str | None = None
+    working_medium: str | None = None
+    valve_type: str | None = None
+    valve_designation: str | None = None
+    body_material: str | None = None
+    body_material_grade: str | None = None
+    bore_type: str | None = None
+    control: str | None = None
+    catalog_scope: str = "uncertain"
+    ambiguous: bool = False
+    comment: str = ""
+
+    @field_validator("dn")
+    @classmethod
+    def _validate_dn(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("dn must be positive")
+        return value
+
+    @field_validator("pn_min_mpa")
+    @classmethod
+    def _validate_pn(cls, value: float | None) -> float | None:
+        if value is not None and value <= 0:
+            raise ValueError("pn_min_mpa must be positive")
+        return value
+
+
+class DeepSeekQueryConstraintExtractor:
+    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+        self.settings = settings
+        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_QUERY_CONSTRAINTS_PROMPT
+        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def extract(self, query: str) -> QueryConstraints:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": f"QUERY:\n{query}"},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return QueryConstraints.model_validate(json.loads(content))
+
+
+@dataclass(frozen=True)
+class CompatibilitySummary:
+    satisfied: list[str]
+    contradictory: list[str]
+    unverified: list[str]
+
+    @property
+    def has_evidence(self) -> bool:
+        return bool(self.satisfied or self.contradictory or self.unverified)
+
+
+def _norm(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    text = str(value).lower().replace("ё", "е")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _compact(value: Any) -> str:
+    return re.sub(rf"[^{_ALNUM_RU}]+", "", _norm(value))
+
+
+def _exact_token_match(text: Any, token: Any) -> bool:
+    expected = _norm(token)
+    if not expected:
+        return True
+    pattern = rf"(?<![{_ALNUM_RU}]){re.escape(expected)}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flexible_code_match(text: Any, code: Any) -> bool:
+    """Match an exact designation while ignoring punctuation inside it.
+
+    КШ.Ф.050.080-02 matches кшф05008002, but КШЦФ does not match КШЦФЭ.
+    """
+    expected = _compact(code)
+    if not expected:
+        return True
+    separator = rf"[^{_ALNUM_RU}]*"
+    body = separator.join(re.escape(char) for char in expected)
+    pattern = rf"(?<![{_ALNUM_RU}]){body}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flatten_values(value: Any) -> list[str]:
+    if value in (None, "", []):
+        return []
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(_flatten_values(item))
+        return result
+    return [str(value)]
+
+
+def _property_values(product: LDProduct, *names: str) -> list[str]:
+    wanted = {_norm(name) for name in names}
+    result: list[str] = []
+    for prop in product.properties or []:
+        if _norm(prop.get("name")) not in wanted:
+            continue
+        result.extend(_flatten_values(prop.get("values")))
+    return result
+
+
+def _product_text(product: LDProduct) -> str:
+    parts = [product.name, product.article or "", str(product.joining_type or "")]
+    for prop in product.properties or []:
+        parts.append(str(prop.get("name") or ""))
+        parts.extend(_flatten_values(prop.get("values")))
+    return " \n ".join(parts)
+
+
+def _first_number(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    match = re.search(r"\d+(?:[.,]\d+)?", str(value))
+    if not match:
+        return None
+    return float(match.group(0).replace(",", "."))
+
+
+def candidate_dn(product: LDProduct) -> int | None:
+    values = [product.dn, *_property_values(product, "Номинальный диаметр, DN", "DN")]
+    for value in values:
+        number = _first_number(value)
+        if number is not None:
+            return int(round(number))
+    return None
+
+
+def candidate_pn_mpa(product: LDProduct) -> float | None:
+    values = [product.pn, *_property_values(product, "Номинальное давление, МПа", "PN")]
+    for value in values:
+        number = _first_number(value)
+        if number is None:
+            continue
+        if number > 10:
+            number /= 10.0
+        return number
+    return None
+
+
+def canonical_product_type(text: str) -> str:
+    value = _norm(text)
+    if "ремкомплект" in value:
+        return "repair_kit"
+    if "комплект" in value and "флан" in value:
+        return "accessory"
+    if "кран" in value and "шар" in value:
+        return "ball_valve"
+    if "затвор" in value and ("диск" in value or "поворот" in value):
+        return "butterfly_valve"
+    if "задвиж" in value:
+        return "gate_valve"
+    if "клапан" in value and "обрат" in value:
+        return "check_valve"
+    if "фильтр" in value:
+        return "filter"
+    if "фланец" in value or "фланцы" in value:
+        return "flange"
+    if "редуктор" in value and "привод" not in value:
+        return "gearbox"
+    if "электропривод" in value or "пневмопривод" in value:
+        return "actuator"
+    return "other"
+
+
+def candidate_product_type(product: LDProduct) -> str:
+    explicit = _property_values(product, "Тип продукта AI", "Тип продукта")
+    for value in explicit:
+        result = canonical_product_type(value)
+        if result != "other":
+            return result
+    return canonical_product_type(_product_text(product))
+
+
+def canonical_joining_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "межфлан" in value:
+        return "wafer"
+    if "компресс" in value or "обжим" in value:
+        return "compression"
+    if "привар" in value or "сварн" in value:
+        return "welded"
+    if "резьб" in value or "муфт" in value:
+        return "threaded"
+    if "флан" in value:
+        return "flanged"
+    return "other"
+
+
+def candidate_joining_type(product: LDProduct) -> str | None:
+    values = [product.joining_type, *_property_values(product, "Присоединение"), product.name]
+    for value in values:
+        canonical = canonical_joining_type(value)
+        if canonical not in {None, "other"}:
+            return canonical
+    return canonical_joining_type(product.joining_type)
+
+
+def canonical_thread_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    compact = re.sub(r"[^a-zа-я0-9]+", " ", value)
+    if any(token in value for token in ("вр/вр", "в/в", "внутренняя/внутренняя", "муфта/муфта")):
+        return "female_female"
+    if any(token in value for token in ("нр/вр", "вр/нр", "н/в", "в/н", "наружная/внутренняя", "внутренняя/наружная")):
+        return "male_female"
+    if any(token in value for token in ("нр/нр", "н/н", "наружная/наружная")):
+        return "male_male"
+    if compact.count("внутренняя") >= 2:
+        return "female_female"
+    if compact.count("наружная") >= 2:
+        return "male_male"
+    if "внутренняя" in compact and "наружная" in compact:
+
+ succeeded in 139ms:
+from nomenclature_matcher.models import LDProduct
+from nomenclature_matcher.query_constraints import (
+    QueryConstraints,
+    candidate_pn_mpa,
+    compatibility_summary,
+    evaluate_product,
+)
+
+
+def product(
+    *,
+    product_id=1,
+    name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа полнопроходной",
+    dn="200",
+    pn="1,6",
+    joining_type="Фланцевое",
+    properties=None,
+):
+    return LDProduct(
+        id=product_id,
+        name=name,
+        article=f"A-{product_id}",
+        dn=dn,
+        pn=pn,
+        joining_type=joining_type,
+        properties=properties
+        or [
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+            {"name": "Тип прохода", "values": ["Полнопроходной"]},
+            {"name": "Рабочая среда", "values": ["Вода"]},
+            {"name": "Управление", "values": ["Ручное"]},
+        ],
+    )
+
+
+def constraints(**overrides):
+    payload = {
+        "product_type": "ball_valve",
+        "dn": 200,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": None,
+        "working_medium": None,
+        "valve_type": "standard",
+        "valve_designation": None,
+        "body_material": None,
+        "body_material_grade": None,
+        "bore_type": None,
+        "control": None,
+        "catalog_scope": "in_scope",
+        "ambiguous": False,
+        "comment": "",
+    }
+    payload.update(overrides)
+    return QueryConstraints.model_validate(payload)
+
+
+def test_dn_must_match_exactly():
+    assert evaluate_product(product(dn="200"), constraints()).matches is True
+    assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+
+def test_pn_is_minimum_not_exact():
+    assert evaluate_product(product(pn="1,6"), constraints()).matches is True
+    assert evaluate_product(product(pn="2,5"), constraints()).matches is True
+    assert evaluate_product(product(pn="4,0"), constraints()).matches is True
+    assert evaluate_product(product(pn="1,0"), constraints()).matches is False
+
+
+def test_raw_pn_class_is_normalized_to_mpa():
+    assert candidate_pn_mpa(product(pn="16")) == 1.6
+    assert candidate_pn_mpa(product(pn="25")) == 2.5
+    assert candidate_pn_mpa(product(pn="40")) == 4.0
+
+
+def test_joining_type_must_match_exactly():
+    assert evaluate_product(product(joining_type="Фланцевое"), constraints()).matches is True
+    assert evaluate_product(product(joining_type="Резьбовое"), constraints()).matches is False
+    assert evaluate_product(product(joining_type="Межфланцевое"), constraints()).matches is False
+
+
+def test_working_medium_only_restricts_when_query_specifies_it():
+    water = product()
+    assert evaluate_product(water, constraints(working_medium=None)).matches is True
+    assert evaluate_product(water, constraints(working_medium="вода")).matches is True
+    assert evaluate_product(water, constraints(working_medium="газ")).matches is False
+
+
+def test_material_family_and_grade_are_exact_when_specified():
+    steel20 = product()
+    steel20l = product(
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20Л"]},
+        ]
+    )
+    assert evaluate_product(steel20, constraints(body_material=None)).matches is True
+    assert evaluate_product(steel20, constraints(body_material="steel")).matches is True
+    assert evaluate_product(
+        steel20,
+        constraints(body_material="steel", body_material_grade="20"),
+    ).matches is True
+    assert evaluate_product(
+        steel20,
+        constraints(body_material="steel", body_material_grade="09Г2С"),
+    ).matches is False
+    assert evaluate_product(
+        steel20l,
+        constraints(body_material="steel", body_material_grade="20"),
+    ).matches is False
+
+
+def test_bore_type_only_restricts_when_specified():
+    full = product()
+    assert evaluate_product(full, constraints(bore_type=None)).matches is True
+    assert evaluate_product(full, constraints(bore_type="full")).matches is True
+    assert evaluate_product(full, constraints(bore_type="reduced")).matches is False
+
+
+def test_control_only_restricts_when_specified():
+    manual = product()
+    assert evaluate_product(manual, constraints(control=None)).matches is True
+    assert evaluate_product(manual, constraints(control="manual")).matches is True
+    assert evaluate_product(manual, constraints(control="gearbox")).matches is False
+
+
+def test_ball_valve_without_special_type_rejects_underground_execution():
+    underground = product(
+        name="Кран шаровый LD для подземной установки КШЦП из стали 20 Ду200 Ру1,6МПа",
+    )
+    assert evaluate_product(underground, constraints(valve_type="standard")).matches is False
+    assert evaluate_product(underground, constraints(valve_type="underground")).matches is True
+
+
+def test_compatibility_summary_marks_satisfied_contradictory_and_unverified():
+    ordinary = product()
+    underground = product(
+        name="Кран шаровый LD для подземной установки КШЦП из стали 20 Ду200 Ру1,6МПа",
+    )
+    unknown_dn = product(dn=None, properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
+
+    ordinary_summary = compatibility_summary(ordinary, constraints(valve_type="standard"))
+    underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+    unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+
+    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
+    assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+    assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+
+
+def test_regula_is_not_standard_ball_valve():
+    regula = product(
+        name="Кран шаровый LD КШЦФ Regula из стали 20 Ду200 Ру1,6МПа",
+    )
+    assert evaluate_product(regula, constraints(valve_type="standard")).matches is False
+    assert evaluate_product(regula, constraints(valve_type="regulating")).matches is True
+
+
+def test_exact_valve_designation_is_required_when_present_in_query():
+    kshcf = product(name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа")
+    kshcfe = product(name="Кран шаровый LD КШЦФЭ из стали 20 Ду200 Ру1,6МПа под электропривод")
+    other = product(name="Кран шаровый LD КШЦП из стали 20 Ду200 Ру1,6МПа")
+    assert evaluate_product(kshcf, constraints(valve_designation="КШЦФ")).matches is True
+    assert evaluate_product(kshcfe, constraints(valve_designation="КШЦФ")).matches is False
+    assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+
+
+def test_designation_normalizes_punctuation_and_case():
+    exact_model = product(
+        name="Кран шаровый фланцевый",
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+        ],
+    )
+    exact_model.article = "КШ.Ф.200.016-02"
+    assert evaluate_product(
+        exact_model,
+        constraints(valve_designation="кшф20001602"),
+    ).matches is True
+
+
+def test_unspecified_fields_do_not_filter_candidates():
+    candidate = product(
+        pn="4,0",
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 09Г2С"]},
+            {"name": "Тип прохода", "values": ["Редуцированный"]},
+            {"name": "Рабочая среда", "values": ["Газ"]},
+            {"name": "Управление", "values": ["Редуктор"]},
+        ],
+    )
+    result = evaluate_product(
+        candidate,
+        constraints(
+            working_medium=None,
+            body_material=None,
+            body_material_grade=None,
+            bore_type=None,
+            control=None,
+        ),
+    )
+    assert result.matches is True
+
+exec
+/bin/bash -lc "sed -n '260,590p' src/nomenclature_matcher/query_constraints.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,220p' src/nomenclature_matcher/reranker.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,220p' tests/test_reranker.py" in /workspaces/ML-Cancer-Data
+ succeeded in 179ms:
+    if "внутренняя" in compact and "наружная" in compact:
+        return "male_female"
+    return None
+
+
+def candidate_thread_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип резьбы"), product.name]:
+        result = canonical_thread_type(value)
+        if result:
+            return result
+    return None
+
+
+def canonical_material(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "нерж" in value or "нержав" in value:
+        return "stainless_steel"
+    if "латун" in value:
+        return "brass"
+    if "чугун" in value:
+        return "cast_iron"
+    if "полиэтилен" in value or "пнд" in value:
+        return "polyethylene"
+    if "сталь" in value or "стальной" in value:
+        return "steel"
+    return "other"
+
+
+def candidate_material(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Материал корпуса"), product.name]:
+        result = canonical_material(value)
+        if result not in {None, "other"}:
+            return result
+    return None
+
+
+def candidate_material_text(product: LDProduct) -> str:
+    values = _property_values(product, "Материал корпуса")
+    return " ".join(values) if values else product.name
+
+
+def canonical_bore_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "полнопроход" in value:
+        return "full"
+    if "редуц" in value or "неполнопроход" in value:
+        return "reduced"
+    return None
+
+
+def candidate_bore_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип прохода"), product.name]:
+        result = canonical_bore_type(value)
+        if result:
+            return result
+    return None
+
+
+def canonical_control(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "под электропривод" in value:
+        return "electric_ready"
+    if "электропривод" in value:
+        return "electric"
+    if "пневмопривод" in value:
+        return "pneumatic"
+    if "редуктор" in value:
+        return "gearbox"
+    if "ручн" in value or "рукоят" in value or "ручка" in value:
+        return "manual"
+    return None
+
+
+def candidate_control(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Управление"), product.name]:
+        result = canonical_control(value)
+        if result:
+            return result
+    if candidate_product_type(product) == "ball_valve":
+        return "manual"
+    return None
+
+
+def candidate_valve_type(product: LDProduct) -> str | None:
+    if candidate_product_type(product) != "ball_valve":
+        return None
+    value = _norm(_product_text(product))
+    if "подзем" in value:
+        return "underground"
+    if "regula" in value or "регулиру" in value:
+        return "regulating"
+    if "криоген" in value:
+        return "cryogenic"
+    if re.search(r"\bgas\b", value) or "газов" in value:
+        return "gas"
+    return "standard"
+
+
+def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+    expected = _compact(designation)
+    if not expected:
+        return True
+    values = [product.article or "", product.name]
+    values.extend(_property_values(product, "Тип продукта", "Тип продукта AI", "Серия"))
+    return any(_flexible_code_match(value, expected) for value in values)
+
+
+def _medium_values(product: LDProduct) -> list[str]:
+    result: list[str] = []
+    for value in _property_values(product, "Рабочая среда"):
+        for part in re.split(r"[,;/]+", value):
+            if _norm(part):
+                result.append(_norm(part))
+    return result
+
+
+@dataclass(frozen=True)
+class MatchDecision:
+    matches: bool
+    checks: dict[str, str]
+
+
+def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> MatchDecision:
+    checks: dict[str, str] = {}
+
+    actual_type = candidate_product_type(product)
+    checks["product_type"] = f"{actual_type} == {constraints.product_type}"
+    if actual_type != constraints.product_type:
+        return MatchDecision(False, checks)
+
+    if constraints.dn is not None:
+        actual_dn = candidate_dn(product)
+        checks["dn"] = f"{actual_dn} == {constraints.dn}"
+        if actual_dn != constraints.dn:
+            return MatchDecision(False, checks)
+
+    if constraints.pn_min_mpa is not None:
+        actual_pn = candidate_pn_mpa(product)
+        checks["pn"] = f"{actual_pn} >= {constraints.pn_min_mpa} MPa"
+        if actual_pn is None or actual_pn + 1e-9 < constraints.pn_min_mpa:
+            return MatchDecision(False, checks)
+
+    if constraints.joining_type is not None:
+        actual_joining = candidate_joining_type(product)
+        checks["joining_type"] = f"{actual_joining} == {constraints.joining_type}"
+        if actual_joining != constraints.joining_type:
+            return MatchDecision(False, checks)
+
+    if constraints.thread_type is not None:
+        actual_thread = candidate_thread_type(product)
+        checks["thread_type"] = f"{actual_thread} == {constraints.thread_type}"
+        if actual_thread != constraints.thread_type:
+            return MatchDecision(False, checks)
+
+    if constraints.working_medium is not None:
+        expected_medium = _norm(constraints.working_medium)
+        actual_media = _medium_values(product)
+        checks["working_medium"] = f"{actual_media} contains exact {expected_medium}"
+        if expected_medium not in actual_media:
+            return MatchDecision(False, checks)
+
+    if constraints.valve_type is not None:
+        actual_valve_type = candidate_valve_type(product)
+        checks["valve_type"] = f"{actual_valve_type} == {constraints.valve_type}"
+        if actual_valve_type != constraints.valve_type:
+            return MatchDecision(False, checks)
+
+    if constraints.valve_designation is not None:
+        designation_ok = candidate_has_designation(product, constraints.valve_designation)
+        checks["valve_designation"] = f"exact normalized {constraints.valve_designation}: {designation_ok}"
+        if not designation_ok:
+            return MatchDecision(False, checks)
+
+    if constraints.body_material is not None:
+        actual_material = candidate_material(product)
+        checks["body_material"] = f"{actual_material} == {constraints.body_material}"
+        if actual_material != constraints.body_material:
+            return MatchDecision(False, checks)
+
+    if constraints.body_material_grade is not None:
+        expected_grade = _norm(constraints.body_material_grade)
+        actual_material_text = candidate_material_text(product)
+        grade_ok = _exact_token_match(actual_material_text, expected_grade)
+        checks["body_material_grade"] = f"exact {expected_grade}: {grade_ok}"
+        if not grade_ok:
+            return MatchDecision(False, checks)
+
+    if constraints.bore_type is not None:
+        actual_bore = candidate_bore_type(product)
+        checks["bore_type"] = f"{actual_bore} == {constraints.bore_type}"
+        if actual_bore != constraints.bore_type:
+            return MatchDecision(False, checks)
+
+    if constraints.control is not None:
+        actual_control = candidate_control(product)
+        checks["control"] = f"{actual_control} == {constraints.control}"
+        if actual_control != constraints.control:
+            return MatchDecision(False, checks)
+
+    return MatchDecision(True, checks)
+
+
+def compatibility_summary(product: LDProduct, constraints: QueryConstraints) -> CompatibilitySummary:
+    satisfied: list[str] = []
+    contradictory: list[str] = []
+    unverified: list[str] = []
+
+    def exact(field: str, actual: Any, expected: Any) -> None:
+        if expected is None:
+            return
+        if actual is None or actual == "":
+            unverified.append(f"{field}: expected {expected}, catalog value unavailable")
+        elif actual == expected:
+            satisfied.append(f"{field}: {actual}")
+        else:
+            contradictory.append(f"{field}: expected {expected}, catalog has {actual}")
+
+    exact("product_type", candidate_product_type(product), constraints.product_type)
+    exact("dn", candidate_dn(product), constraints.dn)
+
+    if constraints.pn_min_mpa is not None:
+        actual_pn = candidate_pn_mpa(product)
+        if actual_pn is None:
+            unverified.append(f"pn_min_mpa: expected >= {constraints.pn_min_mpa}, catalog value unavailable")
+        elif actual_pn + 1e-9 >= constraints.pn_min_mpa:
+            satisfied.append(f"pn_min_mpa: {actual_pn} >= {constraints.pn_min_mpa}")
+        else:
+            contradictory.append(f"pn_min_mpa: expected >= {constraints.pn_min_mpa}, catalog has {actual_pn}")
+
+    exact("joining_type", candidate_joining_type(product), constraints.joining_type)
+    exact("thread_type", candidate_thread_type(product), constraints.thread_type)
+
+    if constraints.working_medium is not None:
+        expected_medium = _norm(constraints.working_medium)
+        actual_media = _medium_values(product)
+        if not actual_media:
+            unverified.append(f"working_medium: expected {expected_medium}, catalog value unavailable")
+        elif expected_medium in actual_media:
+            satisfied.append(f"working_medium: {expected_medium}")
+        else:
+            contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+
+    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
+
+    if constraints.valve_designation is not None:
+        if candidate_has_designation(product, constraints.valve_designation):
+            satisfied.append(f"valve_designation: {constraints.valve_designation}")
+        else:
+            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+
+    exact("body_material", candidate_material(product), constraints.body_material)
+
+    if constraints.body_material_grade is not None:
+        expected_grade = _norm(constraints.body_material_grade)
+        actual_material_text = candidate_material_text(product)
+        if not _norm(actual_material_text):
+            unverified.append(f"body_material_grade: expected {expected_grade}, catalog value unavailable")
+        elif _exact_token_match(actual_material_text, expected_grade):
+            satisfied.append(f"body_material_grade: {expected_grade}")
+        else:
+            contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+
+    exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+    exact("control", candidate_control(product), constraints.control)
+    return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+
+
+def matching_products(products: list[LDProduct], constraints: QueryConstraints) -> list[LDProduct]:
+    if constraints.catalog_scope == "out_of_scope":
+        return []
+    return [product for product in products if evaluate_product(product, constraints).matches]
+
+
+def product_snapshot(product: LDProduct, constraints: QueryConstraints | None = None) -> dict[str, Any]:
+    snapshot = {
+        "ld_id": product.id,
+        "article": product.article,
+        "name": product.name,
+        "dn": candidate_dn(product),
+        "pn_mpa": candidate_pn_mpa(product),
+        "joining_type": candidate_joining_type(product),
+        "thread_type": candidate_thread_type(product),
+        "product_type": candidate_product_type(product),
+        "valve_type": candidate_valve_type(product),
+        "body_material": candidate_material(product),
+        "bore_type": candidate_bore_type(product),
+        "control": candidate_control(product),
+        "working_medium": _medium_values(product),
+    }
+    if constraints is not None:
+        snapshot["checks"] = asdict(evaluate_product(product, constraints))["checks"]
+    return snapshot
+
+ succeeded in 196ms:
+import json
+from pathlib import Path
+
+from openai import OpenAI
+
+from .query_constraints import CompatibilitySummary
+from .models import RerankedCandidate, RerankResult, SearchCandidate
+
+DEFAULT_RERANKER_SYSTEM_PROMPT_PATH = (
+    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+)
+
+
+def load_system_prompt(path: str | Path | None = None) -> str:
+    prompt_path = Path(path) if path else DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    if not prompt_path.is_absolute():
+        cwd_path = Path.cwd() / prompt_path
+        package_path = Path(__file__).resolve().parent / prompt_path
+        if cwd_path.exists():
+            prompt_path = cwd_path
+        elif package_path.exists():
+            prompt_path = package_path
+        else:
+            prompt_path = DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    return prompt_path.read_text(encoding="utf-8").strip()
+
+
+class DeepSeekReranker:
+    def __init__(self, settings, client=None):
+        self.settings = settings
+        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+        self.system_prompt = load_system_prompt(self.system_prompt_path)
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def rerank(
+        self,
+        query: str,
+        candidates: list[SearchCandidate],
+        compatibility_evidence: dict[int, CompatibilitySummary] | None = None,
+    ) -> RerankResult:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {
+                    "role": "user",
+                    "content": self._build_prompt(query, candidates, compatibility_evidence=compatibility_evidence),
+                },
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return self._parse_result(content, len(candidates))
+
+    def _build_prompt(
+        self,
+        query: str,
+        candidates: list[SearchCandidate],
+        compatibility_evidence: dict[int, CompatibilitySummary] | None = None,
+    ) -> str:
+        blocks = [f"QUERY:\n{query}", "", "CANDIDATES:"]
+        for index, candidate in enumerate(candidates, 1):
+            dense_rank = candidate.dense_rank if candidate.dense_rank is not None else "-"
+            dense_score = f"{candidate.dense_score:.4f}" if candidate.dense_score is not None else "-"
+            bm25_rank = candidate.bm25_rank if candidate.bm25_rank is not None else "-"
+            bm25_score = f"{candidate.bm25_score:.4f}" if candidate.bm25_score is not None else "-"
+            rrf_score = f"{candidate.rrf_score:.6f}" if candidate.rrf_score is not None else "-"
+            blocks.extend(
+                [
+                    "",
+                    f"CANDIDATE {index}",
+                    f"candidate_id: {index}",
+                    f"ld_id: {candidate.ld_id}",
+                    f"article: {candidate.article or ''}",
+                    f"name: {candidate.name}",
+                    f"dense_rank: {dense_rank}",
+                    f"dense_score: {dense_score}",
+                    f"bm25_rank: {bm25_rank}",
+                    f"bm25_score: {bm25_score}",
+                    f"rrf_score: {rrf_score}",
+                    f"retrieval_sources: {', '.join(candidate.retrieval_sources) or '-'}",
+                    "",
+                    "Характеристики:",
+                    candidate.search_text or candidate.name,
+                ]
+            )
+            evidence = compatibility_evidence.get(index) if compatibility_evidence else None
+            if evidence and evidence.has_evidence:
+                blocks.extend(
+                    [
+                        "",
+                        "Advisory compatibility evidence:",
+                        f"satisfied: {'; '.join(evidence.satisfied) if evidence.satisfied else '-'}",
+                        f"contradictory: {'; '.join(evidence.contradictory) if evidence.contradictory else '-'}",
+                        f"unverified: {'; '.join(evidence.unverified) if evidence.unverified else '-'}",
+                    ]
+                )
+        blocks.extend(
+            [
+                "",
+                "Верни JSON формата:",
+                '{"status":"MATCHED","selected":[{"candidate_id":1,"confidence":0.95,"reason":"..."}],"reason":"..."}',
+                'или {"status":"NOT_FOUND","selected":[],"reason":"..."}',
+                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+            ]
+        )
+        return "\n".join(blocks)
+
+    def _parse_result(self, content: str, candidate_count: int) -> RerankResult:
+        payload = json.loads(content)
+        status = payload.get("status")
+        if status not in {"MATCHED", "NOT_FOUND"}:
+            raise ValueError(f"Unsupported rerank status: {status!r}")
+        selected = []
+        seen = set()
+        for item in payload.get("selected", []):
+            candidate_id = item.get("candidate_id")
+            if not isinstance(candidate_id, int) or not (1 <= candidate_id <= candidate_count):
+                continue
+            if candidate_id in seen:
+                continue
+            seen.add(candidate_id)
+            confidence = item.get("confidence")
+            if confidence is not None:
+                try:
+                    confidence = float(confidence)
+                except (TypeError, ValueError):
+                    confidence = None
+            reason = str(item.get("reason") or "")
+            selected.append(RerankedCandidate(candidate_id=candidate_id, confidence=confidence, reason=reason))
+            if len(selected) >= self.settings.rerank_result_limit:
+                break
+        reason = payload.get("reason")
+        if selected:
+            return RerankResult(status="MATCHED", selected=selected, reason=reason)
+        return RerankResult(status="NOT_FOUND", selected=[], reason=reason)
+
+ succeeded in 180ms:
+import json
+from types import SimpleNamespace
+
+import pytest
+
+from nomenclature_matcher.models import SearchCandidate
+from nomenclature_matcher.query_constraints import CompatibilitySummary
+from nomenclature_matcher.reranker import DeepSeekReranker
+
+
+class FakeCompletions:
+    def __init__(self, content=None, error=None):
+        self.content = content
+        self.error = error
+        self.calls = []
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        if self.error:
+            raise self.error
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=SimpleNamespace(content=self.content))]
+        )
+
+
+class FakeClient:
+    def __init__(self, content=None, error=None):
+        self.completions = FakeCompletions(content=content, error=error)
+        self.chat = SimpleNamespace(completions=self.completions)
+
+
+def settings():
+    return SimpleNamespace(
+        deepseek_api_key="x",
+        deepseek_base_url="https://api.deepseek.com/v1",
+        deepseek_model="deepseek-v4-flash",
+        deepseek_timeout_seconds=20,
+        rerank_result_limit=3,
+    )
+
+
+def candidates():
+    return [
+        SearchCandidate(ld_id=1, name="A", article="A1", score=0.7, search_text="DN: 50"),
+        SearchCandidate(ld_id=2, name="B", article="B1", score=0.8, search_text="DN: 80"),
+    ]
+
+
+def test_rerank_valid_matched():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}]})))
+    result = reranker.rerank("query", candidates())
+    assert result.status == "MATCHED"
+    assert [item.candidate_id for item in result.selected] == [2]
+
+
+def test_rerank_not_found():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+    result = reranker.rerank("query", candidates())
+    assert result.status == "NOT_FOUND"
+    assert result.selected == []
+    assert result.reason == "no match"
+
+
+def test_rerank_ignores_unknown_and_duplicate_ids():
+    reranker = DeepSeekReranker(
+        settings(),
+        client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}, {"candidate_id": 2}, {"candidate_id": 999}]})),
+    )
+    result = reranker.rerank("query", candidates())
+    assert result.status == "MATCHED"
+    assert [item.candidate_id for item in result.selected] == [2]
+
+
+def test_rerank_invalid_json_raises():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{bad json"))
+    with pytest.raises(json.JSONDecodeError):
+        reranker.rerank("query", candidates())
+
+
+def test_rerank_timeout_raises():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(error=TimeoutError("timeout")))
+    with pytest.raises(TimeoutError):
+        reranker.rerank("query", candidates())
+
+
+def test_build_prompt_includes_hybrid_retrieval_signals():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{}"))
+    prompt = reranker._build_prompt(
+        "query",
+        [
+            SearchCandidate(
+                ld_id=1,
+                name="A",
+                article="A1",
+                score=0.03,
+                dense_score=0.9,
+                dense_rank=2,
+                bm25_score=1.7,
+                bm25_rank=1,
+                rrf_score=0.03125,
+                retrieval_sources=["dense", "bm25"],
+                search_text="DN: 25",
+            )
+        ],
+    )
+    assert "dense_rank: 2" in prompt
+    assert "vector_score:" not in prompt
+    assert "bm25_rank: 1" in prompt
+    assert "rrf_score: 0.031250" in prompt
+    assert "retrieval_sources: dense, bm25" in prompt
+
+
+def test_build_prompt_includes_optional_compatibility_evidence_and_retrieval_signals():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{}"))
+    prompt = reranker._build_prompt(
+        "query",
+        [
+            SearchCandidate(
+                ld_id=1,
+                name="A",
+                article="A1",
+                score=0.03,
+                dense_score=0.9,
+                dense_rank=2,
+                bm25_score=1.7,
+                bm25_rank=1,
+                rrf_score=0.03125,
+                retrieval_sources=["dense", "bm25"],
+                search_text="DN: 25",
+            )
+        ],
+        compatibility_evidence={
+            1: CompatibilitySummary(
+                satisfied=["dn: 25"],
+                contradictory=["valve_type: expected standard, catalog has underground"],
+                unverified=["body_material: expected steel, catalog value unavailable"],
+            )
+        },
+    )
+    assert "Advisory compatibility evidence:" in prompt
+    assert "satisfied: dn: 25" in prompt
+    assert "contradictory: valve_type: expected standard, catalog has underground" in prompt
+    assert "unverified: body_material: expected steel, catalog value unavailable" in prompt
+    assert "dense_rank: 2" in prompt
+    assert "bm25_rank: 1" in prompt
+    assert "rrf_score: 0.031250" in prompt
+
+
+def test_reranker_contract_allows_not_found_with_contradictory_evidence():
+    reranker = DeepSeekReranker(
+        settings(),
+        client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no compatible candidate"})),
+    )
+    result = reranker.rerank(
+        "query",
+        candidates(),
+        compatibility_evidence={1: CompatibilitySummary([], ["dn: expected 80, catalog has 50"], [])},
+    )
+    assert result.status == "NOT_FOUND"
+    assert result.selected == []
+
+
+def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+    prompt = tmp_path / "system.md"
+    prompt.write_text("custom system prompt", encoding="utf-8")
+    custom_settings = settings()
+    custom_settings.reranker_system_prompt_path = str(prompt)
+    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
+    reranker = DeepSeekReranker(custom_settings, client=client)
+    reranker.rerank("query", candidates())
+    messages = client.completions.calls[0]["messages"]
+    assert messages[0] == {"role": "system", "content": "custom system prompt"}
+
+
+def test_default_system_prompt_mentions_standard_specialized_contradictions():
+    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []})))
+    assert "Advisory compatibility evidence" in reranker.system_prompt
+    assert "valve_type: standard" in reranker.system_prompt
+    assert "Подземное, регулирующее, газовое или криогенное исполнение противоречит" in reranker.system_prompt
+
+codex
+{"status":"complete","summary":"I found the issue is isolated to `compatibility_summary`: strict candidate filtering still uses the existing inferred defaults, but reranker evidence currently reports those defaults as catalog facts. I’m adding explicit-evidence helpers for the reranker summary and focused sparse-data tests.","tests":[],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/query_constraints.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..80e499daf63679d349f748cc7d62830f789a2989
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..80e499daf63679d349f748cc7d62830f789a2989
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/query_constraints.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+
+codex
+{"status":"complete","summary":"The patch now keeps heuristic defaults available to existing matcher logic, while the reranker-facing summary only treats documented special valve/control text and documented designations as firm evidence.","tests":[],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_query_constraints.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..fe4f041d5ed485ededba1f4e67cfdbb0234c8336
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        article="A-100",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..fe4f041d5ed485ededba1f4e67cfdbb0234c8336
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        article="A-100",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_query_constraints.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+codex
+{"status":"complete","summary":"Running the focused query-constraint and reranker tests now; this should catch the conservative evidence labels and make sure prompt rendering still works.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py' in /workspaces/ML-Cancer-Data
+ succeeded in 1475ms:
+..........................                                               [100%]
+26 passed in 0.96s
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+codex
+{"status":"complete","summary":"Focused tests pass. I’m doing a quick diff check now so the final report is precise and no unrelated files get pulled into the summary.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'git diff -- src/nomenclature_matcher/query_constraints.py tests/test_query_constraints.py' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git status --short' in /workspaces/ML-Cancer-Data
+ succeeded in 84ms:
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 3c52290..c23fde7 100644
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -78,6 +78,17 @@ class DeepSeekQueryConstraintExtractor:
+         return QueryConstraints.model_validate(json.loads(content))
+ 
+ 
++@dataclass(frozen=True)
++class CompatibilitySummary:
++    satisfied: list[str]
++    contradictory: list[str]
++    unverified: list[str]
++
++    @property
++    def has_evidence(self) -> bool:
++        return bool(self.satisfied or self.contradictory or self.unverified)
++
++
+ def _norm(value: Any) -> str:
+     if value in (None, ""):
+         return ""
+@@ -335,6 +346,14 @@ def candidate_control(product: LDProduct) -> str | None:
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -350,6 +369,21 @@ def candidate_valve_type(product: LDProduct) -> str | None:
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -359,6 +393,24 @@ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -454,6 +506,75 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
+     return MatchDecision(True, checks)
+ 
+ 
++def compatibility_summary(product: LDProduct, constraints: QueryConstraints) -> CompatibilitySummary:
++    satisfied: list[str] = []
++    contradictory: list[str] = []
++    unverified: list[str] = []
++
++    def exact(field: str, actual: Any, expected: Any) -> None:
++        if expected is None:
++            return
++        if actual is None or actual == "":
++            unverified.append(f"{field}: expected {expected}, catalog value unavailable")
++        elif actual == expected:
++            satisfied.append(f"{field}: {actual}")
++        else:
++            contradictory.append(f"{field}: expected {expected}, catalog has {actual}")
++
++    exact("product_type", candidate_product_type(product), constraints.product_type)
++    exact("dn", candidate_dn(product), constraints.dn)
++
++    if constraints.pn_min_mpa is not None:
++        actual_pn = candidate_pn_mpa(product)
++        if actual_pn is None:
++            unverified.append(f"pn_min_mpa: expected >= {constraints.pn_min_mpa}, catalog value unavailable")
++        elif actual_pn + 1e-9 >= constraints.pn_min_mpa:
++            satisfied.append(f"pn_min_mpa: {actual_pn} >= {constraints.pn_min_mpa}")
++        else:
++            contradictory.append(f"pn_min_mpa: expected >= {constraints.pn_min_mpa}, catalog has {actual_pn}")
++
++    exact("joining_type", candidate_joining_type(product), constraints.joining_type)
++    exact("thread_type", candidate_thread_type(product), constraints.thread_type)
++
++    if constraints.working_medium is not None:
++        expected_medium = _norm(constraints.working_medium)
++        actual_media = _medium_values(product)
++        if not actual_media:
++            unverified.append(f"working_medium: expected {expected_medium}, catalog value unavailable")
++        elif expected_medium in actual_media:
++            satisfied.append(f"working_medium: {expected_medium}")
++        else:
++            contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
++
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
++
++    if constraints.valve_designation is not None:
++        if candidate_has_designation(product, constraints.valve_designation):
++            satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++        else:
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
++
++    exact("body_material", candidate_material(product), constraints.body_material)
++
++    if constraints.body_material_grade is not None:
++        expected_grade = _norm(constraints.body_material_grade)
++        actual_material_text = candidate_material_text(product)
++        if not _norm(actual_material_text):
++            unverified.append(f"body_material_grade: expected {expected_grade}, catalog value unavailable")
++        elif _exact_token_match(actual_material_text, expected_grade):
++            satisfied.append(f"body_material_grade: {expected_grade}")
++        else:
++            contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
++
++    exact("bore_type", candidate_bore_type(product), constraints.bore_type)
++    exact("control", _documented_candidate_control(product), constraints.control)
++    return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
++
++
+ def matching_products(products: list[LDProduct], constraints: QueryConstraints) -> list[LDProduct]:
+     if constraints.catalog_scope == "out_of_scope":
+         return []
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 7c2d3b3..c669096 100644
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -2,6 +2,7 @@ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+     candidate_pn_mpa,
++    compatibility_summary,
+     evaluate_product,
+ )
+ 
+@@ -132,6 +133,22 @@ def test_ball_valve_without_special_type_rejects_underground_execution():
+     assert evaluate_product(underground, constraints(valve_type="underground")).matches is True
+ 
+ 
++def test_compatibility_summary_marks_satisfied_contradictory_and_unverified():
++    ordinary = product()
++    underground = product(
++        name="Кран шаровый LD для подземной установки КШЦП из стали 20 Ду200 Ру1,6МПа",
++    )
++    unknown_dn = product(dn=None, properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
++
++    ordinary_summary = compatibility_summary(ordinary, constraints(valve_type="standard"))
++    underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
++    unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
++
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
++    assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
++    assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
++
++
+ def test_regula_is_not_standard_ball_valve():
+     regula = product(
+         name="Кран шаровый LD КШЦФ Regula из стали 20 Ду200 Ру1,6МПа",
+@@ -149,6 +166,45 @@ def test_exact_valve_designation_is_required_when_present_in_query():
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+ succeeded in 77ms:
+ M src/nomenclature_matcher/matcher.py
+ M src/nomenclature_matcher/prompts/reranker_system.md
+ M src/nomenclature_matcher/query_constraints.py
+ M src/nomenclature_matcher/reranker.py
+ M tests/test_matcher.py
+ M tests/test_query_constraints.py
+ M tests/test_reranker.py
+?? openspec/changes/cycle-02-compatibility-evidence-reranking/
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+exec
+/bin/bash -lc 'grep -n "class CompatibilitySummary" src/nomenclature_matcher/query_constraints.py && python -m pytest -q' in /workspaces/ML-Cancer-Data
+ exited 1 in 2908ms:
+82:class CompatibilitySummary:
+...................................................................F.... [ 47%]
+........................................................................ [ 95%]
+.......                                                                  [100%]
+=================================== FAILURES ===================================
+_ test_hybrid_rerank_attaches_compatibility_evidence_without_reordering_candidates _
+
+    def test_hybrid_rerank_attaches_compatibility_evidence_without_reordering_candidates():
+        from nomenclature_matcher.query_constraints import QueryConstraints
+    
+        settings = SimpleNamespace(
+            match_top_k=5,
+            match_score_threshold=0.8,
+            rerank_candidate_limit=20,
+            hybrid_rerank_limit=20,
+        )
+        candidates = [
+            SearchCandidate(
+                ld_id=1,
+                name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа",
+                article="A1",
+                score=0.02,
+                dn="200",
+                pn="1,6",
+                joining_type="Фланцевое",
+                search_text="ordinary",
+            ),
+            SearchCandidate(
+                ld_id=2,
+                name="Кран шаровый LD для подземной установки КШЦП из стали 20 Ду200 Ру1,6МПа",
+                article="A2",
+                score=0.03,
+                dn="200",
+                pn="1,6",
+                joining_type="Фланцевое",
+                search_text="underground",
+            ),
+        ]
+        rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="best")], reason=None)
+        reranker = Reranker(result=rerank_result)
+        extractor = Extractor(
+            result=QueryConstraints(
+                product_type="ball_valve",
+                dn=200,
+                pn_min_mpa=1.6,
+                joining_type="flanged",
+                valve_type="standard",
+                catalog_scope="in_scope",
+            )
+        )
+        matcher = NomenclatureMatcher(
+            Embedder(),
+            Store([]),
+            settings,
+            reranker=reranker,
+            hybrid_retriever=HybridRetriever(candidates),
+            query_constraint_extractor=extractor,
+        )
+    
+        result = matcher.match_one_hybrid_with_rerank("  ordinary welded ball valve  ")
+    
+        assert result.status == "MATCHED"
+        assert reranker.candidates == candidates
+        assert [candidate.ld_id for candidate in reranker.candidates] == [1, 2]
+>       assert any("valve_type: standard" in item for item in reranker.compatibility_evidence[1].satisfied)
+E       assert False
+E        +  where False = any(<generator object test_hybrid_rerank_attaches_compatibility_evidence_without_reordering_candidates.<locals>.<genexpr> at 0x7f75d4a76400>)
+
+tests/test_matcher.py:199: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_matcher.py::test_hybrid_rerank_attaches_compatibility_evidence_without_reordering_candidates
+1 failed, 150 passed in 2.26s
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+codex
+{"status":"complete","summary":"The full suite exposed one cycle-02 test that still expected inferred `standard` to be reported as satisfied. I’m updating that assertion to the reviewer’s corrected contract, then rerunning.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py","python -m pytest -q (failed: 1 stale assertion)"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '170,210p' tests/test_matcher.py" in /workspaces/ML-Cancer-Data
+ succeeded in 108ms:
+            search_text="underground",
+        ),
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="best")], reason=None)
+    reranker = Reranker(result=rerank_result)
+    extractor = Extractor(
+        result=QueryConstraints(
+            product_type="ball_valve",
+            dn=200,
+            pn_min_mpa=1.6,
+            joining_type="flanged",
+            valve_type="standard",
+            catalog_scope="in_scope",
+        )
+    )
+    matcher = NomenclatureMatcher(
+        Embedder(),
+        Store([]),
+        settings,
+        reranker=reranker,
+        hybrid_retriever=HybridRetriever(candidates),
+        query_constraint_extractor=extractor,
+    )
+
+    result = matcher.match_one_hybrid_with_rerank("  ordinary welded ball valve  ")
+
+    assert result.status == "MATCHED"
+    assert reranker.candidates == candidates
+    assert [candidate.ld_id for candidate in reranker.candidates] == [1, 2]
+    assert any("valve_type: standard" in item for item in reranker.compatibility_evidence[1].satisfied)
+    assert any(
+        "valve_type: expected standard, catalog has underground" in item
+        for item in reranker.compatibility_evidence[2].contradictory
+    )
+    assert extractor.calls == ["ordinary welded ball valve"]
+
+
+def test_hybrid_rerank_fails_open_when_constraint_extraction_fails():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_matcher.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index ee633fe623be408d31b5f362aba83931517a11fd..966b063b34aaed4482ed4b6cb51319867b10269b
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -196,8 +196,11 @@
+     assert result.status == "MATCHED"
+     assert reranker.candidates == candidates
+     assert [candidate.ld_id for candidate in reranker.candidates] == [1, 2]
+-    assert any("valve_type: standard" in item for item in reranker.compatibility_evidence[1].satisfied)
+     assert any(
++        "valve_type: expected standard, catalog value unavailable" in item
++        for item in reranker.compatibility_evidence[1].unverified
++    )
++    assert any(
+         "valve_type: expected standard, catalog has underground" in item
+         for item in reranker.compatibility_evidence[2].contradictory
+     )
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index ee633fe623be408d31b5f362aba83931517a11fd..966b063b34aaed4482ed4b6cb51319867b10269b
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -196,8 +196,11 @@
+     assert result.status == "MATCHED"
+     assert reranker.candidates == candidates
+     assert [candidate.ld_id for candidate in reranker.candidates] == [1, 2]
+-    assert any("valve_type: standard" in item for item in reranker.compatibility_evidence[1].satisfied)
+     assert any(
++        "valve_type: expected standard, catalog value unavailable" in item
++        for item in reranker.compatibility_evidence[1].unverified
++    )
++    assert any(
+         "valve_type: expected standard, catalog has underground" in item
+         for item in reranker.compatibility_evidence[2].contradictory
+     )
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py tests/test_matcher.py && python -m pytest -q' in /workspaces/ML-Cancer-Data
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index ee633fe623be408d31b5f362aba83931517a11fd..966b063b34aaed4482ed4b6cb51319867b10269b
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -196,8 +196,11 @@
+     assert result.status == "MATCHED"
+     assert reranker.candidates == candidates
+     assert [candidate.ld_id for candidate in reranker.candidates] == [1, 2]
+-    assert any("valve_type: standard" in item for item in reranker.compatibility_evidence[1].satisfied)
+     assert any(
++        "valve_type: expected standard, catalog value unavailable" in item
++        for item in reranker.compatibility_evidence[1].unverified
++    )
++    assert any(
+         "valve_type: expected standard, catalog has underground" in item
+         for item in reranker.compatibility_evidence[2].contradictory
+     )
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+ succeeded in 4310ms:
+....................................                                     [100%]
+36 passed in 0.93s
+........................................................................ [ 47%]
+........................................................................ [ 95%]
+.......                                                                  [100%]
+151 passed in 2.32s
+
+codex
+{"status":"complete","summary":"Fixed the reviewer’s concrete issues in compatibility evidence. Reranker summaries now treat inferred standard valve type and inferred manual control as unverified unless explicitly documented. Requested designations now become contradictory only when the candidate has a documented comparable designation that differs; sparse records report the designation as unverified. Added/updated focused tests for sparse ball-valve evidence, inferred defaults, absent designations, and matcher evidence propagation. No index rebuild was run or required.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py","python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py tests/test_matcher.py","python -m pytest -q"],"needs_reindex":false,"blocker":""}
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 5e79dfe5d191f68a59df62a5ce06531faa10fecf..c23fde79a504aef44b097537dfd1843c4500769f
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -346,6 +346,14 @@
+     return None
+ 
+ 
++def _documented_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+@@ -361,6 +369,21 @@
+     return "standard"
+ 
+ 
++def _documented_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    value = _norm(_product_text(product))
++    if "подзем" in value:
++        return "underground"
++    if "regula" in value or "регулиру" in value:
++        return "regulating"
++    if "криоген" in value:
++        return "cryogenic"
++    if re.search(r"\bgas\b", value) or "газов" in value:
++        return "gas"
++    return None
++
++
+ def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+     expected = _compact(designation)
+     if not expected:
+@@ -370,6 +393,24 @@
+     return any(_flexible_code_match(value, expected) for value in values)
+ 
+ 
++def _candidate_designation_values(product: LDProduct) -> list[str]:
++    return [
++        value
++        for value in [product.article or "", product.name, *_property_values(product, "Тип продукта", "Тип продукта AI", "Серия")]
++        if _compact(value)
++    ]
++
++
++def _candidate_has_any_documented_designation(product: LDProduct) -> bool:
++    for value in _candidate_designation_values(product):
++        compact = _compact(value)
++        if re.search(r"\d{2}[а-я]\d{2}[а-я]", compact):
++            return True
++        if re.search(r"кш[а-яa-z0-9]{1,}", compact):
++            return True
++    return False
++
++
+ def _medium_values(product: LDProduct) -> list[str]:
+     result: list[str] = []
+     for value in _property_values(product, "Рабочая среда"):
+@@ -505,13 +546,17 @@
+         else:
+             contradictory.append(f"working_medium: expected {expected_medium}, catalog has {', '.join(actual_media)}")
+ 
+-    exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    exact("valve_type", _documented_candidate_valve_type(product), constraints.valve_type)
+ 
+     if constraints.valve_designation is not None:
+         if candidate_has_designation(product, constraints.valve_designation):
+             satisfied.append(f"valve_designation: {constraints.valve_designation}")
++        elif _candidate_has_any_documented_designation(product):
++            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
+         else:
+-            contradictory.append(f"valve_designation: expected exact {constraints.valve_designation}, catalog differs")
++            unverified.append(
++                f"valve_designation: expected exact {constraints.valve_designation}, catalog value unavailable"
++            )
+ 
+     exact("body_material", candidate_material(product), constraints.body_material)
+ 
+@@ -526,7 +571,7 @@
+             contradictory.append(f"body_material_grade: expected {expected_grade}, catalog differs")
+ 
+     exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+-    exact("control", candidate_control(product), constraints.control)
++    exact("control", _documented_candidate_control(product), constraints.control)
+     return CompatibilitySummary(satisfied=satisfied, contradictory=contradictory, unverified=unverified)
+ 
+ 
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index ee633fe623be408d31b5f362aba83931517a11fd..966b063b34aaed4482ed4b6cb51319867b10269b
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -196,8 +196,11 @@
+     assert result.status == "MATCHED"
+     assert reranker.candidates == candidates
+     assert [candidate.ld_id for candidate in reranker.candidates] == [1, 2]
+-    assert any("valve_type: standard" in item for item in reranker.compatibility_evidence[1].satisfied)
+     assert any(
++        "valve_type: expected standard, catalog value unavailable" in item
++        for item in reranker.compatibility_evidence[1].unverified
++    )
++    assert any(
+         "valve_type: expected standard, catalog has underground" in item
+         for item in reranker.compatibility_evidence[2].contradictory
+     )
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 67e975c206a71ed96c62da11d8dbf050f3a5f1a8..c669096aa422f518b6495fcd43542137c87ec310
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -144,7 +144,7 @@
+     underground_summary = compatibility_summary(underground, constraints(valve_type="standard"))
+     unknown_summary = compatibility_summary(unknown_dn, constraints(dn=200))
+ 
+-    assert any("valve_type: standard" in item for item in ordinary_summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in ordinary_summary.unverified)
+     assert any("valve_type: expected standard, catalog has underground" in item for item in underground_summary.contradictory)
+     assert any("dn: expected 200, catalog value unavailable" in item for item in unknown_summary.unverified)
+ 
+@@ -166,6 +166,45 @@
+     assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+ 
+ 
++def test_compatibility_summary_keeps_inferred_standard_and_manual_unverified():
++    sparse_ball_valve = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    summary = compatibility_summary(
++        sparse_ball_valve,
++        constraints(valve_type="standard", control="manual"),
++    )
++
++    assert "valve_type: standard" not in "; ".join(summary.satisfied)
++    assert "control: manual" not in "; ".join(summary.satisfied)
++    assert any("valve_type: expected standard, catalog value unavailable" in item for item in summary.unverified)
++    assert any("control: expected manual, catalog value unavailable" in item for item in summary.unverified)
++
++
++def test_compatibility_summary_only_contradicts_documented_designation_mismatch():
++    sparse = product(
++        name="Кран шаровый LD Ду200 Ру1,6МПа",
++        product_id=100,
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    documented_other = product(name="Кран шаровый LD КШЦП Ду200 Ру1,6МПа")
++
++    sparse_summary = compatibility_summary(sparse, constraints(valve_designation="КШЦФ"))
++    documented_summary = compatibility_summary(documented_other, constraints(valve_designation="КШЦФ"))
++
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog value unavailable" in item
++        for item in sparse_summary.unverified
++    )
++    assert not sparse_summary.contradictory
++    assert any(
++        "valve_designation: expected exact КШЦФ, catalog differs" in item
++        for item in documented_summary.contradictory
++    )
++
++
+ def test_designation_normalizes_punctuation_and_case():
+     exact_model = product(
+         name="Кран шаровый фланцевый",
+
+tokens used
+43,862
+{"status":"complete","summary":"Fixed the reviewer’s concrete issues in compatibility evidence. Reranker summaries now treat inferred standard valve type and inferred manual control as unverified unless explicitly documented. Requested designations now become contradictory only when the candidate has a documented comparable designation that differs; sparse records report the designation as unverified. Added/updated focused tests for sparse ball-valve evidence, inferred defaults, absent designations, and matcher evidence propagation. No index rebuild was run or required.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py","python -m pytest -q tests/test_query_constraints.py tests/test_reranker.py tests/test_matcher.py","python -m pytest -q"],"needs_reindex":false,"blocker":""}

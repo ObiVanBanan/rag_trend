@@ -1,0 +1,2701 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0865f-c6b9-7d42-a5c1-a8afd2faa4be
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-01-constraint-aware-candidate-gating",
+  "hypothesis": "Filtering retrieved candidates that contradict explicit tender constraints before LLM reranking will reduce unsafe positive matches and improve hard-pass coverage.",
+  "why_now": "Production bypasses its existing structured constraint machinery, while public failures include deterministic-requirement violations and a human-rejected selection.",
+  "expected_effect": "Exclude known-incompatible candidates, abstain safely for explicit out-of-scope queries or exhausted compatible pools, and retain fail-open behavior for uncertain extraction.",
+  "expected_metric_gain": "Estimated +3–10 percentage points public hard-pass and +3–7 points blind hard-pass, with reduced human-reject risk.",
+  "lesson_from_history": "No prior cycles exist. Baseline evidence favors safety-aware candidate selection over retrieval tuning because no unresolved cases are proven retrieval misses.",
+  "candidate_hypotheses": [
+    "Constraint-aware pre-rerank candidate gating with safe fallback (selected).",
+    "Legacy/designation alias mapping for vendor and Soviet valve codes.",
+    "Index-time catalog text enrichment and hybrid retrieval/fusion tuning.",
+    "Schema expansion for flange subtype, temperature, and pipe-OD semantics."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strictly validated OpenSpec change with proposal, capability spec, design, and implementable focused-test tasks. It introduces tri-state compatibility gating, observable diagnostics, explicit out-of-scope abstention, and extractor failure fallback."
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-01-constraint-aware-candidate-gating`. Added tri-state candidate compatibility checks, optional `MatchResult` constraint-gate diagnostics, hybrid pre-rerank filtering, explicit out-of-scope and exhausted-pool `NOT_FOUND` abstentions, fail-open behavior for extractor failure/ambiguity/uncertain scope/no usable constraints, and automatic DeepSeek constraint extractor wiring when configured. OpenSpec tasks are 8/8 complete and validation passes. No full index rebuild was run or required.",
+  "tests": [
+    "python -m pytest -q tests/test_matcher.py tests/test_query_constraints.py tests/test_harness_gold_calibration.py tests/test_serialization.py (35 passed)",
+    "python -m pytest -q (146 passed)",
+    "openspec validate cycle-01-constraint-aware-candidate-gating --strict (passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.7333333333333333,
+  "core_pass_rate": 0.68,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.28,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.0,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.2916666666666667,
+  "verdict_counts": {
+    "PASS": 22,
+    "FAIL_HUMAN_REJECT": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_NOT_FOUND": 16
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q007",
+    "verdict": "FAIL_WRONG_NOT_FOUND",
+    "reason": "Constraint-based GOLD has catalog evidence for a matching product."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_NOT_FOUND",
+    "reason": "Constraint-based GOLD has catalog evidence for a matching product."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q025",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 77258fb..e7b464a 100644
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -1,13 +1,31 @@
+ from dataclasses import replace
+ 
+-from .models import MatchResult, SearchCandidate, SelectedMatch
++from .models import ConstraintGateDiagnostics, MatchResult, SearchCandidate, SelectedMatch
++from .query_constraints import (
++    DeepSeekQueryConstraintExtractor,
++    candidate_constraint_check,
++    constraint_summary,
++    constraints_are_gate_eligible,
++    evaluate_candidate_compatibility,
++)
+ 
+ 
+ class NomenclatureMatcher:
+-    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
++    def __init__(
++        self,
++        embedder,
++        store,
++        settings,
++        reranker=None,
++        hybrid_retriever=None,
++        constraint_extractor=None,
++    ):
+         self.embedder, self.store, self.settings = embedder, store, settings
+         self.reranker = reranker
+         self.hybrid_retriever = hybrid_retriever
++        self.constraint_extractor = constraint_extractor
++        if self.constraint_extractor is None and getattr(settings, "deepseek_api_key", ""):
++            self.constraint_extractor = DeepSeekQueryConstraintExtractor(settings)
+ 
+     def _normalize_query(self, query: str) -> str:
+         return " ".join(query.split())
+@@ -51,9 +69,14 @@ class NomenclatureMatcher:
+             url=candidate.url,
+         )
+ 
+-    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
++    def rerank_candidates(
++        self,
++        query: str,
++        candidates: list[SearchCandidate],
++        constraint_gate: ConstraintGateDiagnostics | None = None,
++    ) -> MatchResult:
+         if not candidates:
+-            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
++            return MatchResult(query=query, status="NOT_FOUND", candidates=[], constraint_gate=constraint_gate)
+         if self.reranker is None:
+             raise ValueError("Reranker is not configured")
+         try:
+@@ -66,6 +89,7 @@ class NomenclatureMatcher:
+                 ld_product=None,
+                 candidates=candidates,
+                 reason=str(exc),
++                constraint_gate=constraint_gate,
+             )
+         selected = []
+         for item in rerank_result.selected:
+@@ -80,6 +104,7 @@ class NomenclatureMatcher:
+             candidates=candidates,
+             selected=selected,
+             reason=rerank_result.reason,
++            constraint_gate=constraint_gate,
+         )
+ 
+     def match_one(self, query: str) -> MatchResult:
+@@ -98,14 +123,81 @@ class NomenclatureMatcher:
+         candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+         return self.rerank_candidates(query, candidates)
+ 
++    def _extract_constraint_gate(self, query: str) -> tuple[object | None, ConstraintGateDiagnostics | None]:
++        if self.constraint_extractor is None:
++            return None, None
++        try:
++            constraints = self.constraint_extractor.extract(query)
++        except Exception as exc:
++            return None, ConstraintGateDiagnostics(applied=False, fallback_reason=f"extractor_failed: {exc}")
++        diagnostics = ConstraintGateDiagnostics(
++            applied=False,
++            constraints=constraint_summary(constraints),
++        )
++        if constraints.ambiguous:
++            diagnostics.fallback_reason = "ambiguous_constraints"
++            return None, diagnostics
++        if constraints.catalog_scope == "out_of_scope":
++            diagnostics.abstention_reason = "out_of_scope"
++            return constraints, diagnostics
++        if constraints.catalog_scope != "in_scope":
++            diagnostics.fallback_reason = f"catalog_scope_{constraints.catalog_scope}"
++            return None, diagnostics
++        if not constraints_are_gate_eligible(constraints):
++            diagnostics.fallback_reason = "no_usable_constraints"
++            return None, diagnostics
++        diagnostics.applied = True
++        return constraints, diagnostics
++
++    def _apply_constraint_gate(
++        self,
++        candidates: list[SearchCandidate],
++        constraints,
++        diagnostics: ConstraintGateDiagnostics,
++    ) -> list[SearchCandidate]:
++        retained: list[SearchCandidate] = []
++        for index, candidate in enumerate(candidates, 1):
++            compatibility = evaluate_candidate_compatibility(candidate, constraints)
++            check = candidate_constraint_check(candidate, index, compatibility)
++            if compatibility.status == "contradictory":
++                diagnostics.excluded.append(check)
++                continue
++            retained.append(candidate)
++            if compatibility.status == "unverifiable":
++                diagnostics.retained_unverifiable.append(check)
++            else:
++                diagnostics.retained_compatible.append(check)
++        if candidates and not retained:
++            diagnostics.abstention_reason = "no_compatible_candidates"
++        return retained
++
+     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+         query = self._normalize_query(query)
+         if not query:
+             return MatchResult(query=query, status="NOT_FOUND")
+         if self.hybrid_retriever is None:
+             raise ValueError("Hybrid retriever is not configured")
++        constraints, diagnostics = self._extract_constraint_gate(query)
++        if diagnostics and diagnostics.abstention_reason == "out_of_scope":
++            return MatchResult(
++                query=query,
++                status="NOT_FOUND",
++                reason=diagnostics.abstention_reason,
++                constraint_gate=diagnostics,
++            )
+         candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
+-        return self.rerank_candidates(query, candidates)
++        if constraints is not None and diagnostics is not None and diagnostics.applied:
++            gated_candidates = self._apply_constraint_gate(candidates, constraints, diagnostics)
++            if not gated_candidates and candidates:
++                return MatchResult(
++                    query=query,
++                    status="NOT_FOUND",
++                    candidates=candidates,
++                    reason=diagnostics.abstention_reason,
++                    constraint_gate=diagnostics,
++                )
++            candidates = gated_candidates
++        return self.rerank_candidates(query, candidates, constraint_gate=diagnostics)
+ 
+     def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+         cache = {}
+diff --git a/src/nomenclature_matcher/models.py b/src/nomenclature_matcher/models.py
+index 4e470c3..4b4dd06 100644
+--- a/src/nomenclature_matcher/models.py
++++ b/src/nomenclature_matcher/models.py
+@@ -58,6 +58,27 @@ class RerankedCandidate:
+     reason: str
+ 
+ 
++@dataclass
++class CandidateConstraintCheck:
++    ld_id: int
++    candidate_id: int
++    status: Literal["compatible", "contradictory", "unverifiable"]
++    checks: dict[str, str] = field(default_factory=dict)
++    contradictory_fields: list[str] = field(default_factory=list)
++    unverifiable_fields: list[str] = field(default_factory=list)
++
++
++@dataclass
++class ConstraintGateDiagnostics:
++    applied: bool = False
++    fallback_reason: str | None = None
++    abstention_reason: str | None = None
++    constraints: dict[str, Any] = field(default_factory=dict)
++    excluded: list[CandidateConstraintCheck] = field(default_factory=list)
++    retained_unverifiable: list[CandidateConstraintCheck] = field(default_factory=list)
++    retained_compatible: list[CandidateConstraintCheck] = field(default_factory=list)
++
++
+ @dataclass
+ class SelectedMatch:
+     candidate_id: int
+@@ -84,6 +105,7 @@ class MatchResult:
+     candidates: list[SearchCandidate] = field(default_factory=list)
+     selected: list[SelectedMatch] = field(default_factory=list)
+     reason: str | None = None
++    constraint_gate: ConstraintGateDiagnostics | None = None
+ 
+ 
+ @dataclass
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 3c52290..1bb9e6d 100644
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -9,7 +9,7 @@ from typing import Any
+ from openai import OpenAI
+ from pydantic import BaseModel, ConfigDict, field_validator
+ 
+-from .models import LDProduct
++from .models import CandidateConstraintCheck, LDProduct, SearchCandidate
+ 
+ 
+ DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
+@@ -454,6 +454,163 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
+     return MatchDecision(True, checks)
+ 
+ 
++def product_from_search_candidate(candidate: SearchCandidate) -> LDProduct:
++    return LDProduct(
++        id=candidate.ld_id,
++        name=candidate.name,
++        article=candidate.article,
++        price=candidate.price,
++        dn=candidate.dn,
++        pn=candidate.pn,
++        joining_type=candidate.joining_type,
++        url=candidate.url,
++        properties=candidate.properties or [],
++    )
++
++
++def usable_constraint_fields(constraints: QueryConstraints) -> list[str]:
++    fields = []
++    if constraints.product_type != "other":
++        fields.append("product_type")
++    optional_fields = [
++        "dn",
++        "pn_min_mpa",
++        "joining_type",
++        "thread_type",
++        "working_medium",
++        "valve_type",
++        "valve_designation",
++        "body_material",
++        "body_material_grade",
++        "bore_type",
++        "control",
++    ]
++    fields.extend(field for field in optional_fields if getattr(constraints, field) is not None)
++    return fields
++
++
++def constraints_are_gate_eligible(constraints: QueryConstraints) -> bool:
++    return (
++        constraints.catalog_scope == "in_scope"
++        and not constraints.ambiguous
++        and bool(usable_constraint_fields(constraints))
++    )
++
++
++def constraint_summary(constraints: QueryConstraints) -> dict[str, Any]:
++    return {
++        key: value
++        for key, value in constraints.model_dump().items()
++        if key in {"catalog_scope", "ambiguous", "comment"} or key in usable_constraint_fields(constraints)
++    }
++
++
++@dataclass(frozen=True)
++class TriStateCompatibility:
++    status: str
++    checks: dict[str, str]
++    contradictory_fields: list[str]
++    unverifiable_fields: list[str]
++
++
++def evaluate_candidate_compatibility(candidate: SearchCandidate, constraints: QueryConstraints) -> TriStateCompatibility:
++    product = product_from_search_candidate(candidate)
++    checks: dict[str, str] = {}
++    contradictory: list[str] = []
++    unverifiable: list[str] = []
++
++    def exact(field: str, actual: Any, expected: Any) -> None:
++        checks[field] = f"{actual} == {expected}"
++        if actual is None:
++            unverifiable.append(field)
++        elif actual != expected:
++            contradictory.append(field)
++
++    actual_product_type = candidate_product_type(product)
++    checks["product_type"] = f"{actual_product_type} == {constraints.product_type}"
++    has_type_evidence = any(
++        _norm(value)
++        for value in [
++            product.name,
++            product.joining_type,
++            *_property_values(product, "Тип продукта AI", "Тип продукта"),
++        ]
++    )
++    if actual_product_type == "other" and not has_type_evidence:
++        unverifiable.append("product_type")
++    elif actual_product_type != constraints.product_type:
++        contradictory.append("product_type")
++    if constraints.dn is not None:
++        exact("dn", candidate_dn(product), constraints.dn)
++    if constraints.pn_min_mpa is not None:
++        actual_pn = candidate_pn_mpa(product)
++        checks["pn"] = f"{actual_pn} >= {constraints.pn_min_mpa} MPa"
++        if actual_pn is None:
++            unverifiable.append("pn")
++        elif actual_pn + 1e-9 < constraints.pn_min_mpa:
++            contradictory.append("pn")
++    if constraints.joining_type is not None:
++        exact("joining_type", candidate_joining_type(product), constraints.joining_type)
++    if constraints.thread_type is not None:
++        exact("thread_type", candidate_thread_type(product), constraints.thread_type)
++    if constraints.working_medium is not None:
++        expected_medium = _norm(constraints.working_medium)
++        actual_media = _medium_values(product)
++        checks["working_medium"] = f"{actual_media} contains exact {expected_medium}"
++        if not actual_media:
++            unverifiable.append("working_medium")
++        elif expected_medium not in actual_media:
++            contradictory.append("working_medium")
++    if constraints.valve_type is not None:
++        exact("valve_type", candidate_valve_type(product), constraints.valve_type)
++    if constraints.valve_designation is not None:
++        values = [product.article or "", product.name]
++        values.extend(_property_values(product, "Тип продукта", "Тип продукта AI", "Серия"))
++        checks["valve_designation"] = f"exact normalized {constraints.valve_designation}: {candidate_has_designation(product, constraints.valve_designation)}"
++        if not any(_norm(value) for value in values):
++            unverifiable.append("valve_designation")
++        elif not candidate_has_designation(product, constraints.valve_designation):
++            contradictory.append("valve_designation")
++    if constraints.body_material is not None:
++        exact("body_material", candidate_material(product), constraints.body_material)
++    if constraints.body_material_grade is not None:
++        expected_grade = _norm(constraints.body_material_grade)
++        actual_material_text = candidate_material_text(product)
++        grade_ok = _exact_token_match(actual_material_text, expected_grade)
++        checks["body_material_grade"] = f"exact {expected_grade}: {grade_ok}"
++        if not _norm(actual_material_text):
++            unverifiable.append("body_material_grade")
++        elif not grade_ok:
++            contradictory.append("body_material_grade")
++    if constraints.bore_type is not None:
++        exact("bore_type", candidate_bore_type(product), constraints.bore_type)
++    if constraints.control is not None:
++        exact("control", candidate_control(product), constraints.control)
++
++    if contradictory:
++        status = "contradictory"
++    elif unverifiable:
++        status = "unverifiable"
++    else:
++        status = "compatible"
++    return TriStateCompatibility(status, checks, contradictory, unverifiable)
++
++
++def candidate_constraint_check(
++    candidate: SearchCandidate,
++    candidate_id: int,
++    compatibility: TriStateCompatibility,
++) -> CandidateConstraintCheck:
++    return CandidateConstraintCheck(
++        ld_id=candidate.ld_id,
++        candidate_id=candidate_id,
++        status=compatibility.status,  # type: ignore[arg-type]
++        checks=compatibility.checks,
++        contradictory_fields=compatibility.contradictory_fields,
++        unverifiable_fields=compatibility.unverifiable_fields,
++    )
++
++
+ def matching_products(products: list[LDProduct], constraints: QueryConstraints) -> list[LDProduct]:
+     if constraints.catalog_scope == "out_of_scope":
+         return []
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f..180d788 100644
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -74,6 +74,7 @@ def match_result_payload(result: MatchResult, *, include_debug: bool = True) ->
+     if include_debug:
+         payload["debug"] = {
+             "reason": result.reason,
++            "constraint_gate": _clean(result.constraint_gate),
+             "candidates": [
+                 candidate_debug_payload(candidate, index)
+                 for index, candidate in enumerate(result.candidates, 1)
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index a00af36..6467eb8 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -1,6 +1,7 @@
+ from types import SimpleNamespace
+ from nomenclature_matcher.matcher import NomenclatureMatcher
+ from nomenclature_matcher.models import SearchCandidate
++from nomenclature_matcher.query_constraints import QueryConstraints
+ 
+ 
+ class Embedder:
+@@ -19,6 +20,8 @@ class Reranker:
+         self.error = error
+ 
+     def rerank(self, query, candidates):
++        self.query = query
++        self.candidates = candidates
+         if self.error:
+             raise self.error
+         return self.result
+@@ -34,10 +37,60 @@ class HybridRetriever:
+         return self.candidates
+ 
+ 
++class ConstraintExtractor:
++    def __init__(self, result=None, error=None):
++        self.result = result
++        self.error = error
++        self.calls = []
++
++    def extract(self, query):
++        self.calls.append(query)
++        if self.error:
++            raise self.error
++        return self.result
++
++
+ def hit(score):
+     return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
+ 
+ 
++def constraints(**overrides):
++    payload = {
++        "product_type": "ball_valve",
++        "dn": None,
++        "pn_min_mpa": None,
++        "joining_type": None,
++        "thread_type": None,
++        "working_medium": None,
++        "valve_type": None,
++        "valve_designation": None,
++        "body_material": None,
++        "body_material_grade": None,
++        "bore_type": None,
++        "control": None,
++        "catalog_scope": "in_scope",
++        "ambiguous": False,
++        "comment": "",
++    }
++    payload.update(overrides)
++    return QueryConstraints.model_validate(payload)
++
++
++def candidate(ld_id, name, **overrides):
++    payload = {
++        "ld_id": ld_id,
++        "name": name,
++        "article": f"A-{ld_id}",
++        "score": 0.01,
++        "dn": "50",
++        "pn": "16",
++        "joining_type": "Фланцевое",
++        "properties": [{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    }
++    payload.update(overrides)
++    return SearchCandidate(**payload)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -123,6 +176,94 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+     assert not hasattr(result.selected[0], "vector_score")
+ 
+ 
++def test_hybrid_gate_removes_contradictions_and_keeps_unverifiable_candidates():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [
++        candidate(1, "Кран шаровый фланцевый DN50 PN16"),
++        candidate(2, "Кран шаровый муфтовый DN50 PN16", joining_type="Муфтовое"),
++        candidate(3, "", dn=None, pn=None, joining_type=None, properties=[]),
++    ]
++    reranker = Reranker(result=SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="ok")], reason=None))
++    extractor = ConstraintExtractor(constraints(dn=50, joining_type="flanged"))
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=HybridRetriever(candidates), constraint_extractor=extractor)
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой фланцевый Ду50")
++
++    assert [item.ld_id for item in reranker.candidates] == [1, 3]
++    assert result.constraint_gate.applied is True
++    assert [item.ld_id for item in result.constraint_gate.excluded] == [2]
++    assert [item.ld_id for item in result.constraint_gate.retained_unverifiable] == [3]
++
++
++def test_hybrid_gate_abstains_out_of_scope_without_retrieval_or_rerank():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    hybrid = HybridRetriever([candidate(1, "Кран шаровый")])
++    reranker = Reranker(result=SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="ok")], reason=None))
++    extractor = ConstraintExtractor(constraints(product_type="other", catalog_scope="out_of_scope"))
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid, constraint_extractor=extractor)
++
++    result = matcher.match_one_hybrid_with_rerank("насос центробежный")
++
++    assert result.status == "NOT_FOUND"
++    assert result.reason == "out_of_scope"
++    assert hybrid.calls == []
++    assert not hasattr(reranker, "candidates")
++
++
++def test_hybrid_gate_abstains_when_all_candidates_contradict():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    hybrid = HybridRetriever([candidate(1, "Кран шаровый муфтовый DN50", joining_type="Муфтовое")])
++    reranker = Reranker(result=SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="ok")], reason=None))
++    matcher = NomenclatureMatcher(
++        Embedder(),
++        Store([]),
++        settings,
++        reranker=reranker,
++        hybrid_retriever=hybrid,
++        constraint_extractor=ConstraintExtractor(constraints(dn=50, joining_type="welded")),
++    )
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной Ду50")
++
++    assert result.status == "NOT_FOUND"
++    assert result.reason == "no_compatible_candidates"
++    assert not hasattr(reranker, "candidates")
++
++
++def test_hybrid_gate_fails_open_for_extractor_failure_uncertain_ambiguous_and_empty_constraints():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    fallback_cases = [
++        ConstraintExtractor(error=RuntimeError("boom")),
++        ConstraintExtractor(constraints(catalog_scope="uncertain")),
++        ConstraintExtractor(constraints(ambiguous=True)),
++        ConstraintExtractor(constraints(product_type="other")),
++    ]
++    for extractor in fallback_cases:
++        candidates = [candidate(1, "Кран шаровый муфтовый DN50", joining_type="Муфтовое")]
++        reranker = Reranker(result=SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="ok")], reason=None))
++        matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=HybridRetriever(candidates), constraint_extractor=extractor)
++        result = matcher.match_one_hybrid_with_rerank("query")
++        assert reranker.candidates == candidates
++        assert result.constraint_gate.fallback_reason
++
++
++def test_match_many_hybrid_with_rerank_dedupes_constraint_extraction():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    extractor = ConstraintExtractor(constraints(dn=50))
++    reranker = Reranker(result=SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.9, reason="ok")], reason=None))
++    matcher = NomenclatureMatcher(
++        Embedder(),
++        Store([]),
++        settings,
++        reranker=reranker,
++        hybrid_retriever=HybridRetriever([candidate(1, "Кран шаровый DN50")]),
++        constraint_extractor=extractor,
++    )
++    results = matcher.match_many_hybrid_with_rerank(["Кран Ду50", " Кран Ду50 ", "   "])
++    assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
++    assert extractor.calls == ["Кран Ду50"]
++
++
+ def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+     settings = SimpleNamespace(
+         match_top_k=5,
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 7c2d3b3..25776ae 100644
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,7 +1,9 @@
+ from nomenclature_matcher.models import LDProduct
++from nomenclature_matcher.models import SearchCandidate
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+     candidate_pn_mpa,
++    evaluate_candidate_compatibility,
+     evaluate_product,
+ )
+ 
+@@ -186,3 +188,43 @@ def test_unspecified_fields_do_not_filter_candidates():
+         ),
+     )
+     assert result.matches is True
++
++
++def test_tri_state_candidate_compatibility_reports_compatible_contradictory_and_unverifiable():
++    compatible = SearchCandidate(
++        ld_id=1,
++        name="Кран шаровый фланцевый DN50 PN16 под электропривод",
++        article="A-1",
++        score=1.0,
++        dn="50",
++        pn="16",
++        joining_type="Фланцевое",
++        properties=[
++            {"name": "Тип продукта", "values": ["Кран шаровый"]},
++            {"name": "Управление", "values": ["Под электропривод"]},
++        ],
++    )
++    contradictory = SearchCandidate(
++        ld_id=2,
++        name="Кран шаровый муфтовый DN50 PN16 ручной",
++        article="A-2",
++        score=0.9,
++        dn="50",
++        pn="16",
++        joining_type="Муфтовое",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    missing = SearchCandidate(ld_id=3, name="", article=None, score=0.8)
++    req = constraints(dn=50, joining_type="flanged", control="electric_ready", pn_min_mpa=1.6)
++
++    assert evaluate_candidate_compatibility(compatible, req).status == "compatible"
++
++    mismatch = evaluate_candidate_compatibility(contradictory, req)
++    assert mismatch.status == "contradictory"
++    assert "joining_type" in mismatch.contradictory_fields
++    assert "control" in mismatch.contradictory_fields
++
++    unknown = evaluate_candidate_compatibility(missing, req)
++    assert unknown.status == "unverifiable"
++    assert "dn" in unknown.unverifiable_fields
++    assert "joining_type" in unknown.unverifiable_fields
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa3..f5c6c91 100644
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -1,6 +1,12 @@
+ import json
+ 
+-from nomenclature_matcher.models import MatchResult, SearchCandidate, SelectedMatch
++from nomenclature_matcher.models import (
++    CandidateConstraintCheck,
++    ConstraintGateDiagnostics,
++    MatchResult,
++    SearchCandidate,
++    SelectedMatch,
++)
+ from nomenclature_matcher.serialization import match_result_payload, match_results_payload
+ 
+ 
+@@ -71,3 +77,29 @@ def test_payload_can_omit_debug():
+     result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
+     payload = match_result_payload(result, include_debug=False)
+     assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++
++
++def test_payload_includes_constraint_gate_diagnostics():
++    result = MatchResult(
++        query="Кран",
++        status="NOT_FOUND",
++        constraint_gate=ConstraintGateDiagnostics(
++            applied=True,
++            abstention_reason="no_compatible_candidates",
++            constraints={"product_type": "ball_valve", "dn": 50},
++            excluded=[
++                CandidateConstraintCheck(
++                    ld_id=7,
++                    candidate_id=1,
++                    status="contradictory",
++                    checks={"dn": "80 == 50"},
++                    contradictory_fields=["dn"],
++                )
++            ],
++        ),
++    )
++    payload = match_result_payload(result)
++    gate = payload["debug"]["constraint_gate"]
++    assert gate["applied"] is True
++    assert gate["constraints"]["dn"] == 50
++    assert gate["excluded"][0]["contradictory_fields"] == ["dn"]
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T13:33:39.201097Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a0865f-c6b9-7d42-a5c1-a8afd2faa4be.tmp-1788960818875137068: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"ACCEPT","summary":"I’ll review the patch against the stated safety hypothesis and existing code paths, without changing files or probing any hidden holdout.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "git diff --check && sed -n '1,260p' src/nomenclature_matcher/query_constraints.py && sed -n '1,250p' src/nomenclature_matcher/matcher.py && rg -n \"match_one_hybrid|constraint|DeepSeekQuery|hybrid_rerank\" src tests scripts" in /workspaces/ML-Cancer-Data
+ exited 127 in 8ms:
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+from openai import OpenAI
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from .models import CandidateConstraintCheck, LDProduct, SearchCandidate
+
+
+DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
+    Path(__file__).resolve().parent / "prompts" / "query_constraints_system.md"
+)
+_ALNUM_RU = "0-9a-zа-я"
+
+
+class QueryConstraints(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_type: str
+    dn: int | None = None
+    pn_min_mpa: float | None = None
+    joining_type: str | None = None
+    thread_type: str | None = None
+    working_medium: str | None = None
+    valve_type: str | None = None
+    valve_designation: str | None = None
+    body_material: str | None = None
+    body_material_grade: str | None = None
+    bore_type: str | None = None
+    control: str | None = None
+    catalog_scope: str = "uncertain"
+    ambiguous: bool = False
+    comment: str = ""
+
+    @field_validator("dn")
+    @classmethod
+    def _validate_dn(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("dn must be positive")
+        return value
+
+    @field_validator("pn_min_mpa")
+    @classmethod
+    def _validate_pn(cls, value: float | None) -> float | None:
+        if value is not None and value <= 0:
+            raise ValueError("pn_min_mpa must be positive")
+        return value
+
+
+class DeepSeekQueryConstraintExtractor:
+    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+        self.settings = settings
+        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_QUERY_CONSTRAINTS_PROMPT
+        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def extract(self, query: str) -> QueryConstraints:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": f"QUERY:\n{query}"},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return QueryConstraints.model_validate(json.loads(content))
+
+
+def _norm(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    text = str(value).lower().replace("ё", "е")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _compact(value: Any) -> str:
+    return re.sub(rf"[^{_ALNUM_RU}]+", "", _norm(value))
+
+
+def _exact_token_match(text: Any, token: Any) -> bool:
+    expected = _norm(token)
+    if not expected:
+        return True
+    pattern = rf"(?<![{_ALNUM_RU}]){re.escape(expected)}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flexible_code_match(text: Any, code: Any) -> bool:
+    """Match an exact designation while ignoring punctuation inside it.
+
+    КШ.Ф.050.080-02 matches кшф05008002, but КШЦФ does not match КШЦФЭ.
+    """
+    expected = _compact(code)
+    if not expected:
+        return True
+    separator = rf"[^{_ALNUM_RU}]*"
+    body = separator.join(re.escape(char) for char in expected)
+    pattern = rf"(?<![{_ALNUM_RU}]){body}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flatten_values(value: Any) -> list[str]:
+    if value in (None, "", []):
+        return []
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(_flatten_values(item))
+        return result
+    return [str(value)]
+
+
+def _property_values(product: LDProduct, *names: str) -> list[str]:
+    wanted = {_norm(name) for name in names}
+    result: list[str] = []
+    for prop in product.properties or []:
+        if _norm(prop.get("name")) not in wanted:
+            continue
+        result.extend(_flatten_values(prop.get("values")))
+    return result
+
+
+def _product_text(product: LDProduct) -> str:
+    parts = [product.name, product.article or "", str(product.joining_type or "")]
+    for prop in product.properties or []:
+        parts.append(str(prop.get("name") or ""))
+        parts.extend(_flatten_values(prop.get("values")))
+    return " \n ".join(parts)
+
+
+def _first_number(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    match = re.search(r"\d+(?:[.,]\d+)?", str(value))
+    if not match:
+        return None
+    return float(match.group(0).replace(",", "."))
+
+
+def candidate_dn(product: LDProduct) -> int | None:
+    values = [product.dn, *_property_values(product, "Номинальный диаметр, DN", "DN")]
+    for value in values:
+        number = _first_number(value)
+        if number is not None:
+            return int(round(number))
+    return None
+
+
+def candidate_pn_mpa(product: LDProduct) -> float | None:
+    values = [product.pn, *_property_values(product, "Номинальное давление, МПа", "PN")]
+    for value in values:
+        number = _first_number(value)
+        if number is None:
+            continue
+        if number > 10:
+            number /= 10.0
+        return number
+    return None
+
+
+def canonical_product_type(text: str) -> str:
+    value = _norm(text)
+    if "ремкомплект" in value:
+        return "repair_kit"
+    if "комплект" in value and "флан" in value:
+        return "accessory"
+    if "кран" in value and "шар" in value:
+        return "ball_valve"
+    if "затвор" in value and ("диск" in value or "поворот" in value):
+        return "butterfly_valve"
+    if "задвиж" in value:
+        return "gate_valve"
+    if "клапан" in value and "обрат" in value:
+        return "check_valve"
+    if "фильтр" in value:
+        return "filter"
+    if "фланец" in value or "фланцы" in value:
+        return "flange"
+    if "редуктор" in value and "привод" not in value:
+        return "gearbox"
+    if "электропривод" in value or "пневмопривод" in value:
+        return "actuator"
+    return "other"
+
+
+def candidate_product_type(product: LDProduct) -> str:
+    explicit = _property_values(product, "Тип продукта AI", "Тип продукта")
+    for value in explicit:
+        result = canonical_product_type(value)
+        if result != "other":
+            return result
+    return canonical_product_type(_product_text(product))
+
+
+def canonical_joining_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "межфлан" in value:
+        return "wafer"
+    if "компресс" in value or "обжим" in value:
+        return "compression"
+    if "привар" in value or "сварн" in value:
+        return "welded"
+    if "резьб" in value or "муфт" in value:
+        return "threaded"
+    if "флан" in value:
+        return "flanged"
+    return "other"
+
+
+def candidate_joining_type(product: LDProduct) -> str | None:
+    values = [product.joining_type, *_property_values(product, "Присоединение"), product.name]
+    for value in values:
+        canonical = canonical_joining_type(value)
+        if canonical not in {None, "other"}:
+            return canonical
+    return canonical_joining_type(product.joining_type)
+
+
+def canonical_thread_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    compact = re.sub(r"[^a-zа-я0-9]+", " ", value)
+    if any(token in value for token in ("вр/вр", "в/в", "внутренняя/внутренняя", "муфта/муфта")):
+        return "female_female"
+    if any(token in value for token in ("нр/вр", "вр/нр", "н/в", "в/н", "наружная/внутренняя", "внутренняя/наружная")):
+        return "male_female"
+    if any(token in value for token in ("нр/нр", "н/н", "наружная/наружная")):
+        return "male_male"
+    if compact.count("внутренняя") >= 2:
+        return "female_female"
+    if compact.count("наружная") >= 2:
+        return "male_male"
+    if "внутренняя" in compact and "наружная" in compact:
+        return "male_female"
+    return None
+
+
+def candidate_thread_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип резьбы"), product.name]:
+        result = canonical_thread_type(value)
+        if result:
+            return result
+    return None
+
+from dataclasses import replace
+
+from .models import ConstraintGateDiagnostics, MatchResult, SearchCandidate, SelectedMatch
+from .query_constraints import (
+    DeepSeekQueryConstraintExtractor,
+    candidate_constraint_check,
+    constraint_summary,
+    constraints_are_gate_eligible,
+    evaluate_candidate_compatibility,
+)
+
+
+class NomenclatureMatcher:
+    def __init__(
+        self,
+        embedder,
+        store,
+        settings,
+        reranker=None,
+        hybrid_retriever=None,
+        constraint_extractor=None,
+    ):
+        self.embedder, self.store, self.settings = embedder, store, settings
+        self.reranker = reranker
+        self.hybrid_retriever = hybrid_retriever
+        self.constraint_extractor = constraint_extractor
+        if self.constraint_extractor is None and getattr(settings, "deepseek_api_key", ""):
+            self.constraint_extractor = DeepSeekQueryConstraintExtractor(settings)
+
+    def _normalize_query(self, query: str) -> str:
+        return " ".join(query.split())
+
+    def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
+        hits = self.store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+        )
+
+    def rerank_candidates(
+        self,
+        query: str,
+        candidates: list[SearchCandidate],
+        constraint_gate: ConstraintGateDiagnostics | None = None,
+    ) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[], constraint_gate=constraint_gate)
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+                constraint_gate=constraint_gate,
+            )
+        selected = []
+        for item in rerank_result.selected:
+            candidate = candidates[item.candidate_id - 1]
+            selected.append(self._build_selected_match(candidate, item))
+        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+        return MatchResult(
+            query=query,
+            status=rerank_result.status,
+            score=best.score if best else None,
+            ld_product=best if rerank_result.status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=rerank_result.reason,
+            constraint_gate=constraint_gate,
+        )
+
+    def match_one(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.match_top_k)
+        best = candidates[0] if candidates else None
+        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+
+    def match_one_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+        return self.rerank_candidates(query, candidates)
+
+    def _extract_constraint_gate(self, query: str) -> tuple[object | None, ConstraintGateDiagnostics | None]:
+        if self.constraint_extractor is None:
+            return None, None
+        try:
+            constraints = self.constraint_extractor.extract(query)
+        except Exception as exc:
+            return None, ConstraintGateDiagnostics(applied=False, fallback_reason=f"extractor_failed: {exc}")
+        diagnostics = ConstraintGateDiagnostics(
+            applied=False,
+            constraints=constraint_summary(constraints),
+        )
+        if constraints.ambiguous:
+            diagnostics.fallback_reason = "ambiguous_constraints"
+            return None, diagnostics
+        if constraints.catalog_scope == "out_of_scope":
+            diagnostics.abstention_reason = "out_of_scope"
+            return constraints, diagnostics
+        if constraints.catalog_scope != "in_scope":
+            diagnostics.fallback_reason = f"catalog_scope_{constraints.catalog_scope}"
+            return None, diagnostics
+        if not constraints_are_gate_eligible(constraints):
+            diagnostics.fallback_reason = "no_usable_constraints"
+            return None, diagnostics
+        diagnostics.applied = True
+        return constraints, diagnostics
+
+    def _apply_constraint_gate(
+        self,
+        candidates: list[SearchCandidate],
+        constraints,
+        diagnostics: ConstraintGateDiagnostics,
+    ) -> list[SearchCandidate]:
+        retained: list[SearchCandidate] = []
+        for index, candidate in enumerate(candidates, 1):
+            compatibility = evaluate_candidate_compatibility(candidate, constraints)
+            check = candidate_constraint_check(candidate, index, compatibility)
+            if compatibility.status == "contradictory":
+                diagnostics.excluded.append(check)
+                continue
+            retained.append(candidate)
+            if compatibility.status == "unverifiable":
+                diagnostics.retained_unverifiable.append(check)
+            else:
+                diagnostics.retained_compatible.append(check)
+        if candidates and not retained:
+            diagnostics.abstention_reason = "no_compatible_candidates"
+        return retained
+
+    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        if self.hybrid_retriever is None:
+            raise ValueError("Hybrid retriever is not configured")
+        constraints, diagnostics = self._extract_constraint_gate(query)
+        if diagnostics and diagnostics.abstention_reason == "out_of_scope":
+            return MatchResult(
+                query=query,
+                status="NOT_FOUND",
+                reason=diagnostics.abstention_reason,
+                constraint_gate=diagnostics,
+            )
+        candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
+        if constraints is not None and diagnostics is not None and diagnostics.applied:
+            gated_candidates = self._apply_constraint_gate(candidates, constraints, diagnostics)
+            if not gated_candidates and candidates:
+                return MatchResult(
+                    query=query,
+                    status="NOT_FOUND",
+                    candidates=candidates,
+                    reason=diagnostics.abstention_reason,
+                    constraint_gate=diagnostics,
+                )
+            candidates = gated_candidates
+        return self.rerank_candidates(query, candidates, constraint_gate=diagnostics)
+
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
+    def match_many(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+
+    match = match_many
+/bin/bash: line 1: rg: command not found
+
+exec
+/bin/bash -lc "sed -n '250,680p' src/nomenclature_matcher/query_constraints.py; sed -n '1,280p' src/nomenclature_matcher/hybrid.py 2>/dev/null || true; find src/nomenclature_matcher -maxdepth 1 -type f -print; grep -RInE \"class Hybrid|def search\\(|SearchCandidate\\(\" src/nomenclature_matcher tests | head -160; sed -n '1,220p' src/nomenclature_matcher/models.py; sed -n '1,220p' src/nomenclature_matcher/reranker.py" in /workspaces/ML-Cancer-Data
+ succeeded in 67ms:
+        return "male_female"
+    return None
+
+
+def candidate_thread_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип резьбы"), product.name]:
+        result = canonical_thread_type(value)
+        if result:
+            return result
+    return None
+
+
+def canonical_material(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "нерж" in value or "нержав" in value:
+        return "stainless_steel"
+    if "латун" in value:
+        return "brass"
+    if "чугун" in value:
+        return "cast_iron"
+    if "полиэтилен" in value or "пнд" in value:
+        return "polyethylene"
+    if "сталь" in value or "стальной" in value:
+        return "steel"
+    return "other"
+
+
+def candidate_material(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Материал корпуса"), product.name]:
+        result = canonical_material(value)
+        if result not in {None, "other"}:
+            return result
+    return None
+
+
+def candidate_material_text(product: LDProduct) -> str:
+    values = _property_values(product, "Материал корпуса")
+    return " ".join(values) if values else product.name
+
+
+def canonical_bore_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "полнопроход" in value:
+        return "full"
+    if "редуц" in value or "неполнопроход" in value:
+        return "reduced"
+    return None
+
+
+def candidate_bore_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип прохода"), product.name]:
+        result = canonical_bore_type(value)
+        if result:
+            return result
+    return None
+
+
+def canonical_control(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "под электропривод" in value:
+        return "electric_ready"
+    if "электропривод" in value:
+        return "electric"
+    if "пневмопривод" in value:
+        return "pneumatic"
+    if "редуктор" in value:
+        return "gearbox"
+    if "ручн" in value or "рукоят" in value or "ручка" in value:
+        return "manual"
+    return None
+
+
+def candidate_control(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Управление"), product.name]:
+        result = canonical_control(value)
+        if result:
+            return result
+    if candidate_product_type(product) == "ball_valve":
+        return "manual"
+    return None
+
+
+def candidate_valve_type(product: LDProduct) -> str | None:
+    if candidate_product_type(product) != "ball_valve":
+        return None
+    value = _norm(_product_text(product))
+    if "подзем" in value:
+        return "underground"
+    if "regula" in value or "регулиру" in value:
+        return "regulating"
+    if "криоген" in value:
+        return "cryogenic"
+    if re.search(r"\bgas\b", value) or "газов" in value:
+        return "gas"
+    return "standard"
+
+
+def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+    expected = _compact(designation)
+    if not expected:
+        return True
+    values = [product.article or "", product.name]
+    values.extend(_property_values(product, "Тип продукта", "Тип продукта AI", "Серия"))
+    return any(_flexible_code_match(value, expected) for value in values)
+
+
+def _medium_values(product: LDProduct) -> list[str]:
+    result: list[str] = []
+    for value in _property_values(product, "Рабочая среда"):
+        for part in re.split(r"[,;/]+", value):
+            if _norm(part):
+                result.append(_norm(part))
+    return result
+
+
+@dataclass(frozen=True)
+class MatchDecision:
+    matches: bool
+    checks: dict[str, str]
+
+
+def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> MatchDecision:
+    checks: dict[str, str] = {}
+
+    actual_type = candidate_product_type(product)
+    checks["product_type"] = f"{actual_type} == {constraints.product_type}"
+    if actual_type != constraints.product_type:
+        return MatchDecision(False, checks)
+
+    if constraints.dn is not None:
+        actual_dn = candidate_dn(product)
+        checks["dn"] = f"{actual_dn} == {constraints.dn}"
+        if actual_dn != constraints.dn:
+            return MatchDecision(False, checks)
+
+    if constraints.pn_min_mpa is not None:
+        actual_pn = candidate_pn_mpa(product)
+        checks["pn"] = f"{actual_pn} >= {constraints.pn_min_mpa} MPa"
+        if actual_pn is None or actual_pn + 1e-9 < constraints.pn_min_mpa:
+            return MatchDecision(False, checks)
+
+    if constraints.joining_type is not None:
+        actual_joining = candidate_joining_type(product)
+        checks["joining_type"] = f"{actual_joining} == {constraints.joining_type}"
+        if actual_joining != constraints.joining_type:
+            return MatchDecision(False, checks)
+
+    if constraints.thread_type is not None:
+        actual_thread = candidate_thread_type(product)
+        checks["thread_type"] = f"{actual_thread} == {constraints.thread_type}"
+        if actual_thread != constraints.thread_type:
+            return MatchDecision(False, checks)
+
+    if constraints.working_medium is not None:
+        expected_medium = _norm(constraints.working_medium)
+        actual_media = _medium_values(product)
+        checks["working_medium"] = f"{actual_media} contains exact {expected_medium}"
+        if expected_medium not in actual_media:
+            return MatchDecision(False, checks)
+
+    if constraints.valve_type is not None:
+        actual_valve_type = candidate_valve_type(product)
+        checks["valve_type"] = f"{actual_valve_type} == {constraints.valve_type}"
+        if actual_valve_type != constraints.valve_type:
+            return MatchDecision(False, checks)
+
+    if constraints.valve_designation is not None:
+        designation_ok = candidate_has_designation(product, constraints.valve_designation)
+        checks["valve_designation"] = f"exact normalized {constraints.valve_designation}: {designation_ok}"
+        if not designation_ok:
+            return MatchDecision(False, checks)
+
+    if constraints.body_material is not None:
+        actual_material = candidate_material(product)
+        checks["body_material"] = f"{actual_material} == {constraints.body_material}"
+        if actual_material != constraints.body_material:
+            return MatchDecision(False, checks)
+
+    if constraints.body_material_grade is not None:
+        expected_grade = _norm(constraints.body_material_grade)
+        actual_material_text = candidate_material_text(product)
+        grade_ok = _exact_token_match(actual_material_text, expected_grade)
+        checks["body_material_grade"] = f"exact {expected_grade}: {grade_ok}"
+        if not grade_ok:
+            return MatchDecision(False, checks)
+
+    if constraints.bore_type is not None:
+        actual_bore = candidate_bore_type(product)
+        checks["bore_type"] = f"{actual_bore} == {constraints.bore_type}"
+        if actual_bore != constraints.bore_type:
+            return MatchDecision(False, checks)
+
+    if constraints.control is not None:
+        actual_control = candidate_control(product)
+        checks["control"] = f"{actual_control} == {constraints.control}"
+        if actual_control != constraints.control:
+            return MatchDecision(False, checks)
+
+    return MatchDecision(True, checks)
+
+
+def product_from_search_candidate(candidate: SearchCandidate) -> LDProduct:
+    return LDProduct(
+        id=candidate.ld_id,
+        name=candidate.name,
+        article=candidate.article,
+        price=candidate.price,
+        dn=candidate.dn,
+        pn=candidate.pn,
+        joining_type=candidate.joining_type,
+        url=candidate.url,
+        properties=candidate.properties or [],
+    )
+
+
+def usable_constraint_fields(constraints: QueryConstraints) -> list[str]:
+    fields = []
+    if constraints.product_type != "other":
+        fields.append("product_type")
+    optional_fields = [
+        "dn",
+        "pn_min_mpa",
+        "joining_type",
+        "thread_type",
+        "working_medium",
+        "valve_type",
+        "valve_designation",
+        "body_material",
+        "body_material_grade",
+        "bore_type",
+        "control",
+    ]
+    fields.extend(field for field in optional_fields if getattr(constraints, field) is not None)
+    return fields
+
+
+def constraints_are_gate_eligible(constraints: QueryConstraints) -> bool:
+    return (
+        constraints.catalog_scope == "in_scope"
+        and not constraints.ambiguous
+        and bool(usable_constraint_fields(constraints))
+    )
+
+
+def constraint_summary(constraints: QueryConstraints) -> dict[str, Any]:
+    return {
+        key: value
+        for key, value in constraints.model_dump().items()
+        if key in {"catalog_scope", "ambiguous", "comment"} or key in usable_constraint_fields(constraints)
+    }
+
+
+@dataclass(frozen=True)
+class TriStateCompatibility:
+    status: str
+    checks: dict[str, str]
+    contradictory_fields: list[str]
+    unverifiable_fields: list[str]
+
+
+def evaluate_candidate_compatibility(candidate: SearchCandidate, constraints: QueryConstraints) -> TriStateCompatibility:
+    product = product_from_search_candidate(candidate)
+    checks: dict[str, str] = {}
+    contradictory: list[str] = []
+    unverifiable: list[str] = []
+
+    def exact(field: str, actual: Any, expected: Any) -> None:
+        checks[field] = f"{actual} == {expected}"
+        if actual is None:
+            unverifiable.append(field)
+        elif actual != expected:
+            contradictory.append(field)
+
+    actual_product_type = candidate_product_type(product)
+    checks["product_type"] = f"{actual_product_type} == {constraints.product_type}"
+    has_type_evidence = any(
+        _norm(value)
+        for value in [
+            product.name,
+            product.joining_type,
+            *_property_values(product, "Тип продукта AI", "Тип продукта"),
+        ]
+    )
+    if actual_product_type == "other" and not has_type_evidence:
+        unverifiable.append("product_type")
+    elif actual_product_type != constraints.product_type:
+        contradictory.append("product_type")
+    if constraints.dn is not None:
+        exact("dn", candidate_dn(product), constraints.dn)
+    if constraints.pn_min_mpa is not None:
+        actual_pn = candidate_pn_mpa(product)
+        checks["pn"] = f"{actual_pn} >= {constraints.pn_min_mpa} MPa"
+        if actual_pn is None:
+            unverifiable.append("pn")
+        elif actual_pn + 1e-9 < constraints.pn_min_mpa:
+            contradictory.append("pn")
+    if constraints.joining_type is not None:
+        exact("joining_type", candidate_joining_type(product), constraints.joining_type)
+    if constraints.thread_type is not None:
+        exact("thread_type", candidate_thread_type(product), constraints.thread_type)
+    if constraints.working_medium is not None:
+        expected_medium = _norm(constraints.working_medium)
+        actual_media = _medium_values(product)
+        checks["working_medium"] = f"{actual_media} contains exact {expected_medium}"
+        if not actual_media:
+            unverifiable.append("working_medium")
+        elif expected_medium not in actual_media:
+            contradictory.append("working_medium")
+    if constraints.valve_type is not None:
+        exact("valve_type", candidate_valve_type(product), constraints.valve_type)
+    if constraints.valve_designation is not None:
+        values = [product.article or "", product.name]
+        values.extend(_property_values(product, "Тип продукта", "Тип продукта AI", "Серия"))
+        checks["valve_designation"] = f"exact normalized {constraints.valve_designation}: {candidate_has_designation(product, constraints.valve_designation)}"
+        if not any(_norm(value) for value in values):
+            unverifiable.append("valve_designation")
+        elif not candidate_has_designation(product, constraints.valve_designation):
+            contradictory.append("valve_designation")
+    if constraints.body_material is not None:
+        exact("body_material", candidate_material(product), constraints.body_material)
+    if constraints.body_material_grade is not None:
+        expected_grade = _norm(constraints.body_material_grade)
+        actual_material_text = candidate_material_text(product)
+        grade_ok = _exact_token_match(actual_material_text, expected_grade)
+        checks["body_material_grade"] = f"exact {expected_grade}: {grade_ok}"
+        if not _norm(actual_material_text):
+            unverifiable.append("body_material_grade")
+        elif not grade_ok:
+            contradictory.append("body_material_grade")
+    if constraints.bore_type is not None:
+        exact("bore_type", candidate_bore_type(product), constraints.bore_type)
+    if constraints.control is not None:
+        exact("control", candidate_control(product), constraints.control)
+
+    if contradictory:
+        status = "contradictory"
+    elif unverifiable:
+        status = "unverifiable"
+    else:
+        status = "compatible"
+    return TriStateCompatibility(status, checks, contradictory, unverifiable)
+
+
+def candidate_constraint_check(
+    candidate: SearchCandidate,
+    candidate_id: int,
+    compatibility: TriStateCompatibility,
+) -> CandidateConstraintCheck:
+    return CandidateConstraintCheck(
+        ld_id=candidate.ld_id,
+        candidate_id=candidate_id,
+        status=compatibility.status,  # type: ignore[arg-type]
+        checks=compatibility.checks,
+        contradictory_fields=compatibility.contradictory_fields,
+        unverifiable_fields=compatibility.unverifiable_fields,
+    )
+
+
+def matching_products(products: list[LDProduct], constraints: QueryConstraints) -> list[LDProduct]:
+    if constraints.catalog_scope == "out_of_scope":
+        return []
+    return [product for product in products if evaluate_product(product, constraints).matches]
+
+
+def product_snapshot(product: LDProduct, constraints: QueryConstraints | None = None) -> dict[str, Any]:
+    snapshot = {
+        "ld_id": product.id,
+        "article": product.article,
+        "name": product.name,
+        "dn": candidate_dn(product),
+        "pn_mpa": candidate_pn_mpa(product),
+        "joining_type": candidate_joining_type(product),
+        "thread_type": candidate_thread_type(product),
+        "product_type": candidate_product_type(product),
+        "valve_type": candidate_valve_type(product),
+        "body_material": candidate_material(product),
+        "bore_type": candidate_bore_type(product),
+        "control": candidate_control(product),
+        "working_medium": _medium_values(product),
+    }
+    if constraints is not None:
+        snapshot["checks"] = asdict(evaluate_product(product, constraints))["checks"]
+    return snapshot
+src/nomenclature_matcher/query_constraints.py
+src/nomenclature_matcher/eval_v2_ground_truth.py
+src/nomenclature_matcher/eval_v2.py
+src/nomenclature_matcher/reranker.py
+src/nomenclature_matcher/eval_utils.py
+src/nomenclature_matcher/qdrant_store.py
+src/nomenclature_matcher/chatgpt_gold.py
+src/nomenclature_matcher/experiments.py
+src/nomenclature_matcher/review_state.py
+src/nomenclature_matcher/hybrid_retriever.py
+src/nomenclature_matcher/matcher.py
+src/nomenclature_matcher/harness_gold.py
+src/nomenclature_matcher/indexer.py
+src/nomenclature_matcher/serialization.py
+src/nomenclature_matcher/__init__.py
+src/nomenclature_matcher/eval_dataset.py
+src/nomenclature_matcher/bm25_store.py
+src/nomenclature_matcher/eval_label_builder.py
+src/nomenclature_matcher/settings.py
+src/nomenclature_matcher/documents.py
+src/nomenclature_matcher/embeddings.py
+src/nomenclature_matcher/deep_gold.py
+src/nomenclature_matcher/golden_rules.py
+src/nomenclature_matcher/models.py
+src/nomenclature_matcher/remaining_gold_review.py
+src/nomenclature_matcher/qdrant_store.py:17:    def search(self, vector, limit):
+src/nomenclature_matcher/hybrid_retriever.py:7:class HybridRetriever:
+src/nomenclature_matcher/hybrid_retriever.py:18:            SearchCandidate(
+src/nomenclature_matcher/hybrid_retriever.py:41:            SearchCandidate(
+src/nomenclature_matcher/hybrid_retriever.py:60:    def search(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+src/nomenclature_matcher/hybrid_retriever.py:86:        return SearchCandidate(
+src/nomenclature_matcher/matcher.py:36:            SearchCandidate(
+src/nomenclature_matcher/bm25_store.py:55:    def search(self, query: str, limit: int) -> list[BM25Candidate]:
+tests/test_eval_v2_ground_truth.py:34:        SearchCandidate(ld_id=index, name=f"D{index}", article=f"A{index}", score=1.0 / index, dense_score=1.0 / index, dense_rank=index, retrieval_sources=["dense"])
+tests/test_eval_v2_ground_truth.py:37:    shared_dense = SearchCandidate(ld_id=99, name="Shared", article="S", score=0.01, dense_score=0.01, dense_rank=50, retrieval_sources=["dense"])
+tests/test_eval_v2_ground_truth.py:41:        SearchCandidate(ld_id=200 + index, name=f"B{index}", article=f"BB{index}", score=1.0 / index, bm25_score=1.0 / index, bm25_rank=index, retrieval_sources=["bm25"])
+tests/test_eval_v2_ground_truth.py:44:    shared_bm25 = SearchCandidate(ld_id=99, name="Shared", article="S", score=0.5, bm25_score=0.5, bm25_rank=3, retrieval_sources=["bm25"])
+tests/test_eval_v2_ground_truth.py:47:            SearchCandidate(ld_id=201, name="B2", article="BB2", score=0.4, bm25_score=0.4, bm25_rank=2, retrieval_sources=["bm25"]),
+tests/test_eval_v2_ground_truth.py:66:        SearchCandidate(ld_id=1000 + index, name=f"D{index}", article=f"DA{index}", score=1.0 / index, dense_score=1.0 / index, retrieval_sources=["dense"])
+tests/test_eval_v2_ground_truth.py:69:    dense_candidates.append(SearchCandidate(ld_id=3, name="C", article="C", score=0.9, dense_score=0.9, retrieval_sources=["dense"]))
+tests/test_eval_v2_ground_truth.py:71:        SearchCandidate(ld_id=2000 + index, name=f"D{index}", article=f"DA{index}", score=1.0 / (index + 4), dense_score=1.0 / (index + 4), retrieval_sources=["dense"])
+tests/test_eval_v2_ground_truth.py:74:    dense_candidates.append(SearchCandidate(ld_id=1, name="A", article="A", score=0.1, dense_score=0.1, retrieval_sources=["dense"]))
+tests/test_eval_v2_ground_truth.py:77:        SearchCandidate(ld_id=3000 + index, name=f"B{index}", article=f"BA{index}", score=1.0 / index, bm25_score=1.0 / index, retrieval_sources=["bm25"])
+tests/test_eval_v2_ground_truth.py:80:    bm25_candidates.append(SearchCandidate(ld_id=3, name="C", article="C", score=0.8, bm25_score=0.8, retrieval_sources=["bm25"]))
+tests/test_eval_v2_ground_truth.py:82:        SearchCandidate(ld_id=4000 + index, name=f"B{index}", article=f"BA{index}", score=1.0 / (index + 5), bm25_score=1.0 / (index + 5), retrieval_sources=["bm25"])
+tests/test_eval_v2_ground_truth.py:85:    bm25_candidates.append(SearchCandidate(ld_id=2, name="B", article="B", score=0.2, bm25_score=0.2, retrieval_sources=["bm25"]))
+tests/test_eval_v2_ground_truth.py:102:        SearchCandidate(ld_id=index, name=f"D{index}", article=f"DA{index}", score=1.0 / index, dense_score=1.0 / index, dense_rank=index, retrieval_sources=["dense"])
+tests/test_eval_v2_ground_truth.py:106:        SearchCandidate(ld_id=100 + index, name=f"B{index}", article=f"BA{index}", score=1.0 / index, bm25_score=1.0 / index, bm25_rank=index, retrieval_sources=["bm25"])
+tests/test_hybrid_retriever.py:18:    def search(self, vector, limit):
+tests/test_hybrid_retriever.py:32:    def search(self, query, limit):
+tests/test_query_constraints.py:194:    compatible = SearchCandidate(
+tests/test_query_constraints.py:207:    contradictory = SearchCandidate(
+tests/test_query_constraints.py:217:    missing = SearchCandidate(ld_id=3, name="", article=None, score=0.8)
+tests/test_eval_v2.py:34:        SearchCandidate(
+tests/test_eval_v2.py:45:        SearchCandidate(
+tests/test_eval_v2.py:56:        SearchCandidate(
+tests/test_serialization.py:14:    return SearchCandidate(
+tests/test_reranker.py:43:        SearchCandidate(ld_id=1, name="A", article="A1", score=0.7, search_text="DN: 50"),
+tests/test_reranker.py:44:        SearchCandidate(ld_id=2, name="B", article="B1", score=0.8, search_text="DN: 80"),
+tests/test_reranker.py:90:            SearchCandidate(
+tests/test_matcher.py:14:    def search(self, vector, limit): self.calls += 1; return self.hits
+tests/test_matcher.py:30:class HybridRetriever:
+tests/test_matcher.py:35:    def search(self, query, limit):
+tests/test_matcher.py:91:    return SearchCandidate(**payload)
+tests/test_matcher.py:154:        SearchCandidate(
+tests/test_matcher.py:274:    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+@dataclass
+class LDProduct:
+    id: int
+    name: str
+    article: str | None = None
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: Any = field(default_factory=dict)
+
+
+@dataclass
+class SearchCandidate:
+    ld_id: int
+    name: str
+    article: str | None
+    score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+    dense_score: float | None = None
+    dense_rank: int | None = None
+    bm25_score: float | None = None
+    bm25_rank: int | None = None
+    rrf_score: float | None = None
+    retrieval_sources: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BM25Candidate:
+    ld_id: int
+    name: str
+    article: str | None
+    bm25_score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+
+
+@dataclass
+class RerankedCandidate:
+    candidate_id: int
+    confidence: float | None
+    reason: str
+
+
+@dataclass
+class CandidateConstraintCheck:
+    ld_id: int
+    candidate_id: int
+    status: Literal["compatible", "contradictory", "unverifiable"]
+    checks: dict[str, str] = field(default_factory=dict)
+    contradictory_fields: list[str] = field(default_factory=list)
+    unverifiable_fields: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ConstraintGateDiagnostics:
+    applied: bool = False
+    fallback_reason: str | None = None
+    abstention_reason: str | None = None
+    constraints: dict[str, Any] = field(default_factory=dict)
+    excluded: list[CandidateConstraintCheck] = field(default_factory=list)
+    retained_unverifiable: list[CandidateConstraintCheck] = field(default_factory=list)
+    retained_compatible: list[CandidateConstraintCheck] = field(default_factory=list)
+
+
+@dataclass
+class SelectedMatch:
+    candidate_id: int
+    article: str | None
+    name: str
+    llm_confidence: float | None
+    reason: str
+    ld_id: int
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+
+
+@dataclass
+class MatchResult:
+    query: str
+    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+    score: float | None = None
+    ld_product: SearchCandidate | None = None
+    candidates: list[SearchCandidate] = field(default_factory=list)
+    selected: list[SelectedMatch] = field(default_factory=list)
+    reason: str | None = None
+    constraint_gate: ConstraintGateDiagnostics | None = None
+
+
+@dataclass
+class RerankResult:
+    status: Literal["MATCHED", "NOT_FOUND"]
+    selected: list[RerankedCandidate]
+    reason: str | None = None
+import json
+from pathlib import Path
+
+from openai import OpenAI
+
+from .models import RerankedCandidate, RerankResult, SearchCandidate
+
+DEFAULT_RERANKER_SYSTEM_PROMPT_PATH = (
+    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+)
+
+
+def load_system_prompt(path: str | Path | None = None) -> str:
+    prompt_path = Path(path) if path else DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    if not prompt_path.is_absolute():
+        cwd_path = Path.cwd() / prompt_path
+        package_path = Path(__file__).resolve().parent / prompt_path
+        if cwd_path.exists():
+            prompt_path = cwd_path
+        elif package_path.exists():
+            prompt_path = package_path
+        else:
+            prompt_path = DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    return prompt_path.read_text(encoding="utf-8").strip()
+
+
+class DeepSeekReranker:
+    def __init__(self, settings, client=None):
+        self.settings = settings
+        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+        self.system_prompt = load_system_prompt(self.system_prompt_path)
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": self._build_prompt(query, candidates)},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return self._parse_result(content, len(candidates))
+
+    def _build_prompt(self, query: str, candidates: list[SearchCandidate]) -> str:
+        blocks = [f"QUERY:\n{query}", "", "CANDIDATES:"]
+        for index, candidate in enumerate(candidates, 1):
+            dense_rank = candidate.dense_rank if candidate.dense_rank is not None else "-"
+            dense_score = f"{candidate.dense_score:.4f}" if candidate.dense_score is not None else "-"
+            bm25_rank = candidate.bm25_rank if candidate.bm25_rank is not None else "-"
+            bm25_score = f"{candidate.bm25_score:.4f}" if candidate.bm25_score is not None else "-"
+            rrf_score = f"{candidate.rrf_score:.6f}" if candidate.rrf_score is not None else "-"
+            blocks.extend(
+                [
+                    "",
+                    f"CANDIDATE {index}",
+                    f"candidate_id: {index}",
+                    f"ld_id: {candidate.ld_id}",
+                    f"article: {candidate.article or ''}",
+                    f"name: {candidate.name}",
+                    f"dense_rank: {dense_rank}",
+                    f"dense_score: {dense_score}",
+                    f"bm25_rank: {bm25_rank}",
+                    f"bm25_score: {bm25_score}",
+                    f"rrf_score: {rrf_score}",
+                    f"retrieval_sources: {', '.join(candidate.retrieval_sources) or '-'}",
+                    "",
+                    "Характеристики:",
+                    candidate.search_text or candidate.name,
+                ]
+            )
+        blocks.extend(
+            [
+                "",
+                "Верни JSON формата:",
+                '{"status":"MATCHED","selected":[{"candidate_id":1,"confidence":0.95,"reason":"..."}],"reason":"..."}',
+                'или {"status":"NOT_FOUND","selected":[],"reason":"..."}',
+                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+            ]
+        )
+        return "\n".join(blocks)
+
+    def _parse_result(self, content: str, candidate_count: int) -> RerankResult:
+        payload = json.loads(content)
+        status = payload.get("status")
+        if status not in {"MATCHED", "NOT_FOUND"}:
+            raise ValueError(f"Unsupported rerank status: {status!r}")
+        selected = []
+        seen = set()
+        for item in payload.get("selected", []):
+            candidate_id = item.get("candidate_id")
+            if not isinstance(candidate_id, int) or not (1 <= candidate_id <= candidate_count):
+                continue
+            if candidate_id in seen:
+                continue
+            seen.add(candidate_id)
+            confidence = item.get("confidence")
+            if confidence is not None:
+                try:
+                    confidence = float(confidence)
+                except (TypeError, ValueError):
+                    confidence = None
+            reason = str(item.get("reason") or "")
+            selected.append(RerankedCandidate(candidate_id=candidate_id, confidence=confidence, reason=reason))
+            if len(selected) >= self.settings.rerank_result_limit:
+                break
+        reason = payload.get("reason")
+        if selected:
+            return RerankResult(status="MATCHED", selected=selected, reason=reason)
+        return RerankResult(status="NOT_FOUND", selected=[], reason=reason)
+
+exec
+/bin/bash -lc "sed -n '1,180p' src/nomenclature_matcher/hybrid_retriever.py; sed -n '1,180p' src/nomenclature_matcher/bm25_store.py; sed -n '1,240p' src/nomenclature_matcher/harness_gold.py; find . -path '*cycle-01*' -type f -maxdepth 5 -print" in /workspaces/ML-Cancer-Data
+ succeeded in 291ms:
+from __future__ import annotations
+
+from .bm25_store import BM25Store
+from .models import SearchCandidate
+
+
+class HybridRetriever:
+    def __init__(self, embedder, qdrant_store, bm25_store: BM25Store, settings):
+        self.embedder = embedder
+        self.qdrant_store = qdrant_store
+        self.bm25_store = bm25_store
+        self.settings = settings
+
+    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_dense_limit
+        hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search_bm25(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_bm25_limit
+        hits = self.bm25_store.search(query, limit)
+        return [
+            SearchCandidate(
+                ld_id=hit.ld_id,
+                name=hit.name,
+                article=hit.article,
+                score=float(hit.bm25_score),
+                price=hit.price,
+                dn=hit.dn,
+                pn=hit.pn,
+                joining_type=hit.joining_type,
+                url=hit.url,
+                properties=hit.properties,
+                search_text=hit.search_text,
+                bm25_score=float(hit.bm25_score),
+                bm25_rank=index,
+                retrieval_sources=["bm25"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_rerank_limit
+        dense_candidates = self.search_dense(query, self.settings.hybrid_dense_limit)
+        bm25_candidates = self.search_bm25(query, self.settings.hybrid_bm25_limit)
+        merged = self._merge_candidates(dense_candidates, bm25_candidates)
+        self._apply_rrf(merged)
+        return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
+
+    def _merge_candidates(
+        self,
+        dense_candidates: list[SearchCandidate],
+        bm25_candidates: list[SearchCandidate],
+    ) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in dense_candidates:
+            merged[candidate.ld_id] = candidate
+        for candidate in bm25_candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None:
+                merged[candidate.ld_id] = candidate
+                continue
+            merged[candidate.ld_id] = self._merge_pair(existing, candidate)
+        return merged
+
+    def _merge_pair(self, dense_candidate: SearchCandidate, bm25_candidate: SearchCandidate) -> SearchCandidate:
+        sources = list(dict.fromkeys([*dense_candidate.retrieval_sources, *bm25_candidate.retrieval_sources]))
+        return SearchCandidate(
+            ld_id=dense_candidate.ld_id,
+            name=dense_candidate.name or bm25_candidate.name,
+            article=dense_candidate.article or bm25_candidate.article,
+            score=dense_candidate.score if dense_candidate.score is not None else bm25_candidate.score,
+            price=dense_candidate.price if dense_candidate.price is not None else bm25_candidate.price,
+            dn=dense_candidate.dn if dense_candidate.dn is not None else bm25_candidate.dn,
+            pn=dense_candidate.pn if dense_candidate.pn is not None else bm25_candidate.pn,
+            joining_type=dense_candidate.joining_type if dense_candidate.joining_type is not None else bm25_candidate.joining_type,
+            url=dense_candidate.url if dense_candidate.url is not None else bm25_candidate.url,
+            properties=dense_candidate.properties if dense_candidate.properties is not None else bm25_candidate.properties,
+            search_text=dense_candidate.search_text or bm25_candidate.search_text,
+            dense_score=dense_candidate.dense_score,
+            dense_rank=dense_candidate.dense_rank,
+            bm25_score=bm25_candidate.bm25_score,
+            bm25_rank=bm25_candidate.bm25_rank,
+            rrf_score=None,
+            retrieval_sources=sources,
+        )
+
+    def _apply_rrf(self, candidates: dict[int, SearchCandidate]) -> None:
+        rrf_k = self.settings.rrf_k
+        for candidate in candidates.values():
+            score = 0.0
+            if candidate.dense_rank is not None:
+                score += 1.0 / (rrf_k + candidate.dense_rank)
+            if candidate.bm25_rank is not None:
+                score += 1.0 / (rrf_k + candidate.bm25_rank)
+            candidate.rrf_score = score
+            candidate.score = score
+from __future__ import annotations
+
+import math
+from collections import Counter, defaultdict
+
+from .documents import build_lexical_text, build_search_text, tokenize
+from .models import BM25Candidate, LDProduct
+
+try:  # pragma: no cover - exercised when dependency is installed
+    from rank_bm25 import BM25Okapi
+except ImportError:  # pragma: no cover - lightweight fallback for local runs
+    class BM25Okapi:
+        def __init__(self, corpus, k1: float = 1.5, b: float = 0.75):
+            self.corpus = corpus
+            self.k1 = k1
+            self.b = b
+            self.doc_freqs = [Counter(document) for document in corpus]
+            self.doc_len = [len(document) for document in corpus]
+            self.avgdl = sum(self.doc_len) / len(self.doc_len) if self.doc_len else 0.0
+            self.doc_count = len(corpus)
+            doc_freq = defaultdict(int)
+            for freqs in self.doc_freqs:
+                for token in freqs:
+                    doc_freq[token] += 1
+            self.idf = {
+                token: math.log(1 + (self.doc_count - freq + 0.5) / (freq + 0.5))
+                for token, freq in doc_freq.items()
+            }
+
+        def get_scores(self, query_tokens):
+            if not self.corpus:
+                return []
+            scores = [0.0] * self.doc_count
+            for token in query_tokens:
+                idf = self.idf.get(token)
+                if idf is None:
+                    continue
+                for index, freqs in enumerate(self.doc_freqs):
+                    freq = freqs.get(token, 0)
+                    if not freq:
+                        continue
+                    denom = freq + self.k1 * (1 - self.b + self.b * (self.doc_len[index] / self.avgdl if self.avgdl else 0.0))
+                    scores[index] += idf * (freq * (self.k1 + 1)) / denom
+            return scores
+
+
+class BM25Store:
+    def __init__(self, products: list[LDProduct]):
+        self.products = list(products)
+        self.lexical_texts = [build_lexical_text(product) for product in self.products]
+        self.search_texts = [build_search_text(product) for product in self.products]
+        self.corpus = [tokenize(text) for text in self.lexical_texts]
+        self.model = BM25Okapi(self.corpus)
+
+    def search(self, query: str, limit: int) -> list[BM25Candidate]:
+        query_tokens = tokenize(query)
+        if not query_tokens or not self.products or limit <= 0:
+            return []
+        scores = self.model.get_scores(query_tokens)
+        ranked = sorted(enumerate(scores), key=lambda item: item[1], reverse=True)[:limit]
+        results: list[BM25Candidate] = []
+        for index, score in ranked:
+            if score <= 0:
+                continue
+            product = self.products[index]
+            results.append(
+                BM25Candidate(
+                    ld_id=product.id,
+                    name=product.name,
+                    article=product.article,
+                    bm25_score=float(score),
+                    price=product.price,
+                    dn=product.dn,
+                    pn=product.pn,
+                    joining_type=product.joining_type,
+                    url=product.url,
+                    properties=product.properties if isinstance(product.properties, list) else None,
+                    search_text=self.search_texts[index],
+                )
+            )
+        return results
+from __future__ import annotations
+
+import re
+from typing import Any
+
+from .golden_rules import GoldenMatchDecision, GoldenQueryConstraints, evaluate_product_strict
+from .models import LDProduct
+from .query_constraints import _norm, _property_values
+
+
+def calibrate_harness_constraints(
+    query: str,
+    constraints: GoldenQueryConstraints,
+) -> tuple[GoldenQueryConstraints, list[str]]:
+    """Apply small, versioned business calibrations used by the harness GOLD.
+
+    This is intentionally narrower than the parser sanitizer. It does not try to
+    reinterpret the whole query. It only captures business semantics that were
+    confirmed during human calibration of the GOLD set.
+    """
+
+    payload = constraints.model_dump()
+    notes: list[str] = []
+    value = _norm(query)
+
+    if constraints.product_type == "ball_valve" and re.search(
+        r"(?:\bстандартнопроход\w*\b|\bстандартн\w*\s+проход\w*\b|\bстандартн\w*\s+исполнени\w*\b)",
+        value,
+    ):
+        if payload.get("bore_type") != "standard":
+            payload["bore_type"] = "standard"
+            notes.append("ball_valve_standard_execution=>bore_type:standard")
+
+    return GoldenQueryConstraints.model_validate(payload), notes
+
+
+def harness_candidate_bore_type(product: LDProduct) -> str | None:
+    """Return an explicitly observable bore type for harness evaluation.
+
+    Generic words such as "standard execution" in a product name are deliberately
+    ignored. A standard bore must be explicit as a passage/bore characteristic.
+    """
+
+    values = [*_property_values(product, "Тип прохода", "Проход", "Исполнение прохода"), product.name]
+    for raw in values:
+        value = _norm(raw)
+        if not value:
+            continue
+        if "полнопроход" in value or re.search(r"\bполный\s+проход\b", value):
+            return "full"
+        if "редуц" in value or "неполнопроход" in value:
+            return "reduced"
+        if "стандартнопроход" in value or re.search(r"\bстандартн\w*\s+проход\w*\b", value):
+            return "standard"
+    return None
+
+
+def evaluate_harness_product(
+    product: LDProduct,
+    constraints: GoldenQueryConstraints,
+) -> GoldenMatchDecision:
+    """Evaluate a returned product with harness-specific calibrated semantics."""
+
+    if constraints.bore_type is None:
+        return evaluate_product_strict(product, constraints)
+
+    base_constraints = constraints.model_copy(update={"bore_type": None})
+    base = evaluate_product_strict(product, base_constraints)
+    if base.status == "FAIL":
+        return base
+
+    checks = dict(base.checks)
+    unknown = set(base.unknown_fields)
+    failed = set(base.failed_fields)
+    actual_bore = harness_candidate_bore_type(product)
+    checks["bore_type"] = f"{actual_bore!r} == {constraints.bore_type!r}"
+
+    if actual_bore is None:
+        unknown.add("bore_type")
+    elif actual_bore != constraints.bore_type:
+        failed.add("bore_type")
+
+    if failed:
+        status = "FAIL"
+    elif unknown:
+        status = "UNKNOWN"
+    else:
+        status = "PASS"
+
+    return GoldenMatchDecision(
+        status=status,
+        checks=checks,
+        unknown_fields=tuple(sorted(unknown)),
+        failed_fields=tuple(sorted(failed)),
+    )
+
+
+def human_grade_for_returned_id(case: dict[str, Any], returned_ld_id: int | None) -> str | None:
+    if returned_ld_id is None:
+        return None
+    if returned_ld_id in {int(value) for value in case.get("known_positive_ids", [])}:
+        return "ACCEPT"
+    if returned_ld_id in {int(value) for value in case.get("known_rejected_ids", [])}:
+        return "REJECT"
+    if returned_ld_id in {int(value) for value in case.get("known_unsure_ids", [])}:
+        return "UNSURE"
+    return None
+./openspec/changes/cycle-01-constraint-aware-candidate-gating/.openspec.yaml
+./openspec/changes/cycle-01-constraint-aware-candidate-gating/design.md
+./openspec/changes/cycle-01-constraint-aware-candidate-gating/tasks.md
+./openspec/changes/cycle-01-constraint-aware-candidate-gating/proposal.md
+
+exec
+/bin/bash -lc "sed -n '1,260p' src/nomenclature_matcher/prompts/query_constraints_system.md; sed -n '1,220p' openspec/changes/cycle-01-constraint-aware-candidate-gating/design.md; sed -n '1,220p' openspec/changes/cycle-01-constraint-aware-candidate-gating/proposal.md; sed -n '1,260p' openspec/changes/cycle-01-constraint-aware-candidate-gating/specs/*/*.md 2>/dev/null || true; grep -RIn \"product_type.*other\\|catalog_scope\" tests data | head -120" in /workspaces/ML-Cancer-Data
+ succeeded in 114ms:
+Ты извлекаешь структурированные ограничения из одной тендерной строки для каталога трубопроводной арматуры LD.
+
+Главное правило: извлекай только то, что известно из запроса. Не придумывай отсутствующие DN, PN, материал, среду, проход или управление. Для отсутствующих значений используй настоящий JSON null, никогда не строку "null".
+
+Верни только JSON-объект с полями:
+
+{
+  "product_type": "ball_valve|butterfly_valve|gate_valve|check_valve|filter|flange|actuator|gearbox|repair_kit|accessory|other",
+  "dn": 100,
+  "pn_min_mpa": 1.6,
+  "joining_type": "flanged|wafer|threaded|welded|compression|other|null",
+  "thread_type": "female_female|male_female|male_male|null",
+  "working_medium": "вода|null",
+  "valve_type": "standard|underground|regulating|gas|cryogenic|other|null",
+  "valve_designation": "11с39п|null",
+  "body_material": "steel|stainless_steel|brass|cast_iron|polyethylene|other|null",
+  "body_material_grade": "20|null",
+  "bore_type": "full|reduced|null",
+  "control": "manual|gearbox|electric|electric_ready|pneumatic|null",
+  "catalog_scope": "in_scope|out_of_scope|uncertain",
+  "ambiguous": false,
+  "comment": "Краткое объяснение по-русски, какие ограничения известны и как их трактовать"
+}
+
+Правила нормализации и бизнес-логика:
+
+1. DN — целое число номинального диаметра в мм. Если DN/Ду не указан, верни null.
+2. PN — минимально допустимое давление в МПа. PN16/Ру16 = 1.6 МПа, PN25/Ру25 = 2.5 МПа, PN40/Ру40 = 4.0 МПа, PN80/Ру80 = 8.0 МПа. Если давление уже дано в МПа, используй его напрямую. В дальнейшем товар подходит, если его PN >= pn_min_mpa.
+3. joining_type:
+   - фланцевый, фл/фл -> flanged
+   - межфланцевый -> wafer
+   - резьбовой, муфтовый -> threaded
+   - приварной, под приварку -> welded
+   - компрессионный/обжимной -> compression
+4. thread_type заполняй только если направление резьбы явно известно:
+   - ВР/ВР, внутренняя/внутренняя, муфта/муфта -> female_female
+   - НР/ВР, наружная/внутренняя -> male_female
+   - НР/НР, наружная/наружная -> male_male
+5. working_medium — только если среда явно указана. Если нет — null.
+6. product_type — тип товара из запроса. Кран шаровой -> ball_valve, затвор дисковый/поворотный -> butterfly_valve, задвижка -> gate_valve, клапан обратный -> check_valve, фланец -> flange и т.д. Насосы, кабели, подшипники и прочие товары вне каталога арматуры -> other + catalog_scope=out_of_scope.
+7. valve_type относится к специальному исполнению шарового крана:
+   - подземный/для подземной установки -> underground
+   - регулирующий/Regula -> regulating
+   - явно газовое специальное исполнение -> gas
+   - криогенный -> cryogenic
+   - если это ball_valve и специальное исполнение НЕ указано, ставь standard. Это означает обычный кран, а не подземный/регулирующий/газовый/криогенный.
+   - для не-кранов valve_type=null.
+8. valve_designation — точное обозначение/тип/модель крана, только если оно явно написано в запросе. Примеры: 11с39п, 11б27п1, КШЦФ, КШЦП, КШ.Ф.050.080-02. Сохраняй исходное обозначение без додумывания. Если такого обозначения нет — null. В дальнейшем оно должно находиться в обозначении/артикуле/названии товара после нормализации регистра и пунктуации.
+9. body_material:
+   - стальной/сталь -> steel
+   - нержавеющий/нерж. сталь -> stainless_steel
+   - латунный/латунь -> brass
+   - чугунный/чугун -> cast_iron
+   - ПНД/полиэтилен -> polyethylene
+   Если известна марка стали/материала (например 20, 09Г2С), дополнительно запиши её в body_material_grade. Если материал не указан — null.
+10. bore_type:
+   - полнопроходной -> full
+   - редуцированный/неполнопроходной -> reduced
+   - не указан -> null
+11. control:
+   - ручной/ручка/рукоятка -> manual
+   - с редуктором -> gearbox
+   - с электроприводом -> electric
+   - под электропривод -> electric_ready
+   - с пневмоприводом -> pneumatic
+   - не указано -> null
+12. catalog_scope=in_scope для арматуры/фланцев/приводов/комплектующих, которые разумно искать в LD; out_of_scope для явно посторонних товарных классов; uncertain если из запроса непонятно.
+13. ambiguous=true только если запрос настолько общий или противоречивый, что автоматическая эталонная разметка ненадёжна (например «Кран Ду50» или диапазон нескольких DN в одной строке).
+14. comment должен явно перечислить: DN exact; PN как нижнюю границу; присоединение exact; среда exact если указана; valve_designation exact если указано; материал/проход/управление exact если указаны, иначе соответствующее поле не ограничивает выбор. Для ball_valve без специального типа поясни, что требуется standard.
+## Context
+
+`NomenclatureMatcher.match_one_hybrid_with_rerank` currently retrieves candidates and submits them unchanged to `DeepSeekReranker`. `query_constraints.py` already provides a bounded DeepSeek extractor and deterministic canonicalizers/evaluator, but that evidence is used for dataset construction and evaluation rather than production selection. Search candidates carry the catalog fields and properties needed to build an evaluation view; no index mutation is required.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Remove candidates that demonstrably violate requirements plainly present in a tender line before an LLM can select them.
+- Abstain for explicit out-of-catalog product classes and when a retrieved pool has no compatible candidate.
+- Fail open to the existing pipeline for unreliable extraction, preserving availability and minimizing false `NOT_FOUND` regressions.
+- Emit deterministic, testable audit data for the candidate-gate decision.
+
+**Non-Goals:**
+
+- Subject-matter validation of legacy/vendor designation equivalence, unsupported temperature/flange/stem requirements, or catalog coverage.
+- Changing embeddings, Qdrant/BM25 index contents, RRF weights, reranker model/prompt, or GOLD labels.
+- Treating absent candidate metadata as proof of incompatibility.
+
+## Decisions
+
+### Use a tri-state compatibility evaluation for production candidates
+
+The gate will adapt each `SearchCandidate` into the existing product-field evaluation vocabulary and classify every explicitly constrained attribute as compatible, contradictory, or unverifiable. Only a contradiction excludes a candidate; missing/unparseable product metadata stays eligible. This differs from the existing boolean evaluator because a production gate must distinguish bad catalog evidence from a known mismatch.
+
+Alternative: reuse the existing boolean `evaluate_product` directly. Rejected because it treats missing metadata as a failed comparison and would make the gate overly aggressive.
+
+### Gate only trustworthy extraction outcomes and explicit constraints
+
+An extracted result is eligible only when it is non-ambiguous, `catalog_scope` is `in_scope`, and it has at least one matching attribute with a concrete query value. Extraction exceptions, `uncertain` scope, ambiguity, and empty usable constraints bypass the gate. `out_of_scope` is an explicit abstention only when non-ambiguous.
+
+Alternative: always apply extraction output. Rejected because model extraction errors and underspecified lines would create a new wrong-`NOT_FOUND` failure mode.
+
+### Filter before reranking and abstain on an exhausted compatible pool
+
+Constraint filtering occurs after hybrid candidate generation and before the single reranker call. Candidates with known conflicts are never shown to the model. If an eligible gate yields no compatible-or-unverifiable candidates, return `NOT_FOUND`; otherwise preserve their existing retrieval order and rerank normally.
+
+Alternative: have the reranker select first and validate only its answer. Rejected because it cannot recover a compatible lower-ranked candidate that the model never selected, and it wastes the model call.
+
+### Make the feature injectable and observable
+
+The matcher will accept an optional constraint extractor so unit tests can use a fake and normal construction can use `DeepSeekQueryConstraintExtractor`. Result diagnostics will be an optional structured field with no change to the selected-product contract. Extraction has one bounded call per normalized unique query, sharing existing batch deduplication.
+
+Alternative: embed a new unmockable model call in the matcher. Rejected because it would make tests live-service dependent and obscure failures.
+
+## Risks / Trade-offs
+
+- [Extraction wrongly adds a requirement] → Gate activation is restricted to non-ambiguous, in-scope output; exceptions and unusable results fail open; public and blind safety gates decide promotion.
+- [Catalog metadata is incomplete] → Unknown attributes retain candidates and are reported separately.
+- [A valid target is absent from the hybrid pool] → This change does not claim to fix retrieval recall; no reindex is requested and normal retrieval settings remain intact.
+- [Model-call latency/cost] → One zero-temperature bounded extraction call per distinct query; no candidate-by-candidate calls or retries are introduced.
+
+## Migration Plan
+
+1. Add the optional extractor and compatibility diagnostics behind normal matcher construction.
+2. Wire the standard hybrid CLI/evaluation matcher to the existing configured extractor when credentials are available; retain the current pipeline when unavailable or extraction fails.
+3. Run focused unit tests and the existing suite. The supervisor evaluates the candidate against public and blind harness metrics and can reject it without an index rebuild.
+4. Roll back by removing the extractor wiring or restoring the prior matcher implementation; the catalog index remains untouched.
+## Why
+
+The production hybrid path gives every retrieved candidate directly to the LLM reranker even though the repository already has deterministic checks for product type, DN, PN, connection, bore, material, and control. Current public hard-gate failures include unsafe positive selections that violate these known requirements, while the blind baseline also has avoidable human-reject answers.
+
+## What Changes
+
+- Add a production constraint-aware candidate gate between hybrid retrieval and reranking.
+- Extract only explicit query requirements with the existing bounded DeepSeek constraint extractor, then apply deterministic product checks to retrieved candidates before they are shown to the reranker.
+- Preserve candidates with incomplete catalog metadata as reviewable fallback candidates, but exclude candidates that positively contradict an explicit requirement.
+- Return `NOT_FOUND` without reranking when the extractor classifies an input as explicitly out of catalog scope.
+- Retain the current hybrid+LLM behavior when extraction fails, is ambiguous, is uncertain in scope, or produces no usable explicit constraints, so the gate cannot turn an extraction outage into a broad matching outage.
+- Make constraint-gate decisions observable in `MatchResult` diagnostics for evaluation and debugging.
+
+## Capabilities
+
+### New Capabilities
+
+- `constraint-aware-candidate-gating`: Safely restrict production reranking to retrieved LD products that do not contradict explicit tender requirements.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected package code: `matcher.py`, `query_constraints.py`, `models.py`, and potentially the search CLI serialization path.
+- Affected tests: focused matcher and constraint tests with fake extractors/rerankers and representative Russian tender wording.
+- No index representation, catalog CSV, Qdrant collection, embedding model, or dependency change is required.
+## Purpose
+
+Protect tender matching from returning retrieved LD products that contradict requirements explicitly stated by the requester.
+
+## ADDED Requirements
+
+### Requirement: Explicit requirement candidate gate
+For a non-empty tender query with usable, in-scope, non-ambiguous extracted requirements, the system SHALL evaluate each hybrid-retrieved candidate against explicitly constrained product attributes before LLM reranking. A candidate that positively contradicts any such attribute SHALL not be offered to the reranker. A candidate whose catalog data is insufficient to verify an attribute SHALL remain eligible and be marked as unverifiable rather than treated as a match.
+
+#### Scenario: Contradictory candidate is removed
+- **WHEN** a query explicitly requires a flanged DN50 ball valve prepared for an electric actuator and retrieval includes a manual-only or non-flanged candidate
+- **THEN** the contradictory candidate is excluded from the reranker candidate set
+
+#### Scenario: Incomplete candidate data remains reviewable
+- **WHEN** a retrieved candidate lacks a field needed to verify an explicit requirement but does not contradict any explicit requirement
+- **THEN** the candidate remains available to the reranker with diagnostic evidence that the field is unverifiable
+
+### Requirement: Safe constraint-gate fallback
+The system SHALL preserve existing hybrid-plus-reranker behavior when requirement extraction fails, has uncertain scope, is marked ambiguous, or yields no usable explicit matching attributes. If all candidates contradict usable explicit requirements, the system SHALL return `NOT_FOUND` without asking the reranker to select a known-incompatible product.
+
+#### Scenario: Extractor failure does not fail matching
+- **WHEN** extraction raises an error for an otherwise searchable query
+- **THEN** the system invokes the existing hybrid retrieval and reranking path without constraint filtering and records that fallback reason
+
+#### Scenario: No compatible candidates
+- **WHEN** all retrieved candidates contradict an explicit DN, PN, product-type, connection, material, bore, designation, or control requirement
+- **THEN** the system returns `NOT_FOUND` and does not invoke the reranker
+
+### Requirement: Explicit out-of-scope abstention
+The system SHALL return `NOT_FOUND` without retrieval or reranking when requirement extraction reliably classifies the query as explicitly out of catalog scope and not ambiguous.
+
+#### Scenario: Out-of-scope product query
+- **WHEN** a non-ambiguous query is identified as an out-of-scope product class
+- **THEN** the system returns `NOT_FOUND` with a diagnostic reason identifying the scope decision
+
+### Requirement: Match diagnostics
+The system SHALL retain constraint-gate diagnostics in the result available to existing evaluation and review callers, including whether the gate was applied, extracted constraints or a safe summary, candidates excluded for contradiction, candidates retained as unverifiable, and any fallback or abstention reason.
+
+#### Scenario: Gated result is inspected
+- **WHEN** a caller receives a result from a query where the constraint gate ran
+- **THEN** the result exposes sufficient diagnostics to explain the gate outcome without requiring a second model call
+tests/test_harness_gold.py:19:        "catalog_scope": "in_scope",
+tests/test_harness_gold.py:90:        _parsed(product_type="other", catalog_scope="out_of_scope"),
+tests/test_query_constraints.py:52:        "catalog_scope": "in_scope",
+tests/test_golden_rules.py:34:        "catalog_scope": "in_scope",
+tests/test_golden_rules.py:72:        catalog_scope="in_scope",
+tests/test_golden_rules.py:91:        catalog_scope="in_scope",
+tests/test_golden_rules.py:110:        catalog_scope="in_scope",
+tests/test_golden_rules.py:130:        GoldenQueryConstraints(product_type="actuator", control="electric", catalog_scope="in_scope"),
+tests/test_golden_rules.py:141:        catalog_scope="in_scope",
+tests/test_matcher.py:71:        "catalog_scope": "in_scope",
+tests/test_matcher.py:202:    extractor = ConstraintExtractor(constraints(product_type="other", catalog_scope="out_of_scope"))
+tests/test_matcher.py:237:        ConstraintExtractor(constraints(catalog_scope="uncertain")),
+tests/test_matcher.py:239:        ConstraintExtractor(constraints(product_type="other")),
+tests/test_harness_gold_calibration.py:38:        catalog_scope="in_scope",
+data/golden_100_auto_label_report.json:57:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:2364:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:4050:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:4585:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:5803:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:7812:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:7850:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:8145:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:11391:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:14377:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:14618:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:15540:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:16413:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:16452:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:17295:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:21016:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:21836:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:23935:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:24816:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:24855:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:25830:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:26713:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:28116:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:28154:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:30806:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:34485:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:35292:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:36073:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:37000:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:38766:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:42009:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:42078:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:42148:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:42660:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:42739:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:42814:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43175:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43243:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43311:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43381:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43450:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43551:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:43619:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44290:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44328:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44372:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44409:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44446:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44483:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44521:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44565:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44609:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44647:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44686:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44723:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44761:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44799:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44836:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44875:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:44976:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:45076:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:45113:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:45151:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:45188:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:45754:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:46348:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47274:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47373:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47411:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47460:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47799:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47847:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47895:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:47944:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:48164:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:48809:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:49137:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:49240:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:49727:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:50369:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:50406:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:50985:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:53814:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:54048:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:54271:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:54489:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:54727:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:54770:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:54807:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:55579:        "catalog_scope": "in_scope",
+data/golden_100_auto_label_report.json:55604:        "product_type": "other",
+data/golden_100_auto_label_report.json:55616:        "catalog_scope": "uncertain",
+data/golden_100_auto_label_report.json:55624:      "auto_reason": "catalog_scope=uncertain; do not create a label automatically.",
+data/golden_100_auto_label_report.json:55637:          "product_type": "other",
+data/golden_100_auto_label_report.json:55646:              "product_type": "'other' == 'other'",
+data/golden_100_auto_label_report.json:55667:          "product_type": "other",
+data/golden_100_auto_label_report.json:55676:              "product_type": "'other' == 'other'",
+data/golden_100_auto_label_report.json:55697:          "product_type": "other",
+data/golden_100_auto_label_report.json:55706:              "product_type": "'other' == 'other'",
+data/golden_100_auto_label_report.json:55727:          "product_type": "other",
+data/golden_100_auto_label_report.json:55736:              "product_type": "'other' == 'other'",
+data/golden_100_auto_label_report.json:55757:          "product_type": "other",
+data/golden_100_auto_label_report.json:55766:              "product_type": "'other' == 'other'",
+data/golden_100_auto_label_report.json:55787:          "product_type": "other",
+data/golden_100_auto_label_report.json:55796:              "product_type": "'other' == 'other'",
+data/golden_100_auto_label_report.json:55817:          "product_type": "other",
+grep: write error: Broken pipe
+
+codex
+{"decision":"FIX","summary":"The approach is general and appropriately safety-focused, but the compatibility gate can exclude candidates using a product-type comparison that is not an explicit usable constraint, violating its own fail-open contract.","issues":["`evaluate_candidate_compatibility()` always compares `product_type`, even when it is `other`. Yet `usable_constraint_fields()` deliberately treats `other` as unusable. Thus an in-scope extraction with `product_type='other'` plus DN/connection can reject all recognized catalog products solely on the non-constraint type value.","The type fallback treats any nonempty unclassifiable name as positive type evidence, making it `contradictory` rather than `unverifiable`. This conflicts with the stated requirement that incomplete/unparseable catalog metadata must remain eligible and plausibly contributes to the 28% public wrong-NOT_FOUND rate.","Diagnostic `candidate_id` values are original retrieval positions, while reranker candidate IDs are renumbered after filtering. This makes audit records misleading unless explicitly modeled as retrieval rank."],"fix_plan":["Only evaluate product type when `constraints.product_type != 'other'`; otherwise omit its check entirely.","Classify an unrecognized candidate type as unverifiable unless there is explicit, reliable evidence for a different canonical type; add focused tests with nonempty but unclassifiable names/properties.","Either rename diagnostic `candidate_id` to `retrieval_rank` or record both original retrieval rank and post-gate reranker ID; test a case where an earlier candidate is excluded.","Re-run the public harness and inspect gate diagnostics by excluded field before considering promotion."],"next_direction":"Constraint gating remains a credible direction, but prioritize fail-open handling for incomplete or uncanonical catalog metadata and use per-field exclusion/abstention counts to identify which constraint is driving wrong-NOT_FOUND outcomes."}
+tokens used
+51,687
+{"decision":"FIX","summary":"The approach is general and appropriately safety-focused, but the compatibility gate can exclude candidates using a product-type comparison that is not an explicit usable constraint, violating its own fail-open contract.","issues":["`evaluate_candidate_compatibility()` always compares `product_type`, even when it is `other`. Yet `usable_constraint_fields()` deliberately treats `other` as unusable. Thus an in-scope extraction with `product_type='other'` plus DN/connection can reject all recognized catalog products solely on the non-constraint type value.","The type fallback treats any nonempty unclassifiable name as positive type evidence, making it `contradictory` rather than `unverifiable`. This conflicts with the stated requirement that incomplete/unparseable catalog metadata must remain eligible and plausibly contributes to the 28% public wrong-NOT_FOUND rate.","Diagnostic `candidate_id` values are original retrieval positions, while reranker candidate IDs are renumbered after filtering. This makes audit records misleading unless explicitly modeled as retrieval rank."],"fix_plan":["Only evaluate product type when `constraints.product_type != 'other'`; otherwise omit its check entirely.","Classify an unrecognized candidate type as unverifiable unless there is explicit, reliable evidence for a different canonical type; add focused tests with nonempty but unclassifiable names/properties.","Either rename diagnostic `candidate_id` to `retrieval_rank` or record both original retrieval rank and post-gate reranker ID; test a case where an earlier candidate is excluded.","Re-run the public harness and inspect gate diagnostics by excluded field before considering promotion."],"next_direction":"Constraint gating remains a credible direction, but prioritize fail-open handling for incomplete or uncanonical catalog metadata and use per-field exclusion/abstention counts to identify which constraint is driving wrong-NOT_FOUND outcomes."}

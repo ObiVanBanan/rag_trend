@@ -1,0 +1,1366 @@
+{
+  "version": 3,
+  "campaign_id": "20260910T175006.493818Z",
+  "campaign_started_at": "2026-09-10T17:50:06.493837Z",
+  "branch": "codex/rag-harness-rnd",
+  "baseline_commit": "988bf1e76c2c08e8d74e1de4424818f3aa9b769f",
+  "champion_commit": "988bf1e76c2c08e8d74e1de4424818f3aa9b769f",
+  "champion_collection_alias": null,
+  "cycle": 2,
+  "index_builds_used": 2,
+  "index_history": [
+    {
+      "reason": "implementer requested index rebuild",
+      "count": 1,
+      "collection": "rag_harness_c07_b1_58208b05"
+    },
+    {
+      "reason": "fixer requested index rebuild",
+      "count": 2,
+      "collection": "rag_harness_c07_b2_5a37156c"
+    }
+  ],
+  "baseline_public": {
+    "evaluated": 120,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8333333333333334,
+    "core_pass_rate": 0.8,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.008333333333333333,
+    "human_reject_rate": 0.008333333333333333,
+    "known_positive_hit_rate": 0.4166666666666667,
+    "verdict_counts": {
+      "PASS": 30,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+      "UNSCORED": 81,
+      "FAIL_WRONG_PRODUCT": 6,
+      "FAIL_PIPELINE": 1
+    }
+  },
+  "baseline_hidden": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8666666666666667,
+    "core_pass_rate": 0.84,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.0,
+    "human_reject_rate": 0.0,
+    "known_positive_hit_rate": 0.4,
+    "verdict_counts": {
+      "PASS": 26,
+      "FAIL_WRONG_PRODUCT": 4
+    }
+  },
+  "champion_public": {
+    "evaluated": 120,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8333333333333334,
+    "core_pass_rate": 0.8,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.008333333333333333,
+    "human_reject_rate": 0.008333333333333333,
+    "known_positive_hit_rate": 0.4166666666666667,
+    "verdict_counts": {
+      "PASS": 30,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+      "UNSCORED": 81,
+      "FAIL_WRONG_PRODUCT": 6,
+      "FAIL_PIPELINE": 1
+    }
+  },
+  "champion_hidden": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8666666666666667,
+    "core_pass_rate": 0.84,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.0,
+    "human_reject_rate": 0.0,
+    "known_positive_hit_rate": 0.4,
+    "verdict_counts": {
+      "PASS": 26,
+      "FAIL_WRONG_PRODUCT": 4
+    }
+  },
+  "champion_public_failures": [
+    {
+      "id": "gold_q002",
+      "verdict": "FAIL_HUMAN_REJECT",
+      "reason": "Returned product is explicitly HUMAN REJECT for this query."
+    },
+    {
+      "id": "gold_q005",
+      "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+      "reason": "Required fields are missing from the returned product; correctness is not provable."
+    },
+    {
+      "id": "gold_q022",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "gold_q026",
+      "verdict": "FAIL_PIPELINE",
+      "reason": "Unexpected pipeline status: RERANK_FAILED"
+    },
+    {
+      "id": "gold_q027",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_003",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_004",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_006",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    },
+    {
+      "id": "tender_v1_019",
+      "verdict": "FAIL_WRONG_PRODUCT",
+      "reason": "Returned product violates one or more deterministic GOLD requirements."
+    }
+  ],
+  "champion_unscored_count": 81,
+  "legacy_memory": [
+    {
+      "cycle": 1,
+      "family": "reranking",
+      "hypothesis": "Filtering retrieved candidates that contradict explicit tender constraints before LLM reranking will reduce unsafe positive matches and improve hard-pass coverage.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "public coverage regressed",
+      "public_hard_pass_rate": 0.7333333333333333,
+      "hidden_validation_hard_pass_rate": 0.6333333333333333,
+      "lesson": "No prior cycles exist. Baseline evidence favors safety-aware candidate selection over retrieval tuning because no unresolved cases are proven retrieval misses.",
+      "details_ref": "legacy-cycle-1"
+    },
+    {
+      "cycle": 2,
+      "family": "reranking",
+      "hypothesis": "Advisory per-candidate compatibility evidence in reranker context will reduce unsafe specialized-variant selections without reducing candidate recall.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "public safety metrics regressed",
+      "public_hard_pass_rate": 0.8,
+      "hidden_validation_hard_pass_rate": 0.8333333333333334,
+      "lesson": "Cycle 1’s fail-closed candidate gate regressed public and blind coverage, so this change neither filters nor reorders candidates and fails open on extraction errors.",
+      "details_ref": "legacy-cycle-2"
+    },
+    {
+      "cycle": 3,
+      "family": "query_canonicalization",
+      "hypothesis": "Deterministic, domain-preserving query canonicalization before hybrid retrieval will improve matching of compact, mixed-script, and noisy tender nomenclature without changing final-selection semantics.",
+      "decision": "ACCEPTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "candidate improves champion without regression",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Cycle 1’s candidate filtering regressed public/blind coverage, and Cycle 2’s reranker compatibility evidence regressed public safety. This proposal changes only query-time candidate recall, preserves candidate decision semantics, and fails open to original retrieval.",
+      "details_ref": "legacy-cycle-3"
+    },
+    {
+      "cycle": 4,
+      "family": "query_canonicalization",
+      "hypothesis": "Expanding standalone WW (weld-weld) notation into Russian welded-connection vocabulary in the additive retrieval query will improve recall for terse technical tenders without changing selection semantics.",
+      "decision": "ACCEPTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "candidate improves champion without regression",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Cycles 1–2 showed selection-adjacent constraint changes can regress coverage/safety. Cycle 3 improved both public and blind metrics through additive deterministic canonicalization, so this is a narrow extension of the successful mechanism.",
+      "details_ref": "legacy-cycle-4"
+    },
+    {
+      "cycle": 5,
+      "family": "index_representation",
+      "hypothesis": "An evidence-first DeepSeek reranker rubric will reduce technically conflicting or unprovable final selections by prioritizing explicit tender requirements and catalog evidence over retrieval rank.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "blind safety metrics regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Broad candidate gating (Cycle 1) and compatibility evidence injection (Cycle 2) regressed, so this change adds neither filtering nor extraction. Cycles 3–4 validated additive canonicalization but plateaued on aggregate metrics.",
+      "details_ref": "legacy-cycle-5"
+    },
+    {
+      "cycle": 6,
+      "family": "schema_semantics",
+      "hypothesis": "Cleanly canonicalizing unambiguous repeated Russian flanged-end shorthand such as `фл/фл` into one catalog-native connection term improves candidate recall without changing selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "blind safety metrics regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Selection-adjacent changes regressed in cycles 1, 2, and 5. Additive canonicalization was the only accepted mechanism in cycles 3–4. Broad `FF` expansion remains excluded because cycle 4 identified it as ambiguous.",
+      "details_ref": "legacy-cycle-6"
+    },
+    {
+      "cycle": 7,
+      "family": "index_representation",
+      "hypothesis": "A deterministic, execution-aware catalog document representation will improve retrieval of ordinary versus specialised ball-valve variants while preserving selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "blind coverage regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8,
+      "lesson": "Cycles 1, 2, and 5 established that candidate gating and selection/prompt changes can regress safety or coverage. Cycles 3–4 showed deterministic retrieval changes can help, while Cycle 6 showed narrow query-only expansion alone is not reliably sufficient. No prior cycle has tested catalog-side structural enrichment or used an index rebuild.",
+      "details_ref": "legacy-cycle-7"
+    },
+    {
+      "cycle": 8,
+      "family": "reranking",
+      "hypothesis": "A fail-open deterministic post-rerank compatibility fallback will reduce explicit execution/control/bore conflicts by substituting only an already retrieved, fully evidenced compatible candidate.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "no measured improvement over champion",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Cycle 1 broad filtering and Cycle 5 prompt-based selection changes regressed. This design never filters before reranking, uses literal deterministic cues, and falls back only to an existing compatible candidate. Cycle 7 index enrichment regressed, so no rebuild is requested.",
+      "details_ref": "legacy-cycle-8"
+    },
+    {
+      "cycle": 9,
+      "family": "index_representation",
+      "hypothesis": "Explicit ball-valve standard-execution wording can be deterministically expanded into standard-bore catalog vocabulary to improve candidate recall without changing selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "no measured improvement over champion",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Cycles 1, 2, 5, and 8 found selection-adjacent changes harmful or neutral. Additive canonicalization was accepted in cycles 3–4; broad shorthand expansion and index enrichment were rejected, so this is a distinct, narrow query-time experiment.",
+      "details_ref": "legacy-cycle-9"
+    },
+    {
+      "cycle": 10,
+      "family": "schema_semantics",
+      "hypothesis": "Explicitly model and affirmatively verify flange construction subtype so generic or flat flanges cannot satisfy weld-neck/butt-weld requirements.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": false,
+      "error_code": "EXECUTION_ERROR",
+      "reason": "Interrupted candidate changed protected harness/GOLD files: ['src/nomenclature_matcher/golden_rules.py']",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Broad gating and selection/reranker changes regressed or were neutral; retrieval canonicalization plateaued and catalog enrichment regressed. This is a distinct, narrowly scoped deterministic requirement.",
+      "details_ref": "legacy-cycle-10"
+    },
+    {
+      "cycle": 11,
+      "family": "reranking",
+      "hypothesis": "A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.",
+      "decision": "IMPLEMENTATION_FAILED",
+      "scientifically_evaluated": false,
+      "error_code": "INFRA_DEPENDENCY_UNAVAILABLE",
+      "reason": "Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Selection-adjacent experiments regressed or were neutral, while additive canonicalization was accepted in cycles 3–4. Cycle 10 was blocked by a protected-file violation before evaluation, so it does not disprove schema expansion. Index enrichment regressed, so this avoids rebuilding.",
+      "details_ref": "legacy-cycle-11"
+    },
+    {
+      "cycle": 12,
+      "family": "schema_semantics",
+      "hypothesis": "Explicit flange construction subtype verification will prevent unproved flat, loose, counter, or generic flanges from satisfying weld-neck/butt-weld requirements.",
+      "decision": "IMPLEMENTATION_FAILED",
+      "scientifically_evaluated": false,
+      "error_code": "INFRA_DEPENDENCY_UNAVAILABLE",
+      "reason": "Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Broad gating and selection changes regressed or were neutral, retrieval canonicalization plateaued, and index enrichment regressed. This is a narrow, evidence-based retry of an unevaluated schema gap, not a repeat of the Cycle 10 contract failure.",
+      "details_ref": "legacy-cycle-12"
+    },
+    {
+      "cycle": 13,
+      "family": "candidate_diversification",
+      "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable ordinary/control variants currently crowded out by near-duplicate specialised variants.",
+      "decision": "IMPLEMENTATION_FAILED",
+      "scientifically_evaluated": false,
+      "error_code": "INFRA_DEPENDENCY_UNAVAILABLE",
+      "reason": "Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Selection, gating, prompt, and index-enrichment experiments regressed or were neutral. Cycles 11–12 were infrastructure-inconclusive, while the current redundancy evidence supports this new pre-rerank candidate-pool experiment.",
+      "details_ref": "legacy-cycle-13"
+    },
+    {
+      "cycle": 14,
+      "family": "actuation_semantics",
+      "hypothesis": "A deterministic, additive retrieval representation that distinguishes an installed electric actuator from actuator-ready intent will improve candidate recall for explicit ball-valve control-state requests without changing final-selection behavior.",
+      "decision": "IMPLEMENTATION_FAILED",
+      "scientifically_evaluated": false,
+      "error_code": "INFRA_DEPENDENCY_UNAVAILABLE",
+      "reason": "Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Cycles 3–4 validated narrow additive canonicalization. Cycles 1, 2, 5, 6, 7, 8, and 9 made gating, prompt/selection, broad expansion, or index changes ineffective or harmful. Cycles 11–13 were infrastructure-inconclusive due to unavailable Qdrant, not evidence against their hypotheses.",
+      "details_ref": "legacy-cycle-14"
+    },
+    {
+      "cycle": 15,
+      "family": "actuation_semantics",
+      "hypothesis": "Explicit installed-electric versus actuator-ready wording can produce a bounded alternate retrieval query that improves recall without changing selection behavior.",
+      "decision": "IMPLEMENTATION_FAILED",
+      "scientifically_evaluated": false,
+      "error_code": "INFRA_DEPENDENCY_UNAVAILABLE",
+      "reason": "Public eval after fixer failed: evaluation failed (1) /usr/local/python/3.12.1/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Se...",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Additive canonicalization was the only accepted family; gating, reranking, selection, and index changes were neutral or harmful. Cycle 14's Qdrant failure does not disprove this hypothesis.",
+      "details_ref": "legacy-cycle-15"
+    },
+    {
+      "cycle": 16,
+      "family": "candidate_diversification",
+      "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable variants currently crowded out by near-duplicate catalog entries.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "public coverage regressed",
+      "public_hard_pass_rate": 0.8,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Gating, prompts, selection fallbacks, and catalog enrichment were harmful or neutral. Cycles 11–15 were infrastructure-inconclusive; Cycle 13 did not test this hypothesis scientifically.",
+      "details_ref": "legacy-cycle-16"
+    },
+    {
+      "cycle": 17,
+      "family": "actuation_semantics",
+      "hypothesis": "Explicit installed-electric versus actuator-ready ball-valve wording can produce one bounded state-specific retrieval alternate that improves recall without changing selection behavior.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": null,
+      "reason": "The added expansion is mechanically sound but its key semantic premise is not reliable in the current catalog, so it is not a safe state-specific retrieval improvement.",
+      "public_hard_pass_rate": 0.8666666666666667,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Narrow additive canonicalization was the only accepted family. Gating, selection, prompt, index-enrichment, and diversification changes were neutral or harmful; this is an untested retry after Qdrant outages.",
+      "details_ref": "legacy-cycle-17"
+    },
+    {
+      "cycle": 1,
+      "action": "RESEARCH",
+      "family": "alias_mapping",
+      "hypothesis": "30с41нж can be expanded only if an LD catalog family is technically equivalent to its defining construction.",
+      "decision": "RESEARCHED",
+      "scientifically_evaluated": false,
+      "error_code": null,
+      "reason": "Do not add a designation-to-LD gate-valve alias or treat LD ball valves as substitutions for 30с41нж. Match only if a tender explicitly permits an alternative valve type; otherwise this is a catalog no-match for the LD corpus.",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "lesson": "Reject the premise of an LD-family equivalence. 30с41нж is a steel wedge-gate family at PN 1.6 MPa (PN16), offered across DN sizes; manufacturer documentation identifies its flanged version and wedge construction. One manufacturer explicitly calls it flanged with a rising stem. However, the supplied LD catalog contains no gate-valve products: its only names containing «задвижк» are six LD Стриж ball valves described as «под задвижку», all with interflange connections. A ball valve, even at ma...",
+      "details_ref": "runs/001",
+      "at": "2026-09-10T11:25:27.586466Z",
+      "attempt_id": 1,
+      "experiment_id": "alias-mapping-4e01b7f5e1",
+      "scientific_iteration": null
+    },
+    {
+      "cycle": 2,
+      "action": "IMPLEMENT",
+      "family": "reranking",
+      "hypothesis": "One bounded retry of an identical reranker request after transport or structured-output failure will recover transient `RERANK_FAILED` outcomes without changing retrieval or selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": "PUBLIC_REGRESSION",
+      "reason": "public safety metrics regressed",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "public_delta_cases": 0,
+      "hidden_delta_cases": 0,
+      "lesson": "Candidate failed the cheap public gate; no reviewer or hidden-validation call was spent.",
+      "details_ref": "runs/002",
+      "at": "2026-09-10T11:35:26.311560Z",
+      "attempt_id": 2,
+      "experiment_id": "reranking-a6b93716bb",
+      "scientific_iteration": 1
+    },
+    {
+      "cycle": 1,
+      "action": "IMPLEMENT",
+      "family": "alias_mapping",
+      "hypothesis": "Unambiguous threaded endpoint and standard inch-size tender notation can be expanded into additive catalog-native threaded/DN retrieval vocabulary, improving viable ball-valve candidate recall without changing selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": "METRIC_GATE_REJECT",
+      "reason": "hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.040000 (delta +0.040000)",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "public_delta_cases": 0,
+      "hidden_delta_cases": 0,
+      "lesson": "Candidate reached both metric sets but did not beat the current champion safely.",
+      "details_ref": "runs/001",
+      "at": "2026-09-10T15:15:29.454944Z",
+      "attempt_id": 1,
+      "experiment_id": "alias-mapping-84a0be92e0",
+      "scientific_iteration": 1
+    },
+    {
+      "cycle": 2,
+      "action": "IMPLEMENT",
+      "family": "alias_mapping",
+      "hypothesis": "A deterministic, additive retrieval alternate that suppresses only safely identifiable supplier/model/order-code noise will improve recall for branded tender nomenclature while preserving explicit technical constraints and all final-selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": "METRIC_GATE_REJECT",
+      "reason": "hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.040000 (delta +0.040000)",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "public_delta_cases": 0,
+      "hidden_delta_cases": 0,
+      "lesson": "Candidate reached both metric sets but did not beat the current champion safely.",
+      "details_ref": "runs/002",
+      "at": "2026-09-10T15:28:59.753724Z",
+      "attempt_id": 2,
+      "experiment_id": "alias-mapping-e3be68a678",
+      "scientific_iteration": 2
+    },
+    {
+      "cycle": 3,
+      "action": "IMPLEMENT",
+      "family": "alias_mapping",
+      "hypothesis": "For configured, trusted manufacturer/model sources, adding only explicitly evidenced generic product facts to one alternate retrieval query will improve recall on branded tender nomenclature without changing selection semantics.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": "METRIC_GATE_REJECT",
+      "reason": "hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.080000 (delta +0.080000)",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "public_delta_cases": 0,
+      "hidden_delta_cases": 0,
+      "lesson": "Candidate reached both metric sets but did not beat the current champion safely.",
+      "details_ref": "runs/003",
+      "at": "2026-09-10T15:44:32.146543Z",
+      "attempt_id": 3,
+      "experiment_id": "alias-mapping-1433dd6ac0",
+      "scientific_iteration": 3
+    }
+  ],
+  "history": [
+    {
+      "cycle": 1,
+      "action": "IMPLEMENT",
+      "family": "query_evidence_preservation",
+      "hypothesis": "Repair generic quantity/clause token boundaries so canonical retrieval alternates retain complete alphanumeric technical designations instead of truncating at embedded quantity-like fragments.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": "METRIC_GATE_REJECT",
+      "reason": "hidden validation safety regression: wrong_not_found_rate 0.000000 -> 0.080000 (delta +0.080000)",
+      "public_hard_pass_rate": 0.8333333333333334,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "public_delta_cases": 0,
+      "hidden_delta_cases": 0,
+      "lesson": "Candidate reached both metric sets but did not beat the current champion safely.",
+      "details_ref": "runs/001",
+      "at": "2026-09-10T18:05:02.179670Z",
+      "mechanism_family": "query_evidence_preservation",
+      "history_relation": "REFINEMENT",
+      "public_metric_delta": {
+        "hard_pass_rate": 0.0,
+        "core_pass_rate": 0.0,
+        "negative_pass_rate": 0.0,
+        "wrong_not_found_rate": 0.0,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.125
+      },
+      "hidden_guardrail_delta": {
+        "hard_pass_rate": 0.0,
+        "false_match_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "wrong_not_found_rate": 0.08,
+        "unknown_answer_rate": 0.0
+      },
+      "outcome_signature": {
+        "improved": [
+          "public.known_positive_hit_rate"
+        ],
+        "regressed": [
+          "hidden.wrong_not_found_rate"
+        ],
+        "flat": [
+          "hidden.false_match_rate",
+          "hidden.hard_pass_rate",
+          "hidden.human_reject_rate",
+          "hidden.unknown_answer_rate",
+          "public.core_pass_rate",
+          "public.false_match_rate",
+          "public.hard_pass_rate",
+          "public.human_reject_rate",
+          "public.negative_pass_rate",
+          "public.unknown_answer_rate",
+          "public.wrong_not_found_rate"
+        ]
+      },
+      "attempt_id": 1,
+      "experiment_id": "query-evidence-preservation-1c451c1cd8",
+      "scientific_iteration": 1
+    },
+    {
+      "cycle": 2,
+      "action": "IMPLEMENT",
+      "family": "query_variant_evidence_fusion",
+      "hypothesis": "Preserve raw-query and canonical-query retrieval hits as separate RRF evidence channels so cross-variant candidate corroboration affects ranking without changing reranker inputs or final selection.",
+      "decision": "REJECTED",
+      "scientifically_evaluated": true,
+      "error_code": "PUBLIC_REGRESSION",
+      "reason": "public safety regression: wrong_not_found_rate 0.000000 -> 0.040000 (delta +0.040000)",
+      "public_hard_pass_rate": 0.8666666666666667,
+      "hidden_validation_hard_pass_rate": 0.8666666666666667,
+      "public_delta_cases": 1,
+      "hidden_delta_cases": 0,
+      "lesson": "Candidate failed the cheap public gate; no reviewer or hidden-validation call was spent.",
+      "details_ref": "runs/002",
+      "at": "2026-09-10T18:16:31.417079Z",
+      "mechanism_family": "query_variant_evidence_fusion",
+      "history_relation": "NEW_LAYER",
+      "public_metric_delta": {
+        "hard_pass_rate": 0.033333333333,
+        "core_pass_rate": 0.04,
+        "negative_pass_rate": 0.0,
+        "wrong_not_found_rate": 0.04,
+        "false_match_rate": 0.0,
+        "unknown_answer_rate": -0.008333333333,
+        "human_reject_rate": 0.0,
+        "known_positive_hit_rate": 0.083333333333
+      },
+      "hidden_guardrail_delta": {},
+      "outcome_signature": {
+        "improved": [
+          "public.core_pass_rate",
+          "public.hard_pass_rate",
+          "public.known_positive_hit_rate",
+          "public.unknown_answer_rate"
+        ],
+        "regressed": [
+          "public.wrong_not_found_rate"
+        ],
+        "flat": [
+          "public.false_match_rate",
+          "public.human_reject_rate",
+          "public.negative_pass_rate"
+        ]
+      },
+      "attempt_id": 2,
+      "experiment_id": "query-variant-evidence-fusion-bd197b87b9",
+      "scientific_iteration": 2
+    }
+  ],
+  "hypothesis_ledger": {
+    "reranking": {
+      "attempts": 5,
+      "scientific_evaluations": 4,
+      "accepted": 0,
+      "rejected": 4,
+      "not_evaluated": 1,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": 0,
+      "latest_hidden_delta_cases": 0,
+      "latest_lesson": "Candidate failed the cheap public gate; no reviewer or hidden-validation call was spent."
+    },
+    "query_canonicalization": {
+      "attempts": 2,
+      "scientific_evaluations": 2,
+      "accepted": 2,
+      "rejected": 0,
+      "not_evaluated": 0,
+      "latest_decision": "ACCEPTED",
+      "latest_public_delta_cases": null,
+      "latest_hidden_delta_cases": null,
+      "latest_lesson": "Cycles 1–2 showed selection-adjacent constraint changes can regress coverage/safety. Cycle 3 improved both public and blind metrics through additive deterministic canonicalization, so this is a narrow extension of the successful mechanism."
+    },
+    "index_representation": {
+      "attempts": 3,
+      "scientific_evaluations": 3,
+      "accepted": 0,
+      "rejected": 3,
+      "not_evaluated": 0,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": null,
+      "latest_hidden_delta_cases": null,
+      "latest_lesson": "Cycles 1, 2, 5, and 8 found selection-adjacent changes harmful or neutral. Additive canonicalization was accepted in cycles 3–4; broad shorthand expansion and index enrichment were rejected, so this is a distinct, narrow query-time experiment."
+    },
+    "schema_semantics": {
+      "attempts": 3,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 2,
+      "not_evaluated": 2,
+      "latest_decision": "IMPLEMENTATION_FAILED",
+      "latest_public_delta_cases": null,
+      "latest_hidden_delta_cases": null,
+      "latest_lesson": "Broad gating and selection changes regressed or were neutral, retrieval canonicalization plateaued, and index enrichment regressed. This is a narrow, evidence-based retry of an unevaluated schema gap, not a repeat of the Cycle 10 contract failure."
+    },
+    "candidate_diversification": {
+      "attempts": 2,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "not_evaluated": 1,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": null,
+      "latest_hidden_delta_cases": null,
+      "latest_lesson": "Gating, prompts, selection fallbacks, and catalog enrichment were harmful or neutral. Cycles 11–15 were infrastructure-inconclusive; Cycle 13 did not test this hypothesis scientifically."
+    },
+    "actuation_semantics": {
+      "attempts": 3,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "not_evaluated": 2,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": null,
+      "latest_hidden_delta_cases": null,
+      "latest_lesson": "Narrow additive canonicalization was the only accepted family. Gating, selection, prompt, index-enrichment, and diversification changes were neutral or harmful; this is an untested retry after Qdrant outages."
+    },
+    "alias_mapping": {
+      "attempts": 3,
+      "scientific_evaluations": 3,
+      "accepted": 0,
+      "rejected": 3,
+      "not_evaluated": 0,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": 0,
+      "latest_hidden_delta_cases": 0,
+      "latest_lesson": "Candidate reached both metric sets but did not beat the current champion safely."
+    },
+    "query_evidence_preservation": {
+      "attempts": 1,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "not_evaluated": 0,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": 0,
+      "latest_hidden_delta_cases": 0,
+      "latest_lesson": "Candidate reached both metric sets but did not beat the current champion safely."
+    },
+    "mechanism::query_evidence_preservation": {
+      "kind": "causal_mechanism",
+      "mechanism_family": "query_evidence_preservation",
+      "attempts": 1,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "not_evaluated": 0,
+      "latest_decision": "REJECTED",
+      "latest_history_relation": "REFINEMENT",
+      "latest_outcome_signature": {
+        "improved": [
+          "public.known_positive_hit_rate"
+        ],
+        "regressed": [
+          "hidden.wrong_not_found_rate"
+        ],
+        "flat": [
+          "hidden.false_match_rate",
+          "hidden.hard_pass_rate",
+          "hidden.human_reject_rate",
+          "hidden.unknown_answer_rate",
+          "public.core_pass_rate",
+          "public.false_match_rate",
+          "public.hard_pass_rate",
+          "public.human_reject_rate",
+          "public.negative_pass_rate",
+          "public.unknown_answer_rate",
+          "public.wrong_not_found_rate"
+        ]
+      },
+      "outcome_signature_counts": {
+        "improved=public.known_positive_hit_rate|regressed=hidden.wrong_not_found_rate": 1
+      }
+    },
+    "query_variant_evidence_fusion": {
+      "attempts": 1,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "not_evaluated": 0,
+      "latest_decision": "REJECTED",
+      "latest_public_delta_cases": 1,
+      "latest_hidden_delta_cases": 0,
+      "latest_lesson": "Candidate failed the cheap public gate; no reviewer or hidden-validation call was spent."
+    },
+    "mechanism::query_variant_evidence_fusion": {
+      "kind": "causal_mechanism",
+      "mechanism_family": "query_variant_evidence_fusion",
+      "attempts": 1,
+      "scientific_evaluations": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "not_evaluated": 0,
+      "latest_decision": "REJECTED",
+      "latest_history_relation": "NEW_LAYER",
+      "latest_outcome_signature": {
+        "improved": [
+          "public.core_pass_rate",
+          "public.hard_pass_rate",
+          "public.known_positive_hit_rate",
+          "public.unknown_answer_rate"
+        ],
+        "regressed": [
+          "public.wrong_not_found_rate"
+        ],
+        "flat": [
+          "public.false_match_rate",
+          "public.human_reject_rate",
+          "public.negative_pass_rate"
+        ]
+      },
+      "outcome_signature_counts": {
+        "improved=public.core_pass_rate,public.hard_pass_rate,public.known_positive_hit_rate,public.unknown_answer_rate|regressed=public.wrong_not_found_rate": 1
+      }
+    }
+  },
+  "research_memory": [
+    {
+      "question": "A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.",
+      "findings": "The GOST source lists 108 mm as a standard outside diameter; the pipe source identifies DN 108×3.5 as DN 100. The plan limits conversion to explicit OD context and this single documented mapping.",
+      "sources": [
+        {
+          "url": "https://meganorm.ru/mega_doc/norm/gost_gosudarstvennyj-standart/0/gost_10704-91_mezhgosudarstvennyy_standart_truby_stalnye.html"
+        },
+        {
+          "url": "https://tavago.ru/truby-i-fitingi/stalnye-truby/truby-stalnye-elektrosvarnye-gost-10704-91/truba-stal-elektrosvarnaya-pryamoshovnaya-dn-108kh3-5-du-100-gost-10704-91.html"
+        }
+      ],
+      "origin": "legacy-cycle-11"
+    },
+    {
+      "question": "Does the 30с41нж designation define a flanged, wedge-gate, rising-stem DN/PN class that has a technically equivalent LD catalog family, rather than only a superficially similar gate valve?",
+      "findings": "Reject the premise of an LD-family equivalence. 30с41нж is a steel wedge-gate family at PN 1.6 MPa (PN16), offered across DN sizes; manufacturer documentation identifies its flanged version and wedge construction. One manufacturer explicitly calls it flanged with a rising stem. However, the supplied LD catalog contains no gate-valve products: its only names containing «задвижк» are six LD Стриж ball valves described as «под задвижку», all with interflange connections. A ball valve, even at matching DN/PN, is not technically equivalent to a flanged rising-stem wedge gate valve. Also, DN is not encoded as one fixed value in 30с41нж; it must be supplied separately.",
+      "decision_impact": "Do not add a designation-to-LD gate-valve alias or treat LD ball valves as substitutions for 30с41нж. Match only if a tender explicitly permits an alternative valve type; otherwise this is a catalog no-match for the LD corpus.",
+      "unresolved": "The designation’s exact connection configuration should still be verified against the procurement specification: the MZTA family page lists both welded and flanged connections, while the conventional 30с41нж product documentation describes the flanged rising-stem variant. This does not affect the lack of an LD wedge-gate family.",
+      "sources": [
+        {
+          "url": "https://mztpa.ru/catalog/products/1/5/15",
+          "claim": "Official manufacturer page: 30с41нж is a steel wedge-gate family at PN 1.6 MPa; it gives DN 50–400 examples, identifies flanged dimensions, and lists flanged and welded connection options for the family.",
+          "quality": "official",
+          "confidence": 0.96
+        },
+        {
+          "url": "https://www.ptza.ru/30s41nzh-zadvizhka-klinovaya/",
+          "claim": "Official manufacturer page: 30с41нж is described as a flanged wedge gate valve with a rising stem, PN 1.6 MPa, with a DN range rather than one fixed DN.",
+          "quality": "official",
+          "confidence": 0.94
+        }
+      ],
+      "origin": "cycle-01"
+    },
+    {
+      "question": "What recurring real-tender failure classes suggest the next bounded hypothesis?",
+      "findings": "Derived the 130 review cases from the intact full corpus minus the 90 labels and 33 provisional cases because the provided review-pool gzip has CRC/length corruption. Main classes: (1) 71 ball-valve rows, heavily concentrated in threaded inch-size, endpoint, handle, and third-party model nomenclature (IVR/VALTEC); current canonicalization produces no meaningful retrieval alternate for these. The LD catalog contains 647 brass ball valves and itself expresses inch↔DN forms, so this is a genuine catalog-language mismatch. (2) 33 filter and many service/maintenance rows (installation, removal, repair, ТО) are requests for work, consumables, or water-treatment equipment rather than a sellable LD catalog item; retrieval should not be pushed toward an unrelated product. (3) 20 butterfly-valve rows mix generic viable requests with third-party model/designation requests; 356 LD butterfly products exist, so model text may obscure otherwise useful family/DN/PN evidence. Promising directions: additive canonicalization of unambiguous threaded endpoint spellings (ВР/НР, вн-вн) and standard inch sizes into catalog-native DN/connection vocabulary; a conservative query-intent route for explicit service/maintenance actions; and a separately bounded manufacturer/model enrichment or model-token de-emphasis experiment for third-party branded products.",
+      "decision_impact": "Prefer a retrieval-only, fail-open threaded/inch canonicalization experiment: it addresses the largest repeated viable-product class, aligns with the only previously accepted mechanism, and leaves reranking/selection unchanged. Keep service-intent routing as a distinct safety hypothesis rather than combining it, since prior selection-adjacent changes regressed. Treat external model lookup as lower-volume and higher-latency unless a later sample shows generic normalization cannot recover branded rows.",
+      "unresolved": "The review-pool gzip is corrupt locally, though the full corpus supports exact reconstruction by id count. Need evaluate whether catalog-native endpoint/inch expansion improves candidate recall without crowding out candidates; do not assume branded models are technically interchangeable. Service rows may be procurement line items that intentionally include a product, so any intent router must be explicit-action-only and conservative.",
+      "sources": [],
+      "origin": "attempt-01-research-first",
+      "kind": "research-first"
+    },
+    {
+      "question": "What recurring real-tender classes and current-pipeline gaps should inform the next bounded hypothesis?",
+      "findings": "The intact corpus reconstructs 130 review rows (253 total minus 90 labelled and 33 provisional NOT_FOUND). Main classes: 53 ball-valve rows, including 42 threaded and 35 third-party-brand/model rows; 20 butterfly-valve rows, several branded; 33 filter rows, many cartridges/water-treatment rather than LD грязевики; and 18 explicit installation/repair/maintenance rows. The catalog has substantial ball-valve (14,433), butterfly-valve (356), and filter (129) coverage, but no matching third-party brand/model tokens (IVR, VALTEC, Tecofi, Kvant, etc.), so opaque model/order text can dominate retrieval despite otherwise usable generic requirements. Current canonicalization produces alternates for only 40/130 review rows. It also has a general lexical integrity flaw: its quantity/clause terminator can interpret the substring «ШТ.» inside a technical designation as a quantity marker, truncating «КШТ.11.050.025.ф/ф» to «Кран БИВАЛ К». The original query remains in retrieval, but the added alternate is degraded. Promising directions: (1) a bounded, additive model/order-token de-emphasis alternate that retains explicit product family, size, endpoint, material, control, and pressure facts without asserting cross-brand equivalence; (2) a generic token-boundary/quantity-parser correction so technical designations cannot be clipped; (3) separately, a conservative intent route for unambiguous service-only work or non-catalog consumables; (4) only if simpler normalization fails, runtime manufacturer/model enrichment for repeated branded families.",
+      "decision_impact": "Prefer testing retrieval-only supplier/model-noise de-emphasis, with the untouched original query retained and no inferred specifications or final-selection changes. It targets a repeated 35-row class and differs from the previously rejected endpoint/inch expansion. Treat the designation-truncation repair as a small correctness fix or separate experiment. Keep service/consumable abstention isolated: some work lines include an underlying product, and prior selection-adjacent changes were risky.",
+      "unresolved": "The review-pool gzip remains CRC-corrupt, though its intended set is exactly reconstructable from the other supplied files. Branded model strings may encode material, porting, or connection details not stated elsewhere; a de-emphasis alternate must therefore be additive and preserve all explicit non-model tokens. Filter rows need a product-vs-consumable distinction before any NOT_FOUND routing.",
+      "sources": [],
+      "origin": "attempt-02-research-first",
+      "kind": "research-first"
+    },
+    {
+      "question": "What recurring real-tender failure classes and bounded directions should inform the next hypothesis?",
+      "findings": "The intact corpus reconstructs the 130 review rows (253 total minus 90 labelled minus 33 provisional NOT_FOUND); the supplied review-pool gzip remains CRC-corrupt. The largest viable-looking unresolved class is branded threaded ball valves: 53 ball-valve rows, 42 with third-party brands, including 30 IVR rows. Current canonicalization emits an alternate for only 40/130 review rows, and none for representative IVR/VALTEC rows. Official manufacturer data shows the opaque IVR 954/956 codes carry material retrieval facts: full-bore threaded ball valve and F/F versus M/F endpoints; VALTEC VT.214 likewise identifies a ball valve with an internal-thread endpoint. LD has hundreds of brass threaded ball-valve products, including explicit В-В/В-Н and handle variants, so this is a real vocabulary/underspecification gap—not evidence that foreign branded products are automatically interchangeable with LD.\n\nA separate correctness defect is confirmed: the clause terminator treats the embedded «ШТ.» in a technical designation as a quantity token, reducing «Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ» to «Кран БИВАЛ К». This should be repaired by token-boundary parsing, not a designation-specific rule. The pool also contains 33 filter/water-treatment rows and explicit work rows; many are consumables or service requests, but a few service lines embed a product, so broad abstention is unsafe.\n\nPromising directions: (1) a bounded, fail-open runtime manufacturer/model enrichment path for extractable brand+model queries, using a trusted manufacturer source and adding only explicitly documented generic facts to an alternate retrieval query; retain the original query and final selection semantics. (2) A small generic quantity/clause-boundary correction that preserves technical designations in retrieval alternates. (3) A later conservative product-intent/uncertainty route restricted to unambiguous service-only or consumable-only queries. Do not repeat deterministic inch/endpoint expansion or generic supplier-token suppression: both have already been rejected by hidden safety gates.",
+      "decision_impact": "The strongest new product opportunity is source-backed, additive enrichment of repeated branded model nomenclature, because a model code can resolve endpoint and bore facts that the tender omits. It has external dependency, latency, caching, and source-trust costs, and must never assert LD equivalence or override reranking. If the Planner wants the lowest-risk bounded experiment instead, select the generic designation/quantity parser repair; it is a correctness fix with narrower expected corpus impact. Keep service abstention separate from either retrieval experiment.",
+      "unresolved": "Whether external enrichment improves LD candidate recall enough to justify runtime dependency is unmeasured; manufacturer documents establish source-product properties, not a suitable LD substitute. The CRC-corrupt review-pool artifact should be repaired separately, although its intended membership is reconstructable from the other corpus files.",
+      "sources": [
+        {
+          "url": "https://www.ivrvalvole.it/media/pdf/schede/IVR_954_956_957.pdf",
+          "claim": "Official IVR technical sheet identifies IVR 954/956/957 as full-bore threaded ball valves and distinguishes F/F, M/F, and M/M endpoints; it also provides Russian terminology.",
+          "quality": "official",
+          "confidence": 0.98
+        },
+        {
+          "url": "https://valtec.ru/document/Catalog_VALTEC.pdf?69a765ad99bad=",
+          "claim": "Official VALTEC catalogue identifies VT.214 as a ball valve with a steel handle and internal-to-internal threaded connection.",
+          "quality": "official",
+          "confidence": 0.95
+        }
+      ],
+      "origin": "attempt-03-research-first",
+      "kind": "research-first"
+    },
+    {
+      "question": "What causal mechanisms remain promising for improving real-tender LD matching after the current champion and prior experiments?",
+      "findings": "The active production path retrieves with the original query plus at most one canonical alternate, fuses dense/BM25 candidates into a fixed top-20, then reranks against the untouched original query. Canonicalization is therefore retrieval-only and fail-open. In the reconstructed 130-row review set, 53 rows mention ball valves, 50 threaded/inch-style cues, 43 third-party brands (30 IVR), 33 filter/water-treatment rows, and 11 explicit service-action rows. Only 40/130 currently receive a canonical alternate. The catalog contains 15,788 products, including substantial ball-valve and butterfly coverage, but no IVR/VALTEC/TECOFI/БИВАЛ tokens; it has no cartridge or water-treatment products, while its 129 “filter” products are principally грязевики. A confirmed parser defect truncates “Кран БИВАЛ КШТ.11.050.025.ф/ф 50х25 КОФ” to “Кран БИВАЛ К”: the clause-end quantity pattern can recognize embedded “ШТ.” without a required leading token boundary. This is a general parsing error, not a one-off rule. No new evidence supports another branded-model suppression or source-enrichment refinement: three such attempts already increased hidden wrong-NOT_FOUND rate despite retaining original-query retrieval.",
+      "decision_impact": "The main uncertainty is whether useful unresolved value is constrained by loss of query evidence during normalization and late fusion, or by genuine catalog-scope/service-consumable requests that should produce uncertainty rather than more retrieval. The Planner should distinguish these mechanisms. Do not select another endpoint/inch, branded-token suppression, or manufacturer-model enrichment variant without new causal evidence; those paths are already tested and unsafe.",
+      "unresolved": "The review corpus is unresolved rather than outcome-labeled, so its category counts establish opportunity and scope but not end-to-end uplift. The supplied review-pool gzip remains corrupt; membership is reconstructable from the intact all-rows, labels, and provisional-NOT_FOUND files. It is also unmeasured whether correcting the canonical alternate changes the final top-20, because the original query is retained and may already supply the needed candidate.",
+      "sources": [],
+      "evidence_patterns": [
+        {
+          "pattern": "Narrow additive retrieval normalization has conditional value; semantic expansion is not generally beneficial.",
+          "supporting_experiments": [
+            "legacy-cycle-3 ACCEPTED: deterministic query canonicalization improved safely.",
+            "legacy-cycle-4 ACCEPTED: standalone WW expansion improved safely.",
+            "legacy-cycle-6 REJECTED: flanged-shorthand canonicalization regressed hidden safety.",
+            "legacy-cycle-9 REJECTED: standard-bore wording expansion was neutral.",
+            "legacy-cycle-17 REJECTED: installed-electric versus actuator-ready alternate had an unreliable catalog semantic premise."
+          ],
+          "interpretation": "The successful causal path is preservation/translation of unambiguous catalog vocabulary, not adding plausible domain semantics. The present parser truncation directly destroys source evidence inside that proven retrieval-only path, so repairing it is materially different from adding another alias.",
+          "confidence": 0.94
+        },
+        {
+          "pattern": "Changes that alter candidate composition or final compatibility selection have repeatedly failed to improve end-to-end utility.",
+          "supporting_experiments": [
+            "legacy cycles 1-2: broad filtering and compatibility-evidence intervention regressed.",
+            "legacy-cycle-5 REJECTED: evidence-first reranker rubric regressed blind safety.",
+            "legacy-cycle-8 REJECTED: deterministic post-rerank compatibility substitution was neutral.",
+            "legacy-cycle-16 REJECTED: candidate diversification regressed public coverage.",
+            "legacy-cycle-7 REJECTED: catalog structural representation reduced hidden coverage."
+          ],
+          "interpretation": "The evidence does not show that more candidate filtering, compatibility gating, prompt changes, diversification, or catalog rewriting is the current bottleneck. A new decision/abstention layer would need a sharply separable request-intent signal, not generic technical compatibility rules.",
+          "confidence": 0.91
+        },
+        {
+          "pattern": "Branded tender nomenclature is common, but prior genericization and external-fact enrichment were unsafe.",
+          "supporting_experiments": [
+            "attempt-01 alias_mapping REJECTED: threaded/inch expansion increased hidden wrong-NOT_FOUND rate by 0.04.",
+            "attempt-02 alias_mapping REJECTED: supplier/model-noise suppression increased hidden wrong-NOT_FOUND rate by 0.04.",
+            "attempt-03 alias_mapping REJECTED: trusted manufacturer/model facts increased hidden wrong-NOT_FOUND rate by 0.08."
+          ],
+          "interpretation": "Opaque brand/model text is a real corpus mismatch, but making it more generic or importing source facts did not establish LD interchangeability and degraded safety. This points to underspecification/equivalence uncertainty rather than a simple lexical-recall deficit.",
+          "confidence": 0.96
+        },
+        {
+          "pattern": "A distinct non-catalog/service class is large enough to compete with more retrieval work.",
+          "supporting_experiments": [
+            "Real-corpus inspection: 33 review rows are filter/water-treatment related; examples include cartridges, filter media, water-treatment units, and service work.",
+            "Catalog inspection: zero catalog texts contain cartridge/ЭФГ or water-treatment terms; 129 filter entries are largely грязевики.",
+            "Real-corpus inspection: 11 review rows explicitly request removal, repair, installation, or maintenance."
+          ],
+          "interpretation": "For many rows, better retrieval cannot create a compatible sellable LD product. Yet action words alone are insufficient, because some installation/removal lines mention a product family; any intervention must establish service-only or absent-capability evidence affirmatively.",
+          "confidence": 0.88
+        }
+      ],
+      "candidate_directions": [
+        {
+          "mechanism_family": "query_evidence_preservation",
+          "history_relation": "REFINEMENT",
+          "causal_mechanism": "Repair structural line-item/quantity boundary parsing so a canonical retrieval alternate cannot stop inside an alphanumeric technical designation; retain the raw query, all existing canonical transformations, and final reranking behavior.",
+          "competing_explanation": "Because raw-query retrieval remains active, the damaged alternate may not materially affect candidate availability or final selection; the observed defect may be operationally harmless on most rows.",
+          "falsifier": "A stratified real-tender retrieval comparison shows that preserving affected designations does not add or improve viable family-consistent candidates in the pre-rerank pool, while public/hidden gates remain flat.",
+          "information_gain": "High confidence in correctness and moderate information gain: it isolates whether an established successful mechanism is currently losing evidence through parsing rather than through retrieval or reranking."
+        },
+        {
+          "mechanism_family": "query_variant_evidence_fusion",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Represent original and canonical retrieval hits as separate evidence channels through fusion, rather than collapsing each modality to one locally best rank before RRF; reward candidates corroborated by both query forms without removing candidates or changing reranker semantics.",
+          "competing_explanation": "The primary limitation may be candidate absence or reranker choice, so preserving alternate-query corroboration may not alter the fixed top-20 meaningfully; candidate-composition changes have previously been risky.",
+          "falsifier": "On a real-tender stratification of rows with canonical alternates, variant-aware fusion does not improve family/constraint-consistent candidate presence or rank, or it breaches public/hidden coverage or safety gates.",
+          "information_gain": "Moderate-to-high: it tests an untried architectural implication of the accepted canonicalization mechanism while avoiding another semantic expansion or index rebuild."
+        },
+        {
+          "mechanism_family": "catalog_scope_and_request_intent",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Use affirmative evidence of service-only procurement or a request category absent from the LD product taxonomy to route toward an uncertain/NOT_FOUND outcome, while allowing lines that name an actual purchasable product to continue through ordinary retrieval.",
+          "competing_explanation": "Tender work descriptions can embed an intended product, and catalog lexical fields can be noisy; a router could convert recoverable matches into wrong NOT_FOUND, reproducing prior selection-adjacent regressions.",
+          "falsifier": "A manually reviewed non-benchmark sample shows material overlap between the proposed service/absent-category cues and viable LD product requests, or regression gates show increased wrong-NOT_FOUND.",
+          "information_gain": "High: it separates genuine catalog noncoverage from retrieval failure in the sizeable consumable, water-treatment, and service portion of the real corpus."
+        }
+      ],
+      "origin": "attempt-01-research-first",
+      "kind": "research-first"
+    },
+    {
+      "question": "What causal mechanisms remain credible after evidence synthesis for Harness v2 attempt 2?",
+      "findings": "The current path is raw-query retrieval plus at most one canonical alternate, merged per modality by its single best variant rank, then RRF top-20 and reranking against the untouched raw query. In the reconstructed 130-row review set, 69 mention valves/cranes, 52 have threaded/inch cues, 39 contain third-party brand cues, 33 concern filters/water treatment, and 11 are explicit service actions; only 40 rows receive a canonical alternate. The catalog has 15,788 products with extensive ball-valve (14,428) and butterfly-valve (356) coverage, but no IVR/VALTEC/TECOFI, cartridge, or water-treatment terminology; its 129 filter entries are not cartridge/water-treatment products. A real parser defect is confirmed: an embedded technical-designation substring “КШТ.” is treated as a quantity boundary and reduces one review query to “Кран БИВАЛ К”. This is a generic boundary error, but only one affected review row was observed, so its expected direct corpus value is limited. There is no new evidence for another branded-token suppression, threaded/inch semantic expansion, or manufacturer enrichment refinement: all three evaluated attempts raised hidden wrong-NOT_FOUND rates.",
+      "decision_impact": "The main decision is whether unresolved value is primarily lost inside the accepted alternate-query retrieval mechanism, or whether a substantial portion of the corpus is genuinely outside LD’s catalog scope and needs honest uncertainty. Do not infer that more semantic expansion is the bottleneck: repeated branded-query transformations were unsafe. A bounded experiment should discriminate evidence-preservation/fusion from non-catalog intent while retaining raw retrieval and guarding against wrong NOT_FOUND.",
+      "unresolved": "The review set is intentionally unresolved, so its class counts show opportunity rather than end-to-end uplift. The raw query remains active, so the parser defect may not affect final candidate availability. The supplied review-pool gzip remains corrupt, although its 130 intended rows are exactly reconstructable from the intact all-row, label, and provisional-NOT_FOUND files.",
+      "sources": [],
+      "evidence_patterns": [
+        {
+          "pattern": "Semantics-preserving retrieval canonicalization is the only repeatedly validated mechanism, while added domain semantics do not reliably improve end-to-end outcomes.",
+          "supporting_experiments": [
+            "Legacy cycles 3 and 4 were accepted for additive deterministic canonicalization, including standalone WW translation.",
+            "Legacy cycle 6 flanged-shorthand expansion regressed blind safety; cycle 9 standard-bore expansion was neutral; cycle 17 actuation-state expansion was rejected."
+          ],
+          "interpretation": "The supported causal path is preserving or translating unambiguous evidence into catalog vocabulary, not completing underspecified technical meaning. The confirmed embedded-quantity boundary error directly damages that established path, but its observed prevalence is low.",
+          "confidence": 0.95
+        },
+        {
+          "pattern": "Genericizing branded nomenclature or importing manufacturer facts repeatedly increased hidden wrong-NOT_FOUND despite retaining raw-query retrieval.",
+          "supporting_experiments": [
+            "Attempt 1 threaded/inch expansion: hidden wrong-NOT_FOUND +0.04.",
+            "Attempt 2 supplier/model-noise suppression: hidden wrong-NOT_FOUND +0.04.",
+            "Attempt 3 trusted manufacturer/model enrichment: hidden wrong-NOT_FOUND +0.08."
+          ],
+          "interpretation": "Third-party model strings identify a recurring corpus class, but the causal bottleneck is not merely lexical noise or absent source-product facts. Foreign-product facts do not establish an appropriate LD equivalent; this mechanism family is locally saturated absent materially new evidence.",
+          "confidence": 0.97
+        },
+        {
+          "pattern": "Interventions that filter, alter candidate composition, or influence final selection have not produced a safe gain.",
+          "supporting_experiments": [
+            "Legacy cycles 1–2 broad gating/compatibility intervention regressed.",
+            "Legacy cycle 5 reranker rubric regressed; cycle 8 post-rerank compatibility fallback was neutral.",
+            "Legacy cycle 7 catalog structural enrichment reduced hidden coverage; cycle 16 candidate diversification reduced public coverage."
+          ],
+          "interpretation": "Selection-adjacent changes are not categorically impossible, but they require a separable affirmative signal. Generic compatibility, candidate pruning, prompt tightening, and catalog-derived structure are weakly supported causal levers in this system.",
+          "confidence": 0.92
+        },
+        {
+          "pattern": "The unresolved corpus contains a materially distinct non-catalog or service-like segment.",
+          "supporting_experiments": [
+            "Review-corpus inspection found 33 filter/water-treatment rows and 11 explicit service-action rows.",
+            "Catalog inspection found zero cartridge/ЭФГ and water-treatment terms, while its filter products are primarily industrial грязевики.",
+            "Examples include cartridge filters, mixed-action filter disassembly/repair, and water de-ironing installations."
+          ],
+          "interpretation": "For many such requests, broader retrieval cannot create a compatible sellable LD product. However, some service text embeds a concrete product request, so action words or the word “filter” alone are not sufficient grounds for NOT_FOUND.",
+          "confidence": 0.9
+        },
+        {
+          "pattern": "Alternate-query evidence is discarded before cross-modality fusion.",
+          "supporting_experiments": [
+            "Current HybridRetriever retrieves raw and canonical variants, then _merge_modality_candidates retains only the best per-candidate rank within dense and within BM25 before RRF.",
+            "40 of 130 review rows currently receive a canonical alternate."
+          ],
+          "interpretation": "A candidate corroborated by raw and canonical wording receives no extra RRF evidence beyond its stronger hit. This is an untested architectural implication of the accepted canonicalization mechanism, distinct from adding another semantic alias; its benefit remains unmeasured.",
+          "confidence": 0.88
+        }
+      ],
+      "candidate_directions": [
+        {
+          "mechanism_family": "query_evidence_preservation",
+          "history_relation": "REFINEMENT",
+          "causal_mechanism": "Repair structural clause/quantity boundary recognition so canonical retrieval alternates cannot terminate inside an alphanumeric designation, while preserving raw retrieval, existing transformations, and reranking behavior.",
+          "competing_explanation": "Raw-query retrieval already provides the required candidate, and the one observed damaged designation may have no material effect on the final top-20.",
+          "falsifier": "On a stratified set of affected technical-designation rows, corrected alternates neither improve viable family-consistent candidate presence/rank nor provide an end-to-end real-tender value signal while guardrails remain flat.",
+          "information_gain": "Moderate. It isolates a confirmed correctness failure within the one successful mechanism family, but the observed affected population is small and should not be overstated."
+        },
+        {
+          "mechanism_family": "query_variant_evidence_fusion",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Preserve raw-query and canonical-query hits as separate retrieval-evidence channels through fusion, rewarding cross-variant corroboration without removing candidates or changing reranker inputs/selection semantics.",
+          "competing_explanation": "Canonical alternates may mostly retrieve the same candidates already reached by raw retrieval; the real bottleneck may be catalog absence or reranker choice rather than loss of variant provenance.",
+          "falsifier": "Among rows with canonical alternates, variant-aware fusion does not improve viable family/constraint-consistent candidate presence or rank, or it breaches public/hidden safety or coverage gates.",
+          "information_gain": "High. It tests whether accepted canonicalization has unrealized value because the current merger discards its second evidence signal, without repeating semantic expansion or catalog rewriting."
+        },
+        {
+          "mechanism_family": "catalog_scope_and_request_intent",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Use only affirmative combined evidence of service-only procurement or a requested product category absent from the LD taxonomy to expose uncertain/NOT_FOUND rather than force ordinary product selection; lines containing a purchasable product continue through normal retrieval.",
+          "competing_explanation": "Tender work descriptions can describe installation or repair alongside an intended LD product, so an intent route could create wrong NOT_FOUND outcomes and repeat earlier selection-adjacent regressions.",
+          "falsifier": "A manually reviewed non-benchmark sample shows substantial overlap between the proposed combined cues and viable LD product requests, or regression gates increase wrong-NOT_FOUND.",
+          "information_gain": "High. It directly distinguishes genuine catalog noncoverage from retrieval failure in a large real-tender class and tests the product goal’s uncertainty requirement."
+        }
+      ],
+      "origin": "attempt-02-research-first",
+      "kind": "research-first"
+    },
+    {
+      "question": "What causal mechanisms remain credible for Attempt 3 after inspecting the champion, real-tender corpus, and evaluated experiment history?",
+      "findings": "The champion retrieves the raw line plus at most one canonical alternate, collapses raw/canonical hits to the best rank within each modality, RRF-fuses dense and BM25, and gives only the untouched raw line to DeepSeek for final selection. In the reconstructed 130-row review set, 48 are ball-valve requests, 45 contain threaded/inch cues, 43 contain third-party brand/model cues, 33 concern filters/water treatment, and 20 contain work-action wording. The LD CSV has no IVR, VALTEC, cartridge/ЭФГ, or water-treatment terms. Of the 20 action rows, some explicitly name a valve or filter product, so action wording alone is not a safe abstention signal.\n\nThe local, nearby retrieval space is now substantially saturated: endpoint/inch expansion, vendor-token suppression, manufacturer-fact enrichment, quantity-boundary repair, and variant-aware fusion all had neutral or unsafe end-to-end results. The latter two are especially important because code confirms their premises, but their evaluated changes still increased wrong-NOT_FOUND or failed public safety. Evidence supports investigating request granularity and catalog-scope uncertainty rather than another lexical or fusion refinement.",
+      "decision_impact": "The central uncertainty is whether unresolved tender value is mostly recoverable product evidence obscured by mixed service/product line items, or honest catalog-scope uncertainty for requests outside LD’s sellable taxonomy. The next experiment should discriminate those explanations while preserving raw retrieval and avoiding a forced MATCHED/NOT_FOUND decision. There is insufficient evidence for another nearby branded-model, endpoint/inch, canonicalization, parser, or query-variant-fusion refinement.",
+      "unresolved": "The review pool is unresolved, so category prevalence is not proof of end-to-end uplift. Lexical absence from the catalog is supporting evidence rather than proof of product absence; any scope mechanism needs affirmative taxonomy/category evidence and a fail-open path. The supplied review-pool gzip remains unreadable locally, but its 130 members are exactly reconstructable from the intact full corpus minus the 90 labels and 33 provisional cases.",
+      "sources": [],
+      "evidence_patterns": [
+        {
+          "pattern": "Semantics-preserving retrieval changes have a narrow success boundary; semantic completion and alternate-ranking changes have not safely improved end-to-end outcomes.",
+          "supporting_experiments": [
+            "Legacy cycles 3–4 accepted additive canonicalization.",
+            "Legacy cycles 6, 9, and 17 rejected flanged, standard-bore, and actuation semantic expansions.",
+            "Attempt 1 query_evidence_preservation improved public known-positive hit rate but raised hidden wrong-NOT_FOUND by 0.08.",
+            "Attempt 2 query_variant_evidence_fusion raised public wrong-NOT_FOUND by 0.04."
+          ],
+          "interpretation": "The code confirms that canonical variants are currently collapsed before RRF, and that a quantity-boundary defect exists. But both a repair of that defect and preservation of variant provenance have already been scientifically evaluated without safe end-to-end value. These are not credible nearby repeats absent new causal evidence.",
+          "confidence": 0.97
+        },
+        {
+          "pattern": "Genericizing third-party nomenclature or importing external product facts repeatedly harms abstention safety.",
+          "supporting_experiments": [
+            "Attempt 1 threaded/inch alias expansion: hidden wrong-NOT_FOUND +0.04.",
+            "Attempt 2 supplier/model-noise suppression: hidden wrong-NOT_FOUND +0.04.",
+            "Attempt 3 trusted manufacturer/model enrichment: hidden wrong-NOT_FOUND +0.08.",
+            "Review corpus: 43 branded/model-like rows; catalog lexical scan: no IVR or VALTEC tokens."
+          ],
+          "interpretation": "Branded nomenclature is a real lexical mismatch, but the repeated failure signature indicates that source-product facts and generic wording do not establish an appropriate LD equivalent. This family is locally saturated.",
+          "confidence": 0.98
+        },
+        {
+          "pattern": "Selection-adjacent candidate manipulation is high risk, but catalog scope is a distinct product problem not addressed by retrieval.",
+          "supporting_experiments": [
+            "Legacy cycles 1–2, 5, 7, 8, and 16 found gating, compatibility prompting, index enrichment, fallback substitution, or diversification neutral or harmful.",
+            "Review corpus: 33 filter/water-treatment rows; 13 contain cartridge/ЭФГ/sorbent/water-treatment cues without a valve-family cue.",
+            "Catalog lexical scan: no cartridge/ЭФГ or water-treatment terms."
+          ],
+          "interpretation": "Broad filtering or selection rules should not be retried. A narrowly affirmative catalog-scope mechanism is causally different if it reports uncertainty rather than selecting a substitute or asserting catalog absence from weak evidence.",
+          "confidence": 0.91
+        },
+        {
+          "pattern": "Tender lines mix procurement work with product nouns, making line-item granularity a plausible upstream bottleneck.",
+          "supporting_experiments": [
+            "Review corpus: 20 rows contain installation, removal, disassembly, repair, or maintenance actions.",
+            "Five action rows also name a valve-family product; examples include installation/removal of ball valves and a line containing a butterfly-valve product.",
+            "Current canonicalization extracts a textual clause but has no explicit work-versus-product decomposition."
+          ],
+          "interpretation": "An action-word NOT_FOUND rule would be unsafe, but separating an explicit purchasable product phrase from surrounding work language could distinguish recoverable product requests from service-only requests. This is materially different from supplier-token suppression.",
+          "confidence": 0.86
+        }
+      ],
+      "candidate_directions": [
+        {
+          "mechanism_family": "catalog_scope_uncertainty",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Use affirmative, catalog-taxonomy-backed evidence that a requested category is outside LD’s sellable product scope to return an explicit uncertain/no-catalog-evidence outcome, while retaining ordinary retrieval for ambiguous or product-bearing lines. Do not infer absence from a single unmatched token and do not substitute an unrelated LD item.",
+          "competing_explanation": "The apparent noncoverage may be catalog synonymy or a retrieval/index representation failure; routing could hide a valid LD product or create wrong NOT_FOUND behavior.",
+          "falsifier": "A blinded manual review of a stratified non-benchmark sample finds viable LD products for a material share of rows meeting the proposed combined cues, or regression evaluation increases wrong-NOT_FOUND.",
+          "information_gain": "High. It directly tests whether a meaningful part of real-tender difficulty is catalog scope rather than retrieval, while aligning with the product goal’s preference for honest uncertainty."
+        },
+        {
+          "mechanism_family": "line_item_product_decomposition",
+          "history_relation": "NEW_MECHANISM",
+          "causal_mechanism": "Extract a bounded purchasable-product span from mixed work/service nomenclature and use it only as an additive retrieval representation; retain the complete raw line and leave final compatibility selection unchanged. Service-only spans should not manufacture a product query.",
+          "competing_explanation": "Mixed work wording may be useful context, and the apparent product phrase may be too underspecified to improve retrieval; decomposition could repeat unsafe genericization under another name.",
+          "falsifier": "On a stratified real-tender sample containing both action and product cues, extracted product spans do not improve family-consistent candidate presence/rank over raw retrieval, or public/hidden guardrails regress.",
+          "information_gain": "High. It separates recoverable product mentions embedded in work descriptions from genuinely service-only lines without relying on the already-rejected branded-model transformations."
+        },
+        {
+          "mechanism_family": "uncertainty_preserving_result_contract",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Represent insufficient technical evidence separately from a confident product match and expose a useful candidate set or an explicit uncertainty reason when multiple candidates remain plausible, instead of making the final interface binary by default.",
+          "competing_explanation": "The current reranker can already select multiple candidates, so the bottleneck may be candidate quality rather than result semantics; extra states may add complexity without changing user utility.",
+          "falsifier": "A sampled review workflow shows that the proposed uncertainty state does not improve the ability to distinguish unsupported, underspecified, and viable multi-candidate requests, or it encourages unsupported matches/abstentions under regression gates.",
+          "information_gain": "Moderate-to-high. It tests whether measured pipeline failures partly arise from a binary decision contract that cannot faithfully express the product goal, rather than from another retrieval-rank adjustment."
+        }
+      ],
+      "origin": "attempt-03-research-first",
+      "kind": "research-first"
+    }
+  ],
+  "usage": {
+    "agent_calls": 9,
+    "planner_calls": 3,
+    "implementer_calls": 3,
+    "reviewer_calls": 0,
+    "fixer_calls": 0,
+    "research_calls": 3,
+    "elapsed_seconds": 1320.134,
+    "reported_tokens": 538155,
+    "by_model": {
+      "gpt-5.6-terra": {
+        "calls": 6,
+        "elapsed_seconds": 904.147
+      },
+      "gpt-5.5": {
+        "calls": 3,
+        "elapsed_seconds": 415.987
+      }
+    }
+  },
+  "active": {
+    "cycle": 3,
+    "attempt_id": 3,
+    "stage": "HIDDEN",
+    "started_at": "2026-09-10T18:16:31.419273Z",
+    "champion_public_before": {
+      "evaluated": 120,
+      "hard_gate_cases": 30,
+      "core_cases": 25,
+      "negative_cases": 5,
+      "hard_pass_rate": 0.8333333333333334,
+      "core_pass_rate": 0.8,
+      "negative_pass_rate": 1.0,
+      "wrong_not_found_rate": 0.0,
+      "false_match_rate": 0.0,
+      "unknown_answer_rate": 0.008333333333333333,
+      "human_reject_rate": 0.008333333333333333,
+      "known_positive_hit_rate": 0.4166666666666667,
+      "verdict_counts": {
+        "PASS": 30,
+        "FAIL_HUMAN_REJECT": 1,
+        "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+        "UNSCORED": 81,
+        "FAIL_WRONG_PRODUCT": 6,
+        "FAIL_PIPELINE": 1
+      }
+    },
+    "champion_hidden_before": {
+      "evaluated": 30,
+      "hard_gate_cases": 30,
+      "core_cases": 25,
+      "negative_cases": 5,
+      "hard_pass_rate": 0.8666666666666667,
+      "core_pass_rate": 0.84,
+      "negative_pass_rate": 1.0,
+      "wrong_not_found_rate": 0.0,
+      "false_match_rate": 0.0,
+      "unknown_answer_rate": 0.0,
+      "human_reject_rate": 0.0,
+      "known_positive_hit_rate": 0.4,
+      "verdict_counts": {
+        "PASS": 26,
+        "FAIL_WRONG_PRODUCT": 4
+      }
+    },
+    "research": {
+      "question": "What causal mechanisms remain credible for Attempt 3 after inspecting the champion, real-tender corpus, and evaluated experiment history?",
+      "findings": "The champion retrieves the raw line plus at most one canonical alternate, collapses raw/canonical hits to the best rank within each modality, RRF-fuses dense and BM25, and gives only the untouched raw line to DeepSeek for final selection. In the reconstructed 130-row review set, 48 are ball-valve requests, 45 contain threaded/inch cues, 43 contain third-party brand/model cues, 33 concern filters/water treatment, and 20 contain work-action wording. The LD CSV has no IVR, VALTEC, cartridge/ЭФГ, or water-treatment terms. Of the 20 action rows, some explicitly name a valve or filter product, so action wording alone is not a safe abstention signal.\n\nThe local, nearby retrieval space is now substantially saturated: endpoint/inch expansion, vendor-token suppression, manufacturer-fact enrichment, quantity-boundary repair, and variant-aware fusion all had neutral or unsafe end-to-end results. The latter two are especially important because code confirms their premises, but their evaluated changes still increased wrong-NOT_FOUND or failed public safety. Evidence supports investigating request granularity and catalog-scope uncertainty rather than another lexical or fusion refinement.",
+      "decision_impact": "The central uncertainty is whether unresolved tender value is mostly recoverable product evidence obscured by mixed service/product line items, or honest catalog-scope uncertainty for requests outside LD’s sellable taxonomy. The next experiment should discriminate those explanations while preserving raw retrieval and avoiding a forced MATCHED/NOT_FOUND decision. There is insufficient evidence for another nearby branded-model, endpoint/inch, canonicalization, parser, or query-variant-fusion refinement.",
+      "unresolved": "The review pool is unresolved, so category prevalence is not proof of end-to-end uplift. Lexical absence from the catalog is supporting evidence rather than proof of product absence; any scope mechanism needs affirmative taxonomy/category evidence and a fail-open path. The supplied review-pool gzip remains unreadable locally, but its 130 members are exactly reconstructable from the intact full corpus minus the 90 labels and 33 provisional cases.",
+      "sources": [],
+      "evidence_patterns": [
+        {
+          "pattern": "Semantics-preserving retrieval changes have a narrow success boundary; semantic completion and alternate-ranking changes have not safely improved end-to-end outcomes.",
+          "supporting_experiments": [
+            "Legacy cycles 3–4 accepted additive canonicalization.",
+            "Legacy cycles 6, 9, and 17 rejected flanged, standard-bore, and actuation semantic expansions.",
+            "Attempt 1 query_evidence_preservation improved public known-positive hit rate but raised hidden wrong-NOT_FOUND by 0.08.",
+            "Attempt 2 query_variant_evidence_fusion raised public wrong-NOT_FOUND by 0.04."
+          ],
+          "interpretation": "The code confirms that canonical variants are currently collapsed before RRF, and that a quantity-boundary defect exists. But both a repair of that defect and preservation of variant provenance have already been scientifically evaluated without safe end-to-end value. These are not credible nearby repeats absent new causal evidence.",
+          "confidence": 0.97
+        },
+        {
+          "pattern": "Genericizing third-party nomenclature or importing external product facts repeatedly harms abstention safety.",
+          "supporting_experiments": [
+            "Attempt 1 threaded/inch alias expansion: hidden wrong-NOT_FOUND +0.04.",
+            "Attempt 2 supplier/model-noise suppression: hidden wrong-NOT_FOUND +0.04.",
+            "Attempt 3 trusted manufacturer/model enrichment: hidden wrong-NOT_FOUND +0.08.",
+            "Review corpus: 43 branded/model-like rows; catalog lexical scan: no IVR or VALTEC tokens."
+          ],
+          "interpretation": "Branded nomenclature is a real lexical mismatch, but the repeated failure signature indicates that source-product facts and generic wording do not establish an appropriate LD equivalent. This family is locally saturated.",
+          "confidence": 0.98
+        },
+        {
+          "pattern": "Selection-adjacent candidate manipulation is high risk, but catalog scope is a distinct product problem not addressed by retrieval.",
+          "supporting_experiments": [
+            "Legacy cycles 1–2, 5, 7, 8, and 16 found gating, compatibility prompting, index enrichment, fallback substitution, or diversification neutral or harmful.",
+            "Review corpus: 33 filter/water-treatment rows; 13 contain cartridge/ЭФГ/sorbent/water-treatment cues without a valve-family cue.",
+            "Catalog lexical scan: no cartridge/ЭФГ or water-treatment terms."
+          ],
+          "interpretation": "Broad filtering or selection rules should not be retried. A narrowly affirmative catalog-scope mechanism is causally different if it reports uncertainty rather than selecting a substitute or asserting catalog absence from weak evidence.",
+          "confidence": 0.91
+        },
+        {
+          "pattern": "Tender lines mix procurement work with product nouns, making line-item granularity a plausible upstream bottleneck.",
+          "supporting_experiments": [
+            "Review corpus: 20 rows contain installation, removal, disassembly, repair, or maintenance actions.",
+            "Five action rows also name a valve-family product; examples include installation/removal of ball valves and a line containing a butterfly-valve product.",
+            "Current canonicalization extracts a textual clause but has no explicit work-versus-product decomposition."
+          ],
+          "interpretation": "An action-word NOT_FOUND rule would be unsafe, but separating an explicit purchasable product phrase from surrounding work language could distinguish recoverable product requests from service-only requests. This is materially different from supplier-token suppression.",
+          "confidence": 0.86
+        }
+      ],
+      "candidate_directions": [
+        {
+          "mechanism_family": "catalog_scope_uncertainty",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Use affirmative, catalog-taxonomy-backed evidence that a requested category is outside LD’s sellable product scope to return an explicit uncertain/no-catalog-evidence outcome, while retaining ordinary retrieval for ambiguous or product-bearing lines. Do not infer absence from a single unmatched token and do not substitute an unrelated LD item.",
+          "competing_explanation": "The apparent noncoverage may be catalog synonymy or a retrieval/index representation failure; routing could hide a valid LD product or create wrong NOT_FOUND behavior.",
+          "falsifier": "A blinded manual review of a stratified non-benchmark sample finds viable LD products for a material share of rows meeting the proposed combined cues, or regression evaluation increases wrong-NOT_FOUND.",
+          "information_gain": "High. It directly tests whether a meaningful part of real-tender difficulty is catalog scope rather than retrieval, while aligning with the product goal’s preference for honest uncertainty."
+        },
+        {
+          "mechanism_family": "line_item_product_decomposition",
+          "history_relation": "NEW_MECHANISM",
+          "causal_mechanism": "Extract a bounded purchasable-product span from mixed work/service nomenclature and use it only as an additive retrieval representation; retain the complete raw line and leave final compatibility selection unchanged. Service-only spans should not manufacture a product query.",
+          "competing_explanation": "Mixed work wording may be useful context, and the apparent product phrase may be too underspecified to improve retrieval; decomposition could repeat unsafe genericization under another name.",
+          "falsifier": "On a stratified real-tender sample containing both action and product cues, extracted product spans do not improve family-consistent candidate presence/rank over raw retrieval, or public/hidden guardrails regress.",
+          "information_gain": "High. It separates recoverable product mentions embedded in work descriptions from genuinely service-only lines without relying on the already-rejected branded-model transformations."
+        },
+        {
+          "mechanism_family": "uncertainty_preserving_result_contract",
+          "history_relation": "NEW_LAYER",
+          "causal_mechanism": "Represent insufficient technical evidence separately from a confident product match and expose a useful candidate set or an explicit uncertainty reason when multiple candidates remain plausible, instead of making the final interface binary by default.",
+          "competing_explanation": "The current reranker can already select multiple candidates, so the bottleneck may be candidate quality rather than result semantics; extra states may add complexity without changing user utility.",
+          "falsifier": "A sampled review workflow shows that the proposed uncertainty state does not improve the ability to distinguish unsupported, underspecified, and viable multi-candidate requests, or it encourages unsupported matches/abstentions under regression gates.",
+          "information_gain": "Moderate-to-high. It tests whether measured pipeline failures partly arise from a binary decision contract that cannot faithfully express the product goal, rather than from another retrieval-rank adjustment."
+        }
+      ]
+    },
+    "research_first_completed": true,
+    "candidate_alias": null,
+    "plan": {
+      "action": "IMPLEMENT",
+      "change_name": "v2-cycle-03-product-span-retrieval",
+      "hypothesis_family": "line_item_product_decomposition",
+      "hypothesis": "Extract an explicit product-bearing span from a narrowly recognized mixed work-and-product tender clause, using it only as the existing additive retrieval alternate while preserving raw-query retrieval and final selection semantics.",
+      "why_now": "Nearby lexical, vendor-enrichment, parser, and query-fusion mechanisms are scientifically saturated or unsafe. Mixed work/product lines are a distinct upstream ambiguity, while action-only NOT_FOUND routing remains unsafe.",
+      "expected_effect": "Improve family-consistent candidate recall for explicit products embedded in work descriptions; service-only and ambiguous lines remain on their current path.",
+      "expected_cases_delta": 1,
+      "confidence": 0.58,
+      "risk": "medium",
+      "success_signal": "Eligible mixed lines add or raise family-consistent pre-rerank candidates without public/hidden safety regressions; no alternate is emitted for service-only, non-action, or ambiguous multi-clause lines.",
+      "candidate_hypotheses": [
+        "line_item_product_decomposition: additive product-span retrieval alternate",
+        "catalog_scope_uncertainty: affirmative uncertainty routing for absent catalog categories",
+        "uncertainty_preserving_result_contract: separate insufficient evidence from confident match"
+      ],
+      "needs_reindex": false,
+      "planning_depth": "NORMAL",
+      "research_question": "",
+      "plan_summary": "Created and strictly validated proposal, specification, design, and implementation tasks. The change is planning-only and leaves product code untouched.",
+      "mechanism_family": "line_item_product_decomposition",
+      "history_relation": "NEW_MECHANISM",
+      "information_gain": "Tests whether mixed service wording obscures explicitly stated product evidence versus the unresolved cases being genuinely service-only or outside catalog scope, without repeating rejected selection, alias, or fusion interventions."
+    },
+    "action": "IMPLEMENT",
+    "experiment_id": "line-item-product-decomposition-a401b3ca70",
+    "worker": {
+      "status": "complete",
+      "summary": "Implemented `v2-cycle-03-product-span-retrieval`: mixed work/product lines can now produce one additive product-bearing retrieval alternate, while original-query retrieval, reranking, result query, limits, and selection semantics remain unchanged. Marked all OpenSpec tasks complete.",
+      "tests": [
+        "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py -> 30 passed",
+        "python -m pytest -q -> 204 passed"
+      ],
+      "needs_reindex": false,
+      "blocker": "",
+      "changed_components": [
+        "src/nomenclature_matcher/query_canonicalization.py",
+        "tests/test_query_canonicalization.py",
+        "tests/test_matcher.py",
+        "openspec/changes/v2-cycle-03-product-span-retrieval/tasks.md"
+      ],
+      "mechanism_evidence": [
+        "Eligible action-plus-product clauses emit a distinct alternate starting at the supported product anchor and retaining product, DN/PN, connection, material, and control evidence.",
+        "Service-only, non-action product, and separated action/product examples preserve existing canonicalization behavior without product inference.",
+        "Matcher test verifies the product span is passed only as `canonical_query`; `MatchResult.query` and reranker input remain the normalized original query.",
+        "Existing hybrid retriever tests verify one extra distinct alternate call, deduplication/RRF behavior, and fail-open behavior when alternate retrieval fails.",
+        "Service-only work cue test verifies no path returns `NOT_FOUND` solely because work wording is present."
+      ]
+    },
+    "candidate_public": {
+      "evaluated": 120,
+      "hard_gate_cases": 30,
+      "core_cases": 25,
+      "negative_cases": 5,
+      "hard_pass_rate": 0.8333333333333334,
+      "core_pass_rate": 0.8,
+      "negative_pass_rate": 1.0,
+      "wrong_not_found_rate": 0.0,
+      "false_match_rate": 0.0,
+      "unknown_answer_rate": 0.008333333333333333,
+      "human_reject_rate": 0.008333333333333333,
+      "known_positive_hit_rate": 0.5,
+      "verdict_counts": {
+        "PASS": 30,
+        "FAIL_HUMAN_REJECT": 1,
+        "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+        "UNSCORED": 81,
+        "FAIL_WRONG_PRODUCT": 5,
+        "FAIL_WRONG_NOT_FOUND": 2
+      }
+    },
+    "candidate_scored_failures": [
+      {
+        "id": "gold_q002",
+        "verdict": "FAIL_HUMAN_REJECT",
+        "reason": "Returned product is explicitly HUMAN REJECT for this query."
+      },
+      {
+        "id": "gold_q005",
+        "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+        "reason": "Required fields are missing from the returned product; correctness is not provable."
+      },
+      {
+        "id": "gold_q022",
+        "verdict": "FAIL_WRONG_PRODUCT",
+        "reason": "Returned product violates one or more deterministic GOLD requirements."
+      },
+      {
+        "id": "gold_q026",
+        "verdict": "FAIL_WRONG_PRODUCT",
+        "reason": "Returned product violates one or more deterministic GOLD requirements."
+      },
+      {
+        "id": "gold_q027",
+        "verdict": "FAIL_WRONG_PRODUCT",
+        "reason": "Returned product violates one or more deterministic GOLD requirements."
+      },
+      {
+        "id": "tender_v1_003",
+        "verdict": "FAIL_WRONG_PRODUCT",
+        "reason": "Returned product violates one or more deterministic GOLD requirements."
+      },
+      {
+        "id": "tender_v1_004",
+        "verdict": "FAIL_WRONG_NOT_FOUND",
+        "reason": "Constraint-based GOLD has catalog evidence for a matching product."
+      },
+      {
+        "id": "tender_v1_006",
+        "verdict": "FAIL_WRONG_PRODUCT",
+        "reason": "Returned product violates one or more deterministic GOLD requirements."
+      },
+      {
+        "id": "tender_v1_019",
+        "verdict": "FAIL_WRONG_NOT_FOUND",
+        "reason": "Constraint-based GOLD has catalog evidence for a matching product."
+      }
+    ],
+    "candidate_unscored_count": 81,
+    "failure_delta": {
+      "fixed_ids": [],
+      "regressed_ids": [],
+      "remaining_ids": [
+        "gold_q002",
+        "gold_q005",
+        "gold_q022",
+        "gold_q026",
+        "gold_q027",
+        "tender_v1_003",
+        "tender_v1_004",
+        "tender_v1_006",
+        "tender_v1_019"
+      ],
+      "fixed_count": 0,
+      "regressed_count": 0
+    },
+    "public_delta": {
+      "hard_pass_rate": 0.0,
+      "core_pass_rate": 0.0,
+      "negative_pass_rate": 0.0,
+      "wrong_not_found_rate": 0.0,
+      "false_match_rate": 0.0,
+      "unknown_answer_rate": 0.0,
+      "human_reject_rate": 0.0,
+      "known_positive_hit_rate": 0.08333333333333331
+    },
+    "public_delta_cases": 0
+  },
+  "final_holdout_consumed": false,
+  "attempts_started": 3,
+  "scientific_iterations": 2,
+  "execution_counters_version": 1
+}

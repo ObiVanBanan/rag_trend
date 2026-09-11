@@ -1,0 +1,2387 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR] (network access enabled)
+reasoning effort: low
+reasoning summaries: none
+session id: 01a0874f-340f-7e33-93e7-c5b06c97b13e
+--------
+user
+You are the Fixer. Another agent implemented the hypothesis and a read-only Reviewer produced a correction plan.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL PLAN
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-08-verifiable-selection-fallback",
+  "hypothesis": "A fail-open deterministic post-rerank compatibility fallback will reduce explicit execution/control/bore conflicts by substituting only an already retrieved, fully evidenced compatible candidate.",
+  "why_now": "Current evidence points to final-selection conflicts rather than retrieval misses; this is a materially different, bounded alternative to prior broad gating, prompt changes, and index enrichment.",
+  "expected_effect": "Correct unsafe top selections while preserving the reranker outcome when no compatible, evidenced alternative exists.",
+  "expected_metric_gain": "+3.3–10 pp public hard-pass; +0–6.7 pp blind hard-pass.",
+  "lesson_from_history": "Cycle 1 broad filtering and Cycle 5 prompt-based selection changes regressed. This design never filters before reranking, uses literal deterministic cues, and falls back only to an existing compatible candidate. Cycle 7 index enrichment regressed, so no rebuild is requested.",
+  "candidate_hypotheses": [
+    "Fail-open deterministic post-rerank compatibility fallback (selected).",
+    "Flange-subtype schema expansion.",
+    "Subject-validated legacy designation mappings.",
+    "Catalog-side index enrichment or RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks at openspec/changes/cycle-08-verifiable-selection-fallback/. No product code was changed."
+}
+
+REVIEW
+{
+  "decision": "FIX",
+  "summary": "The fallback is a bounded, generally applicable post-rerank safety mechanism and its focused tests exercise the stated control/bore/valve conflict scenarios. However, the change accidentally disables existing `QueryConstraints` validation: the `dn` and `pn_min_mpa` validators are now nested under `SelectionCompatibility`, so negative values are accepted by `QueryConstraints`.",
+  "issues": [
+    "Regression: `QueryConstraints.model_validate({\"product_type\":\"ball_valve\",\"dn\":-1,\"pn_min_mpa\":-0.1})` accepts both invalid values. Move `_validate_dn` and `_validate_pn` back into `QueryConstraints`; they are currently indented inside `SelectionCompatibility`.",
+    "Add a regression test asserting that non-positive `dn` and `pn_min_mpa` are rejected by `QueryConstraints`.",
+    "Local pytest could not run in this read-only sandbox because no usable temporary directory is available; the validation regression was verified directly through model construction."
+  ],
+  "fix_plan": [
+    "Move the two Pydantic field validators immediately after the `QueryConstraints` fields, before the new dataclasses.",
+    "Remove those validator methods from `SelectionCompatibility`.",
+    "Add focused invalid-value tests, then rerun the focused and full test suites in a normal writable environment."
+  ],
+  "next_direction": "After restoring the unrelated validation regression, measure this candidate normally. The approach is worth evaluating: it is fail-open, uses only retrieved candidates, and requires explicit evidence for a replacement; inspect fallback provenance and any false-match movement before considering broader structured selection rules."
+}
+
+RULES
+- Fix only the Reviewer's concrete issues. Do not introduce a new hypothesis.
+- Preserve the general MVP-level intent; do not turn the fix into a benchmark-specific special case.
+- Run focused tests.
+- NEVER run a full catalog index rebuild yourself. If fixes require one, set `needs_reindex=true` and let the supervisor do it.
+- Do not inspect or search for the hidden final-check dataset.
+- Do not alter harness policy, GOLD/eval answers, or files under `harness_rag/`.
+- Do not run git commit/push/reset/checkout/rebase.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T17:55:10.299645Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a0874f-340f-7e33-93e7-c5b06c97b13e.tmp-1788976509971015830: line 2547: syntax error near unexpected token `('
+
+codex
+{"status":"complete","summary":"I’ll apply the reviewer’s narrow correction: inspect the model/test files, move the misplaced validators back under `QueryConstraints`, add regression coverage, then run focused pytest only.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,220p' /workspaces/ML-Cancer-Data/.agents/skills/openspec-apply-change/SKILL.md && pwd && rg -n \"class QueryConstraints|SelectionCompatibility|_validate_dn|_validate_pn|QueryConstraints\" src tests" in /workspaces/ML-Cancer-Data
+ exited 127 in 14ms:
+---
+name: openspec-apply-change
+description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.
+allowed-tools: Bash(openspec:*)
+license: MIT
+compatibility: Requires openspec CLI.
+metadata:
+  author: openspec
+  version: "1.0"
+  generatedBy: "1.12.0"
+---
+
+Implement tasks from an OpenSpec change.
+
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+
+**Input**: Optionally specify a change name (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Steps**
+
+1. **Select the change**
+
+   If a name is provided, use it. Otherwise:
+   - Infer from conversation context if the user mentioned a change
+   - Auto-select if only one active change exists
+   - If ambiguous, run `openspec list --json` to get available changes and ask the user to select one
+
+   Always announce: "Using change: <name>" and how to override (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) <other>`).
+
+2. **Check status to understand the schema**
+   ```bash
+   openspec status --change "<name>" --json
+   ```
+   Parse the JSON to understand:
+   - `schemaName`: The workflow being used (e.g., "spec-driven")
+   - `planningHome`, `changeRoot`, and `actionContext`: planning scope and edit constraints
+   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+
+3. **Get apply instructions**
+
+   ```bash
+   openspec instructions apply --change "<name>" --json
+   ```
+
+   This returns:
+   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
+   - Progress (total, complete, remaining)
+   - Task list with status
+   - Dynamic instruction based on current state
+   - Optional `context`: current required project instruction input from the selected root
+   - Optional `operationGuidance`: current advisory guidance for apply
+
+   **Handle states:**
+   - If `state: "blocked"` (missing artifacts): show message, suggest using `$openspec-continue-change (Codex) or /openspec-continue-change (other agents)` (if it is not installed, run `openspec status --change "<name>" --json` to see the next artifact and `openspec instructions <artifact-id> --change "<name>" --json` for how to create it)
+   - If `state: "all_done"`: congratulate, suggest archive
+   - Otherwise: proceed to implementation
+
+   Treat `context` as a required prompt-level input. Read and consider it, and
+   apply relevant project facts, conventions, and constraints while implementing.
+   Treat `operationGuidance` as optional additive advice. Read and consider every
+   entry, and follow entries that are applicable and compatible with the built-in
+   workflow.
+
+   Keep both fields separate from CLI-returned state, missing artifacts, tasks,
+   progress, `contextFiles`, and the built-in `instruction`. They are not
+   evidence of task completion, do not replace the built-in instruction, and do
+   not permit bypassing a blocked state. If context conflicts with the built-in
+   instruction, an explicit user choice, or a CLI-controlled value, report the
+   conflict and preserve the controlling value. If guidance is inapplicable or
+   conflicts with those controlling inputs, do not follow it and explain why.
+   These are prompt-level behavior contracts, not enforceable checks.
+
+4. **Read context files**
+
+   Read every file path listed under `contextFiles` from the apply instructions output.
+   The files depend on the schema being used:
+   - **spec-driven**: proposal, specs, design, tasks
+   - Other schemas: follow the contextFiles from CLI output
+
+   Do not copy `context` or `operationGuidance` verbatim into implementation
+   files or planning artifacts unless the user separately asks for that content.
+
+5. **Show current progress**
+
+   Display:
+   - Schema being used
+   - Progress: "N/M tasks complete"
+   - Remaining tasks overview
+   - Dynamic instruction from CLI
+
+6. **Implement tasks (loop until done or blocked)**
+
+   For each pending task:
+   - Show which task is being worked on
+   - Make the code changes required
+   - Keep changes minimal and focused
+   - Mark task complete in the tasks file: `- [ ]` → `- [x]`
+   - Continue to next task
+
+   **Pause if:**
+   - Task is unclear → ask for clarification
+   - Implementation reveals a design issue → suggest updating artifacts
+   - A task needs work beyond what the spec and tasks describe, or you are tempted to drop, narrow, defer, or accept exceptions to specified behavior to make it fit → surface the added scope and ask; do not absorb it silently
+   - Error or blocker encountered → report and wait for guidance
+   - User interrupts
+
+7. **On completion or pause, show status**
+
+   Display:
+   - Tasks completed this session
+   - Overall progress: "N/M tasks complete"
+   - If all done: suggest archive
+   - If paused: explain why and wait for guidance
+
+**Output During Implementation**
+
+```
+## Implementing: <change-name> (schema: <schema-name>)
+
+Working on task 3/7: <task description>
+[...implementation happening...]
+✓ Task complete
+
+Working on task 4/7: <task description>
+[...implementation happening...]
+✓ Task complete
+```
+
+**Output On Completion**
+
+```
+## Implementation Complete
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 7/7 tasks complete ✓
+
+### Completed This Session
+- [x] Task 1
+- [x] Task 2
+...
+
+All tasks complete! You can archive this change with `$openspec-archive-change (Codex) or /openspec-archive-change (other agents)`.
+```
+
+**Output On Pause (Issue Encountered)**
+
+```
+## Implementation Paused
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 4/7 tasks complete
+
+### Issue Encountered
+<description of the issue>
+
+**Options:**
+1. <option 1>
+2. <option 2>
+3. Other approach
+
+What would you like to do?
+```
+
+**Guardrails**
+- Keep going through tasks until done or blocked
+- Always read context files before starting (from the apply instructions output)
+- If task is ambiguous, pause and ask before implementing
+- If implementation reveals issues, pause and suggest artifact updates
+- Keep code changes minimal and scoped to each task
+- Update task checkbox immediately after completing each task
+- Pause on errors, blockers, or unclear requirements - don't guess
+- When a task needs work beyond what the spec describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
+- Only mark a task `- [x]` when its specified behavior is fully implemented, not when it is partially done or deferred
+- Use contextFiles from CLI output, don't assume specific file names
+- Do not use context or operation guidance as proof that a task is complete
+- Apply relevant project context; report conflicts with controlling workflow inputs
+- Consider every guidance entry; explain any inapplicable or conflicting advice
+- Do not copy runtime context or operation guidance into implementation files or planning artifacts
+- Preserve CLI-controlled blocked/ready/all-done behavior and completion criteria
+
+**Fluid Workflow Integration**
+
+This skill supports the "actions on a change" model:
+
+- **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+/workspaces/ML-Cancer-Data
+/bin/bash: line 1: rg: command not found
+
+codex
+{"status":"complete","summary":"Using change: cycle-08-verifiable-selection-fallback. I’ve read the apply-change skill; `rg` is unavailable here, so I’m switching to standard shell tools and checking the OpenSpec status before touching files.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'openspec status --change "cycle-08-verifiable-selection-fallback" --json' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "grep -RIn \"class QueryConstraints\\|SelectionCompatibility\\|_validate_dn\\|_validate_pn\\|QueryConstraints\" src tests 2>/dev/null" in /workspaces/ML-Cancer-Data
+ succeeded in 157ms:
+src/nomenclature_matcher/query_constraints.py:21:class QueryConstraints(BaseModel):
+src/nomenclature_matcher/query_constraints.py:49:class SelectionCompatibility:
+src/nomenclature_matcher/query_constraints.py:64:    def _validate_dn(cls, value: int | None) -> int | None:
+src/nomenclature_matcher/query_constraints.py:71:    def _validate_pn(cls, value: float | None) -> float | None:
+src/nomenclature_matcher/query_constraints.py:88:    def extract(self, query: str) -> QueryConstraints:
+src/nomenclature_matcher/query_constraints.py:100:        return QueryConstraints.model_validate(json.loads(content))
+src/nomenclature_matcher/query_constraints.py:411:) -> SelectionCompatibility:
+src/nomenclature_matcher/query_constraints.py:431:    return SelectionCompatibility(satisfied=satisfied, contradicted=contradicted, unknown=unknown)
+src/nomenclature_matcher/query_constraints.py:473:def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> MatchDecision:
+src/nomenclature_matcher/query_constraints.py:553:def matching_products(products: list[LDProduct], constraints: QueryConstraints) -> list[LDProduct]:
+src/nomenclature_matcher/query_constraints.py:559:def product_snapshot(product: LDProduct, constraints: QueryConstraints | None = None) -> dict[str, Any]:
+src/nomenclature_matcher/harness_gold.py:6:from .golden_rules import GoldenMatchDecision, GoldenQueryConstraints, evaluate_product_strict
+src/nomenclature_matcher/harness_gold.py:13:    constraints: GoldenQueryConstraints,
+src/nomenclature_matcher/harness_gold.py:14:) -> tuple[GoldenQueryConstraints, list[str]]:
+src/nomenclature_matcher/harness_gold.py:34:    return GoldenQueryConstraints.model_validate(payload), notes
+src/nomenclature_matcher/harness_gold.py:60:    constraints: GoldenQueryConstraints,
+src/nomenclature_matcher/golden_rules.py:14:    QueryConstraints,
+src/nomenclature_matcher/golden_rules.py:46:class GoldenQueryConstraints(QueryConstraints):
+src/nomenclature_matcher/golden_rules.py:70:    def extract(self, query: str) -> GoldenQueryConstraints:
+src/nomenclature_matcher/golden_rules.py:82:        constraints = GoldenQueryConstraints.model_validate(json.loads(content))
+src/nomenclature_matcher/golden_rules.py:113:    constraints: GoldenQueryConstraints,
+src/nomenclature_matcher/golden_rules.py:176:    constraints: GoldenQueryConstraints,
+src/nomenclature_matcher/golden_rules.py:177:) -> GoldenQueryConstraints:
+src/nomenclature_matcher/golden_rules.py:224:    return GoldenQueryConstraints.model_validate(payload)
+src/nomenclature_matcher/golden_rules.py:255:    constraints: GoldenQueryConstraints,
+src/nomenclature_matcher/golden_rules.py:359:    constraints: GoldenQueryConstraints,
+src/nomenclature_matcher/golden_rules.py:378:    constraints: GoldenQueryConstraints | None = None,
+tests/test_query_constraints.py:3:    QueryConstraints,
+tests/test_query_constraints.py:58:    return QueryConstraints.model_validate(payload)
+tests/test_golden_rules.py:2:    GoldenQueryConstraints,
+tests/test_golden_rules.py:37:    return GoldenQueryConstraints.model_validate(payload)
+tests/test_golden_rules.py:66:    parsed = GoldenQueryConstraints(
+tests/test_golden_rules.py:83:    parsed = GoldenQueryConstraints(
+tests/test_golden_rules.py:103:    parsed = GoldenQueryConstraints(
+tests/test_golden_rules.py:130:        GoldenQueryConstraints(product_type="actuator", control="electric", catalog_scope="in_scope"),
+tests/test_golden_rules.py:138:    parsed = GoldenQueryConstraints(
+tests/test_harness_gold_calibration.py:3:from nomenclature_matcher.golden_rules import GoldenQueryConstraints
+tests/test_harness_gold_calibration.py:30:    return GoldenQueryConstraints(
+
+ succeeded in 934ms:
+{
+  "changeName": "cycle-08-verifiable-selection-fallback",
+  "schemaName": "spec-driven",
+  "planningHome": {
+    "kind": "repo",
+    "root": "/workspaces/ML-Cancer-Data",
+    "changesDir": "/workspaces/ML-Cancer-Data/openspec/changes",
+    "defaultSchema": "spec-driven"
+  },
+  "changeRoot": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback",
+  "artifactPaths": {
+    "proposal": {
+      "outputPath": "proposal.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/proposal.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/proposal.md"
+      ]
+    },
+    "specs": {
+      "outputPath": "specs/**/*.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/specs/**/*.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/specs/verifiable-selection-fallback/spec.md"
+      ]
+    },
+    "design": {
+      "outputPath": "design.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/design.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/design.md"
+      ]
+    },
+    "tasks": {
+      "outputPath": "tasks.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/tasks.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/tasks.md"
+      ]
+    }
+  },
+  "isPlanningComplete": true,
+  "isComplete": true,
+  "applyRequires": [
+    "tasks"
+  ],
+  "nextSteps": [
+    "All planning artifacts are complete. Run openspec instructions apply --change \"cycle-08-verifiable-selection-fallback\" --json to inspect implementation progress."
+  ],
+  "actionContext": {
+    "mode": "repo-local",
+    "sourceOfTruth": "repo",
+    "planningArtifacts": [
+      "proposal",
+      "specs",
+      "design",
+      "tasks"
+    ],
+    "linkedContext": [],
+    "allowedEditRoots": [
+      "/workspaces/ML-Cancer-Data"
+    ],
+    "requiresAffectedAreaSelection": false,
+    "constraints": [
+      "Repo-local change artifacts and implementation edits are scoped to this project."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "proposal",
+      "outputPath": "proposal.md",
+      "status": "done",
+      "requires": []
+    },
+    {
+      "id": "specs",
+      "outputPath": "specs/**/*.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "design",
+      "outputPath": "design.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "tasks",
+      "outputPath": "tasks.md",
+      "status": "done",
+      "requires": [
+        "specs",
+        "design"
+      ]
+    }
+  ],
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+codex
+{"status":"complete","summary":"The OpenSpec change is already marked implemented, so I’m treating this as a review fix only. I found the validators exactly where the reviewer described, under the new compatibility dataclass.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "openspec instructions apply --change \"cycle-08-verifiable-selection-fallback\" --json && sed -n '1,120p' src/nomenclature_matcher/query_constraints.py && sed -n '1,120p' tests/test_query_constraints.py" in /workspaces/ML-Cancer-Data
+ succeeded in 685ms:
+{
+  "changeName": "cycle-08-verifiable-selection-fallback",
+  "changeDir": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/proposal.md"
+    ],
+    "specs": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/specs/verifiable-selection-fallback/spec.md"
+    ],
+    "design": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/design.md"
+    ],
+    "tasks": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-08-verifiable-selection-fallback/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 6,
+    "complete": 6,
+    "remaining": 0
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 Add a pure, allowlisted literal resolver for ordinary/special ball-valve execution, electric-ready versus installed-electric control, and explicit bore wording; verify with focused unit tests for positive, ambiguous, and absent wording.",
+      "done": true
+    },
+    {
+      "id": "2",
+      "description": "1.2 Add evidence-only candidate attribute helpers and tri-state compatibility evaluation for those resolved requirements, including unknown when required control/bore evidence is absent; verify focused constraint tests cover satisfied, contradicted, and unknown states.",
+      "done": true
+    },
+    {
+      "id": "3",
+      "description": "2.1 Integrate post-rerank compatibility fallback so it substitutes only the first already retrieved, fused-order compatible alternative after an observable contradiction; verify matcher tests cover ordinary-versus-underground, electric-versus-electric-ready, and explicit-bore contradictions.",
+      "done": true
+    },
+    {
+      "id": "4",
+      "description": "2.2 Preserve source query, candidate pool, retrieval scores, reranker invocation, selected-result consistency, and unmodified behavior when no fallback is justified; add matcher tests for no compatible alternative and missing evidence.",
+      "done": true
+    },
+    {
+      "id": "5",
+      "description": "2.3 Add observable selection provenance for a fallback decision without changing the public match status contract; verify the fallback and unchanged paths produce distinct provenance in focused tests.",
+      "done": true
+    },
+    {
+      "id": "6",
+      "description": "3.1 Run the focused constraint and matcher tests, then run `python -m pytest -q`; resolve any failures without expanding the fallback beyond the specified allowlist.",
+      "done": true
+    }
+  ],
+  "state": "all_done",
+  "instruction": "All tasks are complete! This change is ready to be archived.\nConsider running tests and reviewing the changes before archiving.",
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any
+
+from openai import OpenAI
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from .models import LDProduct
+
+
+DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
+    Path(__file__).resolve().parent / "prompts" / "query_constraints_system.md"
+)
+_ALNUM_RU = "0-9a-zа-я"
+
+
+class QueryConstraints(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_type: str
+    dn: int | None = None
+    pn_min_mpa: float | None = None
+    joining_type: str | None = None
+    thread_type: str | None = None
+    working_medium: str | None = None
+    valve_type: str | None = None
+    valve_designation: str | None = None
+    body_material: str | None = None
+    body_material_grade: str | None = None
+    bore_type: str | None = None
+    control: str | None = None
+    catalog_scope: str = "uncertain"
+    ambiguous: bool = False
+    comment: str = ""
+
+
+@dataclass(frozen=True)
+class SelectionRequirements:
+    valve_type: str | None = None
+    control: str | None = None
+    bore_type: str | None = None
+
+
+@dataclass(frozen=True)
+class SelectionCompatibility:
+    satisfied: dict[str, str] = field(default_factory=dict)
+    contradicted: dict[str, str] = field(default_factory=dict)
+    unknown: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def has_contradiction(self) -> bool:
+        return bool(self.contradicted)
+
+    @property
+    def is_fully_compatible(self) -> bool:
+        return not self.contradicted and not self.unknown
+
+    @field_validator("dn")
+    @classmethod
+    def _validate_dn(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("dn must be positive")
+        return value
+
+    @field_validator("pn_min_mpa")
+    @classmethod
+    def _validate_pn(cls, value: float | None) -> float | None:
+        if value is not None and value <= 0:
+            raise ValueError("pn_min_mpa must be positive")
+        return value
+
+
+class DeepSeekQueryConstraintExtractor:
+    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+        self.settings = settings
+        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_QUERY_CONSTRAINTS_PROMPT
+        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def extract(self, query: str) -> QueryConstraints:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": f"QUERY:\n{query}"},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return QueryConstraints.model_validate(json.loads(content))
+
+
+def _norm(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    text = str(value).lower().replace("ё", "е")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _compact(value: Any) -> str:
+    return re.sub(rf"[^{_ALNUM_RU}]+", "", _norm(value))
+
+
+def _exact_token_match(text: Any, token: Any) -> bool:
+    expected = _norm(token)
+    if not expected:
+        return True
+    pattern = rf"(?<![{_ALNUM_RU}]){re.escape(expected)}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+from nomenclature_matcher.models import LDProduct
+from nomenclature_matcher.query_constraints import (
+    QueryConstraints,
+    candidate_pn_mpa,
+    evaluate_selection_compatibility,
+    evaluate_product,
+    resolve_selection_requirements,
+    verifiable_candidate_control,
+)
+
+
+def product(
+    *,
+    product_id=1,
+    name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа полнопроходной",
+    dn="200",
+    pn="1,6",
+    joining_type="Фланцевое",
+    properties=None,
+):
+    return LDProduct(
+        id=product_id,
+        name=name,
+        article=f"A-{product_id}",
+        dn=dn,
+        pn=pn,
+        joining_type=joining_type,
+        properties=properties
+        or [
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+            {"name": "Тип прохода", "values": ["Полнопроходной"]},
+            {"name": "Рабочая среда", "values": ["Вода"]},
+            {"name": "Управление", "values": ["Ручное"]},
+        ],
+    )
+
+
+def constraints(**overrides):
+    payload = {
+        "product_type": "ball_valve",
+        "dn": 200,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": None,
+        "working_medium": None,
+        "valve_type": "standard",
+        "valve_designation": None,
+        "body_material": None,
+        "body_material_grade": None,
+        "bore_type": None,
+        "control": None,
+        "catalog_scope": "in_scope",
+        "ambiguous": False,
+        "comment": "",
+    }
+    payload.update(overrides)
+    return QueryConstraints.model_validate(payload)
+
+
+def test_dn_must_match_exactly():
+    assert evaluate_product(product(dn="200"), constraints()).matches is True
+    assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+
+def test_pn_is_minimum_not_exact():
+    assert evaluate_product(product(pn="1,6"), constraints()).matches is True
+    assert evaluate_product(product(pn="2,5"), constraints()).matches is True
+    assert evaluate_product(product(pn="4,0"), constraints()).matches is True
+    assert evaluate_product(product(pn="1,0"), constraints()).matches is False
+
+
+def test_raw_pn_class_is_normalized_to_mpa():
+    assert candidate_pn_mpa(product(pn="16")) == 1.6
+    assert candidate_pn_mpa(product(pn="25")) == 2.5
+    assert candidate_pn_mpa(product(pn="40")) == 4.0
+
+
+def test_joining_type_must_match_exactly():
+    assert evaluate_product(product(joining_type="Фланцевое"), constraints()).matches is True
+    assert evaluate_product(product(joining_type="Резьбовое"), constraints()).matches is False
+    assert evaluate_product(product(joining_type="Межфланцевое"), constraints()).matches is False
+
+
+def test_working_medium_only_restricts_when_query_specifies_it():
+    water = product()
+    assert evaluate_product(water, constraints(working_medium=None)).matches is True
+    assert evaluate_product(water, constraints(working_medium="вода")).matches is True
+    assert evaluate_product(water, constraints(working_medium="газ")).matches is False
+
+
+def test_material_family_and_grade_are_exact_when_specified():
+    steel20 = product()
+    steel20l = product(
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20Л"]},
+        ]
+    )
+    assert evaluate_product(steel20, constraints(body_material=None)).matches is True
+    assert evaluate_product(steel20, constraints(body_material="steel")).matches is True
+    assert evaluate_product(
+        steel20,
+        constraints(body_material="steel", body_material_grade="20"),
+    ).matches is True
+    assert evaluate_product(
+        steel20,
+        constraints(body_material="steel", body_material_grade="09Г2С"),
+    ).matches is False
+    assert evaluate_product(
+        steel20l,
+        constraints(body_material="steel", body_material_grade="20"),
+    ).matches is False
+
+
+def test_bore_type_only_restricts_when_specified():
+    full = product()
+    assert evaluate_product(full, constraints(bore_type=None)).matches is True
+    assert evaluate_product(full, constraints(bore_type="full")).matches is True
+    assert evaluate_product(full, constraints(bore_type="reduced")).matches is False
+
+codex
+{"status":"complete","summary":"## Implementing: cycle-08-verifiable-selection-fallback (schema: spec-driven)\nProgress is 6/6 tasks complete; this pass is limited to the Reviewer’s validation regression. I’m reading the change artifacts now to keep the fix aligned with the implemented scope before editing.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,220p' openspec/changes/cycle-08-verifiable-selection-fallback/proposal.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' openspec/changes/cycle-08-verifiable-selection-fallback/specs/verifiable-selection-fallback/spec.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' openspec/changes/cycle-08-verifiable-selection-fallback/design.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,180p' openspec/changes/cycle-08-verifiable-selection-fallback/tasks.md" in /workspaces/ML-Cancer-Data
+ succeeded in 311ms:
+## Context
+
+See `proposal.md` for motivation.  `NomenclatureMatcher.rerank_candidates`
+currently accepts the reranker's first selected candidate directly.  The
+existing `query_constraints` helpers recognize broad compatibility concepts,
+but `candidate_control` deliberately defaults an unannotated ball valve to
+manual, which is acceptable for search heuristics but insufficient to prove a
+control requirement in a safety fallback.  The candidate list is already
+ordered by RRF before it is supplied to the reranker.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Make fallback eligibility deterministic, local, and independently testable.
+- Require positive catalog evidence for every applicable fallback condition.
+- Preserve the original reranker output if the fallback cannot prove a safer
+  compatible replacement.
+
+**Non-Goals:**
+
+- Do not turn the generic constraint extractor into a hard gate.
+- Do not alter retrieval, RRF scoring, candidate depth, prompts, model calls,
+  index content, or the source query.
+- Do not map vendor designations, decide flange subtype, or use the fallback to
+  emit NOT_FOUND.
+
+## Decisions
+
+### Use a separate, pure literal requirement resolver
+
+Implement a small resolver adjacent to the existing constraint canonicalizers
+rather than relying on DeepSeek extraction.  It produces optional constraints
+only for the four specified semantic groups.  Ordinary ball-valve execution
+uses the project's existing business meaning: an ordinary ball-valve tender
+without a literal special-execution cue excludes catalog candidates explicitly
+marked underground, regulating, gas, or cryogenic.  Explicit special cues, if
+recognized, constrain execution to that cue.  Bore and control are constrained
+only when their literal wording appears.
+
+This is intentionally narrower than `QueryConstraints`: it neither decides DN,
+PN, joining type, material, nor designation.  Using an LLM here would repeat
+the inference/fail-closed risk observed in Cycle 1.  Reusing the current broad
+extractor would also make the experiment dependent on unavailable or ambiguous
+fields.
+
+### Separate heuristic values from verifiable candidate evidence
+
+Add evidence-only helpers for the candidate attributes used by the fallback.
+They must return `None` when a requested control or bore is not observable in
+name/properties; in particular, they must not convert missing control metadata
+to manual.  Candidate execution may use the established explicit specialized
+tokens and an ordinary default only after product type is confirmed as a ball
+valve.  The compatibility checker should expose `satisfied`, `contradicted`,
+or `unknown` per applicable field.
+
+This differs from the earlier broad candidate gate: it runs after reranking,
+does not remove any candidates, and refuses to substitute candidates with
+unknown required evidence.  It also differs from Cycle 5: no prompt wording,
+LLM ranking instruction, or model behavior changes.
+
+### Use the existing fused candidate order for deterministic replacement
+
+When the selected top candidate has at least one contradiction, scan the
+existing candidate sequence in its RRF order and choose the first fully
+compatible alternative.  Rebuild the outward selected list so its first item
+and `ld_product` refer to the same fallback candidate, retaining the selected
+candidate's stored retrieval scores.  Attach a concise selection-source marker
+or equivalent reason/provenance field.
+
+Re-invoking the reranker on a filtered pool is rejected: it adds model calls,
+obscures causality, and can introduce a second unsafe decision.  Returning
+NOT_FOUND on contradiction is rejected because the fallback is a correction
+mechanism, not an abstention policy.
+
+## Risks / Trade-offs
+
+- [A literal resolver mistakes an ambiguous phrase for a requirement] → Use
+  strict phrase/token boundaries and only the allowlist; cover negative cases
+  in unit tests.
+- [A catalog field is absent or vague] → Treat it as unknown and never use that
+  product as a compatible replacement.
+- [The reranker selected a candidate that is compatible but lower than a more
+  highly fused candidate] → Do not reorder on compatibility alone; fallback
+  requires a contradiction first.
+- [A compatible candidate was not retrieved] → Preserve the reranker result;
+  this change neither fabricates candidates nor returns NOT_FOUND.
+- [More than one candidate is returned] → Correct only the primary product;
+  retain any additional reranker selections after deduplication so the public
+  `ld_product` and first selected entry remain consistent.
+
+## Migration Plan
+
+1. Add the pure requirement/evidence/tri-state helpers and focused unit tests.
+2. Integrate the fallback immediately after reranking, with result provenance.
+3. Run the focused tests and `python -m pytest -q`.
+4. The outer supervisor performs public evaluation, review, blind evaluation,
+   and promotion/rejection.
+5. Roll back by bypassing the post-rerank fallback; no persisted data or index
+   state needs migration.
+
+ succeeded in 333ms:
+## Why
+
+The current champion still makes unsafe final choices when a retrieved candidate
+contradicts an explicit tender requirement: ordinary ball-valve requests can
+select underground executions, and an electric actuator request can select an
+electric-ready execution.  These are selection failures rather than evidenced
+catalog-coverage or retrieval-miss problems, so a narrow, deterministic
+fail-open fallback is a higher-value experiment than another index change.
+
+## What Changes
+
+- Add deterministic recognition of a deliberately small set of literal,
+  selection-relevant tender requirements: ordinary ball-valve execution,
+  `under electric actuator` readiness, installed electric actuation, and
+  explicit full/reduced/standard bore wording.
+- After the reranker chooses a result, verify the selected candidate only
+  against those recognized requirements and its observable catalog data.
+- When the selected candidate conflicts and an already retrieved compatible
+  alternative exists, select the strongest compatible alternative using the
+  existing fused retrieval order.  Otherwise preserve the reranker outcome.
+- Expose enough result provenance to distinguish a retained reranker choice
+  from a compatibility fallback, and add focused tests for contradiction,
+  missing evidence, and no-compatible-alternative behavior.
+
+## Capabilities
+
+### New Capabilities
+
+- `verifiable-selection-fallback`: Safely replaces a reranker-selected product
+  only when literal tender semantics and observable candidate evidence prove a
+  contradiction and an existing compatible candidate is available.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected package code: `query_constraints.py`, `matcher.py`, and potentially
+  `models.py` for result provenance.
+- Affected tests: focused constraint and matcher tests using local fakes.
+- No prompt, catalog source, embedding model, Qdrant collection, BM25 corpus,
+  or index rebuild is required.
+
+ succeeded in 329ms:
+## Purpose
+
+Ensure an explicitly incompatible reranker choice can be replaced safely by an
+already retrieved, catalog-evidenced alternative without suppressing viable
+matches when evidence is absent or incomplete.
+
+## ADDED Requirements
+
+### Requirement: Literal selection-requirement recognition
+The matcher SHALL recognize only an allowlisted set of unambiguous tender
+semantics needed for final candidate compatibility: ordinary versus explicitly
+special ball-valve execution, `под электропривод` readiness, installed
+electric actuation, and explicit full, reduced, or standard bore.  It MUST NOT
+infer a requirement from an ambiguous code, an absent material property, or a
+catalog candidate.
+
+#### Scenario: Electric-ready wording remains distinct from installed actuation
+- **WHEN** a tender explicitly says `под электропривод`
+- **THEN** the recognized requirement is electric-ready and not installed electric actuation
+
+#### Scenario: Unsupported wording remains unrecognized
+- **WHEN** a tender contains no allowlisted selection-requirement wording
+- **THEN** that absent requirement does not constrain the compatibility fallback
+
+### Requirement: Evidence-bounded compatibility fallback
+After a reranker returns a matched top candidate, the matcher SHALL preserve
+that candidate unless an applicable recognized requirement is observably
+contradicted.  On contradiction, it SHALL replace the top result only with an
+already retrieved candidate that observably satisfies every applicable
+recognized requirement; candidates with missing evidence for an applicable
+requirement MUST NOT qualify as compatible alternatives.
+
+#### Scenario: Compatible retrieved alternative replaces a contradicted choice
+- **WHEN** the selected candidate contradicts an applicable requirement and a retrieved candidate has observable evidence for every applicable requirement
+- **THEN** the matcher returns the highest existing fused-retrieval-ranked compatible candidate
+
+#### Scenario: Missing candidate evidence does not create a fallback
+- **WHEN** the selected candidate contradicts a requirement but every alternative lacks evidence for at least one applicable requirement
+- **THEN** the matcher preserves the reranker-selected candidate and does not return NOT_FOUND solely because of the fallback
+
+#### Scenario: No contradiction preserves the reranker choice
+- **WHEN** the selected candidate satisfies all applicable recognized requirements or no requirement was recognized
+- **THEN** the matcher preserves the reranker-selected candidate and ordering
+
+### Requirement: Selection provenance
+The match result SHALL make it possible for callers and diagnostics to
+distinguish a compatibility fallback from an unmodified reranker decision
+without changing the original query text, candidate pool, retrieval scores, or
+reranker request.
+
+#### Scenario: Fallback is observable
+- **WHEN** the matcher replaces the reranker-selected candidate
+- **THEN** the result records that compatibility fallback was the selection source
+
+ succeeded in 317ms:
+## 1. Verifiable compatibility primitives
+
+- [x] 1.1 Add a pure, allowlisted literal resolver for ordinary/special ball-valve execution, electric-ready versus installed-electric control, and explicit bore wording; verify with focused unit tests for positive, ambiguous, and absent wording.
+- [x] 1.2 Add evidence-only candidate attribute helpers and tri-state compatibility evaluation for those resolved requirements, including unknown when required control/bore evidence is absent; verify focused constraint tests cover satisfied, contradicted, and unknown states.
+
+## 2. Fail-open post-rerank fallback
+
+- [x] 2.1 Integrate post-rerank compatibility fallback so it substitutes only the first already retrieved, fused-order compatible alternative after an observable contradiction; verify matcher tests cover ordinary-versus-underground, electric-versus-electric-ready, and explicit-bore contradictions.
+- [x] 2.2 Preserve source query, candidate pool, retrieval scores, reranker invocation, selected-result consistency, and unmodified behavior when no fallback is justified; add matcher tests for no compatible alternative and missing evidence.
+- [x] 2.3 Add observable selection provenance for a fallback decision without changing the public match status contract; verify the fallback and unchanged paths produce distinct provenance in focused tests.
+
+## 3. Regression verification
+
+- [x] 3.1 Run the focused constraint and matcher tests, then run `python -m pytest -q`; resolve any failures without expanding the fallback beyond the specified allowlist.
+
+codex
+{"status":"complete","summary":"I’m making the narrow file edit now: restore `dn` and `pn_min_mpa` validators to the Pydantic model and add regression tests for invalid values. No retrieval/index behavior or harness files are involved.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '120,360p' tests/test_query_constraints.py" in /workspaces/ML-Cancer-Data
+ succeeded in 15ms:
+    assert evaluate_product(full, constraints(bore_type="reduced")).matches is False
+
+
+def test_control_only_restricts_when_specified():
+    manual = product()
+    assert evaluate_product(manual, constraints(control=None)).matches is True
+    assert evaluate_product(manual, constraints(control="manual")).matches is True
+    assert evaluate_product(manual, constraints(control="gearbox")).matches is False
+
+
+def test_ball_valve_without_special_type_rejects_underground_execution():
+    underground = product(
+        name="Кран шаровый LD для подземной установки КШЦП из стали 20 Ду200 Ру1,6МПа",
+    )
+    assert evaluate_product(underground, constraints(valve_type="standard")).matches is False
+    assert evaluate_product(underground, constraints(valve_type="underground")).matches is True
+
+
+def test_regula_is_not_standard_ball_valve():
+    regula = product(
+        name="Кран шаровый LD КШЦФ Regula из стали 20 Ду200 Ру1,6МПа",
+    )
+    assert evaluate_product(regula, constraints(valve_type="standard")).matches is False
+    assert evaluate_product(regula, constraints(valve_type="regulating")).matches is True
+
+
+def test_exact_valve_designation_is_required_when_present_in_query():
+    kshcf = product(name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа")
+    kshcfe = product(name="Кран шаровый LD КШЦФЭ из стали 20 Ду200 Ру1,6МПа под электропривод")
+    other = product(name="Кран шаровый LD КШЦП из стали 20 Ду200 Ру1,6МПа")
+    assert evaluate_product(kshcf, constraints(valve_designation="КШЦФ")).matches is True
+    assert evaluate_product(kshcfe, constraints(valve_designation="КШЦФ")).matches is False
+    assert evaluate_product(other, constraints(valve_designation="КШЦФ")).matches is False
+
+
+def test_designation_normalizes_punctuation_and_case():
+    exact_model = product(
+        name="Кран шаровый фланцевый",
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+        ],
+    )
+    exact_model.article = "КШ.Ф.200.016-02"
+    assert evaluate_product(
+        exact_model,
+        constraints(valve_designation="кшф20001602"),
+    ).matches is True
+
+
+def test_unspecified_fields_do_not_filter_candidates():
+    candidate = product(
+        pn="4,0",
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 09Г2С"]},
+            {"name": "Тип прохода", "values": ["Редуцированный"]},
+            {"name": "Рабочая среда", "values": ["Газ"]},
+            {"name": "Управление", "values": ["Редуктор"]},
+        ],
+    )
+    result = evaluate_product(
+        candidate,
+        constraints(
+            working_medium=None,
+            body_material=None,
+            body_material_grade=None,
+            bore_type=None,
+            control=None,
+        ),
+    )
+    assert result.matches is True
+
+
+def test_selection_requirements_distinguish_electric_ready_from_installed_electric():
+    ready = resolve_selection_requirements("Кран шаровой фланцевый под электропривод DN80")
+    electric = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом DN80")
+
+    assert ready.control == "electric_ready"
+    assert electric.control == "electric"
+
+
+def test_selection_requirements_allowlist_positive_absent_and_ambiguous_wording():
+    ordinary = resolve_selection_requirements("Кран шаровой фланцевый DN80 полнопроходной")
+    unsupported = resolve_selection_requirements("Арматура запорная DN80")
+    ambiguous_code = resolve_selection_requirements("КШЦФЭ DN80")
+
+    assert ordinary.valve_type == "standard"
+    assert ordinary.bore_type == "full"
+    assert unsupported == resolve_selection_requirements("")
+    assert ambiguous_code == resolve_selection_requirements("")
+
+
+def test_verifiable_candidate_control_does_not_default_missing_control_to_manual():
+    candidate = product(properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
+
+    assert verifiable_candidate_control(candidate) is None
+
+
+def test_selection_compatibility_reports_satisfied_contradicted_and_unknown():
+    requirements = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом полнопроходной")
+    satisfied = product(
+        name="Кран шаровый LD фланцевый с электроприводом полнопроходной",
+        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
+    )
+    contradicted = product(
+        name="Кран шаровый LD фланцевый под электропривод редуцированный",
+        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
+    )
+    unknown = product(
+        name="Кран шаровый LD фланцевый",
+        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
+    )
+
+    assert evaluate_selection_compatibility(satisfied, requirements).is_fully_compatible
+    result = evaluate_selection_compatibility(contradicted, requirements)
+    assert set(result.contradicted) == {"control", "bore_type"}
+    result = evaluate_selection_compatibility(unknown, requirements)
+    assert set(result.unknown) == {"control", "bore_type"}
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/query_constraints.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_query_constraints.py
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+codex
+{"status":"complete","summary":"The validators are back on `QueryConstraints`, and the tests now cover zero and negative values for both `dn` and `pn_min_mpa`. I’m running the focused constraint tests first, then the likely matcher fallback tests if present.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_query_constraints.py' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "find tests -type f -name 'test_*.py' -maxdepth 2 -print | sort" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "grep -RIn \"compatibility fallback\\|selection_source\\|fallback\\|rerank\" tests src/nomenclature_matcher 2>/dev/null" in /workspaces/ML-Cancer-Data
+ succeeded in 255ms:
+tests/test_bm25.py
+tests/test_chatgpt_gold.py
+tests/test_documents.py
+tests/test_embeddings.py
+tests/test_eval_dataset.py
+tests/test_eval_label_builder.py
+tests/test_eval_utils.py
+tests/test_eval_v2.py
+tests/test_eval_v2_ground_truth.py
+tests/test_experiments.py
+tests/test_golden_100_canonical.py
+tests/test_golden_queries_100.py
+tests/test_golden_rules.py
+tests/test_harness_gold.py
+tests/test_harness_gold_calibration.py
+tests/test_hybrid_retriever.py
+tests/test_matcher.py
+tests/test_query_canonicalization.py
+tests/test_query_constraints.py
+tests/test_rag_harness_blind.py
+tests/test_rag_harness_planner_memory.py
+tests/test_rag_harness_policy.py
+tests/test_rag_harness_resume.py
+tests/test_rag_harness_resume_push.py
+tests/test_remaining_gold_review.py
+tests/test_reranker.py
+tests/test_review_state.py
+tests/test_serialization.py
+tests/test_tender_canonical_labels.py
+tests/test_tender_deep_review.py
+tests/test_tender_harness_cases.py
+tests/test_tender_unresolved_taxonomy.py
+
+ succeeded in 233ms:
+tests/test_hybrid_retriever.py:87:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:100:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=1, rrf_k=60)
+tests/test_hybrid_retriever.py:106:    settings = SimpleNamespace(hybrid_dense_limit=7, hybrid_bm25_limit=8, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:122:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:137:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:152:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_hybrid_retriever.py:160:    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+tests/test_eval_v2.py:5:from nomenclature_matcher.eval_utils import classify_error_type, recall_at_20, reranker_accuracy
+tests/test_eval_v2.py:133:    assert reranker_accuracy(results) == 1.0
+tests/test_eval_v2.py:143:        reranker_success=True,
+tests/test_eval_v2.py:154:                "reranker_success": True,
+tests/test_eval_utils.py:8:    reranker_accuracy,
+tests/test_eval_utils.py:9:    reranker_accuracy_given_hybrid_hit,
+tests/test_eval_utils.py:40:def test_not_found_counts_as_reranker_success():
+tests/test_eval_utils.py:60:    assert reranker_accuracy(results) == 1.0
+tests/test_eval_utils.py:61:    assert reranker_accuracy_given_hybrid_hit(results) == 1.0
+tests/test_eval_utils.py:87:    assert reranker_accuracy(results) == 1.0
+tests/test_eval_utils.py:98:            reranker_success=True,
+tests/test_eval_utils.py:110:            reranker_success=True,
+tests/test_eval_utils.py:122:            reranker_success=True,
+tests/test_eval_utils.py:134:            reranker_success=False,
+tests/test_eval_utils.py:146:            reranker_success=False,
+tests/test_eval_utils.py:158:            reranker_success=False,
+tests/test_eval_utils.py:170:            reranker_success=True,
+tests/test_eval_utils.py:182:            reranker_success=False,
+tests/test_eval_utils.py:194:            reranker_success=False,
+tests/test_eval_utils.py:206:            reranker_success=None,
+tests/test_experiments.py:13:        hybrid_rerank_limit=20,
+tests/test_experiments.py:15:        rerank_result_limit=3,
+tests/test_experiments.py:38:        configuration={"retrieval": {"hybrid_rerank_limit": 20}},
+tests/test_reranker.py:7:from nomenclature_matcher.reranker import DeepSeekReranker
+tests/test_reranker.py:37:        rerank_result_limit=3,
+tests/test_reranker.py:48:def test_rerank_valid_matched():
+tests/test_reranker.py:49:    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}]})))
+tests/test_reranker.py:50:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:55:def test_rerank_not_found():
+tests/test_reranker.py:56:    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+tests/test_reranker.py:57:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:63:def test_rerank_ignores_unknown_and_duplicate_ids():
+tests/test_reranker.py:64:    reranker = DeepSeekReranker(
+tests/test_reranker.py:68:    result = reranker.rerank("query", candidates())
+tests/test_reranker.py:73:def test_rerank_invalid_json_raises():
+tests/test_reranker.py:74:    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{bad json"))
+tests/test_reranker.py:76:        reranker.rerank("query", candidates())
+tests/test_reranker.py:79:def test_rerank_timeout_raises():
+tests/test_reranker.py:80:    reranker = DeepSeekReranker(settings(), client=FakeClient(error=TimeoutError("timeout")))
+tests/test_reranker.py:82:        reranker.rerank("query", candidates())
+tests/test_reranker.py:86:    reranker = DeepSeekReranker(settings(), client=FakeClient(content="{}"))
+tests/test_reranker.py:87:    prompt = reranker._build_prompt(
+tests/test_reranker.py:112:def test_reranker_uses_versioned_system_prompt_file(tmp_path):
+tests/test_reranker.py:116:    custom_settings.reranker_system_prompt_path = str(prompt)
+tests/test_reranker.py:118:    reranker = DeepSeekReranker(custom_settings, client=client)
+tests/test_reranker.py:119:    reranker.rerank("query", candidates())
+tests/test_matcher.py:22:    def rerank(self, query, candidates):
+tests/test_matcher.py:78:def test_match_one_with_rerank_selects_llm_candidate():
+tests/test_matcher.py:79:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:80:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:81:    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(result=rerank_result)).match_one_with_rerank("query")
+tests/test_matcher.py:87:def test_match_one_with_rerank_handles_invalid_json_or_timeout():
+tests/test_matcher.py:88:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:89:    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank("query")
+tests/test_matcher.py:95:def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+tests/test_matcher.py:99:        rerank_candidate_limit=20,
+tests/test_matcher.py:100:        hybrid_rerank_limit=20,
+tests/test_matcher.py:117:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:119:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+tests/test_matcher.py:120:    result = matcher.match_one_hybrid_with_rerank("  query  ")
+tests/test_matcher.py:130:def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+tests/test_matcher.py:134:        rerank_candidate_limit=20,
+tests/test_matcher.py:135:        hybrid_rerank_limit=20,
+tests/test_matcher.py:138:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:140:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+tests/test_matcher.py:141:    results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+tests/test_matcher.py:146:def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
+tests/test_matcher.py:150:        rerank_candidate_limit=20,
+tests/test_matcher.py:151:        hybrid_rerank_limit=20,
+tests/test_matcher.py:154:    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
+tests/test_matcher.py:155:    reranker = Reranker(result=rerank_result)
+tests/test_matcher.py:157:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+tests/test_matcher.py:158:    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
+tests/test_matcher.py:161:    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"
+tests/test_matcher.py:164:def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_rerank():
+tests/test_matcher.py:168:        rerank_candidate_limit=20,
+tests/test_matcher.py:169:        hybrid_rerank_limit=20,
+tests/test_matcher.py:172:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="ww")], reason=None)
+tests/test_matcher.py:173:    reranker = Reranker(result=rerank_result)
+tests/test_matcher.py:175:    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+tests/test_matcher.py:178:    result = matcher.match_one_hybrid_with_rerank(query)
+tests/test_matcher.py:188:    assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
+tests/test_matcher.py:202:def test_post_rerank_fallback_replaces_ordinary_query_underground_choice():
+tests/test_matcher.py:203:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:208:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:210:    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+tests/test_matcher.py:217:    assert result.selected[0].selection_source == "compatibility_fallback"
+tests/test_matcher.py:218:    assert result.selection_source == "compatibility_fallback"
+tests/test_matcher.py:221:def test_post_rerank_fallback_replaces_electric_ready_for_installed_electric_query():
+tests/test_matcher.py:222:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:227:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:229:    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+tests/test_matcher.py:237:def test_post_rerank_fallback_replaces_explicit_bore_contradiction():
+tests/test_matcher.py:238:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:243:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:245:    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+tests/test_matcher.py:253:def test_post_rerank_fallback_preserves_selection_when_no_compatible_alternative():
+tests/test_matcher.py:254:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:259:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:261:    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+tests/test_matcher.py:267:    assert result.selection_source == "reranker"
+tests/test_matcher.py:268:    assert result.selected[0].selection_source == "reranker"
+tests/test_matcher.py:271:def test_post_rerank_fallback_preserves_query_candidates_scores_and_reranker_call():
+tests/test_matcher.py:272:    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+tests/test_matcher.py:274:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:275:    reranker = Reranker(result=rerank_result)
+tests/test_matcher.py:277:    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker).rerank_candidates(
+tests/test_matcher.py:285:    assert reranker.calls == [("Кран шаровой фланцевый", candidates)]
+src/nomenclature_matcher/reranker.py:9:    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+src/nomenclature_matcher/reranker.py:30:        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+src/nomenclature_matcher/reranker.py:38:    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+src/nomenclature_matcher/reranker.py:85:                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+src/nomenclature_matcher/reranker.py:94:            raise ValueError(f"Unsupported rerank status: {status!r}")
+src/nomenclature_matcher/reranker.py:112:            if len(selected) >= self.settings.rerank_result_limit:
+src/nomenclature_matcher/eval_utils.py:32:def reranker_accuracy(results: list[dict]) -> float | None:
+src/nomenclature_matcher/eval_utils.py:47:    return reranker_accuracy(results)
+src/nomenclature_matcher/eval_utils.py:83:def reranker_accuracy_given_hybrid_hit(results: list[dict]) -> float | None:
+src/nomenclature_matcher/eval_utils.py:103:    reranker_success: bool,
+src/nomenclature_matcher/eval_utils.py:113:        if not reranker_success:
+src/nomenclature_matcher/experiments.py:64:            "hybrid_rerank_limit": getattr(settings, "hybrid_rerank_limit", None),
+src/nomenclature_matcher/experiments.py:66:            "rerank_result_limit": getattr(settings, "rerank_result_limit", None),
+src/nomenclature_matcher/hybrid_retriever.py:61:        limit = limit or self.settings.hybrid_rerank_limit
+src/nomenclature_matcher/matcher.py:10:    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+src/nomenclature_matcher/matcher.py:12:        self.reranker = reranker
+src/nomenclature_matcher/matcher.py:40:    def _build_selected_match(self, candidate: SearchCandidate, item, *, selection_source: str = "reranker") -> SelectedMatch:
+src/nomenclature_matcher/matcher.py:55:            selection_source=selection_source,
+src/nomenclature_matcher/matcher.py:58:    def _apply_selection_fallback(self, query: str, candidates: list[SearchCandidate], rerank_result):
+src/nomenclature_matcher/matcher.py:59:        if rerank_result.status != "MATCHED" or not rerank_result.selected:
+src/nomenclature_matcher/matcher.py:60:            return rerank_result.selected, "reranker"
+src/nomenclature_matcher/matcher.py:63:        selected_item = rerank_result.selected[0]
+src/nomenclature_matcher/matcher.py:67:            return rerank_result.selected, "reranker"
+src/nomenclature_matcher/matcher.py:72:                fallback_item = SimpleNamespace(
+src/nomenclature_matcher/matcher.py:76:                        f"compatibility_fallback: replaced candidate "
+src/nomenclature_matcher/matcher.py:80:                remaining = [item for item in rerank_result.selected if item.candidate_id != index]
+src/nomenclature_matcher/matcher.py:81:                return [fallback_item, *remaining], "compatibility_fallback"
+src/nomenclature_matcher/matcher.py:83:        return rerank_result.selected, "reranker"
+src/nomenclature_matcher/matcher.py:85:    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+src/nomenclature_matcher/matcher.py:88:        if self.reranker is None:
+src/nomenclature_matcher/matcher.py:91:            rerank_result = self.reranker.rerank(query, candidates)
+src/nomenclature_matcher/matcher.py:101:        reranked_selection, selection_source = self._apply_selection_fallback(query, candidates, rerank_result)
+src/nomenclature_matcher/matcher.py:103:        for position, item in enumerate(reranked_selection):
+src/nomenclature_matcher/matcher.py:105:            item_source = selection_source if position == 0 else "reranker"
+src/nomenclature_matcher/matcher.py:106:            selected.append(self._build_selected_match(candidate, item, selection_source=item_source))
+src/nomenclature_matcher/matcher.py:107:        best = candidates[reranked_selection[0].candidate_id - 1] if reranked_selection else None
+src/nomenclature_matcher/matcher.py:110:            status=rerank_result.status,
+src/nomenclature_matcher/matcher.py:112:            ld_product=best if rerank_result.status == "MATCHED" else None,
+src/nomenclature_matcher/matcher.py:115:            reason=rerank_result.reason,
+src/nomenclature_matcher/matcher.py:116:            selection_source=selection_source,
+src/nomenclature_matcher/matcher.py:128:    def match_one_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:132:        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+src/nomenclature_matcher/matcher.py:133:        return self.rerank_candidates(query, candidates)
+src/nomenclature_matcher/matcher.py:135:    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:144:            self.settings.hybrid_rerank_limit,
+src/nomenclature_matcher/matcher.py:147:        return self.rerank_candidates(query, candidates)
+src/nomenclature_matcher/matcher.py:165:    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+src/nomenclature_matcher/matcher.py:166:        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+src/nomenclature_matcher/serialization.py:64:        "selection_source": selected.selection_source,
+src/nomenclature_matcher/serialization.py:78:            "selection_source": result.selection_source,
+src/nomenclature_matcher/bm25_store.py:11:except ImportError:  # pragma: no cover - lightweight fallback for local runs
+src/nomenclature_matcher/settings.py:36:    reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
+src/nomenclature_matcher/settings.py:39:    hybrid_rerank_limit: int = 20
+src/nomenclature_matcher/settings.py:41:    rerank_candidate_limit: int = 20
+src/nomenclature_matcher/settings.py:42:    rerank_result_limit: int = 3
+src/nomenclature_matcher/models.py:76:    selection_source: str = "reranker"
+src/nomenclature_matcher/models.py:88:    selection_source: str = "reranker"
+
+ succeeded in 1758ms:
+...................                                                      [100%]
+19 passed in 1.01s
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+codex
+{"status":"complete","summary":"`tests/test_query_constraints.py` is green: 19 passed. I found the fallback coverage in `tests/test_matcher.py`, so I’m running that focused matcher file as the second verification step.","tests":["python -m pytest -q tests/test_query_constraints.py — 19 passed"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_matcher.py' in /workspaces/ML-Cancer-Data
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+ succeeded in 1631ms:
+...............                                                          [100%]
+15 passed in 1.16s
+
+codex
+{"status":"complete","summary":"Focused matcher fallback tests are also green: 15 passed. I’m doing a final diff check to make sure the patch is limited to the reviewer’s requested validator/test changes.","tests":["python -m pytest -q tests/test_query_constraints.py — 19 passed","python -m pytest -q tests/test_matcher.py — 15 passed"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'git diff -- src/nomenclature_matcher/query_constraints.py tests/test_query_constraints.py && git status --short' in /workspaces/ML-Cancer-Data
+ succeeded in 28ms:
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 3c52290..71318a3 100644
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -2,7 +2,7 @@ from __future__ import annotations
+ 
+ import json
+ import re
+-from dataclasses import asdict, dataclass
++from dataclasses import asdict, dataclass, field
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -52,6 +52,28 @@ class QueryConstraints(BaseModel):
+         return value
+ 
+ 
++@dataclass(frozen=True)
++class SelectionRequirements:
++    valve_type: str | None = None
++    control: str | None = None
++    bore_type: str | None = None
++
++
++@dataclass(frozen=True)
++class SelectionCompatibility:
++    satisfied: dict[str, str] = field(default_factory=dict)
++    contradicted: dict[str, str] = field(default_factory=dict)
++    unknown: dict[str, str] = field(default_factory=dict)
++
++    @property
++    def has_contradiction(self) -> bool:
++        return bool(self.contradicted)
++
++    @property
++    def is_fully_compatible(self) -> bool:
++        return not self.contradicted and not self.unknown
++
++
+ class DeepSeekQueryConstraintExtractor:
+     def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+         self.settings = settings
+@@ -297,6 +319,8 @@ def canonical_bore_type(text: Any) -> str | None:
+         return "full"
+     if "редуц" in value or "неполнопроход" in value:
+         return "reduced"
++    if "стандартнопроход" in value or "стандартный проход" in value:
++        return "standard"
+     return None
+ 
+ 
+@@ -335,6 +359,78 @@ def candidate_control(product: LDProduct) -> str | None:
+     return None
+ 
+ 
++def resolve_selection_requirements(query: str) -> SelectionRequirements:
++    value = _norm(query)
++    is_ball_valve = "кран" in value and "шар" in value
++    valve_type = None
++    if is_ball_valve:
++        special = (
++            ("underground", ("подзем",)),
++            ("regulating", ("регулиру", "regula")),
++            ("cryogenic", ("криоген",)),
++            ("gas", ("газов", "для газа")),
++        )
++        for resolved, phrases in special:
++            if any(phrase in value for phrase in phrases):
++                valve_type = resolved
++                break
++        if valve_type is None:
++            valve_type = "standard"
++
++    control = None
++    if "под электропривод" in value:
++        control = "electric_ready"
++    elif "электропривод" in value:
++        control = "electric"
++
++    bore_type = canonical_bore_type(value)
++    return SelectionRequirements(valve_type=valve_type, control=control, bore_type=bore_type)
++
++
++def verifiable_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
++def verifiable_candidate_bore_type(product: LDProduct) -> str | None:
++    return candidate_bore_type(product)
++
++
++def verifiable_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    return candidate_valve_type(product)
++
++
++def evaluate_selection_compatibility(
++    product: LDProduct,
++    requirements: SelectionRequirements,
++) -> SelectionCompatibility:
++    satisfied: dict[str, str] = {}
++    contradicted: dict[str, str] = {}
++    unknown: dict[str, str] = {}
++
++    checks = (
++        ("valve_type", requirements.valve_type, verifiable_candidate_valve_type(product)),
++        ("control", requirements.control, verifiable_candidate_control(product)),
++        ("bore_type", requirements.bore_type, verifiable_candidate_bore_type(product)),
++    )
++    for field_name, expected, actual in checks:
++        if expected is None:
++            continue
++        detail = f"{actual} == {expected}"
++        if actual is None:
++            unknown[field_name] = detail
++        elif actual == expected:
++            satisfied[field_name] = detail
++        else:
++            contradicted[field_name] = detail
++    return SelectionCompatibility(satisfied=satisfied, contradicted=contradicted, unknown=unknown)
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 7c2d3b3..b1b7a33 100644
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,8 +1,13 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+     candidate_pn_mpa,
++    evaluate_selection_compatibility,
+     evaluate_product,
++    resolve_selection_requirements,
++    verifiable_candidate_control,
+ )
+ 
+ 
+@@ -55,6 +60,22 @@ def constraints(**overrides):
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+@@ -186,3 +207,50 @@ def test_unspecified_fields_do_not_filter_candidates():
+         ),
+     )
+     assert result.matches is True
++
++
++def test_selection_requirements_distinguish_electric_ready_from_installed_electric():
++    ready = resolve_selection_requirements("Кран шаровой фланцевый под электропривод DN80")
++    electric = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом DN80")
++
++    assert ready.control == "electric_ready"
++    assert electric.control == "electric"
++
++
++def test_selection_requirements_allowlist_positive_absent_and_ambiguous_wording():
++    ordinary = resolve_selection_requirements("Кран шаровой фланцевый DN80 полнопроходной")
++    unsupported = resolve_selection_requirements("Арматура запорная DN80")
++    ambiguous_code = resolve_selection_requirements("КШЦФЭ DN80")
++
++    assert ordinary.valve_type == "standard"
++    assert ordinary.bore_type == "full"
++    assert unsupported == resolve_selection_requirements("")
++    assert ambiguous_code == resolve_selection_requirements("")
++
++
++def test_verifiable_candidate_control_does_not_default_missing_control_to_manual():
++    candidate = product(properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
++
++    assert verifiable_candidate_control(candidate) is None
++
++
++def test_selection_compatibility_reports_satisfied_contradicted_and_unknown():
++    requirements = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом полнопроходной")
++    satisfied = product(
++        name="Кран шаровый LD фланцевый с электроприводом полнопроходной",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    contradicted = product(
++        name="Кран шаровый LD фланцевый под электропривод редуцированный",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    unknown = product(
++        name="Кран шаровый LD фланцевый",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    assert evaluate_selection_compatibility(satisfied, requirements).is_fully_compatible
++    result = evaluate_selection_compatibility(contradicted, requirements)
++    assert set(result.contradicted) == {"control", "bore_type"}
++    result = evaluate_selection_compatibility(unknown, requirements)
++    assert set(result.unknown) == {"control", "bore_type"}
+ M src/nomenclature_matcher/matcher.py
+ M src/nomenclature_matcher/models.py
+ M src/nomenclature_matcher/query_constraints.py
+ M src/nomenclature_matcher/serialization.py
+ M tests/test_matcher.py
+ M tests/test_query_constraints.py
+?? openspec/changes/cycle-08-verifiable-selection-fallback/
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+exec
+/bin/bash -lc "nl -ba src/nomenclature_matcher/query_constraints.py | sed -n '20,85p'; nl -ba tests/test_query_constraints.py | sed -n '1,85p'" in /workspaces/ML-Cancer-Data
+ succeeded in 43ms:
+    20	
+    21	class QueryConstraints(BaseModel):
+    22	    model_config = ConfigDict(extra="forbid")
+    23	
+    24	    product_type: str
+    25	    dn: int | None = None
+    26	    pn_min_mpa: float | None = None
+    27	    joining_type: str | None = None
+    28	    thread_type: str | None = None
+    29	    working_medium: str | None = None
+    30	    valve_type: str | None = None
+    31	    valve_designation: str | None = None
+    32	    body_material: str | None = None
+    33	    body_material_grade: str | None = None
+    34	    bore_type: str | None = None
+    35	    control: str | None = None
+    36	    catalog_scope: str = "uncertain"
+    37	    ambiguous: bool = False
+    38	    comment: str = ""
+    39	
+    40	    @field_validator("dn")
+    41	    @classmethod
+    42	    def _validate_dn(cls, value: int | None) -> int | None:
+    43	        if value is not None and value <= 0:
+    44	            raise ValueError("dn must be positive")
+    45	        return value
+    46	
+    47	    @field_validator("pn_min_mpa")
+    48	    @classmethod
+    49	    def _validate_pn(cls, value: float | None) -> float | None:
+    50	        if value is not None and value <= 0:
+    51	            raise ValueError("pn_min_mpa must be positive")
+    52	        return value
+    53	
+    54	
+    55	@dataclass(frozen=True)
+    56	class SelectionRequirements:
+    57	    valve_type: str | None = None
+    58	    control: str | None = None
+    59	    bore_type: str | None = None
+    60	
+    61	
+    62	@dataclass(frozen=True)
+    63	class SelectionCompatibility:
+    64	    satisfied: dict[str, str] = field(default_factory=dict)
+    65	    contradicted: dict[str, str] = field(default_factory=dict)
+    66	    unknown: dict[str, str] = field(default_factory=dict)
+    67	
+    68	    @property
+    69	    def has_contradiction(self) -> bool:
+    70	        return bool(self.contradicted)
+    71	
+    72	    @property
+    73	    def is_fully_compatible(self) -> bool:
+    74	        return not self.contradicted and not self.unknown
+    75	
+    76	
+    77	class DeepSeekQueryConstraintExtractor:
+    78	    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+    79	        self.settings = settings
+    80	        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_QUERY_CONSTRAINTS_PROMPT
+    81	        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+    82	        self.client = client or OpenAI(
+    83	            api_key=settings.deepseek_api_key,
+    84	            base_url=settings.deepseek_base_url,
+    85	            timeout=settings.deepseek_timeout_seconds,
+     1	import pytest
+     2	
+     3	from nomenclature_matcher.models import LDProduct
+     4	from nomenclature_matcher.query_constraints import (
+     5	    QueryConstraints,
+     6	    candidate_pn_mpa,
+     7	    evaluate_selection_compatibility,
+     8	    evaluate_product,
+     9	    resolve_selection_requirements,
+    10	    verifiable_candidate_control,
+    11	)
+    12	
+    13	
+    14	def product(
+    15	    *,
+    16	    product_id=1,
+    17	    name="Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа полнопроходной",
+    18	    dn="200",
+    19	    pn="1,6",
+    20	    joining_type="Фланцевое",
+    21	    properties=None,
+    22	):
+    23	    return LDProduct(
+    24	        id=product_id,
+    25	        name=name,
+    26	        article=f"A-{product_id}",
+    27	        dn=dn,
+    28	        pn=pn,
+    29	        joining_type=joining_type,
+    30	        properties=properties
+    31	        or [
+    32	            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+    33	            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+    34	            {"name": "Тип прохода", "values": ["Полнопроходной"]},
+    35	            {"name": "Рабочая среда", "values": ["Вода"]},
+    36	            {"name": "Управление", "values": ["Ручное"]},
+    37	        ],
+    38	    )
+    39	
+    40	
+    41	def constraints(**overrides):
+    42	    payload = {
+    43	        "product_type": "ball_valve",
+    44	        "dn": 200,
+    45	        "pn_min_mpa": 1.6,
+    46	        "joining_type": "flanged",
+    47	        "thread_type": None,
+    48	        "working_medium": None,
+    49	        "valve_type": "standard",
+    50	        "valve_designation": None,
+    51	        "body_material": None,
+    52	        "body_material_grade": None,
+    53	        "bore_type": None,
+    54	        "control": None,
+    55	        "catalog_scope": "in_scope",
+    56	        "ambiguous": False,
+    57	        "comment": "",
+    58	    }
+    59	    payload.update(overrides)
+    60	    return QueryConstraints.model_validate(payload)
+    61	
+    62	
+    63	def test_query_constraints_rejects_non_positive_dn():
+    64	    with pytest.raises(ValueError, match="dn must be positive"):
+    65	        constraints(dn=0)
+    66	
+    67	    with pytest.raises(ValueError, match="dn must be positive"):
+    68	        constraints(dn=-1)
+    69	
+    70	
+    71	def test_query_constraints_rejects_non_positive_pn_min_mpa():
+    72	    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
+    73	        constraints(pn_min_mpa=0)
+    74	
+    75	    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
+    76	        constraints(pn_min_mpa=-0.1)
+    77	
+    78	
+    79	def test_dn_must_match_exactly():
+    80	    assert evaluate_product(product(dn="200"), constraints()).matches is True
+    81	    assert evaluate_product(product(dn="150"), constraints()).matches is False
+    82	
+    83	
+    84	def test_pn_is_minimum_not_exact():
+    85	    assert evaluate_product(product(pn="1,6"), constraints()).matches is True
+
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+codex
+{"status":"complete","summary":"Fixed the reviewer’s concrete issue. The `dn` and `pn_min_mpa` validators are now back inside `QueryConstraints` at `src/nomenclature_matcher/query_constraints.py`, before the selection dataclasses. Added regression tests in `tests/test_query_constraints.py` for zero and negative `dn` / `pn_min_mpa`. No index rebuild needed.","tests":["python -m pytest -q tests/test_query_constraints.py — 19 passed","python -m pytest -q tests/test_matcher.py — 15 passed"],"needs_reindex":false,"blocker":""}
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 6f20faa6c63a2f9e860974dc3f426490bbf4b144..71318a367793db365c70fe06989c19e5ff26b995
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -37,6 +37,20 @@
+     ambiguous: bool = False
+     comment: str = ""
+ 
++    @field_validator("dn")
++    @classmethod
++    def _validate_dn(cls, value: int | None) -> int | None:
++        if value is not None and value <= 0:
++            raise ValueError("dn must be positive")
++        return value
++
++    @field_validator("pn_min_mpa")
++    @classmethod
++    def _validate_pn(cls, value: float | None) -> float | None:
++        if value is not None and value <= 0:
++            raise ValueError("pn_min_mpa must be positive")
++        return value
++
+ 
+ @dataclass(frozen=True)
+ class SelectionRequirements:
+@@ -58,20 +72,6 @@
+     @property
+     def is_fully_compatible(self) -> bool:
+         return not self.contradicted and not self.unknown
+-
+-    @field_validator("dn")
+-    @classmethod
+-    def _validate_dn(cls, value: int | None) -> int | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("dn must be positive")
+-        return value
+-
+-    @field_validator("pn_min_mpa")
+-    @classmethod
+-    def _validate_pn(cls, value: float | None) -> float | None:
+-        if value is not None and value <= 0:
+-            raise ValueError("pn_min_mpa must be positive")
+-        return value
+ 
+ 
+ class DeepSeekQueryConstraintExtractor:
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 4af90aa50d2fe61ea7954774fb8830a9ab45dccc..b1b7a330341ba332e7415ad63bab11dbf3b49102
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,3 +1,5 @@
++import pytest
++
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+@@ -58,6 +60,22 @@
+     return QueryConstraints.model_validate(payload)
+ 
+ 
++def test_query_constraints_rejects_non_positive_dn():
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=0)
++
++    with pytest.raises(ValueError, match="dn must be positive"):
++        constraints(dn=-1)
++
++
++def test_query_constraints_rejects_non_positive_pn_min_mpa():
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=0)
++
++    with pytest.raises(ValueError, match="pn_min_mpa must be positive"):
++        constraints(pn_min_mpa=-0.1)
++
++
+ def test_dn_must_match_exactly():
+     assert evaluate_product(product(dn="200"), constraints()).matches is True
+     assert evaluate_product(product(dn="150"), constraints()).matches is False
+
+tokens used
+35,075
+{"status":"complete","summary":"Fixed the reviewer’s concrete issue. The `dn` and `pn_min_mpa` validators are now back inside `QueryConstraints` at `src/nomenclature_matcher/query_constraints.py`, before the selection dataclasses. Added regression tests in `tests/test_query_constraints.py` for zero and negative `dn` / `pn_min_mpa`. No index rebuild needed.","tests":["python -m pytest -q tests/test_query_constraints.py — 19 passed","python -m pytest -q tests/test_matcher.py — 15 passed"],"needs_reindex":false,"blocker":""}

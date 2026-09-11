@@ -1,0 +1,3522 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR] (network access enabled)
+reasoning effort: low
+reasoning summaries: none
+session id: 01a089bb-796e-7902-8ab1-ab07529130a5
+--------
+user
+You are the Fixer. Another agent implemented the hypothesis and a read-only Reviewer produced a correction plan.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+## Infrastructure compensation
+
+The normal scientific budget is 15 cycles. When a cycle reaches implementation
+but cannot be evaluated solely because required infrastructure is unavailable,
+such as Qdrant being down, the supervisor may run up to two replacement cycles
+beyond cycle 15. These are compensation for unevaluated infrastructure failures,
+not additional budget for repeatedly testing failed hypotheses.
+
+
+ORIGINAL PLAN
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-16-structural-candidate-diversification",
+  "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable variants currently crowded out by near-duplicate catalog entries.",
+  "why_now": "Cycle 13 planned this distinct mechanism but Qdrant was unavailable, so it remains unevaluated. It is the best compensation-cycle experiment with credible information gain.",
+  "expected_effect": "Retain the highest-RRF representative per reliably evidenced structural signature, then fill remaining reranker capacity in existing RRF order.",
+  "expected_metric_gain": "+3.3–6.7 pp hard-pass coverage; no intended safety regression.",
+  "lesson_from_history": "Gating, prompts, selection fallbacks, and catalog enrichment were harmful or neutral. Cycles 11–15 were infrastructure-inconclusive; Cycle 13 did not test this hypothesis scientifically.",
+  "candidate_hypotheses": [
+    "Structural candidate-pool diversification before reranking (selected).",
+    "Guarded pipe-OD-to-DN alternate retrieval normalization retry.",
+    "Protected-file-safe flange weld-neck subtype verification retry.",
+    "Installed-electric versus actuator-ready alternate retrieval expansion retry."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, delta spec, design, and implementation-only tasks in openspec/changes/cycle-16-structural-candidate-diversification/. No product code was changed.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}
+
+REVIEW
+{
+  "decision": "FIX",
+  "summary": "The insertion point and basic crowd-out behavior are correct, but the signature is far too coarse to safely call candidates redundant in this catalog.",
+  "issues": [
+    "Candidates sharing family/DN/PN/connection/bore/execution/actuation can differ materially in catalog evidence that tender queries may require. For example, the current catalog groups hundreds of DN50 PN4 welded manual ball valves despite differences in material, medium, bore, series, thread/configuration, and installation dimensions. The first RRF item can suppress the correct variant.",
+    "Direct DN/PN fields override contradictory name/search-text evidence, so inconsistent payloads can be grouped under an incorrect signature.",
+    "Tests use synthetic near-identical candidates and do not cover catalog-realistic variants that must remain independently eligible; therefore they do not establish the stated reliable-structure safety claim."
+  ],
+  "fix_plan": [
+    "Make grouping genuinely conservative: only collapse candidates whose relevant observable catalog evidence is equivalent, or explicitly return no signature when semantic properties/text conflict or differ.",
+    "Validate direct DN/PN against explicit conflicting text rather than blindly preferring the payload field.",
+    "Add regression tests with same primary dimensions but differing material, medium, pass type, thread/configuration, and installation dimensions; assert those variants remain in the bounded pool. Then rerun the public measurement."
+  ],
+  "next_direction": "Candidate diversification remains a credible recall experiment, but it needs a much stricter equivalence definition. The catalog has very large coarse structural groups, so coarse signatures are a likely safety regression rather than benign near-duplicate removal."
+}
+
+RULES
+- Fix only the Reviewer's concrete issues. Do not introduce a new hypothesis.
+- Preserve the general MVP-level intent; do not turn the fix into a benchmark-specific special case.
+- Run focused tests.
+- NEVER run a full catalog index rebuild yourself. If fixes require one, set `needs_reindex=true` and let the supervisor do it.
+- Do not inspect or search for the hidden final-check dataset.
+- Do not alter harness policy, GOLD/eval answers, or files under `harness_rag/`.
+- Do not run git commit/push/reset/checkout/rebase.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-10T05:12:40.408875Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a089bb-796e-7902-8ab1-ab07529130a5.tmp-1789017160061811668: line 2547: syntax error near unexpected token `('
+
+codex
+{"status":"complete","summary":"I’ll inspect the implemented diversification path and its tests first, then patch only the signature/equivalence logic the reviewer called out. I’ll avoid any index rebuild or harness files.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "rg -n \"divers|signature|structural|candidate\" src tests scripts openspec -g '"'!harness_rag/**'"'" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git status --short' in /workspaces/ML-Cancer-Data
+ exited 127 in 95ms:
+/bin/bash: line 1: rg: command not found
+
+ succeeded in 93ms:
+ M src/nomenclature_matcher/hybrid_retriever.py
+ M tests/test_hybrid_retriever.py
+ M tests/test_matcher.py
+?? openspec/changes/cycle-16-structural-candidate-diversification/
+?? src/nomenclature_matcher/candidate_diversification.py
+?? tests/test_candidate_diversification.py
+
+codex
+{"status":"complete","summary":"`rg` is not installed in this container, so I’m falling back to `find`/`grep`. The worktree already has the cycle implementation files modified/untracked; I’ll work with those changes rather than reverting them.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "find src tests openspec -path '*/harness_rag/*' -prune -o -type f -print" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' src/nomenclature_matcher/candidate_diversification.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' src/nomenclature_matcher/hybrid_retriever.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' tests/test_candidate_diversification.py" in /workspaces/ML-Cancer-Data
+ succeeded in 354ms:
+src/nomenclature_matcher/query_constraints.py
+src/nomenclature_matcher/eval_v2_ground_truth.py
+src/nomenclature_matcher/eval_v2.py
+src/nomenclature_matcher/query_canonicalization.py
+src/nomenclature_matcher/candidate_diversification.py
+src/nomenclature_matcher/reranker.py
+src/nomenclature_matcher/eval_utils.py
+src/nomenclature_matcher/qdrant_store.py
+src/nomenclature_matcher/chatgpt_gold.py
+src/nomenclature_matcher/experiments.py
+src/nomenclature_matcher/review_state.py
+src/nomenclature_matcher/hybrid_retriever.py
+src/nomenclature_matcher/matcher.py
+src/nomenclature_matcher/harness_gold.py
+src/nomenclature_matcher/indexer.py
+src/nomenclature_matcher/serialization.py
+src/nomenclature_matcher/__init__.py
+src/nomenclature_matcher/eval_dataset.py
+src/nomenclature_matcher/__pycache__/settings.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_utils.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/embeddings.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/deep_gold.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/__init__.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_v2_ground_truth.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/bm25_store.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/query_plan.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/query_canonicalization.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/qdrant_store.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/reranker_evidence.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/models.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/documents.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/reranker.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/golden_rules.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/serialization.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/remaining_gold_review.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/matcher.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_v2.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/candidate_diversification.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_label_builder.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_dataset.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/harness_gold.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/review_state.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/indexer.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/designation_normalization.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/experiments.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/hybrid_retriever.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/query_constraints.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/chatgpt_gold.cpython-312.pyc
+src/nomenclature_matcher/bm25_store.py
+src/nomenclature_matcher/eval_label_builder.py
+src/nomenclature_matcher/settings.py
+src/nomenclature_matcher/documents.py
+src/nomenclature_matcher/embeddings.py
+src/nomenclature_matcher/deep_gold.py
+src/nomenclature_matcher/golden_rules.py
+src/nomenclature_matcher/models.py
+src/nomenclature_matcher/remaining_gold_review.py
+src/nomenclature_matcher/prompts/reranker_system.md
+src/nomenclature_matcher/prompts/query_constraints_system.md
+src/nomenclature_matcher/prompts/golden_query_constraints_system.md
+tests/test_tender_canonical_labels.py
+tests/test_review_state.py
+tests/test_golden_queries_100.py
+tests/test_rag_harness_blind.py
+tests/test_eval_dataset.py
+tests/test_eval_v2_ground_truth.py
+tests/test_harness_gold.py
+tests/test_candidate_diversification.py
+tests/test_hybrid_retriever.py
+tests/test_golden_100_canonical.py
+tests/test_query_constraints.py
+tests/test_eval_v2.py
+tests/test_tender_harness_cases.py
+tests/test_rag_harness_resume.py
+tests/test_serialization.py
+tests/test_tender_deep_review.py
+tests/test_eval_utils.py
+tests/test_experiments.py
+tests/test_chatgpt_gold.py
+tests/__pycache__/test_golden_queries_100.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_reranker.cpython-312.pyc
+tests/__pycache__/test_rag_harness_blind.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_hybrid_retriever.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_golden_rules.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_embeddings.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_bm25.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_resume.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_review_state.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_query_plan.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_policy.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_canonical_labels.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_golden_100_canonical.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_v2.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_documents.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_harness_gold.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_deep_review.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_label_builder.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_harness_gold_calibration.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_query_constraints.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_embeddings.cpython-312.pyc
+tests/__pycache__/test_eval_dataset.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_query_canonicalization.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_remaining_gold_review.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_unresolved_taxonomy.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_reranker_evidence.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_harness_cases.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_experiments.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_chatgpt_gold.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_review_state.cpython-312.pyc
+tests/__pycache__/test_eval_v2_ground_truth.cpython-312.pyc
+tests/__pycache__/test_reranker.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_v2_ground_truth.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_matcher.cpython-312.pyc
+tests/__pycache__/test_eval_utils.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_matcher.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_candidate_diversification.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_documents.cpython-312.pyc
+tests/__pycache__/test_serialization.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_candidate_diversification.cpython-312.pyc
+tests/__pycache__/test_rag_harness_resume_push.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_planner_memory.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_hybrid_retriever.cpython-312.pyc
+tests/__pycache__/test_bm25.cpython-312.pyc
+tests/test_remaining_gold_review.py
+tests/test_tender_unresolved_taxonomy.py
+tests/test_query_canonicalization.py
+tests/test_golden_rules.py
+tests/test_rag_harness_policy.py
+tests/test_reranker.py
+tests/test_documents.py
+tests/test_bm25.py
+tests/test_matcher.py
+tests/test_eval_label_builder.py
+tests/test_embeddings.py
+tests/test_rag_harness_resume_push.py
+tests/test_harness_gold_calibration.py
+tests/test_rag_harness_planner_memory.py
+openspec/specs/.gitkeep
+openspec/changes/cycle-16-structural-candidate-diversification/.openspec.yaml
+openspec/changes/cycle-16-structural-candidate-diversification/specs/structural-candidate-diversification/spec.md
+openspec/changes/cycle-16-structural-candidate-diversification/design.md
+openspec/changes/cycle-16-structural-candidate-diversification/tasks.md
+openspec/changes/cycle-16-structural-candidate-diversification/proposal.md
+openspec/changes/add-rag-business-mapping/.openspec.yaml
+openspec/changes/add-rag-business-mapping/specs/rag-business-mapping/spec.md
+openspec/changes/add-rag-business-mapping/design.md
+openspec/changes/add-rag-business-mapping/tasks.md
+openspec/changes/add-rag-business-mapping/proposal.md
+openspec/changes/archive/.gitkeep
+openspec/changes/cycle-03-query-canonicalization/.openspec.yaml
+openspec/changes/cycle-03-query-canonicalization/specs/retrieval-query-canonicalization/spec.md
+openspec/changes/cycle-03-query-canonicalization/design.md
+openspec/changes/cycle-03-query-canonicalization/tasks.md
+openspec/changes/cycle-03-query-canonicalization/proposal.md
+openspec/changes/cycle-04-connection-notation-canonicalization/.openspec.yaml
+openspec/changes/cycle-04-connection-notation-canonicalization/specs/connection-notation-canonicalization/spec.md
+openspec/changes/cycle-04-connection-notation-canonicalization/design.md
+openspec/changes/cycle-04-connection-notation-canonicalization/tasks.md
+openspec/changes/cycle-04-connection-notation-canonicalization/proposal.md
+openspec/config.yaml
+
+ succeeded in 389ms:
+from nomenclature_matcher.candidate_diversification import diversify_candidates, structural_signature
+from nomenclature_matcher.models import SearchCandidate
+
+
+def candidate(
+    ld_id: int,
+    *,
+    name: str = "Кран шаровой полнопроходной",
+    score: float = 0.01,
+    dn=50,
+    pn=16,
+    joining_type="фланцевое",
+    search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
+) -> SearchCandidate:
+    return SearchCandidate(
+        ld_id=ld_id,
+        name=name,
+        article=f"A{ld_id}",
+        score=score,
+        dn=dn,
+        pn=pn,
+        joining_type=joining_type,
+        search_text=search_text,
+        rrf_score=score,
+    )
+
+
+def test_structural_signature_uses_direct_fields_and_bounded_markers():
+    signature = structural_signature(candidate(1))
+
+    assert signature is not None
+    assert signature.family == "ball_valve"
+    assert signature.dn == "50"
+    assert signature.pn == "16"
+    assert signature.joining_type == "flanged"
+    assert signature.bore == "full_bore"
+
+
+def test_structural_signature_returns_none_for_missing_malformed_or_ambiguous_evidence():
+    assert structural_signature(candidate(1, dn=None, search_text="PN: 16 фланцевый")) is None
+    assert structural_signature(candidate(2, pn="PN16")) is None
+    assert structural_signature(candidate(3, joining_type=None)) is None
+    assert structural_signature(
+        candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+    ) is None
+    assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
+
+
+def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+    repeated_best = candidate(1, score=0.050)
+    repeated_lower = candidate(2, score=0.049)
+    distinct = candidate(3, score=0.001, dn=80, search_text="DN: 80 PN: 16 фланцевый полнопроходной")
+
+    diversified = diversify_candidates([repeated_best, repeated_lower, distinct], limit=2)
+
+    assert [item.ld_id for item in diversified] == [1, 3]
+
+
+def test_diversify_candidates_keeps_ungroupable_candidates_eligible():
+    repeated_best = candidate(1, score=0.050)
+    repeated_lower = candidate(2, score=0.049)
+    ungroupable = candidate(3, score=0.001, dn=None, search_text="PN: 16 фланцевый")
+
+    diversified = diversify_candidates([repeated_best, repeated_lower, ungroupable], limit=2)
+
+    assert [item.ld_id for item in diversified] == [1, 3]
+
+
+def test_diversify_candidates_preserves_no_duplicate_pool_order_and_tie_key():
+    candidates = [
+        candidate(3, score=0.02, dn=80, search_text="DN: 80 PN: 16 фланцевый полнопроходной"),
+        candidate(1, score=0.03, dn=25, search_text="DN: 25 PN: 16 фланцевый полнопроходной"),
+        candidate(2, score=0.03, dn=50, search_text="DN: 50 PN: 16 фланцевый полнопроходной"),
+    ]
+
+    diversified = diversify_candidates(candidates, limit=3)
+
+    assert [item.ld_id for item in diversified] == [1, 2, 3]
+
+
+def test_diversify_candidates_appends_redundant_fillers_when_capacity_remains():
+    candidates = [
+        candidate(1, score=0.050),
+        candidate(2, score=0.049),
+        candidate(3, score=0.048),
+    ]
+
+    diversified = diversify_candidates(candidates, limit=3)
+
+    assert [item.ld_id for item in diversified] == [1, 2, 3]
+
+ succeeded in 396ms:
+from __future__ import annotations
+
+from .bm25_store import BM25Store
+from .candidate_diversification import diversify_candidates
+from .models import SearchCandidate
+
+
+class HybridRetriever:
+    def __init__(self, embedder, qdrant_store, bm25_store: BM25Store, settings):
+        self.embedder = embedder
+        self.qdrant_store = qdrant_store
+        self.bm25_store = bm25_store
+        self.settings = settings
+
+    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_dense_limit
+        hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search_bm25(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_bm25_limit
+        hits = self.bm25_store.search(query, limit)
+        return [
+            SearchCandidate(
+                ld_id=hit.ld_id,
+                name=hit.name,
+                article=hit.article,
+                score=float(hit.bm25_score),
+                price=hit.price,
+                dn=hit.dn,
+                pn=hit.pn,
+                joining_type=hit.joining_type,
+                url=hit.url,
+                properties=hit.properties,
+                search_text=hit.search_text,
+                bm25_score=float(hit.bm25_score),
+                bm25_rank=index,
+                retrieval_sources=["bm25"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_rerank_limit
+        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+        merged = self._merge_candidates(dense_candidates, bm25_candidates)
+        self._apply_rrf(merged)
+        ranked = sorted(merged.values(), key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id))
+        return diversify_candidates(ranked, limit)
+
+    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+        candidates = search_fn(query, limit)
+        if not canonical_query or canonical_query == query:
+            return candidates
+        try:
+            candidates = [*candidates, *search_fn(canonical_query, limit)]
+        except Exception:
+            return candidates
+        return list(self._merge_modality_candidates(candidates).values())
+
+    def _merge_modality_candidates(self, candidates: list[SearchCandidate]) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None or self._is_stronger_modality_hit(candidate, existing):
+                merged[candidate.ld_id] = candidate
+        return merged
+
+    def _is_stronger_modality_hit(self, candidate: SearchCandidate, existing: SearchCandidate) -> bool:
+        if candidate.dense_rank is not None or existing.dense_rank is not None:
+            candidate_rank = candidate.dense_rank if candidate.dense_rank is not None else 10**9
+            existing_rank = existing.dense_rank if existing.dense_rank is not None else 10**9
+            if candidate_rank != existing_rank:
+                return candidate_rank < existing_rank
+            return (candidate.dense_score or float("-inf")) > (existing.dense_score or float("-inf"))
+        candidate_rank = candidate.bm25_rank if candidate.bm25_rank is not None else 10**9
+        existing_rank = existing.bm25_rank if existing.bm25_rank is not None else 10**9
+        if candidate_rank != existing_rank:
+            return candidate_rank < existing_rank
+        return (candidate.bm25_score or float("-inf")) > (existing.bm25_score or float("-inf"))
+
+    def _merge_candidates(
+        self,
+        dense_candidates: list[SearchCandidate],
+        bm25_candidates: list[SearchCandidate],
+    ) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in dense_candidates:
+            merged[candidate.ld_id] = candidate
+        for candidate in bm25_candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None:
+                merged[candidate.ld_id] = candidate
+                continue
+            merged[candidate.ld_id] = self._merge_pair(existing, candidate)
+        return merged
+
+    def _merge_pair(self, dense_candidate: SearchCandidate, bm25_candidate: SearchCandidate) -> SearchCandidate:
+        sources = list(dict.fromkeys([*dense_candidate.retrieval_sources, *bm25_candidate.retrieval_sources]))
+        return SearchCandidate(
+            ld_id=dense_candidate.ld_id,
+            name=dense_candidate.name or bm25_candidate.name,
+            article=dense_candidate.article or bm25_candidate.article,
+            score=dense_candidate.score if dense_candidate.score is not None else bm25_candidate.score,
+            price=dense_candidate.price if dense_candidate.price is not None else bm25_candidate.price,
+            dn=dense_candidate.dn if dense_candidate.dn is not None else bm25_candidate.dn,
+            pn=dense_candidate.pn if dense_candidate.pn is not None else bm25_candidate.pn,
+            joining_type=dense_candidate.joining_type if dense_candidate.joining_type is not None else bm25_candidate.joining_type,
+            url=dense_candidate.url if dense_candidate.url is not None else bm25_candidate.url,
+            properties=dense_candidate.properties if dense_candidate.properties is not None else bm25_candidate.properties,
+            search_text=dense_candidate.search_text or bm25_candidate.search_text,
+            dense_score=dense_candidate.dense_score,
+            dense_rank=dense_candidate.dense_rank,
+            bm25_score=bm25_candidate.bm25_score,
+            bm25_rank=bm25_candidate.bm25_rank,
+            rrf_score=None,
+            retrieval_sources=sources,
+        )
+
+    def _apply_rrf(self, candidates: dict[int, SearchCandidate]) -> None:
+        rrf_k = self.settings.rrf_k
+        for candidate in candidates.values():
+            score = 0.0
+            if candidate.dense_rank is not None:
+                score += 1.0 / (rrf_k + candidate.dense_rank)
+            if candidate.bm25_rank is not None:
+                score += 1.0 / (rrf_k + candidate.bm25_rank)
+            candidate.rrf_score = score
+            candidate.score = score
+
+ succeeded in 415ms:
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from typing import Any
+
+from .models import SearchCandidate
+
+
+_DN_RE = re.compile(r"\b(?:dn|ду|дн)\s*[:=]?\s*(\d{1,4})\b", re.IGNORECASE)
+_PN_RE = re.compile(r"\b(?:pn|ру|рn)\s*[:=]?\s*(\d{1,3})\b", re.IGNORECASE)
+
+_FAMILY_MARKERS = (
+    ("ball_valve", ("кран шаровой", "шаровой кран", "ball valve")),
+    ("gate_valve", ("задвижка", "gate valve")),
+    ("butterfly_valve", ("затвор", "butterfly valve")),
+    ("check_valve", ("клапан обратный", "обратный клапан", "check valve")),
+    ("filter", ("фильтр", "filter")),
+)
+
+_BORE_MARKERS = (
+    ("full_bore", ("полнопроход", "полн проход", "full bore")),
+    ("reduced_bore", ("неполнопроход", "редуцирован", "reduced bore")),
+)
+
+_EXECUTION_MARKERS = (
+    ("flanged", ("фланцев", " flange", " flanged")),
+    ("threaded", ("муфтов", "резьб", " threaded")),
+    ("welded", ("привар", "под приварку", "сварн", " weld")),
+)
+
+_ACTUATION_MARKERS = (
+    ("electric", ("электропривод", "с электроприводом", "electric actuator")),
+    ("manual", ("ручн", "рукоят", "manual")),
+)
+
+
+@dataclass(frozen=True)
+class StructuralSignature:
+    family: str
+    dn: str
+    pn: str
+    joining_type: str
+    bore: str | None
+    execution: str | None
+    actuation: str | None
+
+
+def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+    try:
+        text = _candidate_text(candidate)
+        family = _single_marker(text, _FAMILY_MARKERS)
+        dn = _candidate_number(candidate.dn, text, _DN_RE)
+        pn = _candidate_number(candidate.pn, text, _PN_RE)
+        joining_type = _normal_joining_type(candidate.joining_type)
+        if not family or not dn or not pn or not joining_type:
+            return None
+        return StructuralSignature(
+            family=family,
+            dn=dn,
+            pn=pn,
+            joining_type=joining_type,
+            bore=_single_marker(text, _BORE_MARKERS),
+            execution=_single_marker(text, _EXECUTION_MARKERS),
+            actuation=_single_marker(text, _ACTUATION_MARKERS),
+        )
+    except Exception:
+        return None
+
+
+def diversify_candidates(candidates: list[SearchCandidate], limit: int) -> list[SearchCandidate]:
+    if limit <= 0:
+        return []
+
+    ranked = sorted(
+        candidates,
+        key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id),
+    )
+    selected: list[SearchCandidate] = []
+    selected_ids: set[int] = set()
+    seen_signatures: set[StructuralSignature] = set()
+
+    for candidate in ranked:
+        try:
+            signature = structural_signature(candidate)
+        except Exception:
+            signature = None
+        if signature is not None:
+            if signature in seen_signatures:
+                continue
+            seen_signatures.add(signature)
+        selected.append(candidate)
+        selected_ids.add(candidate.ld_id)
+        if len(selected) == limit:
+            return selected
+
+    for candidate in ranked:
+        if candidate.ld_id in selected_ids:
+            continue
+        selected.append(candidate)
+        selected_ids.add(candidate.ld_id)
+        if len(selected) == limit:
+            break
+
+    return selected
+
+
+def _candidate_text(candidate: SearchCandidate) -> str:
+    return f"{candidate.name or ''} {candidate.search_text or ''}".casefold()
+
+
+def _normal_number(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip().replace(",", ".")
+    if not text:
+        return None
+    try:
+        number = float(text)
+    except ValueError:
+        return None
+    if number <= 0 or not number.is_integer():
+        return None
+    return str(int(number))
+
+
+def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+    if value is not None:
+        return _normal_number(value)
+    return _single_number(text, pattern)
+
+
+def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
+    if len(values) != 1:
+        return None
+    value = values.pop()
+    return value if value != "0" else None
+
+
+def _normal_joining_type(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = value.casefold()
+    if any(marker in text for marker in ("фланц", "flange")):
+        return "flanged"
+    if any(marker in text for marker in ("муфт", "резьб", "thread")):
+        return "threaded"
+    if any(marker in text for marker in ("привар", "свар", "weld")):
+        return "welded"
+    return None
+
+
+def _single_marker(text: str, groups: tuple[tuple[str, tuple[str, ...]], ...]) -> str | None:
+    matched = {name for name, markers in groups if any(marker in text for marker in markers)}
+    if len(matched) != 1:
+        return None
+    return matched.pop()
+
+codex
+{"status":"complete","summary":"The current signature collapses on a few coarse fields, exactly as the review says. I’m going to make grouping opt-in: candidates only share a signature when both structured fields and observable catalog text/properties agree on a richer set of material/medium/pass/configuration/dimensions signals, and DN/PN payloads will be rejected if text says otherwise.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,220p' src/nomenclature_matcher/models.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'grep -R "properties" -n tests src/nomenclature_matcher | head -80' in /workspaces/ML-Cancer-Data
+ succeeded in 140ms:
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+@dataclass
+class LDProduct:
+    id: int
+    name: str
+    article: str | None = None
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: Any = field(default_factory=dict)
+
+
+@dataclass
+class SearchCandidate:
+    ld_id: int
+    name: str
+    article: str | None
+    score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+    dense_score: float | None = None
+    dense_rank: int | None = None
+    bm25_score: float | None = None
+    bm25_rank: int | None = None
+    rrf_score: float | None = None
+    retrieval_sources: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BM25Candidate:
+    ld_id: int
+    name: str
+    article: str | None
+    bm25_score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+
+
+@dataclass
+class RerankedCandidate:
+    candidate_id: int
+    confidence: float | None
+    reason: str
+
+
+@dataclass
+class SelectedMatch:
+    candidate_id: int
+    article: str | None
+    name: str
+    llm_confidence: float | None
+    reason: str
+    ld_id: int
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+
+
+@dataclass
+class MatchResult:
+    query: str
+    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+    score: float | None = None
+    ld_product: SearchCandidate | None = None
+    candidates: list[SearchCandidate] = field(default_factory=list)
+    selected: list[SelectedMatch] = field(default_factory=list)
+    reason: str | None = None
+
+
+@dataclass
+class RerankResult:
+    status: Literal["MATCHED", "NOT_FOUND"]
+    selected: list[RerankedCandidate]
+    reason: str | None = None
+
+ succeeded in 116ms:
+grep: tests/__pycache__/test_golden_rules.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_eval_v2.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_documents.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_harness_gold_calibration.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_query_constraints.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_reranker_evidence.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_documents.cpython-312.pyc: binary file matches
+grep: tests/__pycache__/test_serialization.cpython-312-pytest-9.1.1.pyc: binary file matches
+grep: tests/__pycache__/test_candidate_diversification.cpython-312.pyc: binary file matches
+grep: tests/__pycache__/test_rag_harness_planner_memory.cpython-312-pytest-9.1.1.pyc: binary file matches
+tests/test_query_constraints.py:16:    properties=None,
+tests/test_query_constraints.py:25:        properties=properties
+tests/test_query_constraints.py:92:        properties=[
+tests/test_query_constraints.py:155:        properties=[
+tests/test_query_constraints.py:170:        properties=[
+tests/test_eval_v2.py:9:    select_review_properties,
+tests/test_eval_v2.py:41:            properties=[{"name": "Тип продукта", "values": ["Кран шаровой"]}],
+tests/test_eval_v2.py:52:            properties=[{"name": "Материал корпуса", "values": ["Латунь"]}],
+tests/test_eval_v2.py:67:            properties=[{"name": "Присоединение", "values": ["Фланцевое"]}],
+tests/test_eval_v2.py:79:    assert row["technical_properties"]["Тип продукта"] == ["Кран шаровой"]
+tests/test_eval_v2.py:80:    assert row["technical_properties"]["Материал корпуса"] == ["Латунь"]
+tests/test_eval_v2.py:81:    assert row["technical_properties"]["Присоединение"] == ["Фланцевое"]
+tests/test_eval_v2.py:84:def test_temperature_property_is_kept_in_review_properties():
+tests/test_eval_v2.py:85:    properties = [
+tests/test_eval_v2.py:90:    assert select_review_properties(properties) == {"Температура рабочей среды, °С": ["-40…200"]}
+tests/test_serialization.py:18:        properties=[{"name": "Материал", "values": ["Сталь"]}],
+tests/test_golden_rules.py:11:def product(*, properties=None, pn="1,6", name=None):
+tests/test_golden_rules.py:19:        properties=properties
+tests/test_golden_rules.py:50:        properties=[
+tests/test_golden_rules.py:158:        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
+tests/test_golden_rules.py:168:        properties=[{"name": "Тип продукта", "values": ["Неизвестное изделие"]}],
+tests/test_documents.py:15:            properties={
+tests/test_documents.py:16:                "properties": [
+tests/test_documents.py:34:def test_load_products_keeps_properties_for_search_text(tmp_path):
+tests/test_documents.py:37:        writer = csv.DictWriter(stream, fieldnames=["id", "name", "article", "properties_json"])
+tests/test_documents.py:44:                "properties_json": "{'properties': [{'name': 'Материал', 'values': ['Сталь 20']}, {'name': 'GUID', 'values': ['hidden']}]}",
+tests/test_documents.py:49:    assert product.properties == [{"name": "Материал", "values": ["Сталь 20"]}, {"name": "GUID", "values": ["hidden"]}]
+tests/test_documents.py:66:        properties={
+tests/test_documents.py:67:            "properties": [
+tests/test_harness_gold_calibration.py:21:        properties=[
+tests/test_rag_harness_planner_memory.py:169:    assert PLANNER_SCHEMA["properties"]["candidate_hypotheses"]["minItems"] == 0
+tests/test_rag_harness_planner_memory.py:183:    assert PLANNER_SCHEMA["properties"]["research_sources"]["maxItems"] == 4
+src/nomenclature_matcher/query_constraints.py:129:    for prop in product.properties or []:
+src/nomenclature_matcher/query_constraints.py:138:    for prop in product.properties or []:
+src/nomenclature_matcher/eval_v2_ground_truth.py:6:from .eval_v2 import select_review_properties
+src/nomenclature_matcher/eval_v2_ground_truth.py:28:    technical_properties = select_review_properties(getattr(candidate, "properties", None))
+src/nomenclature_matcher/eval_v2_ground_truth.py:43:        "technical_properties": technical_properties,
+src/nomenclature_matcher/eval_v2_ground_truth.py:63:        row["technical_properties"].update(select_review_properties(getattr(candidate, "properties", None)))
+src/nomenclature_matcher/eval_v2_ground_truth.py:76:        row["technical_properties"].update(select_review_properties(getattr(candidate, "properties", None)))
+src/nomenclature_matcher/eval_v2.py:42:def select_review_properties(properties) -> dict[str, list[str]]:
+src/nomenclature_matcher/eval_v2.py:44:    for prop in properties or []:
+src/nomenclature_matcher/eval_v2.py:69:        "grep: src/nomenclature_matcher/__pycache__/eval_v2_ground_truth.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/bm25_store.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/reranker_evidence.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/models.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/documents.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/serialization.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/matcher.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/eval_v2.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/indexer.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/experiments.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/hybrid_retriever.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/query_constraints.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/chatgpt_gold.cpython-312.pyc: binary file matches
+technical_properties": select_review_properties(getattr(candidate, "properties", None)),
+src/nomenclature_matcher/eval_v2.py:89:            row["technical_properties"].update(select_review_properties(getattr(candidate, "properties", None)))
+src/nomenclature_matcher/chatgpt_gold.py:59:                    "properties": candidate.get("properties") or {},
+src/nomenclature_matcher/experiments.py:73:            "search_text_fields": ["name", "article", "dn", "pn", "joining_type", "properties_json"],
+src/nomenclature_matcher/experiments.py:74:            "payload_fields": ["ld_id", "name", "article", "price", "dn", "pn", "joining_type", "url", "properties", "search_text"],
+src/nomenclature_matcher/hybrid_retriever.py:29:                properties=hit.payload.get("properties"),
+src/nomenclature_matcher/hybrid_retriever.py:52:                properties=hit.properties,
+src/nomenclature_matcher/hybrid_retriever.py:129:            properties=dense_candidate.properties if dense_candidate.properties is not None else bm25_candidate.properties,
+src/nomenclature_matcher/matcher.py:29:                properties=hit.payload.get("properties"),
+src/nomenclature_matcher/indexer.py:12:        batch = [(product.id, vector, {"ld_id": product.id, "name": product.name, "article": product.article, "price": product.price, "dn": product.dn, "pn": product.pn, "joining_type": product.joining_type, "url": product.url, "properties": product.properties, "search_text": text})
+src/nomenclature_matcher/serialization.py:36:        "properties": _clean(candidate.properties),
+src/nomenclature_matcher/bm25_store.py:77:                    properties=product.properties if isinstance(product.properties, list) else None,
+src/nomenclature_matcher/documents.py:25:def _properties(value: Any) -> list[dict[str, Any]]:
+src/nomenclature_matcher/documents.py:34:    return data.get("properties", []) if isinstance(data, dict) else []
+src/nomenclature_matcher/documents.py:43:def _append_property_lines(parts: list[str], properties: list[dict[str, Any]], allowed_names: set[str] | None = None) -> None:
+src/nomenclature_matcher/documents.py:44:    for prop in properties:
+src/nomenclature_matcher/documents.py:61:    _append_property_lines(parts, _properties(product.properties))
+src/nomenclature_matcher/documents.py:76:    _append_property_lines(parts, _properties(product.properties), _LEXICAL_PROPERTY_NAMES)
+src/nomenclature_matcher/documents.py:90:                          properties=_properties(row.get("properties_json"))) for row in csv.DictReader(stream)]
+src/nomenclature_matcher/models.py:15:    properties: Any = field(default_factory=dict)
+src/nomenclature_matcher/models.py:29:    properties: list[dict[str, Any]] | None = None
+src/nomenclature_matcher/models.py:50:    properties: list[dict[str, Any]] | None = None
+
+exec
+/bin/bash -lc "sed -n '1,120p' src/nomenclature_matcher/documents.py" in /workspaces/ML-Cancer-Data
+ succeeded in 19ms:
+import ast
+import csv
+import re
+import json
+from pathlib import Path
+from typing import Any
+
+from .models import LDProduct
+
+_LEXICAL_PROPERTY_NAMES = {
+    "Тип продукта",
+    "Тип продукта AI",
+    "Материал корпуса",
+    "Присоединение",
+    "Номинальный диаметр, DN",
+    "Номинальное давление, МПа",
+    "Серия",
+    "Рабочая среда",
+    "Управление",
+    "Тип резьбы",
+    "Тип прохода",
+}
+
+
+def _properties(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return value
+    if not value:
+        return []
+    try:
+        data = ast.literal_eval(value) if isinstance(value, str) else value
+    except (ValueError, SyntaxError):
+        return []
+    return data.get("properties", []) if isinstance(data, dict) else []
+
+
+def _format_values(values: Any) -> str:
+    if isinstance(values, list):
+        return ", ".join(map(str, values))
+    return str(values)
+
+
+def _append_property_lines(parts: list[str], properties: list[dict[str, Any]], allowed_names: set[str] | None = None) -> None:
+    for prop in properties:
+        name = prop.get("name")
+        values = prop.get("values", [])
+        if not name or prop.get("is_system") or name in {"GUID", "updated_at", "is_system"}:
+            continue
+        if allowed_names is not None and name not in allowed_names:
+            continue
+        if values in (None, "", []):
+            continue
+        parts.append(f"{name}: {_format_values(values)}")
+
+
+def build_search_text(product: LDProduct) -> str:
+    parts = [f"Название: {product.name}"]
+    for label, value in (("Артикул", product.article), ("DN", product.dn), ("PN", product.pn), ("Присоединение", product.joining_type)):
+        if value not in (None, ""):
+            parts.append(f"{label}: {value}")
+    _append_property_lines(parts, _properties(product.properties))
+    return "\n".join(parts)
+
+
+def build_lexical_text(product: LDProduct) -> str:
+    parts = [product.name]
+    for value in (product.article,):
+        if value not in (None, ""):
+            parts.append(str(value))
+    if product.dn not in (None, ""):
+        parts.append(f"DN {product.dn}")
+    if product.pn not in (None, ""):
+        parts.append(f"PN {product.pn}")
+    if product.joining_type not in (None, ""):
+        parts.append(str(product.joining_type))
+    _append_property_lines(parts, _properties(product.properties), _LEXICAL_PROPERTY_NAMES)
+    return "\n".join(parts)
+
+
+def tokenize(text: str) -> list[str]:
+    normalized = text.lower().replace("ё", "е")
+    return [token for token in re.split(r"[^0-9a-zа-я]+", normalized) if token]
+
+
+def load_products_from_csv(path: str | Path) -> list[LDProduct]:
+    with Path(path).open("r", encoding="utf-8-sig", newline="") as stream:
+        return [LDProduct(id=int(row["id"]), name=row.get("name", ""), article=row.get("article") or None,
+                          price=row.get("price") or None, dn=row.get("dn") or None, pn=row.get("pn") or None,
+                          joining_type=row.get("joining_type") or None, url=row.get("url") or None,
+                          properties=_properties(row.get("properties_json"))) for row in csv.DictReader(stream)]
+
+codex
+{"status":"complete","summary":"I’m editing `candidate_diversification.py` and its focused tests now. The fix keeps the diversification mechanism but makes redundancy much stricter, so catalog-realistic variants stay eligible unless their observable evidence matches.","tests":[],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/candidate_diversification.py
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..912d94f7a5dcfa79dad478c6f790403a6be6b57a
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,24 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +169,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..912d94f7a5dcfa79dad478c6f790403a6be6b57a
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,24 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +169,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_candidate_diversification.py
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..912d94f7a5dcfa79dad478c6f790403a6be6b57a
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,24 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +169,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..912d94f7a5dcfa79dad478c6f790403a6be6b57a
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,24 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +169,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+codex
+{"status":"complete","summary":"The focused regression tests now cover the reviewer’s real-catalog variant classes: material, medium, pass type, thread/configuration, installation dimensions, and DN/PN contradiction. I’m running those tests plus the hybrid retriever tests that exercise the insertion point.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_matcher.py' in /workspaces/ML-Cancer-Data
+ succeeded in 1237ms:
+...........                                                              [100%]
+11 passed in 0.14s
+
+ exited 1 in 1309ms:
+.F...............                                                        [100%]
+=================================== FAILURES ===================================
+_ test_structural_signature_returns_none_for_missing_malformed_or_ambiguous_evidence _
+
+    def test_structural_signature_returns_none_for_missing_malformed_or_ambiguous_evidence():
+        assert structural_signature(candidate(1, dn=None, search_text="PN: 16 фланцевый")) is None
+>       assert structural_signature(candidate(2, pn="PN16")) is None
+E       AssertionError: assert StructuralSignature(family='ball_valve', dn='50', pn='16', joining_type='flanged', bore='full_bore', execution='flanged', actuation=None, semantic_evidence=()) is None
+E        +  where StructuralSignature(family='ball_valve', dn='50', pn='16', joining_type='flanged', bore='full_bore', execution='flanged', actuation=None, semantic_evidence=()) = structural_signature(SearchCandidate(ld_id=2, name='Кран шаровой полнопроходной', article='A2', score=0.01, price=None, dn=50, pn='PN16', j...нопроходной', dense_score=None, dense_rank=None, bm25_score=None, bm25_rank=None, rrf_score=0.01, retrieval_sources=[]))
+E        +    where SearchCandidate(ld_id=2, name='Кран шаровой полнопроходной', article='A2', score=0.01, price=None, dn=50, pn='PN16', j...нопроходной', dense_score=None, dense_rank=None, bm25_score=None, bm25_rank=None, rrf_score=0.01, retrieval_sources=[]) = candidate(2, pn='PN16')
+
+tests/test_candidate_diversification.py:43: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_candidate_diversification.py::test_structural_signature_returns_none_for_missing_malformed_or_ambiguous_evidence
+1 failed, 16 passed in 0.24s
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..912d94f7a5dcfa79dad478c6f790403a6be6b57a
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,24 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +169,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+codex
+{"status":"complete","summary":"One existing malformed-field expectation exposed a fallback bug: a bad direct PN value was still being rescued by `search_text`. I’m tightening that so present-but-invalid structured values cannot form a collapse signature.","tests":["python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py (failed: malformed PN fallback)","python -m pytest -q tests/test_matcher.py (passed)"],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/candidate_diversification.py
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..fc589cca299f3dbdc9de4248297f1c9496329b83
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,26 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if value is not None and direct_value is None:
++        return None
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +171,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..fc589cca299f3dbdc9de4248297f1c9496329b83
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,26 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if value is not None and direct_value is None:
++        return None
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +171,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_matcher.py' in /workspaces/ML-Cancer-Data
+ succeeded in 772ms:
+...........                                                              [100%]
+11 passed in 0.18s
+
+ succeeded in 804ms:
+.................                                                        [100%]
+17 passed in 0.20s
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..fc589cca299f3dbdc9de4248297f1c9496329b83
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,26 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if value is not None and direct_value is None:
++        return None
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +171,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+codex
+{"status":"complete","summary":"The focused suites pass now. I’m doing a final diff/status check so I can report exactly what changed and whether a reindex is needed.","tests":["python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py (passed)","python -m pytest -q tests/test_matcher.py (passed)"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'git diff -- src/nomenclature_matcher/candidate_diversification.py tests/test_candidate_diversification.py' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git status --short' in /workspaces/ML-Cancer-Data
+ succeeded in 120ms:
+ succeeded in 124ms:
+ M src/nomenclature_matcher/hybrid_retriever.py
+ M tests/test_hybrid_retriever.py
+ M tests/test_matcher.py
+?? openspec/changes/cycle-16-structural-candidate-diversification/
+?? src/nomenclature_matcher/candidate_diversification.py
+?? tests/test_candidate_diversification.py
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..fc589cca299f3dbdc9de4248297f1c9496329b83
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,26 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if value is not None and direct_value is None:
++        return None
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +171,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+exec
+/bin/bash -lc "nl -ba src/nomenclature_matcher/candidate_diversification.py | sed -n '1,240p'" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "nl -ba tests/test_candidate_diversification.py | sed -n '1,220p'" in /workspaces/ML-Cancer-Data
+ succeeded in 137ms:
+     1	from __future__ import annotations
+     2	
+     3	import re
+     4	from dataclasses import dataclass
+     5	from typing import Any
+     6	
+     7	from .models import SearchCandidate
+     8	
+     9	
+    10	_DN_RE = re.compile(r"\b(?:dn|ду|дн)\s*[:=]?\s*(\d{1,4})\b", re.IGNORECASE)
+    11	_PN_RE = re.compile(r"\b(?:pn|ру|рn)\s*[:=]?\s*(\d{1,3})\b", re.IGNORECASE)
+    12	
+    13	_FAMILY_MARKERS = (
+    14	    ("ball_valve", ("кран шаровой", "шаровой кран", "ball valve")),
+    15	    ("gate_valve", ("задвижка", "gate valve")),
+    16	    ("butterfly_valve", ("затвор", "butterfly valve")),
+    17	    ("check_valve", ("клапан обратный", "обратный клапан", "check valve")),
+    18	    ("filter", ("фильтр", "filter")),
+    19	)
+    20	
+    21	_BORE_MARKERS = (
+    22	    ("full_bore", ("полнопроход", "полн проход", "full bore")),
+    23	    ("reduced_bore", ("неполнопроход", "редуцирован", "reduced bore")),
+    24	)
+    25	
+    26	_EXECUTION_MARKERS = (
+    27	    ("flanged", ("фланцев", " flange", " flanged")),
+    28	    ("threaded", ("муфтов", "резьб", " threaded")),
+    29	    ("welded", ("привар", "под приварку", "сварн", " weld")),
+    30	)
+    31	
+    32	_ACTUATION_MARKERS = (
+    33	    ("electric", ("электропривод", "с электроприводом", "electric actuator")),
+    34	    ("manual", ("ручн", "рукоят", "manual")),
+    35	)
+    36	
+    37	
+    38	@dataclass(frozen=True)
+    39	class StructuralSignature:
+    40	    family: str
+    41	    dn: str
+    42	    pn: str
+    43	    joining_type: str
+    44	    bore: str | None
+    45	    execution: str | None
+    46	    actuation: str | None
+    47	    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+    48	
+    49	
+    50	def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+    51	    try:
+    52	        text = _candidate_text(candidate)
+    53	        family = _single_marker(text, _FAMILY_MARKERS)
+    54	        dn = _candidate_number(candidate.dn, text, _DN_RE)
+    55	        pn = _candidate_number(candidate.pn, text, _PN_RE)
+    56	        joining_type = _normal_joining_type(candidate.joining_type)
+    57	        if not family or not dn or not pn or not joining_type:
+    58	            return None
+    59	        return StructuralSignature(
+    60	            family=family,
+    61	            dn=dn,
+    62	            pn=pn,
+    63	            joining_type=joining_type,
+    64	            bore=_single_marker(text, _BORE_MARKERS),
+    65	            execution=_single_marker(text, _EXECUTION_MARKERS),
+    66	            actuation=_single_marker(text, _ACTUATION_MARKERS),
+    67	            semantic_evidence=_semantic_evidence(candidate),
+    68	        )
+    69	    except Exception:
+    70	        return None
+    71	
+    72	
+    73	def diversify_candidates(candidates: list[SearchCandidate], limit: int) -> list[SearchCandidate]:
+    74	    if limit <= 0:
+    75	        return []
+    76	
+    77	    ranked = sorted(
+    78	        candidates,
+    79	        key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id),
+    80	    )
+    81	    selected: list[SearchCandidate] = []
+    82	    selected_ids: set[int] = set()
+    83	    seen_signatures: set[StructuralSignature] = set()
+    84	
+    85	    for candidate in ranked:
+    86	        try:
+    87	            signature = structural_signature(candidate)
+    88	        except Exception:
+    89	            signature = None
+    90	        if signature is not None:
+    91	            if signature in seen_signatures:
+    92	                continue
+    93	            seen_signatures.add(signature)
+    94	        selected.append(candidate)
+    95	        selected_ids.add(candidate.ld_id)
+    96	        if len(selected) == limit:
+    97	            return selected
+    98	
+    99	    for candidate in ranked:
+   100	        if candidate.ld_id in selected_ids:
+   101	            continue
+   102	        selected.append(candidate)
+   103	        selected_ids.add(candidate.ld_id)
+   104	        if len(selected) == limit:
+   105	            break
+   106	
+   107	    return selected
+   108	
+   109	
+   110	def _candidate_text(candidate: SearchCandidate) -> str:
+   111	    return f"{candidate.name or ''} {candidate.search_text or ''}".casefold()
+   112	
+   113	
+   114	def _normal_number(value: Any) -> str | None:
+   115	    if value is None:
+   116	        return None
+   117	    text = str(value).strip().replace(",", ".")
+   118	    if not text:
+   119	        return None
+   120	    try:
+   121	        number = float(text)
+   122	    except ValueError:
+   123	        return None
+   124	    if number <= 0 or not number.is_integer():
+   125	        return None
+   126	    return str(int(number))
+   127	
+   128	
+   129	def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+   130	    direct_value = _normal_number(value)
+   131	    text_values = _numbers(text, pattern)
+   132	    if value is not None and direct_value is None:
+   133	        return None
+   134	    if direct_value is None:
+   135	        return _single_value(text_values)
+   136	    if text_values and text_values != {direct_value}:
+   137	        return None
+   138	    return direct_value
+   139	
+   140	
+   141	def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+   142	    return _single_value(_numbers(text, pattern))
+   143	
+   144	
+   145	def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
+   146	    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
+   147	
+   148	
+   149	def _single_value(values: set[str]) -> str | None:
+   150	    if len(values) != 1:
+   151	        return None
+   152	    value = values.pop()
+   153	    return value if value != "0" else None
+   154	
+   155	
+   156	def _normal_joining_type(value: str | None) -> str | None:
+   157	    if not value:
+   158	        return None
+   159	    text = value.casefold()
+   160	    if any(marker in text for marker in ("фланц", "flange")):
+   161	        return "flanged"
+   162	    if any(marker in text for marker in ("муфт", "резьб", "thread")):
+   163	        return "threaded"
+   164	    if any(marker in text for marker in ("привар", "свар", "weld")):
+   165	        return "welded"
+   166	    return None
+   167	
+   168	
+   169	def _single_marker(text: str, groups: tuple[tuple[str, tuple[str, ...]], ...]) -> str | None:
+   170	    matched = {name for name, markers in groups if any(marker in text for marker in markers)}
+   171	    if len(matched) != 1:
+   172	        return None
+   173	    return matched.pop()
+   174	
+   175	
+   176	_SEMANTIC_PROPERTY_MARKERS = (
+   177	    "материал",
+   178	    "среда",
+   179	    "проход",
+   180	    "резьб",
+   181	    "серия",
+   182	    "исполн",
+   183	    "длина",
+   184	    "размер",
+   185	    "габарит",
+   186	    "строитель",
+   187	    "масса",
+   188	    "покрытие",
+   189	    "уплотн",
+   190	    "корпус",
+   191	    "шар",
+   192	    "седл",
+   193	    "шток",
+   194	    "проклад",
+   195	    "присоедин",
+   196	)
+   197	
+   198	_TEXT_SEMANTIC_MARKERS = (
+   199	    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
+   200	    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
+   201	    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
+   202	    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
+   203	)
+   204	
+   205	
+   206	def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
+   207	    evidence: list[tuple[str, tuple[str, ...]]] = []
+   208	    for prop in candidate.properties or []:
+   209	        name = prop.get("name") if isinstance(prop, dict) else None
+   210	        if not name:
+   211	            continue
+   212	        normal_name = _normalize_text(str(name))
+   213	        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
+   214	            continue
+   215	        values = prop.get("values")
+   216	        if values in (None, "", []):
+   217	            continue
+   218	        if not isinstance(values, list):
+   219	            values = [values]
+   220	        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
+   221	        if normal_values:
+   222	            evidence.append((normal_name, normal_values))
+   223	
+   224	    text = _candidate_text(candidate)
+   225	    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
+   226	        matched = tuple(marker for marker in markers if marker in text)
+   227	        if matched:
+   228	            evidence.append((f"text:{group_name}", matched))
+   229	
+   230	    return tuple(sorted(set(evidence)))
+   231	
+   232	
+   233	def _normalize_text(value: str) -> str:
+   234	    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+
+ succeeded in 110ms:
+     1	from nomenclature_matcher.candidate_diversification import diversify_candidates, structural_signature
+     2	from nomenclature_matcher.models import SearchCandidate
+     3	
+     4	
+     5	def candidate(
+     6	    ld_id: int,
+     7	    *,
+     8	    name: str = "Кран шаровой полнопроходной",
+     9	    score: float = 0.01,
+    10	    dn=50,
+    11	    pn=16,
+    12	    joining_type="фланцевое",
+    13	    search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
+    14	    properties=None,
+    15	) -> SearchCandidate:
+    16	    return SearchCandidate(
+    17	        ld_id=ld_id,
+    18	        name=name,
+    19	        article=f"A{ld_id}",
+    20	        score=score,
+    21	        dn=dn,
+    22	        pn=pn,
+    23	        joining_type=joining_type,
+    24	        search_text=search_text,
+    25	        properties=properties,
+    26	        rrf_score=score,
+    27	    )
+    28	
+    29	
+    30	def test_structural_signature_uses_direct_fields_and_bounded_markers():
+    31	    signature = structural_signature(candidate(1))
+    32	
+    33	    assert signature is not None
+    34	    assert signature.family == "ball_valve"
+    35	    assert signature.dn == "50"
+    36	    assert signature.pn == "16"
+    37	    assert signature.joining_type == "flanged"
+    38	    assert signature.bore == "full_bore"
+    39	
+    40	
+    41	def test_structural_signature_returns_none_for_missing_malformed_or_ambiguous_evidence():
+    42	    assert structural_signature(candidate(1, dn=None, search_text="PN: 16 фланцевый")) is None
+    43	    assert structural_signature(candidate(2, pn="PN16")) is None
+    44	    assert structural_signature(candidate(3, joining_type=None)) is None
+    45	    assert structural_signature(
+    46	        candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+    47	    ) is None
+    48	    assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
+    49	    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
+    50	    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+    51	
+    52	
+    53	def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+    54	    repeated_best = candidate(1, score=0.050)
+    55	    repeated_lower = candidate(2, score=0.049)
+    56	    distinct = candidate(3, score=0.001, dn=80, search_text="DN: 80 PN: 16 фланцевый полнопроходной")
+    57	
+    58	    diversified = diversify_candidates([repeated_best, repeated_lower, distinct], limit=2)
+    59	
+    60	    assert [item.ld_id for item in diversified] == [1, 3]
+    61	
+    62	
+    63	def test_diversify_candidates_keeps_ungroupable_candidates_eligible():
+    64	    repeated_best = candidate(1, score=0.050)
+    65	    repeated_lower = candidate(2, score=0.049)
+    66	    ungroupable = candidate(3, score=0.001, dn=None, search_text="PN: 16 фланцевый")
+    67	
+    68	    diversified = diversify_candidates([repeated_best, repeated_lower, ungroupable], limit=2)
+    69	
+    70	    assert [item.ld_id for item in diversified] == [1, 3]
+    71	
+    72	
+    73	def test_diversify_candidates_preserves_no_duplicate_pool_order_and_tie_key():
+    74	    candidates = [
+    75	        candidate(3, score=0.02, dn=80, search_text="DN: 80 PN: 16 фланцевый полнопроходной"),
+    76	        candidate(1, score=0.03, dn=25, search_text="DN: 25 PN: 16 фланцевый полнопроходной"),
+    77	        candidate(2, score=0.03, dn=50, search_text="DN: 50 PN: 16 фланцевый полнопроходной"),
+    78	    ]
+    79	
+    80	    diversified = diversify_candidates(candidates, limit=3)
+    81	
+    82	    assert [item.ld_id for item in diversified] == [1, 2, 3]
+    83	
+    84	
+    85	def test_diversify_candidates_appends_redundant_fillers_when_capacity_remains():
+    86	    candidates = [
+    87	        candidate(1, score=0.050),
+    88	        candidate(2, score=0.049),
+    89	        candidate(3, score=0.048),
+    90	    ]
+    91	
+    92	    diversified = diversify_candidates(candidates, limit=3)
+    93	
+    94	    assert [item.ld_id for item in diversified] == [1, 2, 3]
+    95	
+    96	
+    97	def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
+    98	    candidates = [
+    99	        candidate(
+   100	            1,
+   101	            score=0.050,
+   102	            properties=[
+   103	                {"name": "Материал корпуса", "values": ["Сталь 20"]},
+   104	                {"name": "Рабочая среда", "values": ["вода"]},
+   105	                {"name": "Тип прохода", "values": ["полнопроходной"]},
+   106	            ],
+   107	        ),
+   108	        candidate(
+   109	            2,
+   110	            score=0.049,
+   111	            properties=[
+   112	                {"name": "Материал корпуса", "values": ["Латунь"]},
+   113	                {"name": "Рабочая среда", "values": ["газ"]},
+   114	                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
+   115	            ],
+   116	        ),
+   117	    ]
+   118	
+   119	    diversified = diversify_candidates(candidates, limit=2)
+   120	
+   121	    assert [item.ld_id for item in diversified] == [1, 2]
+   122	
+   123	
+   124	def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
+   125	    candidates = [
+   126	        candidate(
+   127	            1,
+   128	            score=0.050,
+   129	            joining_type="муфтовое",
+   130	            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
+   131	            properties=[
+   132	                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
+   133	                {"name": "Строительная длина", "values": ["180 мм"]},
+   134	            ],
+   135	        ),
+   136	        candidate(
+   137	            2,
+   138	            score=0.049,
+   139	            joining_type="муфтовое",
+   140	            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
+   141	            properties=[
+   142	                {"name": "Тип резьбы", "values": ["НР/НР"]},
+   143	                {"name": "Строительная длина", "values": ["210 мм"]},
+   144	            ],
+   145	        ),
+   146	    ]
+   147	
+   148	    diversified = diversify_candidates(candidates, limit=2)
+   149	
+   150	    assert [item.ld_id for item in diversified] == [1, 2]
+
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..fc589cca299f3dbdc9de4248297f1c9496329b83
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,26 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if value is not None and direct_value is None:
++        return None
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +171,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+codex
+{"status":"complete","summary":"Fixed the reviewer’s concrete issues in `src/nomenclature_matcher/candidate_diversification.py`. Structural grouping is now more conservative by adding semantic catalog evidence to the signature, covering relevant properties and observable text markers for material, medium, pass type, thread/configuration, dimensions, series, execution, and related variant-bearing fields. DN/PN payload fields are now validated against explicit text evidence; malformed direct values or conflicting text evidence return no signature, so those candidates remain independently eligible instead of being collapsed. Added focused regressions in `tests/test_candidate_diversification.py` for material, medium, pass type, thread/configuration, installation dimensions, and DN/PN contradictions. No index rebuild is required.","tests":["python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py — 17 passed","python -m pytest -q tests/test_matcher.py — 11 passed"],"needs_reindex":false,"blocker":""}
+diff --git a/src/nomenclature_matcher/candidate_diversification.py b/src/nomenclature_matcher/candidate_diversification.py
+index c1adec72acdf31d691cc1fd2fd70dc61e47706aa..fc589cca299f3dbdc9de4248297f1c9496329b83
+--- a/src/nomenclature_matcher/candidate_diversification.py
++++ b/src/nomenclature_matcher/candidate_diversification.py
+@@ -44,6 +44,7 @@
+     bore: str | None
+     execution: str | None
+     actuation: str | None
++    semantic_evidence: tuple[tuple[str, tuple[str, ...]], ...]
+ 
+ 
+ def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+@@ -63,6 +64,7 @@
+             bore=_single_marker(text, _BORE_MARKERS),
+             execution=_single_marker(text, _EXECUTION_MARKERS),
+             actuation=_single_marker(text, _ACTUATION_MARKERS),
++            semantic_evidence=_semantic_evidence(candidate),
+         )
+     except Exception:
+         return None
+@@ -125,13 +127,26 @@
+ 
+ 
+ def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+-    if value is not None:
+-        return _normal_number(value)
+-    return _single_number(text, pattern)
++    direct_value = _normal_number(value)
++    text_values = _numbers(text, pattern)
++    if value is not None and direct_value is None:
++        return None
++    if direct_value is None:
++        return _single_value(text_values)
++    if text_values and text_values != {direct_value}:
++        return None
++    return direct_value
+ 
+ 
+ def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+-    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++    return _single_value(_numbers(text, pattern))
++
++
++def _numbers(text: str, pattern: re.Pattern[str]) -> set[str]:
++    return {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
++
++
++def _single_value(values: set[str]) -> str | None:
+     if len(values) != 1:
+         return None
+     value = values.pop()
+@@ -156,3 +171,64 @@
+     if len(matched) != 1:
+         return None
+     return matched.pop()
++
++
++_SEMANTIC_PROPERTY_MARKERS = (
++    "материал",
++    "среда",
++    "проход",
++    "резьб",
++    "серия",
++    "исполн",
++    "длина",
++    "размер",
++    "габарит",
++    "строитель",
++    "масса",
++    "покрытие",
++    "уплотн",
++    "корпус",
++    "шар",
++    "седл",
++    "шток",
++    "проклад",
++    "присоедин",
++)
++
++_TEXT_SEMANTIC_MARKERS = (
++    ("material", ("латун", "сталь", "нержав", "чугун", "бронз", "полиэтилен", "пнд")),
++    ("medium", ("газ", "вода", "пар", "нефть", "масло", "кислород", "воздух")),
++    ("thread", ("вр/вр", "нр/нр", "вр-нр", "внутр", "наруж", "g1", "g 1")),
++    ("configuration", ("американ", "дренаж", "слив", "штуцер", "фильтр", "термометр")),
++)
++
++
++def _semantic_evidence(candidate: SearchCandidate) -> tuple[tuple[str, tuple[str, ...]], ...]:
++    evidence: list[tuple[str, tuple[str, ...]]] = []
++    for prop in candidate.properties or []:
++        name = prop.get("name") if isinstance(prop, dict) else None
++        if not name:
++            continue
++        normal_name = _normalize_text(str(name))
++        if not any(marker in normal_name for marker in _SEMANTIC_PROPERTY_MARKERS):
++            continue
++        values = prop.get("values")
++        if values in (None, "", []):
++            continue
++        if not isinstance(values, list):
++            values = [values]
++        normal_values = tuple(sorted({_normalize_text(str(value)) for value in values if str(value).strip()}))
++        if normal_values:
++            evidence.append((normal_name, normal_values))
++
++    text = _candidate_text(candidate)
++    for group_name, markers in _TEXT_SEMANTIC_MARKERS:
++        matched = tuple(marker for marker in markers if marker in text)
++        if matched:
++            evidence.append((f"text:{group_name}", matched))
++
++    return tuple(sorted(set(evidence)))
++
++
++def _normalize_text(value: str) -> str:
++    return " ".join(re.split(r"\s+", value.casefold().replace("ё", "е").strip()))
+diff --git a/tests/test_candidate_diversification.py b/tests/test_candidate_diversification.py
+index e4660c4cbb84c97c1c566f6f454ada5ceca4bb74..8826d003b4d2084154c604d943622f37e77ada14
+--- a/tests/test_candidate_diversification.py
++++ b/tests/test_candidate_diversification.py
+@@ -11,6 +11,7 @@
+     pn=16,
+     joining_type="фланцевое",
+     search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
++    properties=None,
+ ) -> SearchCandidate:
+     return SearchCandidate(
+         ld_id=ld_id,
+@@ -21,6 +22,7 @@
+         pn=pn,
+         joining_type=joining_type,
+         search_text=search_text,
++        properties=properties,
+         rrf_score=score,
+     )
+ 
+@@ -44,6 +46,8 @@
+         candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+     ) is None
+     assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(6, dn=50, search_text="DN: 80 PN: 16 фланцевый")) is None
++    assert structural_signature(candidate(7, pn=16, search_text="DN: 50 PN: 25 фланцевый")) is None
+ 
+ 
+ def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+@@ -88,3 +92,59 @@
+     diversified = diversify_candidates(candidates, limit=3)
+ 
+     assert [item.ld_id for item in diversified] == [1, 2, 3]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_different_material_medium_or_pass_type():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Сталь 20"]},
++                {"name": "Рабочая среда", "values": ["вода"]},
++                {"name": "Тип прохода", "values": ["полнопроходной"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            properties=[
++                {"name": "Материал корпуса", "values": ["Латунь"]},
++                {"name": "Рабочая среда", "values": ["газ"]},
++                {"name": "Тип прохода", "values": ["стандартнопроходной"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
++
++
++def test_diversify_candidates_keeps_catalog_variants_with_thread_configuration_or_dimensions():
++    candidates = [
++        candidate(
++            1,
++            score=0.050,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной ВР/ВР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["ВР/ВР"]},
++                {"name": "Строительная длина", "values": ["180 мм"]},
++            ],
++        ),
++        candidate(
++            2,
++            score=0.049,
++            joining_type="муфтовое",
++            search_text="DN: 50 PN: 16 муфтовый полнопроходной НР/НР",
++            properties=[
++                {"name": "Тип резьбы", "values": ["НР/НР"]},
++                {"name": "Строительная длина", "values": ["210 мм"]},
++            ],
++        ),
++    ]
++
++    diversified = diversify_candidates(candidates, limit=2)
++
++    assert [item.ld_id for item in diversified] == [1, 2]
+
+tokens used
+34,635
+{"status":"complete","summary":"Fixed the reviewer’s concrete issues in `src/nomenclature_matcher/candidate_diversification.py`. Structural grouping is now more conservative by adding semantic catalog evidence to the signature, covering relevant properties and observable text markers for material, medium, pass type, thread/configuration, dimensions, series, execution, and related variant-bearing fields. DN/PN payload fields are now validated against explicit text evidence; malformed direct values or conflicting text evidence return no signature, so those candidates remain independently eligible instead of being collapsed. Added focused regressions in `tests/test_candidate_diversification.py` for material, medium, pass type, thread/configuration, installation dimensions, and DN/PN contradictions. No index rebuild is required.","tests":["python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py — 17 passed","python -m pytest -q tests/test_matcher.py — 11 passed"],"needs_reindex":false,"blocker":""}

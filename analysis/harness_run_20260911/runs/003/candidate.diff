@@ -1,0 +1,254 @@
+diff --git a/src/nomenclature_matcher/hybrid_retriever.py b/src/nomenclature_matcher/hybrid_retriever.py
+index a995d01..02d471f 100644
+--- a/src/nomenclature_matcher/hybrid_retriever.py
++++ b/src/nomenclature_matcher/hybrid_retriever.py
+@@ -57,14 +57,45 @@ class HybridRetriever:
+             for index, hit in enumerate(hits, 1)
+         ]
+ 
+-    def search(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
++    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+         limit = limit or self.settings.hybrid_rerank_limit
+-        dense_candidates = self.search_dense(query, self.settings.hybrid_dense_limit)
+-        bm25_candidates = self.search_bm25(query, self.settings.hybrid_bm25_limit)
++        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
++        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+         merged = self._merge_candidates(dense_candidates, bm25_candidates)
+         self._apply_rrf(merged)
+         return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
+ 
++    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
++        candidates = search_fn(query, limit)
++        if not canonical_query or canonical_query == query:
++            return candidates
++        try:
++            candidates = [*candidates, *search_fn(canonical_query, limit)]
++        except Exception:
++            return candidates
++        return list(self._merge_modality_candidates(candidates).values())
++
++    def _merge_modality_candidates(self, candidates: list[SearchCandidate]) -> dict[int, SearchCandidate]:
++        merged: dict[int, SearchCandidate] = {}
++        for candidate in candidates:
++            existing = merged.get(candidate.ld_id)
++            if existing is None or self._is_stronger_modality_hit(candidate, existing):
++                merged[candidate.ld_id] = candidate
++        return merged
++
++    def _is_stronger_modality_hit(self, candidate: SearchCandidate, existing: SearchCandidate) -> bool:
++        if candidate.dense_rank is not None or existing.dense_rank is not None:
++            candidate_rank = candidate.dense_rank if candidate.dense_rank is not None else 10**9
++            existing_rank = existing.dense_rank if existing.dense_rank is not None else 10**9
++            if candidate_rank != existing_rank:
++                return candidate_rank < existing_rank
++            return (candidate.dense_score or float("-inf")) > (existing.dense_score or float("-inf"))
++        candidate_rank = candidate.bm25_rank if candidate.bm25_rank is not None else 10**9
++        existing_rank = existing.bm25_rank if existing.bm25_rank is not None else 10**9
++        if candidate_rank != existing_rank:
++            return candidate_rank < existing_rank
++        return (candidate.bm25_score or float("-inf")) > (existing.bm25_score or float("-inf"))
++
+     def _merge_candidates(
+         self,
+         dense_candidates: list[SearchCandidate],
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 77258fb..971745f 100644
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -1,6 +1,7 @@
+ from dataclasses import replace
+ 
+ from .models import MatchResult, SearchCandidate, SelectedMatch
++from .query_canonicalization import canonicalize_retrieval_query
+ 
+ 
+ class NomenclatureMatcher:
+@@ -99,12 +100,17 @@ class NomenclatureMatcher:
+         return self.rerank_candidates(query, candidates)
+ 
+     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+-        query = self._normalize_query(query)
++        canonicalization = canonicalize_retrieval_query(query)
++        query = canonicalization.source_query
+         if not query:
+             return MatchResult(query=query, status="NOT_FOUND")
+         if self.hybrid_retriever is None:
+             raise ValueError("Hybrid retriever is not configured")
+-        candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
++        candidates = self.hybrid_retriever.search(
++            query,
++            self.settings.hybrid_rerank_limit,
++            canonical_query=canonicalization.canonical_query,
++        )
+         return self.rerank_candidates(query, candidates)
+ 
+     def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a7ec366..ecc7a2f 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -36,6 +36,53 @@ class BM25Store:
+         ]
+ 
+ 
++class VariantQdrantStore:
++    def __init__(self):
++        self.calls = []
++
++    def search(self, vector, limit):
++        self.calls.append((vector, limit))
++        query = vector[0]
++        if query == "original":
++            return [
++                SimpleNamespace(score=0.7, payload={"ld_id": 1, "name": "Original", "article": "O", "search_text": "dense-o"}),
++                SimpleNamespace(score=0.2, payload={"ld_id": 2, "name": "Dup", "article": "D", "search_text": "dense-o"}),
++            ]
++        return [
++            SimpleNamespace(score=0.95, payload={"ld_id": 3, "name": "Canonical", "article": "C", "search_text": "dense-c"}),
++            SimpleNamespace(score=0.9, payload={"ld_id": 2, "name": "Dup", "article": "D", "search_text": "dense-c"}),
++        ]
++
++
++class VariantBM25Store:
++    def __init__(self, fail_on_canonical=False):
++        self.calls = []
++        self.fail_on_canonical = fail_on_canonical
++
++    def search(self, query, limit):
++        self.calls.append((query, limit))
++        if query == "canonical" and self.fail_on_canonical:
++            raise RuntimeError("bm25 down")
++        if query == "original":
++            return [
++                BM25Candidate(ld_id=2, name="Dup", article="D", bm25_score=0.6, search_text="bm25-o"),
++                BM25Candidate(ld_id=4, name="Bm25 original", article="B", bm25_score=0.3, search_text="bm25-o"),
++            ]
++        return [
++            BM25Candidate(ld_id=5, name="Bm25 canonical", article="BC", bm25_score=1.2, search_text="bm25-c"),
++            BM25Candidate(ld_id=2, name="Dup", article="D", bm25_score=1.0, search_text="bm25-c"),
++        ]
++
++
++class EchoEmbedder:
++    def __init__(self):
++        self.calls = []
++
++    def embed_query(self, text):
++        self.calls.append(text)
++        return [text]
++
++
+ def test_hybrid_merge_dedupes_and_uses_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+@@ -53,3 +100,42 @@ def test_hybrid_search_limits_result_count():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=1, rrf_k=60)
+     retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+     assert len(retriever.search("query")) == 1
++
++
++def test_hybrid_search_retrieves_alternate_only_when_distinct():
++    settings = SimpleNamespace(hybrid_dense_limit=7, hybrid_bm25_limit=8, hybrid_rerank_limit=20, rrf_k=60)
++    embedder = EchoEmbedder()
++    bm25 = VariantBM25Store()
++    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
++    retriever.search("original", canonical_query="canonical")
++    assert embedder.calls == ["original", "canonical"]
++    assert bm25.calls == [("original", 8), ("canonical", 8)]
++
++    embedder = EchoEmbedder()
++    bm25 = VariantBM25Store()
++    HybridRetriever(embedder, VariantQdrantStore(), bm25, settings).search("original", canonical_query="original")
++    assert embedder.calls == ["original"]
++    assert bm25.calls == [("original", 8)]
++
++
++def test_hybrid_search_merges_variants_per_modality_before_rrf():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
++    results = retriever.search("original", canonical_query="canonical")
++    by_id = {candidate.ld_id: candidate for candidate in results}
++    assert set(by_id) == {1, 2, 3, 4, 5}
++    assert by_id[2].dense_rank == 2
++    assert by_id[2].dense_score == 0.9
++    assert by_id[2].bm25_rank == 1
++    assert by_id[2].bm25_score == 0.6
++    assert by_id[2].rrf_score == (1 / 62) + (1 / 61)
++    assert by_id[3].retrieval_sources == ["dense"]
++    assert by_id[5].retrieval_sources == ["bm25"]
++
++
++def test_hybrid_search_fails_open_when_alternate_modality_fails():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(fail_on_canonical=True), settings)
++    results = retriever.search("original", canonical_query="canonical")
++    assert len({candidate.ld_id for candidate in results}) == len(results)
++    assert {candidate.ld_id for candidate in results} == {1, 2, 3, 4}
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index a00af36..2bbf046 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -17,8 +17,10 @@ class Reranker:
+     def __init__(self, result=None, error=None):
+         self.result = result
+         self.error = error
++        self.calls = []
+ 
+     def rerank(self, query, candidates):
++        self.calls.append((query, candidates))
+         if self.error:
+             raise self.error
+         return self.result
+@@ -29,8 +31,8 @@ class HybridRetriever:
+         self.candidates = candidates
+         self.calls = []
+ 
+-    def search(self, query, limit):
+-        self.calls.append((query, limit))
++    def search(self, query, limit, canonical_query=None):
++        self.calls.append((query, limit, canonical_query))
+         return self.candidates
+ 
+ 
+@@ -113,7 +115,8 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+         )
+     ]
+     rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+-    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+     result = matcher.match_one_hybrid_with_rerank("  query  ")
+     assert result.status == "MATCHED"
+     assert result.candidates[0].rrf_score == 0.03
+@@ -121,6 +124,7 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+     assert result.selected[0].bm25_score == 1.2
+     assert result.selected[0].rrf_score == 0.03
+     assert not hasattr(result.selected[0], "vector_score")
++    assert hybrid.calls == [("query", 20, None)]
+ 
+ 
+ def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+@@ -136,4 +140,22 @@ def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+     matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+     results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+     assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
+-    assert hybrid.calls == [("query", 20)]
++    assert hybrid.calls == [("query", 20, None)]
++
++
++def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
++    reranker = Reranker(result=rerank_result)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
++    assert result.query == "Кран шаровой фл. Ду25 Ру16"
++    assert hybrid.calls == [("Кран шаровой фл. Ду25 Ру16", 20, "Кран шаровой фланцевый DN 25 PN 16")]
++    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"

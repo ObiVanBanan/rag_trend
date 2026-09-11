@@ -1,0 +1,23 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-11-pipe-od-retrieval-normalization",
+  "hypothesis": "A guarded, standards-backed outer-pipe-diameter-to-DN retrieval alternate will improve candidate recall for valve tenders that specify an unambiguous pipe OD rather than DN, while preserving original-query reranking and selection.",
+  "why_now": "Current canonicalization explicitly does not interpret pipe OD. This is the documented remaining parser-miss class, and technical evidence supports the exact initial OD 108 mm to DN 100 mapping.",
+  "expected_effect": "Add at most one DN-enriched retrieval query only for explicit, contextual, allowlisted pipe OD; preserve source retrieval, reranker input, RRF, and final selection.",
+  "expected_metric_gain": "+0–3.3 pp public and blind hard-pass coverage, with no intended safety regression.",
+  "lesson_from_history": "Selection-adjacent experiments regressed or were neutral, while additive canonicalization was accepted in cycles 3–4. Cycle 10 was blocked by a protected-file violation before evaluation, so it does not disprove schema expansion. Index enrichment regressed, so this avoids rebuilding.",
+  "candidate_hypotheses": [
+    "Guarded pipe-OD-to-DN additive retrieval normalization (selected).",
+    "Protected-file-safe flange subtype verification.",
+    "Subject-matter-validated legacy designation equivalences.",
+    "Hybrid candidate-depth or RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, behavior spec, design, and implementation-only tasks in openspec/changes/cycle-11-pipe-od-retrieval-normalization/. Tasks explicitly exclude GOLD/harness artifacts and supervisor evaluation.",
+  "used_external_research": true,
+  "research_sources": [
+    "https://meganorm.ru/mega_doc/norm/gost_gosudarstvennyj-standart/0/gost_10704-91_mezhgosudarstvennyy_standart_truby_stalnye.html",
+    "https://tavago.ru/truby-i-fitingi/stalnye-truby/truby-stalnye-elektrosvarnye-gost-10704-91/truba-stal-elektrosvarnaya-pryamoshovnaya-dn-108kh3-5-du-100-gost-10704-91.html"
+  ],
+  "research_summary": "The GOST source lists 108 mm as a standard outside diameter; the pipe source identifies DN 108×3.5 as DN 100. The plan limits conversion to explicit OD context and this single documented mapping."
+}

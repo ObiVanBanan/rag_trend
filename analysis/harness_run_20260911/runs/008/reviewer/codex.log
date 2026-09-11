@@ -1,0 +1,1965 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0874e-989a-7df3-a830-12d735e77434
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-08-verifiable-selection-fallback",
+  "hypothesis": "A fail-open deterministic post-rerank compatibility fallback will reduce explicit execution/control/bore conflicts by substituting only an already retrieved, fully evidenced compatible candidate.",
+  "why_now": "Current evidence points to final-selection conflicts rather than retrieval misses; this is a materially different, bounded alternative to prior broad gating, prompt changes, and index enrichment.",
+  "expected_effect": "Correct unsafe top selections while preserving the reranker outcome when no compatible, evidenced alternative exists.",
+  "expected_metric_gain": "+3.3–10 pp public hard-pass; +0–6.7 pp blind hard-pass.",
+  "lesson_from_history": "Cycle 1 broad filtering and Cycle 5 prompt-based selection changes regressed. This design never filters before reranking, uses literal deterministic cues, and falls back only to an existing compatible candidate. Cycle 7 index enrichment regressed, so no rebuild is requested.",
+  "candidate_hypotheses": [
+    "Fail-open deterministic post-rerank compatibility fallback (selected).",
+    "Flange-subtype schema expansion.",
+    "Subject-validated legacy designation mappings.",
+    "Catalog-side index enrichment or RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks at openspec/changes/cycle-08-verifiable-selection-fallback/. No product code was changed."
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-08-verifiable-selection-fallback`: added pure literal selection requirements, evidence-only candidate compatibility checks, post-rerank fail-open fallback, and selection provenance on results/debug serialization. OpenSpec tasks are 6/6 complete. No index rebuild is needed.",
+  "tests": [
+    "python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py",
+    "python -m pytest -q"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.8333333333333334,
+  "core_pass_rate": 0.8,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.0,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.008333333333333333,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.375,
+  "verdict_counts": {
+    "PASS": 29,
+    "FAIL_HUMAN_REJECT": 1,
+    "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_PRODUCT": 8
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q005",
+    "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+    "reason": "Required fields are missing from the returned product; correctness is not provable."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_PRODUCT",
+    "reason": "Returned product violates one or more deterministic GOLD requirements."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q025",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 971745f..3e4a209 100644
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -1,7 +1,9 @@
+ from dataclasses import replace
++from types import SimpleNamespace
+ 
+ from .models import MatchResult, SearchCandidate, SelectedMatch
+ from .query_canonicalization import canonicalize_retrieval_query
++from .query_constraints import evaluate_selection_compatibility, resolve_selection_requirements
+ 
+ 
+ class NomenclatureMatcher:
+@@ -35,7 +37,7 @@ class NomenclatureMatcher:
+             for index, hit in enumerate(hits, 1)
+         ]
+ 
+-    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
++    def _build_selected_match(self, candidate: SearchCandidate, item, *, selection_source: str = "reranker") -> SelectedMatch:
+         return SelectedMatch(
+             candidate_id=item.candidate_id,
+             article=candidate.article,
+@@ -50,8 +52,36 @@ class NomenclatureMatcher:
+             pn=candidate.pn,
+             joining_type=candidate.joining_type,
+             url=candidate.url,
++            selection_source=selection_source,
+         )
+ 
++    def _apply_selection_fallback(self, query: str, candidates: list[SearchCandidate], rerank_result):
++        if rerank_result.status != "MATCHED" or not rerank_result.selected:
++            return rerank_result.selected, "reranker"
++
++        requirements = resolve_selection_requirements(query)
++        selected_item = rerank_result.selected[0]
++        selected_candidate = candidates[selected_item.candidate_id - 1]
++        selected_compatibility = evaluate_selection_compatibility(selected_candidate, requirements)
++        if not selected_compatibility.has_contradiction:
++            return rerank_result.selected, "reranker"
++
++        for index, candidate in enumerate(candidates, 1):
++            compatibility = evaluate_selection_compatibility(candidate, requirements)
++            if compatibility.is_fully_compatible:
++                fallback_item = SimpleNamespace(
++                    candidate_id=index,
++                    confidence=selected_item.confidence,
++                    reason=(
++                        f"compatibility_fallback: replaced candidate "
++                        f"{selected_item.candidate_id}; contradictions={sorted(selected_compatibility.contradicted)}"
++                    ),
++                )
++                remaining = [item for item in rerank_result.selected if item.candidate_id != index]
++                return [fallback_item, *remaining], "compatibility_fallback"
++
++        return rerank_result.selected, "reranker"
++
+     def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+         if not candidates:
+             return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+@@ -68,11 +98,13 @@ class NomenclatureMatcher:
+                 candidates=candidates,
+                 reason=str(exc),
+             )
++        reranked_selection, selection_source = self._apply_selection_fallback(query, candidates, rerank_result)
+         selected = []
+-        for item in rerank_result.selected:
++        for position, item in enumerate(reranked_selection):
+             candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+-        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
++            item_source = selection_source if position == 0 else "reranker"
++            selected.append(self._build_selected_match(candidate, item, selection_source=item_source))
++        best = candidates[reranked_selection[0].candidate_id - 1] if reranked_selection else None
+         return MatchResult(
+             query=query,
+             status=rerank_result.status,
+@@ -81,6 +113,7 @@ class NomenclatureMatcher:
+             candidates=candidates,
+             selected=selected,
+             reason=rerank_result.reason,
++            selection_source=selection_source,
+         )
+ 
+     def match_one(self, query: str) -> MatchResult:
+diff --git a/src/nomenclature_matcher/models.py b/src/nomenclature_matcher/models.py
+index 4e470c3..a4fc5ef 100644
+--- a/src/nomenclature_matcher/models.py
++++ b/src/nomenclature_matcher/models.py
+@@ -73,6 +73,7 @@ class SelectedMatch:
+     pn: Any = None
+     joining_type: str | None = None
+     url: str | None = None
++    selection_source: str = "reranker"
+ 
+ 
+ @dataclass
+@@ -84,6 +85,7 @@ class MatchResult:
+     candidates: list[SearchCandidate] = field(default_factory=list)
+     selected: list[SelectedMatch] = field(default_factory=list)
+     reason: str | None = None
++    selection_source: str = "reranker"
+ 
+ 
+ @dataclass
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 3c52290..6f20faa 100644
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -2,7 +2,7 @@ from __future__ import annotations
+ 
+ import json
+ import re
+-from dataclasses import asdict, dataclass
++from dataclasses import asdict, dataclass, field
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -37,6 +37,28 @@ class QueryConstraints(BaseModel):
+     ambiguous: bool = False
+     comment: str = ""
+ 
++
++@dataclass(frozen=True)
++class SelectionRequirements:
++    valve_type: str | None = None
++    control: str | None = None
++    bore_type: str | None = None
++
++
++@dataclass(frozen=True)
++class SelectionCompatibility:
++    satisfied: dict[str, str] = field(default_factory=dict)
++    contradicted: dict[str, str] = field(default_factory=dict)
++    unknown: dict[str, str] = field(default_factory=dict)
++
++    @property
++    def has_contradiction(self) -> bool:
++        return bool(self.contradicted)
++
++    @property
++    def is_fully_compatible(self) -> bool:
++        return not self.contradicted and not self.unknown
++
+     @field_validator("dn")
+     @classmethod
+     def _validate_dn(cls, value: int | None) -> int | None:
+@@ -297,6 +319,8 @@ def canonical_bore_type(text: Any) -> str | None:
+         return "full"
+     if "редуц" in value or "неполнопроход" in value:
+         return "reduced"
++    if "стандартнопроход" in value or "стандартный проход" in value:
++        return "standard"
+     return None
+ 
+ 
+@@ -335,6 +359,78 @@ def candidate_control(product: LDProduct) -> str | None:
+     return None
+ 
+ 
++def resolve_selection_requirements(query: str) -> SelectionRequirements:
++    value = _norm(query)
++    is_ball_valve = "кран" in value and "шар" in value
++    valve_type = None
++    if is_ball_valve:
++        special = (
++            ("underground", ("подзем",)),
++            ("regulating", ("регулиру", "regula")),
++            ("cryogenic", ("криоген",)),
++            ("gas", ("газов", "для газа")),
++        )
++        for resolved, phrases in special:
++            if any(phrase in value for phrase in phrases):
++                valve_type = resolved
++                break
++        if valve_type is None:
++            valve_type = "standard"
++
++    control = None
++    if "под электропривод" in value:
++        control = "electric_ready"
++    elif "электропривод" in value:
++        control = "electric"
++
++    bore_type = canonical_bore_type(value)
++    return SelectionRequirements(valve_type=valve_type, control=control, bore_type=bore_type)
++
++
++def verifiable_candidate_control(product: LDProduct) -> str | None:
++    for value in [*_property_values(product, "Управление"), product.name]:
++        result = canonical_control(value)
++        if result:
++            return result
++    return None
++
++
++def verifiable_candidate_bore_type(product: LDProduct) -> str | None:
++    return candidate_bore_type(product)
++
++
++def verifiable_candidate_valve_type(product: LDProduct) -> str | None:
++    if candidate_product_type(product) != "ball_valve":
++        return None
++    return candidate_valve_type(product)
++
++
++def evaluate_selection_compatibility(
++    product: LDProduct,
++    requirements: SelectionRequirements,
++) -> SelectionCompatibility:
++    satisfied: dict[str, str] = {}
++    contradicted: dict[str, str] = {}
++    unknown: dict[str, str] = {}
++
++    checks = (
++        ("valve_type", requirements.valve_type, verifiable_candidate_valve_type(product)),
++        ("control", requirements.control, verifiable_candidate_control(product)),
++        ("bore_type", requirements.bore_type, verifiable_candidate_bore_type(product)),
++    )
++    for field_name, expected, actual in checks:
++        if expected is None:
++            continue
++        detail = f"{actual} == {expected}"
++        if actual is None:
++            unknown[field_name] = detail
++        elif actual == expected:
++            satisfied[field_name] = detail
++        else:
++            contradicted[field_name] = detail
++    return SelectionCompatibility(satisfied=satisfied, contradicted=contradicted, unknown=unknown)
++
++
+ def candidate_valve_type(product: LDProduct) -> str | None:
+     if candidate_product_type(product) != "ball_valve":
+         return None
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f..03a49c8 100644
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -61,6 +61,7 @@ def selected_debug_payload(selected: SelectedMatch) -> dict[str, Any]:
+         "rrf_score": selected.rrf_score,
+         "llm_confidence": selected.llm_confidence,
+         "reason": selected.reason,
++        "selection_source": selected.selection_source,
+     }
+ 
+ 
+@@ -74,6 +75,7 @@ def match_result_payload(result: MatchResult, *, include_debug: bool = True) ->
+     if include_debug:
+         payload["debug"] = {
+             "reason": result.reason,
++            "selection_source": result.selection_source,
+             "candidates": [
+                 candidate_debug_payload(candidate, index)
+                 for index, candidate in enumerate(result.candidates, 1)
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..66dc80d 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -186,3 +186,100 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def search_candidate(ld_id, name, *, score=0.01, properties=None):
++    return SearchCandidate(
++        ld_id=ld_id,
++        name=name,
++        article=f"A{ld_id}",
++        score=score,
++        properties=properties or [{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++        rrf_score=score,
++    )
++
++
++def test_post_rerank_fallback_replaces_ordinary_query_underground_choice():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD подземный полнопроходной ручное управление", score=0.03),
++        search_candidate(2, "Кран шаровый LD фланцевый полнопроходной ручное управление", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой фланцевый полнопроходной",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[1]
++    assert result.selected[0].ld_id == 2
++    assert result.selected[0].selection_source == "compatibility_fallback"
++    assert result.selection_source == "compatibility_fallback"
++
++
++def test_post_rerank_fallback_replaces_electric_ready_for_installed_electric_query():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD под электропривод полнопроходной", score=0.03),
++        search_candidate(2, "Кран шаровый LD с электроприводом полнопроходной", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой фланцевый с электроприводом",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[1]
++
++
++def test_post_rerank_fallback_replaces_explicit_bore_contradiction():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD редуцированный ручное управление", score=0.03),
++        search_candidate(2, "Кран шаровый LD полнопроходной ручное управление", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой полнопроходной",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[1]
++
++
++def test_post_rerank_fallback_preserves_selection_when_no_compatible_alternative():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [
++        search_candidate(1, "Кран шаровый LD подземный полнопроходной ручное управление", score=0.03),
++        search_candidate(2, "Кран шаровый LD фланцевый", score=0.02),
++    ]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
++        "Кран шаровой полнопроходной",
++        candidates,
++    )
++
++    assert result.ld_product == candidates[0]
++    assert result.selection_source == "reranker"
++    assert result.selected[0].selection_source == "reranker"
++
++
++def test_post_rerank_fallback_preserves_query_candidates_scores_and_reranker_call():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
++    candidates = [search_candidate(1, "Кран шаровый LD фланцевый ручное управление", score=0.03)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
++    reranker = Reranker(result=rerank_result)
++
++    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker).rerank_candidates(
++        "Кран шаровой фланцевый",
++        candidates,
++    )
++
++    assert result.query == "Кран шаровой фланцевый"
++    assert result.candidates is candidates
++    assert result.selected[0].rrf_score == 0.03
++    assert reranker.calls == [("Кран шаровой фланцевый", candidates)]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 7c2d3b3..4af90aa 100644
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -2,7 +2,10 @@ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
+     candidate_pn_mpa,
++    evaluate_selection_compatibility,
+     evaluate_product,
++    resolve_selection_requirements,
++    verifiable_candidate_control,
+ )
+ 
+ 
+@@ -186,3 +189,50 @@ def test_unspecified_fields_do_not_filter_candidates():
+         ),
+     )
+     assert result.matches is True
++
++
++def test_selection_requirements_distinguish_electric_ready_from_installed_electric():
++    ready = resolve_selection_requirements("Кран шаровой фланцевый под электропривод DN80")
++    electric = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом DN80")
++
++    assert ready.control == "electric_ready"
++    assert electric.control == "electric"
++
++
++def test_selection_requirements_allowlist_positive_absent_and_ambiguous_wording():
++    ordinary = resolve_selection_requirements("Кран шаровой фланцевый DN80 полнопроходной")
++    unsupported = resolve_selection_requirements("Арматура запорная DN80")
++    ambiguous_code = resolve_selection_requirements("КШЦФЭ DN80")
++
++    assert ordinary.valve_type == "standard"
++    assert ordinary.bore_type == "full"
++    assert unsupported == resolve_selection_requirements("")
++    assert ambiguous_code == resolve_selection_requirements("")
++
++
++def test_verifiable_candidate_control_does_not_default_missing_control_to_manual():
++    candidate = product(properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}])
++
++    assert verifiable_candidate_control(candidate) is None
++
++
++def test_selection_compatibility_reports_satisfied_contradicted_and_unknown():
++    requirements = resolve_selection_requirements("Кран шаровой фланцевый с электроприводом полнопроходной")
++    satisfied = product(
++        name="Кран шаровый LD фланцевый с электроприводом полнопроходной",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    contradicted = product(
++        name="Кран шаровый LD фланцевый под электропривод редуцированный",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++    unknown = product(
++        name="Кран шаровый LD фланцевый",
++        properties=[{"name": "Тип продукта", "values": ["Кран шаровый"]}],
++    )
++
++    assert evaluate_selection_compatibility(satisfied, requirements).is_fully_compatible
++    result = evaluate_selection_compatibility(contradicted, requirements)
++    assert set(result.contradicted) == {"control", "bore_type"}
++    result = evaluate_selection_compatibility(unknown, requirements)
++    assert set(result.unknown) == {"control", "bore_type"}
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T17:54:30.450356Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a0874e-989a-7df3-a830-12d735e77434.tmp-1788976470171706113: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"ACCEPT","summary":"I’m reviewing the implementation in context for selection semantics, safety, and test coverage; I will not access any hidden holdout data or modify files.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "sed -n '1,180p' src/nomenclature_matcher/matcher.py && sed -n '280,460p' src/nomenclature_matcher/query_constraints.py && sed -n '1,150p' src/nomenclature_matcher/models.py && rg -n \"canonical_control|candidate_bore_type|candidate_product_type|candidate_valve_type|rerank_candidates|selected\" tests src/nomenclature_matcher -g '*.py'" in /workspaces/ML-Cancer-Data
+ exited 127 in 27ms:
+from dataclasses import replace
+from types import SimpleNamespace
+
+from .models import MatchResult, SearchCandidate, SelectedMatch
+from .query_canonicalization import canonicalize_retrieval_query
+from .query_constraints import evaluate_selection_compatibility, resolve_selection_requirements
+
+
+class NomenclatureMatcher:
+    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+        self.embedder, self.store, self.settings = embedder, store, settings
+        self.reranker = reranker
+        self.hybrid_retriever = hybrid_retriever
+
+    def _normalize_query(self, query: str) -> str:
+        return " ".join(query.split())
+
+    def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
+        hits = self.store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def _build_selected_match(self, candidate: SearchCandidate, item, *, selection_source: str = "reranker") -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+            selection_source=selection_source,
+        )
+
+    def _apply_selection_fallback(self, query: str, candidates: list[SearchCandidate], rerank_result):
+        if rerank_result.status != "MATCHED" or not rerank_result.selected:
+            return rerank_result.selected, "reranker"
+
+        requirements = resolve_selection_requirements(query)
+        selected_item = rerank_result.selected[0]
+        selected_candidate = candidates[selected_item.candidate_id - 1]
+        selected_compatibility = evaluate_selection_compatibility(selected_candidate, requirements)
+        if not selected_compatibility.has_contradiction:
+            return rerank_result.selected, "reranker"
+
+        for index, candidate in enumerate(candidates, 1):
+            compatibility = evaluate_selection_compatibility(candidate, requirements)
+            if compatibility.is_fully_compatible:
+                fallback_item = SimpleNamespace(
+                    candidate_id=index,
+                    confidence=selected_item.confidence,
+                    reason=(
+                        f"compatibility_fallback: replaced candidate "
+                        f"{selected_item.candidate_id}; contradictions={sorted(selected_compatibility.contradicted)}"
+                    ),
+                )
+                remaining = [item for item in rerank_result.selected if item.candidate_id != index]
+                return [fallback_item, *remaining], "compatibility_fallback"
+
+        return rerank_result.selected, "reranker"
+
+    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+            )
+        reranked_selection, selection_source = self._apply_selection_fallback(query, candidates, rerank_result)
+        selected = []
+        for position, item in enumerate(reranked_selection):
+            candidate = candidates[item.candidate_id - 1]
+            item_source = selection_source if position == 0 else "reranker"
+            selected.append(self._build_selected_match(candidate, item, selection_source=item_source))
+        best = candidates[reranked_selection[0].candidate_id - 1] if reranked_selection else None
+        return MatchResult(
+            query=query,
+            status=rerank_result.status,
+            score=best.score if best else None,
+            ld_product=best if rerank_result.status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=rerank_result.reason,
+            selection_source=selection_source,
+        )
+
+    def match_one(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.match_top_k)
+        best = candidates[0] if candidates else None
+        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+
+    def match_one_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+        return self.rerank_candidates(query, candidates)
+
+    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+        canonicalization = canonicalize_retrieval_query(query)
+        query = canonicalization.source_query
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        if self.hybrid_retriever is None:
+            raise ValueError("Hybrid retriever is not configured")
+        candidates = self.hybrid_retriever.search(
+            query,
+            self.settings.hybrid_rerank_limit,
+            canonical_query=canonicalization.canonical_query,
+        )
+        return self.rerank_candidates(query, candidates)
+
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
+    def match_many(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+
+    match = match_many
+            return result
+    return None
+
+
+def canonical_material(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "нерж" in value or "нержав" in value:
+        return "stainless_steel"
+    if "латун" in value:
+        return "brass"
+    if "чугун" in value:
+        return "cast_iron"
+    if "полиэтилен" in value or "пнд" in value:
+        return "polyethylene"
+    if "сталь" in value or "стальной" in value:
+        return "steel"
+    return "other"
+
+
+def candidate_material(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Материал корпуса"), product.name]:
+        result = canonical_material(value)
+        if result not in {None, "other"}:
+            return result
+    return None
+
+
+def candidate_material_text(product: LDProduct) -> str:
+    values = _property_values(product, "Материал корпуса")
+    return " ".join(values) if values else product.name
+
+
+def canonical_bore_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "полнопроход" in value:
+        return "full"
+    if "редуц" in value or "неполнопроход" in value:
+        return "reduced"
+    if "стандартнопроход" in value or "стандартный проход" in value:
+        return "standard"
+    return None
+
+
+def candidate_bore_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип прохода"), product.name]:
+        result = canonical_bore_type(value)
+        if result:
+            return result
+    return None
+
+
+def canonical_control(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "под электропривод" in value:
+        return "electric_ready"
+    if "электропривод" in value:
+        return "electric"
+    if "пневмопривод" in value:
+        return "pneumatic"
+    if "редуктор" in value:
+        return "gearbox"
+    if "ручн" in value or "рукоят" in value or "ручка" in value:
+        return "manual"
+    return None
+
+
+def candidate_control(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Управление"), product.name]:
+        result = canonical_control(value)
+        if result:
+            return result
+    if candidate_product_type(product) == "ball_valve":
+        return "manual"
+    return None
+
+
+def resolve_selection_requirements(query: str) -> SelectionRequirements:
+    value = _norm(query)
+    is_ball_valve = "кран" in value and "шар" in value
+    valve_type = None
+    if is_ball_valve:
+        special = (
+            ("underground", ("подзем",)),
+            ("regulating", ("регулиру", "regula")),
+            ("cryogenic", ("криоген",)),
+            ("gas", ("газов", "для газа")),
+        )
+        for resolved, phrases in special:
+            if any(phrase in value for phrase in phrases):
+                valve_type = resolved
+                break
+        if valve_type is None:
+            valve_type = "standard"
+
+    control = None
+    if "под электропривод" in value:
+        control = "electric_ready"
+    elif "электропривод" in value:
+        control = "electric"
+
+    bore_type = canonical_bore_type(value)
+    return SelectionRequirements(valve_type=valve_type, control=control, bore_type=bore_type)
+
+
+def verifiable_candidate_control(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Управление"), product.name]:
+        result = canonical_control(value)
+        if result:
+            return result
+    return None
+
+
+def verifiable_candidate_bore_type(product: LDProduct) -> str | None:
+    return candidate_bore_type(product)
+
+
+def verifiable_candidate_valve_type(product: LDProduct) -> str | None:
+    if candidate_product_type(product) != "ball_valve":
+        return None
+    return candidate_valve_type(product)
+
+
+def evaluate_selection_compatibility(
+    product: LDProduct,
+    requirements: SelectionRequirements,
+) -> SelectionCompatibility:
+    satisfied: dict[str, str] = {}
+    contradicted: dict[str, str] = {}
+    unknown: dict[str, str] = {}
+
+    checks = (
+        ("valve_type", requirements.valve_type, verifiable_candidate_valve_type(product)),
+        ("control", requirements.control, verifiable_candidate_control(product)),
+        ("bore_type", requirements.bore_type, verifiable_candidate_bore_type(product)),
+    )
+    for field_name, expected, actual in checks:
+        if expected is None:
+            continue
+        detail = f"{actual} == {expected}"
+        if actual is None:
+            unknown[field_name] = detail
+        elif actual == expected:
+            satisfied[field_name] = detail
+        else:
+            contradicted[field_name] = detail
+    return SelectionCompatibility(satisfied=satisfied, contradicted=contradicted, unknown=unknown)
+
+
+def candidate_valve_type(product: LDProduct) -> str | None:
+    if candidate_product_type(product) != "ball_valve":
+        return None
+    value = _norm(_product_text(product))
+    if "подзем" in value:
+        return "underground"
+    if "regula" in value or "регулиру" in value:
+        return "regulating"
+    if "криоген" in value:
+        return "cryogenic"
+    if re.search(r"\bgas\b", value) or "газов" in value:
+        return "gas"
+    return "standard"
+
+
+def candidate_has_designation(product: LDProduct, designation: str) -> bool:
+    expected = _compact(designation)
+    if not expected:
+        return True
+    values = [product.article or "", product.name]
+    values.extend(_property_values(product, "Тип продукта", "Тип продукта AI", "Серия"))
+    return any(_flexible_code_match(value, expected) for value in values)
+
+
+def _medium_values(product: LDProduct) -> list[str]:
+    result: list[str] = []
+    for value in _property_values(product, "Рабочая среда"):
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+@dataclass
+class LDProduct:
+    id: int
+    name: str
+    article: str | None = None
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: Any = field(default_factory=dict)
+
+
+@dataclass
+class SearchCandidate:
+    ld_id: int
+    name: str
+    article: str | None
+    score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+    dense_score: float | None = None
+    dense_rank: int | None = None
+    bm25_score: float | None = None
+    bm25_rank: int | None = None
+    rrf_score: float | None = None
+    retrieval_sources: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BM25Candidate:
+    ld_id: int
+    name: str
+    article: str | None
+    bm25_score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+
+
+@dataclass
+class RerankedCandidate:
+    candidate_id: int
+    confidence: float | None
+    reason: str
+
+
+@dataclass
+class SelectedMatch:
+    candidate_id: int
+    article: str | None
+    name: str
+    llm_confidence: float | None
+    reason: str
+    ld_id: int
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    selection_source: str = "reranker"
+
+
+@dataclass
+class MatchResult:
+    query: str
+    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+    score: float | None = None
+    ld_product: SearchCandidate | None = None
+    candidates: list[SearchCandidate] = field(default_factory=list)
+    selected: list[SelectedMatch] = field(default_factory=list)
+    reason: str | None = None
+    selection_source: str = "reranker"
+
+
+@dataclass
+class RerankResult:
+    status: Literal["MATCHED", "NOT_FOUND"]
+    selected: list[RerankedCandidate]
+    reason: str | None = None
+/bin/bash: line 1: rg: command not found
+
+exec
+/bin/bash -lc "sed -n '1,300p' src/nomenclature_matcher/query_constraints.py && sed -n '1,260p' tests/test_matcher.py && sed -n '1,220p' src/nomenclature_matcher/reranker.py && sed -n '1,130p' src/nomenclature_matcher/serialization.py && git diff --check" in /workspaces/ML-Cancer-Data
+ succeeded in 22ms:
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any
+
+from openai import OpenAI
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from .models import LDProduct
+
+
+DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
+    Path(__file__).resolve().parent / "prompts" / "query_constraints_system.md"
+)
+_ALNUM_RU = "0-9a-zа-я"
+
+
+class QueryConstraints(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_type: str
+    dn: int | None = None
+    pn_min_mpa: float | None = None
+    joining_type: str | None = None
+    thread_type: str | None = None
+    working_medium: str | None = None
+    valve_type: str | None = None
+    valve_designation: str | None = None
+    body_material: str | None = None
+    body_material_grade: str | None = None
+    bore_type: str | None = None
+    control: str | None = None
+    catalog_scope: str = "uncertain"
+    ambiguous: bool = False
+    comment: str = ""
+
+
+@dataclass(frozen=True)
+class SelectionRequirements:
+    valve_type: str | None = None
+    control: str | None = None
+    bore_type: str | None = None
+
+
+@dataclass(frozen=True)
+class SelectionCompatibility:
+    satisfied: dict[str, str] = field(default_factory=dict)
+    contradicted: dict[str, str] = field(default_factory=dict)
+    unknown: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def has_contradiction(self) -> bool:
+        return bool(self.contradicted)
+
+    @property
+    def is_fully_compatible(self) -> bool:
+        return not self.contradicted and not self.unknown
+
+    @field_validator("dn")
+    @classmethod
+    def _validate_dn(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("dn must be positive")
+        return value
+
+    @field_validator("pn_min_mpa")
+    @classmethod
+    def _validate_pn(cls, value: float | None) -> float | None:
+        if value is not None and value <= 0:
+            raise ValueError("pn_min_mpa must be positive")
+        return value
+
+
+class DeepSeekQueryConstraintExtractor:
+    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+        self.settings = settings
+        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_QUERY_CONSTRAINTS_PROMPT
+        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def extract(self, query: str) -> QueryConstraints:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": f"QUERY:\n{query}"},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return QueryConstraints.model_validate(json.loads(content))
+
+
+def _norm(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    text = str(value).lower().replace("ё", "е")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _compact(value: Any) -> str:
+    return re.sub(rf"[^{_ALNUM_RU}]+", "", _norm(value))
+
+
+def _exact_token_match(text: Any, token: Any) -> bool:
+    expected = _norm(token)
+    if not expected:
+        return True
+    pattern = rf"(?<![{_ALNUM_RU}]){re.escape(expected)}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flexible_code_match(text: Any, code: Any) -> bool:
+    """Match an exact designation while ignoring punctuation inside it.
+
+    КШ.Ф.050.080-02 matches кшф05008002, but КШЦФ does not match КШЦФЭ.
+    """
+    expected = _compact(code)
+    if not expected:
+        return True
+    separator = rf"[^{_ALNUM_RU}]*"
+    body = separator.join(re.escape(char) for char in expected)
+    pattern = rf"(?<![{_ALNUM_RU}]){body}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flatten_values(value: Any) -> list[str]:
+    if value in (None, "", []):
+        return []
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(_flatten_values(item))
+        return result
+    return [str(value)]
+
+
+def _property_values(product: LDProduct, *names: str) -> list[str]:
+    wanted = {_norm(name) for name in names}
+    result: list[str] = []
+    for prop in product.properties or []:
+        if _norm(prop.get("name")) not in wanted:
+            continue
+        result.extend(_flatten_values(prop.get("values")))
+    return result
+
+
+def _product_text(product: LDProduct) -> str:
+    parts = [product.name, product.article or "", str(product.joining_type or "")]
+    for prop in product.properties or []:
+        parts.append(str(prop.get("name") or ""))
+        parts.extend(_flatten_values(prop.get("values")))
+    return " \n ".join(parts)
+
+
+def _first_number(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    match = re.search(r"\d+(?:[.,]\d+)?", str(value))
+    if not match:
+        return None
+    return float(match.group(0).replace(",", "."))
+
+
+def candidate_dn(product: LDProduct) -> int | None:
+    values = [product.dn, *_property_values(product, "Номинальный диаметр, DN", "DN")]
+    for value in values:
+        number = _first_number(value)
+        if number is not None:
+            return int(round(number))
+    return None
+
+
+def candidate_pn_mpa(product: LDProduct) -> float | None:
+    values = [product.pn, *_property_values(product, "Номинальное давление, МПа", "PN")]
+    for value in values:
+        number = _first_number(value)
+        if number is None:
+            continue
+        if number > 10:
+            number /= 10.0
+        return number
+    return None
+
+
+def canonical_product_type(text: str) -> str:
+    value = _norm(text)
+    if "ремкомплект" in value:
+        return "repair_kit"
+    if "комплект" in value and "флан" in value:
+        return "accessory"
+    if "кран" in value and "шар" in value:
+        return "ball_valve"
+    if "затвор" in value and ("диск" in value or "поворот" in value):
+        return "butterfly_valve"
+    if "задвиж" in value:
+        return "gate_valve"
+    if "клапан" in value and "обрат" in value:
+        return "check_valve"
+    if "фильтр" in value:
+        return "filter"
+    if "фланец" in value or "фланцы" in value:
+        return "flange"
+    if "редуктор" in value and "привод" not in value:
+        return "gearbox"
+    if "электропривод" in value or "пневмопривод" in value:
+        return "actuator"
+    return "other"
+
+
+def candidate_product_type(product: LDProduct) -> str:
+    explicit = _property_values(product, "Тип продукта AI", "Тип продукта")
+    for value in explicit:
+        result = canonical_product_type(value)
+        if result != "other":
+            return result
+    return canonical_product_type(_product_text(product))
+
+
+def canonical_joining_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "межфлан" in value:
+        return "wafer"
+    if "компресс" in value or "обжим" in value:
+        return "compression"
+    if "привар" in value or "сварн" in value:
+        return "welded"
+    if "резьб" in value or "муфт" in value:
+        return "threaded"
+    if "флан" in value:
+        return "flanged"
+    return "other"
+
+
+def candidate_joining_type(product: LDProduct) -> str | None:
+    values = [product.joining_type, *_property_values(product, "Присоединение"), product.name]
+    for value in values:
+        canonical = canonical_joining_type(value)
+        if canonical not in {None, "other"}:
+            return canonical
+    return canonical_joining_type(product.joining_type)
+
+
+def canonical_thread_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    compact = re.sub(r"[^a-zа-я0-9]+", " ", value)
+    if any(token in value for token in ("вр/вр", "в/в", "внутренняя/внутренняя", "муфта/муфта")):
+        return "female_female"
+    if any(token in value for token in ("нр/вр", "вр/нр", "н/в", "в/н", "наружная/внутренняя", "внутренняя/наружная")):
+        return "male_female"
+    if any(token in value for token in ("нр/нр", "н/н", "наружная/наружная")):
+        return "male_male"
+    if compact.count("внутренняя") >= 2:
+        return "female_female"
+    if compact.count("наружная") >= 2:
+        return "male_male"
+    if "внутренняя" in compact and "наружная" in compact:
+        return "male_female"
+    return None
+
+
+def candidate_thread_type(product: LDProduct) -> str | None:
+    for value in [*_property_values(product, "Тип резьбы"), product.name]:
+        result = canonical_thread_type(value)
+        if result:
+            return result
+    return None
+
+
+def canonical_material(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "нерж" in value or "нержав" in value:
+        return "stainless_steel"
+    if "латун" in value:
+        return "brass"
+    if "чугун" in value:
+        return "cast_iron"
+    if "полиэтилен" in value or "пнд" in value:
+        return "polyethylene"
+    if "сталь" in value or "стальной" in value:
+        return "steel"
+    return "other"
+
+
+from types import SimpleNamespace
+from nomenclature_matcher.matcher import NomenclatureMatcher
+from nomenclature_matcher.models import SearchCandidate
+
+
+class Embedder:
+    def __init__(self): self.calls = []
+    def embed_query(self, text): self.calls.append(text); return [1.0]
+
+
+class Store:
+    def __init__(self, hits): self.hits, self.calls = hits, 0
+    def search(self, vector, limit): self.calls += 1; return self.hits
+
+
+class Reranker:
+    def __init__(self, result=None, error=None):
+        self.result = result
+        self.error = error
+        self.calls = []
+
+    def rerank(self, query, candidates):
+        self.calls.append((query, candidates))
+        if self.error:
+            raise self.error
+        return self.result
+
+
+class HybridRetriever:
+    def __init__(self, candidates):
+        self.candidates = candidates
+        self.calls = []
+
+    def search(self, query, limit, canonical_query=None):
+        self.calls.append((query, limit, canonical_query))
+        return self.candidates
+
+
+def hit(score):
+    return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
+
+
+def test_match_threshold_and_empty():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.9)])
+    matcher = NomenclatureMatcher(embedder, store, settings)
+    assert matcher.match_one(" x ").status == "MATCHED"
+    assert matcher.match_one("low").status == "MATCHED"
+    assert matcher.match_one("   ").status == "NOT_FOUND"
+    assert len(embedder.calls) == 2
+
+
+def test_not_found_cases_and_duplicate_queries():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.2)])
+    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", "same", "   ", "other"])
+    assert [r.status for r in results] == ["NOT_FOUND", "NOT_FOUND", "NOT_FOUND", "NOT_FOUND"]
+    assert len(embedder.calls) == 2
+    assert store.calls == 2
+
+
+def test_duplicate_queries_are_cached_after_normalization():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.9)])
+    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", " same ", "same"])
+    assert [r.status for r in results] == ["MATCHED", "MATCHED", "MATCHED"]
+    assert [r.query for r in results] == ["same", " same ", "same"]
+    assert len(embedder.calls) == 1
+    assert store.calls == 1
+
+
+def test_empty_qdrant_result():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0)
+    result = NomenclatureMatcher(Embedder(), Store([]), settings).match_one("query")
+    assert result.status == "NOT_FOUND"
+
+
+def test_match_one_with_rerank_selects_llm_candidate():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(result=rerank_result)).match_one_with_rerank("query")
+    assert result.status == "MATCHED"
+    assert result.selected[0].llm_confidence == 0.93
+    assert result.selected[0].reason == "best"
+
+
+def test_match_one_with_rerank_handles_invalid_json_or_timeout():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank("query")
+    assert result.status == "RERANK_FAILED"
+    assert result.candidates
+    assert result.ld_product is None
+
+
+def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [
+        SearchCandidate(
+            ld_id=1,
+            name="A",
+            article="A1",
+            score=0.01,
+            dense_score=0.9,
+            dense_rank=1,
+            bm25_score=1.2,
+            bm25_rank=2,
+            rrf_score=0.03,
+            retrieval_sources=["dense", "bm25"],
+            search_text="DN: 25",
+        )
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+    result = matcher.match_one_hybrid_with_rerank("  query  ")
+    assert result.status == "MATCHED"
+    assert result.candidates[0].rrf_score == 0.03
+    assert result.selected[0].dense_score == 0.9
+    assert result.selected[0].bm25_score == 1.2
+    assert result.selected[0].rrf_score == 0.03
+    assert not hasattr(result.selected[0], "vector_score")
+    assert hybrid.calls == [("query", 20, None)]
+
+
+def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+    results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+    assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
+    assert hybrid.calls == [("query", 20, None)]
+
+
+def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
+    reranker = Reranker(result=rerank_result)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
+    assert result.query == "Кран шаровой фл. Ду25 Ру16"
+    assert hybrid.calls == [("Кран шаровой фл. Ду25 Ру16", 20, "Кран шаровой фланцевый DN 25 PN 16")]
+    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"
+
+
+def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_rerank():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="Кран приварной", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="ww")], reason=None)
+    reranker = Reranker(result=rerank_result)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+    query = "  Кран шаровой WW DN100 PN25  "
+
+    result = matcher.match_one_hybrid_with_rerank(query)
+
+    assert result.query == "Кран шаровой WW DN100 PN25"
+    assert hybrid.calls == [
+        (
+            "Кран шаровой WW DN100 PN25",
+            20,
+            "Кран шаровой WW приварной под приварку сварной DN 100 PN 25",
+        )
+    ]
+    assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
+
+
+def search_candidate(ld_id, name, *, score=0.01, properties=None):
+    return SearchCandidate(
+        ld_id=ld_id,
+        name=name,
+        article=f"A{ld_id}",
+        score=score,
+        properties=properties or [{"name": "Тип продукта", "values": ["Кран шаровый"]}],
+        rrf_score=score,
+    )
+
+
+def test_post_rerank_fallback_replaces_ordinary_query_underground_choice():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    candidates = [
+        search_candidate(1, "Кран шаровый LD подземный полнопроходной ручное управление", score=0.03),
+        search_candidate(2, "Кран шаровый LD фланцевый полнопроходной ручное управление", score=0.02),
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+
+    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+        "Кран шаровой фланцевый полнопроходной",
+        candidates,
+    )
+
+    assert result.ld_product == candidates[1]
+    assert result.selected[0].ld_id == 2
+    assert result.selected[0].selection_source == "compatibility_fallback"
+    assert result.selection_source == "compatibility_fallback"
+
+
+def test_post_rerank_fallback_replaces_electric_ready_for_installed_electric_query():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    candidates = [
+        search_candidate(1, "Кран шаровый LD под электропривод полнопроходной", score=0.03),
+        search_candidate(2, "Кран шаровый LD с электроприводом полнопроходной", score=0.02),
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+
+    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+        "Кран шаровой фланцевый с электроприводом",
+        candidates,
+    )
+
+    assert result.ld_product == candidates[1]
+
+
+def test_post_rerank_fallback_replaces_explicit_bore_contradiction():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    candidates = [
+        search_candidate(1, "Кран шаровый LD редуцированный ручное управление", score=0.03),
+        search_candidate(2, "Кран шаровый LD полнопроходной ручное управление", score=0.02),
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+
+    result = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result)).rerank_candidates(
+        "Кран шаровой полнопроходной",
+        candidates,
+    )
+
+    assert result.ld_product == candidates[1]
+
+
+def test_post_rerank_fallback_preserves_selection_when_no_compatible_alternative():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    candidates = [
+        search_candidate(1, "Кран шаровый LD подземный полнопроходной ручное управление", score=0.03),
+        search_candidate(2, "Кран шаровый LD фланцевый", score=0.02),
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+
+import json
+from pathlib import Path
+
+from openai import OpenAI
+
+from .models import RerankedCandidate, RerankResult, SearchCandidate
+
+DEFAULT_RERANKER_SYSTEM_PROMPT_PATH = (
+    Path(__file__).resolve().parent / "prompts" / "reranker_system.md"
+)
+
+
+def load_system_prompt(path: str | Path | None = None) -> str:
+    prompt_path = Path(path) if path else DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    if not prompt_path.is_absolute():
+        cwd_path = Path.cwd() / prompt_path
+        package_path = Path(__file__).resolve().parent / prompt_path
+        if cwd_path.exists():
+            prompt_path = cwd_path
+        elif package_path.exists():
+            prompt_path = package_path
+        else:
+            prompt_path = DEFAULT_RERANKER_SYSTEM_PROMPT_PATH
+    return prompt_path.read_text(encoding="utf-8").strip()
+
+
+class DeepSeekReranker:
+    def __init__(self, settings, client=None):
+        self.settings = settings
+        self.system_prompt_path = getattr(settings, "reranker_system_prompt_path", None)
+        self.system_prompt = load_system_prompt(self.system_prompt_path)
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": self._build_prompt(query, candidates)},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return self._parse_result(content, len(candidates))
+
+    def _build_prompt(self, query: str, candidates: list[SearchCandidate]) -> str:
+        blocks = [f"QUERY:\n{query}", "", "CANDIDATES:"]
+        for index, candidate in enumerate(candidates, 1):
+            dense_rank = candidate.dense_rank if candidate.dense_rank is not None else "-"
+            dense_score = f"{candidate.dense_score:.4f}" if candidate.dense_score is not None else "-"
+            bm25_rank = candidate.bm25_rank if candidate.bm25_rank is not None else "-"
+            bm25_score = f"{candidate.bm25_score:.4f}" if candidate.bm25_score is not None else "-"
+            rrf_score = f"{candidate.rrf_score:.6f}" if candidate.rrf_score is not None else "-"
+            blocks.extend(
+                [
+                    "",
+                    f"CANDIDATE {index}",
+                    f"candidate_id: {index}",
+                    f"ld_id: {candidate.ld_id}",
+                    f"article: {candidate.article or ''}",
+                    f"name: {candidate.name}",
+                    f"dense_rank: {dense_rank}",
+                    f"dense_score: {dense_score}",
+                    f"bm25_rank: {bm25_rank}",
+                    f"bm25_score: {bm25_score}",
+                    f"rrf_score: {rrf_score}",
+                    f"retrieval_sources: {', '.join(candidate.retrieval_sources) or '-'}",
+                    "",
+                    "Характеристики:",
+                    candidate.search_text or candidate.name,
+                ]
+            )
+        blocks.extend(
+            [
+                "",
+                "Верни JSON формата:",
+                '{"status":"MATCHED","selected":[{"candidate_id":1,"confidence":0.95,"reason":"..."}],"reason":"..."}',
+                'или {"status":"NOT_FOUND","selected":[],"reason":"..."}',
+                f"Выбери не более {self.settings.rerank_result_limit} кандидатов.",
+            ]
+        )
+        return "\n".join(blocks)
+
+    def _parse_result(self, content: str, candidate_count: int) -> RerankResult:
+        payload = json.loads(content)
+        status = payload.get("status")
+        if status not in {"MATCHED", "NOT_FOUND"}:
+            raise ValueError(f"Unsupported rerank status: {status!r}")
+        selected = []
+        seen = set()
+        for item in payload.get("selected", []):
+            candidate_id = item.get("candidate_id")
+            if not isinstance(candidate_id, int) or not (1 <= candidate_id <= candidate_count):
+                continue
+            if candidate_id in seen:
+                continue
+            seen.add(candidate_id)
+            confidence = item.get("confidence")
+            if confidence is not None:
+                try:
+                    confidence = float(confidence)
+                except (TypeError, ValueError):
+                    confidence = None
+            reason = str(item.get("reason") or "")
+            selected.append(RerankedCandidate(candidate_id=candidate_id, confidence=confidence, reason=reason))
+            if len(selected) >= self.settings.rerank_result_limit:
+                break
+        reason = payload.get("reason")
+        if selected:
+            return RerankResult(status="MATCHED", selected=selected, reason=reason)
+        return RerankResult(status="NOT_FOUND", selected=[], reason=reason)
+from __future__ import annotations
+
+from dataclasses import asdict, is_dataclass
+from typing import Any
+
+from .models import MatchResult, SearchCandidate, SelectedMatch
+
+
+def _clean(value: Any) -> Any:
+    if is_dataclass(value):
+        return _clean(asdict(value))
+    if isinstance(value, dict):
+        return {key: _clean(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_clean(item) for item in value]
+    return value
+
+
+def production_product(candidate: SearchCandidate | None) -> dict[str, Any] | None:
+    if candidate is None:
+        return None
+    return {"name": candidate.name, "article": candidate.article}
+
+
+def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+    payload = {
+        "candidate_id": candidate_id,
+        "ld_id": candidate.ld_id,
+        "article": candidate.article,
+        "name": candidate.name,
+        "dn": candidate.dn,
+        "pn": candidate.pn,
+        "joining_type": candidate.joining_type,
+        "price": candidate.price,
+        "url": candidate.url,
+        "properties": _clean(candidate.properties),
+        "search_text": candidate.search_text,
+        "score": candidate.score,
+        "dense_score": candidate.dense_score,
+        "dense_rank": candidate.dense_rank,
+        "bm25_score": candidate.bm25_score,
+        "bm25_rank": candidate.bm25_rank,
+        "rrf_score": candidate.rrf_score,
+        "retrieval_sources": list(candidate.retrieval_sources),
+    }
+    return {key: value for key, value in payload.items() if value is not None}
+
+
+def selected_debug_payload(selected: SelectedMatch) -> dict[str, Any]:
+    return {
+        "candidate_id": selected.candidate_id,
+        "ld_id": selected.ld_id,
+        "article": selected.article,
+        "name": selected.name,
+        "dn": selected.dn,
+        "pn": selected.pn,
+        "joining_type": selected.joining_type,
+        "url": selected.url,
+        "dense_score": selected.dense_score,
+        "bm25_score": selected.bm25_score,
+        "rrf_score": selected.rrf_score,
+        "llm_confidence": selected.llm_confidence,
+        "reason": selected.reason,
+        "selection_source": selected.selection_source,
+    }
+
+
+def match_result_payload(result: MatchResult, *, include_debug: bool = True) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "query": result.query,
+        "status": result.status,
+        "score": result.score,
+        "ld_product": production_product(result.ld_product),
+    }
+    if include_debug:
+        payload["debug"] = {
+            "reason": result.reason,
+            "selection_source": result.selection_source,
+            "candidates": [
+                candidate_debug_payload(candidate, index)
+                for index, candidate in enumerate(result.candidates, 1)
+            ],
+            "selected": [selected_debug_payload(item) for item in result.selected],
+        }
+    return _clean(payload)
+
+
+def match_results_payload(results: list[MatchResult], *, include_debug: bool = True) -> list[dict[str, Any]]:
+    return [match_result_payload(result, include_debug=include_debug) for result in results]
+
+exec
+/bin/bash -lc "python - <<'PY'
+from nomenclature_matcher.query_constraints import QueryConstraints, SelectionCompatibility
+from pydantic import ValidationError
+payload = {\"product_type\": \"ball_valve\", \"dn\": -1, \"pn_min_mpa\": -0.1}
+try:
+    result = QueryConstraints.model_validate(payload)
+    print(\"accepted\", result.dn, result.pn_min_mpa)
+except ValidationError as exc:
+    print(\"rejected\", str(exc))
+print(\"selection fields\", SelectionCompatibility.__annotations__)
+PY
+python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py" in /workspaces/ML-Cancer-Data
+ exited 1 in 1313ms:
+accepted -1 -0.1
+selection fields {'satisfied': 'dict[str, str]', 'contradicted': 'dict[str, str]', 'unknown': 'dict[str, str]'}
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pytest/__main__.py", line 9, in <module>
+    raise SystemExit(_console_main())
+                     ^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 253, in _console_main
+    code = _main(prog=_get_prog_name(sys.argv))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 223, in _main
+    config = _prepareconfig(new_args, plugins, prog=prog)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 410, in _prepareconfig
+    config: Config = pluginmanager.hook.pytest_cmdline_parse(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/helpconfig.py", line 124, in pytest_cmdline_parse
+    config = yield
+             ^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1232, in pytest_cmdline_parse
+    self.parse(args)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1605, in parse
+    self.hook.pytest_load_initial_conftests(
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/warnings.py", line 129, in pytest_load_initial_conftests
+    return (yield)
+            ^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 116, in _multicall
+    next(function_gen)  # first yield
+    ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 170, in pytest_load_initial_conftests
+    capman.start_global_capturing()
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 773, in start_global_capturing
+    self._global_capturing = _get_multicapture(self._method)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 714, in _get_multicapture
+    return MultiCapture(in_=FDCapture(0), out=FDCapture(1), err=FDCapture(2))
+                                              ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 493, in __init__
+    TemporaryFile(buffering=0),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 631, in TemporaryFile
+    prefix, suffix, dir, output_type = _sanitize_params(prefix, suffix, dir)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 126, in _sanitize_params
+    dir = gettempdir()
+          ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 315, in gettempdir
+    return _os.fsdecode(_gettempdir())
+                        ^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 308, in _gettempdir
+    tempdir = _get_default_tempdir()
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 223, in _get_default_tempdir
+    raise FileNotFoundError(_errno.ENOENT,
+FileNotFoundError: [Errno 2] No usable temporary directory found in ['/tmp', '/var/tmp', '/usr/tmp', '/workspaces/ML-Cancer-Data']
+
+codex
+{"decision":"FIX","summary":"The fallback is a bounded, generally applicable post-rerank safety mechanism and its focused tests exercise the stated control/bore/valve conflict scenarios. However, the change accidentally disables existing `QueryConstraints` validation: the `dn` and `pn_min_mpa` validators are now nested under `SelectionCompatibility`, so negative values are accepted by `QueryConstraints`.","issues":["Regression: `QueryConstraints.model_validate({\"product_type\":\"ball_valve\",\"dn\":-1,\"pn_min_mpa\":-0.1})` accepts both invalid values. Move `_validate_dn` and `_validate_pn` back into `QueryConstraints`; they are currently indented inside `SelectionCompatibility`.","Add a regression test asserting that non-positive `dn` and `pn_min_mpa` are rejected by `QueryConstraints`.","Local pytest could not run in this read-only sandbox because no usable temporary directory is available; the validation regression was verified directly through model construction."],"fix_plan":["Move the two Pydantic field validators immediately after the `QueryConstraints` fields, before the new dataclasses.","Remove those validator methods from `SelectionCompatibility`.","Add focused invalid-value tests, then rerun the focused and full test suites in a normal writable environment."],"next_direction":"After restoring the unrelated validation regression, measure this candidate normally. The approach is worth evaluating: it is fail-open, uses only retrieved candidates, and requires explicit evidence for a replacement; inspect fallback provenance and any false-match movement before considering broader structured selection rules."}
+tokens used
+39,614
+{"decision":"FIX","summary":"The fallback is a bounded, generally applicable post-rerank safety mechanism and its focused tests exercise the stated control/bore/valve conflict scenarios. However, the change accidentally disables existing `QueryConstraints` validation: the `dn` and `pn_min_mpa` validators are now nested under `SelectionCompatibility`, so negative values are accepted by `QueryConstraints`.","issues":["Regression: `QueryConstraints.model_validate({\"product_type\":\"ball_valve\",\"dn\":-1,\"pn_min_mpa\":-0.1})` accepts both invalid values. Move `_validate_dn` and `_validate_pn` back into `QueryConstraints`; they are currently indented inside `SelectionCompatibility`.","Add a regression test asserting that non-positive `dn` and `pn_min_mpa` are rejected by `QueryConstraints`.","Local pytest could not run in this read-only sandbox because no usable temporary directory is available; the validation regression was verified directly through model construction."],"fix_plan":["Move the two Pydantic field validators immediately after the `QueryConstraints` fields, before the new dataclasses.","Remove those validator methods from `SelectionCompatibility`.","Add focused invalid-value tests, then rerun the focused and full test suites in a normal writable environment."],"next_direction":"After restoring the unrelated validation regression, measure this candidate normally. The approach is worth evaluating: it is fail-open, uses only retrieved candidates, and requires explicit evidence for a replacement; inspect fallback provenance and any false-match movement before considering broader structured selection rules."}

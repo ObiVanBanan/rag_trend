@@ -1,0 +1,21 @@
+{
+  "status": "complete",
+  "summary": "Implemented `v2-cycle-01-query-evidence-preservation`. The canonical clause terminator now requires quantity/procurement markers to start at standalone token boundaries, so embedded `ШТ.`-like fragments inside alphanumeric designations no longer truncate additive canonical retrieval queries. Standalone quantity tails, including numeric-unit and comma-delimited forms, still strip correctly. OpenSpec tasks are marked complete and validation passes.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py (11 passed)",
+    "python -m pytest -q (202 passed)",
+    "openspec validate \"v2-cycle-01-query-evidence-preservation\" --strict (valid)"
+  ],
+  "needs_reindex": false,
+  "blocker": "",
+  "changed_components": [
+    "src/nomenclature_matcher/query_canonicalization.py",
+    "tests/test_query_canonicalization.py",
+    "openspec/changes/v2-cycle-01-query-evidence-preservation/tasks.md"
+  ],
+  "mechanism_evidence": [
+    "`test_embedded_quantity_like_designation_fragment_is_preserved` verifies the source query remains unchanged and the canonical alternate retains the full designation plus DN/PN/material evidence: `ХШТ.123 DN 50 PN 16 стальной`.",
+    "`test_standalone_quantity_tails_are_still_stripped_at_token_boundaries` verifies genuine standalone tails like `4 шт.` and `, шт. 4` are excluded from the canonical alternate.",
+    "The fix is limited to deterministic canonical-query boundary handling; no retrieval, reranking, decision logic, benchmark data, harness policy, or index representation changed."
+  ]
+}

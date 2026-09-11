@@ -1,0 +1,2080 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a08760-58b9-7a62-92a3-5e7f2b43476c
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-09-standard-bore-retrieval-canonicalization",
+  "hypothesis": "Explicit ball-valve standard-execution wording can be deterministically expanded into standard-bore catalog vocabulary to improve candidate recall without changing selection semantics.",
+  "why_now": "A scored public failure returns a human-rejected full-bore item despite documented standard-bore catalog evidence. This is a bounded vocabulary mismatch.",
+  "expected_effect": "Hybrid retrieval gains one guarded alternate query; original retrieval, reranker input, output text, fusion, and selection remain unchanged.",
+  "expected_metric_gain": "+3.3 pp public hard-pass plausible; blind gain uncertain but credible.",
+  "lesson_from_history": "Cycles 1, 2, 5, and 8 found selection-adjacent changes harmful or neutral. Additive canonicalization was accepted in cycles 3–4; broad shorthand expansion and index enrichment were rejected, so this is a distinct, narrow query-time experiment.",
+  "candidate_hypotheses": [
+    "Standard-execution to standard-bore canonicalization (selected).",
+    "Flange weld-neck subtype schema expansion.",
+    "Validated legacy designation mappings.",
+    "Hybrid depth/RRF tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, spec, design, and implementation-only tasks in openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/. No product code changed."
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-09-standard-bore-retrieval-canonicalization`. The retrieval canonicalizer now adds a single guarded standard-bore alternate for explicit ball-valve standard-execution/standard-passage wording, while blocking generic standard wording, other product families, unsupported text, and full/reduced-bore conflicts. Added focused regression coverage for exact canonical text, hybrid alternate querying/dedup/fail-open behavior, and matcher/serialization source-query preservation. OpenSpec tasks are 5/5 complete. No index rebuild is needed.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py",
+    "python -m pytest -q tests/test_hybrid_retriever.py",
+    "python -m pytest -q tests/test_matcher.py",
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py",
+    "python -m pytest -q  # 169 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.8333333333333334,
+  "core_pass_rate": 0.8,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.0,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.008333333333333333,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.4166666666666667,
+  "verdict_counts": {
+    "PASS": 30,
+    "FAIL_HUMAN_REJECT": 1,
+    "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_PRODUCT": 7
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q005",
+    "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+    "reason": "Required fields are missing from the returned product; correctness is not provable."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_PRODUCT",
+    "reason": "Returned product violates one or more deterministic GOLD requirements."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q025",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/query_canonicalization.py b/src/nomenclature_matcher/query_canonicalization.py
+index 9c5ca84..f8e0294 100644
+--- a/src/nomenclature_matcher/query_canonicalization.py
++++ b/src/nomenclature_matcher/query_canonicalization.py
+@@ -36,6 +36,25 @@ _SUPPORTED_ANCHOR_RE = re.compile(
+     r"\b(кран(?:\s+шаровой)?|клапан|задвижка|затвор|вентиль|фильтр|регулятор|фланец|муфта|переход|тройник|отвод)\b",
+     re.IGNORECASE,
+ )
++_BALL_VALVE_RE = re.compile(r"\b(?:кран\s+шаровой|шаровой\s+кран)\b", re.IGNORECASE)
++_STANDARD_BORE_CONTEXT_RE = re.compile(
++    r"\b(?:"
++    r"стандартн(?:ое|ого|ом|ым|ый|ого)?\s+исполнен(?:ие|ия|ии|ием)|"
++    r"исполнен(?:ие|ия|ии|ием)\s+стандартн(?:ое|ого|ом|ым)|"
++    r"стандартн(?:ый|ого|ом|ым)\s+проход|"
++    r"стандартно\s*проходн\w*|"
++    r"стандартнопроходн\w*"
++    r")\b",
++    re.IGNORECASE,
++)
++_CONFLICTING_BORE_RE = re.compile(
++    r"\b(?:"
++    r"полнопроходн\w*|полно\s*проходн\w*|полн(?:ый|ого|ом|ым)\s+проход|"
++    r"редуцированн\w*|неполнопроходн\w*|неполно\s*проходн\w*|суженн\w*\s+проход"
++    r")\b",
++    re.IGNORECASE,
++)
++_STANDARD_BORE_TERMS = ("стандартнопроходной", "стандартный проход")
+ _UNSUPPORTED_ANCHOR_RE = re.compile(
+     r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
+     re.IGNORECASE,
+@@ -64,6 +83,7 @@ def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+     canonical = _expand_joining_and_actuation(canonical)
+     if has_supported_anchor:
+         canonical = _expand_connection_notation(canonical)
++    canonical = _expand_standard_bore(canonical)
+     canonical = _normalize_designation_confusables(canonical)
+     canonical = _cleanup_spacing(canonical)
+ 
+@@ -138,6 +158,19 @@ def _expand_connection_notation(text: str) -> str:
+     return _STANDALONE_WW_RE.sub("WW приварной под приварку сварной", text)
+ 
+ 
++def _expand_standard_bore(text: str) -> str:
++    if not _BALL_VALVE_RE.search(text):
++        return text
++    if not _STANDARD_BORE_CONTEXT_RE.search(text):
++        return text
++    if _CONFLICTING_BORE_RE.search(text):
++        return text
++    additions = [term for term in _STANDARD_BORE_TERMS if not re.search(rf"\b{term}\b", text, re.IGNORECASE)]
++    if not additions:
++        return text
++    return f"{text} {' '.join(additions)}"
++
++
+ def _normalize_designation_confusables(text: str) -> str:
+     def replace(match: re.Match[str]) -> str:
+         token = match.group(0)
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a3cdc9d..0de6590 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -37,13 +37,14 @@ class BM25Store:
+ 
+ 
+ class VariantQdrantStore:
+-    def __init__(self):
++    def __init__(self, original_query="original"):
+         self.calls = []
++        self.original_query = original_query
+ 
+     def search(self, vector, limit):
+         self.calls.append((vector, limit))
+         query = vector[0]
+-        if query == "original":
++        if query == self.original_query:
+             return [
+                 SimpleNamespace(score=0.7, payload={"ld_id": 1, "name": "Original", "article": "O", "search_text": "dense-o"}),
+                 SimpleNamespace(score=0.2, payload={"ld_id": 2, "name": "Dup", "article": "D", "search_text": "dense-o"}),
+@@ -55,15 +56,17 @@ class VariantQdrantStore:
+ 
+ 
+ class VariantBM25Store:
+-    def __init__(self, fail_on_canonical=False):
++    def __init__(self, fail_on_canonical=False, original_query="original", canonical_query="canonical"):
+         self.calls = []
+         self.fail_on_canonical = fail_on_canonical
++        self.original_query = original_query
++        self.canonical_query = canonical_query
+ 
+     def search(self, query, limit):
+         self.calls.append((query, limit))
+-        if query == "canonical" and self.fail_on_canonical:
++        if query == self.canonical_query and self.fail_on_canonical:
+             raise RuntimeError("bm25 down")
+-        if query == "original":
++        if query == self.original_query:
+             return [
+                 BM25Candidate(ld_id=2, name="Dup", article="D", bm25_score=0.6, search_text="bm25-o"),
+                 BM25Candidate(ld_id=4, name="Bm25 original", article="B", bm25_score=0.3, search_text="bm25-o"),
+@@ -133,6 +136,21 @@ def test_hybrid_search_uses_ww_expanded_alternate_and_dedupes_by_ld_id():
+     assert len({candidate.ld_id for candidate in results}) == len(results)
+ 
+ 
++def test_hybrid_search_uses_standard_bore_alternate_and_dedupes_by_ld_id():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    embedder = EchoEmbedder()
++    original = "Кран шаровой стандартное исполнение DN80 PN16"
++    canonical = "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход"
++    bm25 = VariantBM25Store(original_query=original, canonical_query=canonical)
++    retriever = HybridRetriever(embedder, VariantQdrantStore(original_query=original), bm25, settings)
++
++    results = retriever.search(original, canonical_query=canonical)
++
++    assert embedder.calls == [original, canonical]
++    assert bm25.calls == [(original, 50), (canonical, 50)]
++    assert len({candidate.ld_id for candidate in results}) == len(results)
++
++
+ def test_hybrid_search_merges_variants_per_modality_before_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
+@@ -167,3 +185,23 @@ def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
+     assert {1, 2, 4}.issubset(by_id)
+     assert by_id[1].name == "Original"
+     assert by_id[4].name == "Bm25 original"
++
++
++def test_hybrid_search_keeps_original_standard_bore_candidates_when_alternate_fails():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    original = "Кран шаровой стандартное исполнение DN80 PN16"
++    canonical = "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход"
++    retriever = HybridRetriever(
++        EchoEmbedder(),
++        VariantQdrantStore(original_query=original),
++        VariantBM25Store(fail_on_canonical=True, original_query=original, canonical_query=canonical),
++        settings,
++    )
++    results = retriever.search(
++        original,
++        canonical_query=canonical,
++    )
++    by_id = {candidate.ld_id: candidate for candidate in results}
++    assert {1, 2, 4}.issubset(by_id)
++    assert by_id[1].name == "Original"
++    assert by_id[4].name == "Bm25 original"
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..4ca3df4 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -1,6 +1,7 @@
+ from types import SimpleNamespace
+ from nomenclature_matcher.matcher import NomenclatureMatcher
+ from nomenclature_matcher.models import SearchCandidate
++from nomenclature_matcher.serialization import match_result_payload
+ 
+ 
+ class Embedder:
+@@ -186,3 +187,32 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_match_one_hybrid_standard_bore_expansion_preserves_original_query_for_output_and_rerank():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="Кран стандартнопроходной", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="standard")], reason=None)
++    reranker = Reranker(result=rerank_result)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++    query = "  Кран шаровой стандартное исполнение DN80 PN16  "
++
++    result = matcher.match_one_hybrid_with_rerank(query)
++    payload = match_result_payload(result)
++
++    assert result.query == "Кран шаровой стандартное исполнение DN80 PN16"
++    assert payload["query"] == "Кран шаровой стандартное исполнение DN80 PN16"
++    assert hybrid.calls == [
++        (
++            "Кран шаровой стандартное исполнение DN80 PN16",
++            20,
++            "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход",
++        )
++    ]
++    assert reranker.calls[0][0] == "Кран шаровой стандартное исполнение DN80 PN16"
+diff --git a/tests/test_query_canonicalization.py b/tests/test_query_canonicalization.py
+index fbcc570..3d58201 100644
+--- a/tests/test_query_canonicalization.py
++++ b/tests/test_query_canonicalization.py
+@@ -25,6 +25,30 @@ def test_standalone_ww_connection_code_is_case_insensitive():
+     assert result.canonical_query == "Кран шаровой WW приварной под приварку сварной DN 100 PN 25"
+ 
+ 
++def test_ball_valve_standard_execution_adds_standard_bore_vocabulary():
++    result = canonicalize_retrieval_query("Кран шаровой стандартное исполнение Ду80 Ру16 фланцевый")
++    assert result.source_query == "Кран шаровой стандартное исполнение Ду80 Ру16 фланцевый"
++    assert (
++        result.canonical_query
++        == "Кран шаровой стандартное исполнение DN 80 PN 16 фланцевый стандартнопроходной стандартный проход"
++    )
++
++
++def test_ball_valve_standard_execution_phrase_order_is_supported():
++    result = canonicalize_retrieval_query("Шаровой кран DN50 PN16 исполнение стандартное муфт.")
++    assert result.source_query == "Шаровой кран DN50 PN16 исполнение стандартное муфт."
++    assert (
++        result.canonical_query
++        == "Шаровой кран DN 50 PN 16 исполнение стандартное муфтовый стандартнопроходной стандартный проход"
++    )
++
++
++def test_ball_valve_standard_passage_adds_missing_catalog_native_vocabulary():
++    result = canonicalize_retrieval_query("Кран шаровой стандартный проход DN25 PN40")
++    assert result.source_query == "Кран шаровой стандартный проход DN25 PN40"
++    assert result.canonical_query == "Кран шаровой стандартный проход DN 25 PN 40 стандартнопроходной"
++
++
+ def test_mixed_script_designation_token_is_normalized_without_losing_constraints():
+     result = canonicalize_retrieval_query("Клапан 15C65HЖ DN50 PN16 стальной")
+     assert result.canonical_query == "Клапан 15С65НЖ DN 50 PN 16 стальной"
+@@ -43,6 +67,23 @@ def test_unsupported_or_ambiguous_text_does_not_gain_catalog_domain_terms():
+     assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+ 
+ 
++def test_standard_bore_expansion_is_blocked_without_explicit_ball_valve_context():
++    assert canonicalize_retrieval_query("Кран шаровой стандартный DN80 PN16").canonical_query == "Кран шаровой стандартный DN 80 PN 16"
++    assert canonicalize_retrieval_query("Клапан стандартное исполнение DN80 PN16").canonical_query == "Клапан стандартное исполнение DN 80 PN 16"
++    assert canonicalize_retrieval_query("Поставка стандартное исполнение DN80 PN16").canonical_query == "Поставка стандартное исполнение DN 80 PN 16"
++
++
++def test_standard_bore_expansion_is_blocked_by_conflicting_bore_type():
++    assert (
++        canonicalize_retrieval_query("Кран шаровой стандартное исполнение полнопроходной DN80 PN16").canonical_query
++        == "Кран шаровой стандартное исполнение полнопроходной DN 80 PN 16"
++    )
++    assert (
++        canonicalize_retrieval_query("Кран шаровой стандартное исполнение редуцированный проход DN80 PN16").canonical_query
++        == "Кран шаровой стандартное исполнение редуцированный проход DN 80 PN 16"
++    )
++
++
+ def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
+     assert canonicalize_retrieval_query("Кран шаровой AWW DN100 PN25").canonical_query == "Кран шаровой AWW DN 100 PN 25"
+     assert canonicalize_retrieval_query("Кран шаровой WW2 DN100 PN25").canonical_query == "Кран шаровой WW2 DN 100 PN 25"
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T18:13:53.796412Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a08760-58b9-7a62-92a3-5e7f2b43476c.tmp-1788977633467445913: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"ACCEPT","summary":"I’ll inspect the canonicalization and retrieval integration against the stated guarded-recall hypothesis, then run the relevant existing tests without modifying files.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "sed -n '1,240p' src/nomenclature_matcher/query_canonicalization.py && sed -n '1,260p' src/nomenclature_matcher/hybrid_retriever.py && sed -n '1,260p' src/nomenclature_matcher/matcher.py && git diff --check && python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py" in /workspaces/ML-Cancer-Data
+ exited 1 in 361ms:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pytest/__main__.py", line 9, in <module>
+    raise SystemExit(_console_main())
+                     ^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 253, in _console_main
+    code = _main(prog=_get_prog_name(sys.argv))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 223, in _main
+    config = _prepareconfig(new_args, plugins, prog=prog)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 410, in _prepareconfig
+    config: Config = pluginmanager.hook.pytest_cmdline_parse(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/helpconfig.py", line 124, in pytest_cmdline_parse
+    config = yield
+             ^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1232, in pytest_cmdline_parse
+    self.parse(args)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1605, in parse
+    self.hook.pytest_load_initial_conftests(
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/warnings.py", line 129, in pytest_load_initial_conftests
+    return (yield)
+            ^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 116, in _multicall
+    next(function_gen)  # first yield
+    ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 170, in pytest_load_initial_conftests
+    capman.start_global_capturing()
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 773, in start_global_capturing
+    self._global_capturing = _get_multicapture(self._method)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 714, in _get_multicapture
+    return MultiCapture(in_=FDCapture(0), out=FDCapture(1), err=FDCapture(2))
+                                              ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 493, in __init__
+    TemporaryFile(buffering=0),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 631, in TemporaryFile
+    prefix, suffix, dir, output_type = _sanitize_params(prefix, suffix, dir)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 126, in _sanitize_params
+    dir = gettempdir()
+          ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 315, in gettempdir
+    return _os.fsdecode(_gettempdir())
+                        ^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 308, in _gettempdir
+    tempdir = _get_default_tempdir()
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/tempfile.py", line 223, in _get_default_tempdir
+    raise FileNotFoundError(_errno.ENOENT,
+FileNotFoundError: [Errno 2] No usable temporary directory found in ['/tmp', '/var/tmp', '/usr/tmp', '/workspaces/ML-Cancer-Data']
+
+codex
+{"decision":"ACCEPT","summary":"The focused test run is blocked by this read-only environment lacking any usable temporary directory; source inspection is complete. I’m checking the recorded public experiment history to distinguish a genuine gain from an unsafe vocabulary coincidence.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "rg -n --glob '"'!*.pyc'"' 'cycle-09|hard_pass_rate|gold_q002|standard.?bore|стандартнопроход' openspec data README.md . 2>/dev/null | head -n 300" in /workspaces/ML-Cancer-Data
+ succeeded in 13ms:
+exec
+/bin/bash -lc 'git status --short && rg --files | head -n 100 && git diff --stat && git diff --check' in /workspaces/ML-Cancer-Data
+ succeeded in 25ms:
+ M src/nomenclature_matcher/query_canonicalization.py
+ M tests/test_hybrid_retriever.py
+ M tests/test_matcher.py
+ M tests/test_query_canonicalization.py
+?? openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/
+/bin/bash: line 1: rg: command not found
+ src/nomenclature_matcher/query_canonicalization.py | 33 +++++++++++++++
+ tests/test_hybrid_retriever.py                     | 48 +++++++++++++++++++---
+ tests/test_matcher.py                              | 30 ++++++++++++++
+ tests/test_query_canonicalization.py               | 41 ++++++++++++++++++
+ 4 files changed, 147 insertions(+), 5 deletions(-)
+
+exec
+/bin/bash -lc "find openspec/changes -maxdepth 2 -type f -print | sort && find data -maxdepth 3 -type f -print | sort | head -n 200 && grep -RInE 'hard_pass_rate|cycle-0[1-9]|gold_q002|стандартнопроход' openspec data 2>/dev/null | head -n 300" in /workspaces/ML-Cancer-Data
+ succeeded in 48ms:
+openspec/changes/add-rag-business-mapping/.openspec.yaml
+openspec/changes/add-rag-business-mapping/design.md
+openspec/changes/add-rag-business-mapping/proposal.md
+openspec/changes/add-rag-business-mapping/tasks.md
+openspec/changes/archive/.gitkeep
+openspec/changes/cycle-03-query-canonicalization/.openspec.yaml
+openspec/changes/cycle-03-query-canonicalization/design.md
+openspec/changes/cycle-03-query-canonicalization/proposal.md
+openspec/changes/cycle-03-query-canonicalization/tasks.md
+openspec/changes/cycle-04-connection-notation-canonicalization/.openspec.yaml
+openspec/changes/cycle-04-connection-notation-canonicalization/design.md
+openspec/changes/cycle-04-connection-notation-canonicalization/proposal.md
+openspec/changes/cycle-04-connection-notation-canonicalization/tasks.md
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/.openspec.yaml
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/proposal.md
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/tasks.md
+data/chatgpt_gold_batches/batch_01_001_010.json
+data/chatgpt_gold_batches/batch_02_011_020.json
+data/chatgpt_gold_batches/batch_03_021_030.json
+data/chatgpt_gold_batches/batch_04_031_040.json
+data/chatgpt_gold_batches/batch_05_041_050.json
+data/chatgpt_gold_batches/batch_06_051_060.json
+data/chatgpt_gold_batches/batch_07_061_070.json
+data/chatgpt_gold_batches/batch_08_071_080.json
+data/chatgpt_gold_batches/batch_09_081_090.json
+data/chatgpt_gold_batches/batch_10_091_100.json
+data/chatgpt_gold_batches/manifest.json
+data/eval_labels.json
+data/eval_labels_v2.json
+data/eval_queries.json
+data/eval_queries.txt
+data/eval_queries_v2.json
+data/eval_results.json
+data/eval_v2_assistant_review_proposals.json
+data/eval_v2_full_catalog_candidates.json
+data/eval_v2_human_review.json
+data/eval_v2_retrieval_miss_candidates.json
+data/eval_v2_retrieval_miss_human_review.json
+data/eval_v2_review_candidates.json
+data/experiments/2026-09-07-mvp-baseline/experiment.md
+data/experiments/2026-09-07-mvp-baseline/results.json
+data/experiments/TEMPLATE.md
+data/golden_100_auto_label_report.json
+data/golden_100_auto_labels.json
+data/golden_100_chatgpt_accepts.json
+data/golden_100_chatgpt_accepts_human_review.json
+data/golden_100_chatgpt_verified_labels.json
+data/golden_100_human_review.json
+data/golden_100_labels.json
+data/golden_100_manual_corrections.json
+data/golden_100_query_constraints.json
+data/golden_100_remaining_top3_human_review.json
+data/golden_100_remaining_top3_labels.json
+data/golden_100_review_candidates.json
+data/golden_queries_100.json
+data/golden_review_candidates.json
+data/harness_baseline.json
+data/harness_gold.json
+data/harness_gold_combined.json
+data/harness_gold_combined_core.json
+data/harness_gold_combined_eval.json
+data/harness_gold_combined_extended.json
+data/harness_gold_combined_negative.json
+data/harness_gold_core.json
+data/harness_gold_eval.json
+data/harness_gold_extended.json
+data/harness_gold_negative.json
+data/tender_queries_v1.json
+data/tender_queries_v1_candidates.json
+data/tender_queries_v1_canonical_labels.json
+data/tender_queries_v1_chatgpt_accepts.json
+data/tender_queries_v1_chatgpt_human_review.json
+data/tender_queries_v1_deep_candidates.json
+data/tender_queries_v1_deep_chatgpt_accepts.json
+data/tender_queries_v1_deep_chatgpt_human_review.json
+data/tender_queries_v1_deep_verified_labels.json
+data/tender_queries_v1_harness_cases.json
+data/tender_queries_v1_unresolved_taxonomy.json
+data/tender_queries_v1_verified_labels.json
+data/tender_real_queries_v1.json
+data/моя_разметка.md
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md:3:See `proposal.md` for the experiment motivation. The existing pure retrieval canonicalizer already returns a normalized source query plus at most one alternate, and hybrid retrieval searches both representations, deduplicates each modality by LD id, and applies existing RRF once per modality. The matcher sends the original source query, not the alternate, to DeepSeek reranking. The harness calibration recognizes explicit standard ball-valve execution as a standard-bore requirement, and catalog product text can express that requirement as `стандартнопроходной` or `стандартный проход`.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md:24:Extend the existing canonicalization boundary only when the query contains a supported ball-valve anchor and an explicit standard-execution or standard-passage phrase. Add the catalog lexical variants `стандартнопроходной` and `стандартный проход` to the existing canonical text rather than replacing source wording. Before emitting the alternate, detect explicit full-passage or reduced-passage wording and decline the standard-bore expansion if either is present.
+data/golden_100_auto_label_report.json:2340:      "id": "gold_q002",
+data/golden_100_human_review.json:172:    "gold_q002": {
+data/harness_baseline.json:9:    "hard_pass_rate": 0.8,
+data/harness_baseline.json:61:      "id": "gold_q002",
+data/harness_gold_eval.json:9:    "hard_pass_rate": 0.8421052631578947,
+data/harness_gold_eval.json:52:      "id": "gold_q002",
+data/golden_100_query_constraints.json:40:    "gold_q002": {
+data/harness_gold_core.json:112:      "id": "gold_q002",
+data/harness_gold_combined.json:117:      "id": "gold_q002",
+data/golden_100_labels.json:17:  "gold_q002": {
+data/chatgpt_gold_batches/manifest.json:12:        "gold_q002",
+data/chatgpt_gold_batches/batch_01_001_010.json:813:      "id": "gold_q002",
+data/eval_queries.txt:1:Кран шаровой Ридан JiP-R Standard FF Ду80 Ру16 стандартнопроходной
+data/harness_gold.json:112:      "id": "gold_q002",
+data/golden_100_auto_labels.json:12:  "gold_q002": {
+data/golden_100_review_candidates.json:1973:      "id": "gold_q002",
+data/harness_gold_combined_core.json:117:      "id": "gold_q002",
+data/golden_queries_100.json:10:    "id": "gold_q002",
+data/harness_gold_combined_eval.json:9:    "hard_pass_rate": 0.84,
+data/harness_gold_combined_eval.json:59:      "id": "gold_q002",
+
+exec
+/bin/bash -lc "sed -n '1,180p' data/harness_baseline.json && sed -n '1,200p' openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/proposal.md && sed -n '1,240p' openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md && sed -n '1,180p' openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/tasks.md && sed -n '1,110p' data/golden_100_query_constraints.json && sed -n '150,210p' data/golden_100_human_review.json" in /workspaces/ML-Cancer-Data
+ succeeded in 44ms:
+{
+  "generated_at": "2026-09-09T09:29:18.287889Z",
+  "dataset": "data/harness_gold_combined.json",
+  "summary": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8,
+    "core_pass_rate": 0.76,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.04,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.03333333333333333,
+    "human_reject_rate": 0.03333333333333333,
+    "known_positive_hit_rate": 0.5333333333333333,
+    "verdict_counts": {
+      "PASS": 24,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_WRONG_PRODUCT": 3,
+      "FAIL_WRONG_NOT_FOUND": 1,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1
+    }
+  },
+  "threshold_failures": [],
+  "results": [
+    {
+      "id": "gold_q001",
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1930,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 1930,
+        "article": "21100500162MULD000000000",
+        "name": "Кран шаровый 11с67п КШРФ из стали 20 Ду50 Ру1,6МПа полнопроходной",
+        "dn": 50,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q002",
+      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15870,
+      "known_positive_eligible": true,
+      "known_positive_hit": false,
+      "human_grade": "REJECT",
+      "verdict": "FAIL_HUMAN_REJECT",
+      "reason": "Returned product is explicitly HUMAN REJECT for this query.",
+      "returned_product": {
+        "ld_id": 15870,
+        "article": "11100800162MULD000003000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду80 Ру1,6МПа полнопроходной L = 300",
+        "dn": 80,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "HUMAN_REJECT"
+    },
+    {
+      "id": "gold_q003",
+      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 16201,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 16201,
+        "article": "11111009252MULD00000000C",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду100/80 Ру2,5МПа с комплектом ответных фланцев, прокладками и крепежом",
+        "dn": 100,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": null,
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": null
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q004",
+      "query": "Кран шаровой Ду150 Ру16 фланцевый с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 2742,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 2742,
+        "article": "11111509252RULD000000000",
+        "name": "Кран шаровый LD КШЦФР из стали 20 Ду150/125 Ру2,5МПа с редуктором",
+        "dn": 150,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": null,
+        "control": "gearbox",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": null
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q005",
+      "query": "Кран шаровый стальной DN200 PN16 полнопроходной фл/фл",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1251,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "human_grade": null,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "returned_product": {
+        "ld_id": 1251,
+        "article": "11112000162MULD000000000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа полнопроходной",
+        "dn": 200,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+## Why
+
+The current champion still returns a human-rejected full-bore ball valve for an explicit standard-execution request, despite the harness documenting catalog candidates with explicit standard-bore evidence. The failure is a narrow vocabulary mismatch: tender wording says `стандартное исполнение`, while catalog evidence uses standard-passage terminology. Earlier selection-adjacent experiments regressed or did not improve metrics; a bounded additive retrieval representation is the strongest remaining distinct mechanism.
+
+## What Changes
+
+- For supported ball-valve tender queries that explicitly state standard execution, create an additive canonical retrieval representation containing catalog-native standard-bore vocabulary.
+- Retain every explicit source requirement and preserve the normalized original query for original retrieval, reranking, result text, and duplicate-query caching.
+- Do not infer a bore type from generic words such as `стандартный` unless they occur in an explicit ball-valve execution/passsage context; do not expand unrelated product families or explicit full/reduced-bore requests.
+- Add focused regression tests for positive phrase variants, boundary/no-op cases, and use of the existing additive hybrid retrieval path.
+
+## Capabilities
+
+### New Capabilities
+
+- `standard-bore-retrieval-canonicalization`: Safely expands explicit standard-execution ball-valve terminology into an additive catalog-native retrieval representation.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected code: the pure query-time canonicalization path, with matcher/hybrid integration covered only by regression tests if its existing contract already supplies the alternate query.
+- Affected behavior: hybrid candidate generation may gain an additional standard-bore representation; reranking and final selection behavior remain unchanged.
+- Affected tests: focused canonicalization and matcher/hybrid source-preservation tests.
+- No prompt, model, catalog document, Qdrant/BM25 index, collection alias, or index rebuild is required.
+## Context
+
+See `proposal.md` for the experiment motivation. The existing pure retrieval canonicalizer already returns a normalized source query plus at most one alternate, and hybrid retrieval searches both representations, deduplicates each modality by LD id, and applies existing RRF once per modality. The matcher sends the original source query, not the alternate, to DeepSeek reranking. The harness calibration recognizes explicit standard ball-valve execution as a standard-bore requirement, and catalog product text can express that requirement as `стандартнопроходной` or `стандартный проход`.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Make one explicit tender-to-catalog vocabulary bridge available to candidate generation without changing final-selection semantics.
+- Restrict the bridge to lexical evidence sufficient to distinguish ball-valve standard execution/passage from generic use of `standard` wording.
+- Preserve the already-tested one-alternate, original-query, fail-open behavior.
+
+**Non-Goals:**
+
+- No generic interpretation of `standard` as an engineering requirement.
+- No candidate filtering, deterministic post-selection override, reranker prompt/model change, or confidence-threshold change.
+- No expansion for explicitly full- or reduced-bore requests, and no mapping to a product, article, or LD id.
+- No catalog/schema/index change or index rebuild.
+
+## Decisions
+
+### Use a conjunction of product and requirement cues
+
+Extend the existing canonicalization boundary only when the query contains a supported ball-valve anchor and an explicit standard-execution or standard-passage phrase. Add the catalog lexical variants `стандартнопроходной` and `стандартный проход` to the existing canonical text rather than replacing source wording. Before emitting the alternate, detect explicit full-passage or reduced-passage wording and decline the standard-bore expansion if either is present.
+
+This is preferred to treating every `стандартн*` token as a synonym: that broader rule would change requirements for unrelated products and conflicts with the outcome of the earlier broad shorthand experiment. It also avoids an LLM rewrite, which could infer unmentioned technical properties.
+
+### Reuse the additive retrieval boundary unchanged
+
+The change belongs solely in query canonicalization. The existing matcher/hybrid path already queries original and alternate text, retains source-query reranking/output, deduplicates candidates, and fails open if alternate retrieval errors. Regression tests shall verify this contract rather than adding a second retrieval or selection mechanism.
+
+Changing RRF, candidate limits, prompt wording, or selected-candidate behavior would confound this retrieval-vocabulary experiment and revisit mechanisms rejected in cycles 1, 2, 5, and 8.
+
+## Risks / Trade-offs
+
+- [The tender phrase has a product-specific meaning other than bore] → Require both a ball-valve anchor and an explicit execution/passage phrase; preserve the original query and leave final selection unchanged.
+- [A query contains contradictory full/reduced-bore language] → Treat the conflict as ineligible for standard-bore expansion and retain existing canonicalization only.
+- [Additional candidates expose a reranker error] → Keep the existing candidate cap, original reranker input, and outer public/blind safety guardrails.
+- [The vocabulary bridge is too narrow for blind cases] → Its bounded behavior still supplies clean information gain and can be removed without migration if no measured improvement occurs.
+
+## Migration Plan
+
+1. Add the pure, guarded standard-bore lexical expansion to the existing canonicalization flow.
+2. Add focused unit tests for accepted phrase variants and all no-op boundaries, plus matcher/hybrid regression coverage for source-query preservation and alternate fallback.
+3. Run focused tests and `python -m pytest -q`.
+4. The outer supervisor performs public evaluation, reviewer feedback, blind evaluation, and promotion/rejection.
+5. Roll back by removing the guarded expansion; no persistent data, collection, or index rollback is necessary.
+## 1. Guarded standard-bore canonicalization
+
+- [x] 1.1 Extend the pure retrieval canonicalization boundary to emit at most one distinct additive representation containing catalog-native standard-bore vocabulary only for supported ball-valve queries with explicit standard-execution or standard-passage wording; verify focused unit tests assert exact source and alternate query text for representative Russian phrase variants.
+- [x] 1.2 Preserve all source requirements in the alternate and block the new expansion for generic standard wording, other product families, unsupported/no-product text, and explicit full- or reduced-bore wording; verify focused no-op and conflicting-requirement tests.
+
+## 2. Additive-path regression coverage
+
+- [x] 2.1 Verify the existing hybrid retrieval path issues both original and standard-bore alternate queries only when the alternate is distinct, deduplicates candidate IDs, and retains original-query candidates after alternate-query retrieval failure; add or update mocked hybrid-retriever tests.
+- [x] 2.2 Verify hybrid matcher integration preserves the original normalized tender string as reranker input, `MatchResult.query`, and serialized output for an eligible standard-execution query; add or update a recording-retriever/mocked-reranker test.
+
+## 3. Local verification
+
+- [x] 3.1 Run focused query-canonicalization, hybrid-retriever, and matcher tests, then run `python -m pytest -q`; resolve any product-code test failures without changing prompts, final-selection logic, catalog data, or index configuration.
+{
+  "generated_at": "2026-09-07T09:34:43.399140Z",
+  "items": {
+    "gold_q001": {
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "easy",
+        "tags": [
+          "steel",
+          "flanged",
+          "dn",
+          "pn"
+        ]
+      },
+      "parser_schema_version": 2,
+      "constraints": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "working_medium": null,
+        "valve_type": "standard",
+        "valve_designation": null,
+        "body_material": "steel",
+        "body_material_grade": null,
+        "bore_type": "full",
+        "control": "manual",
+        "catalog_scope": "in_scope",
+        "ambiguous": false,
+        "comment": "DN exact: 50; PN lower bound: 1.6 MPa; joining exact: flanged; material exact: steel; bore exact: full; control exact: manual.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
+      },
+      "parse_error": null,
+      "parsed_at": "2026-09-08T13:30:17.187162Z"
+    },
+    "gold_q002": {
+      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "easy",
+        "tags": [
+          "steel",
+          "flanged",
+          "brand_ld"
+        ]
+      },
+      "parser_schema_version": 2,
+      "constraints": {
+        "product_type": "ball_valve",
+        "dn": 80,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "working_medium": null,
+        "valve_type": "standard",
+        "valve_designation": null,
+        "body_material": "steel",
+        "body_material_grade": "20",
+        "bore_type": null,
+        "control": null,
+        "catalog_scope": "in_scope",
+        "ambiguous": false,
+        "comment": "DN exact: 80; PN нижняя граница: 1.6 МПа; joining exact: фланцевый; material exact: сталь 20; valve_type: стандартное исполнение.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
+      },
+      "parse_error": null,
+      "parsed_at": "2026-09-08T13:30:18.848615Z"
+    },
+    "gold_q003": {
+      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+      "metadata": {
+        "category": "ball_valve",
+        "difficulty": "medium",
+        "tags": [
+          "steel",
+          "flanged",
+          "dn",
+          "pn",
+          "material"
+        ]
+      },
+      "parser_schema_version": 2,
+      "constraints": {
+        "product_type": "ball_valve",
+        "dn": 100,
+        "pn_min_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "working_medium": null,
+        "valve_type": "standard",
+        "valve_designation": null,
+        "body_material": "steel",
+        "body_material_grade": "20",
+        "bore_type": null,
+        "control": null,
+        "catalog_scope": "in_scope",
+        "ambiguous": false,
+        "comment": "DN exact: 100; PN нижняя граница: 2.5 МПа; joining exact: фланцевый; material exact: сталь 20; тип крана шаровой, специальное исполнение не указано -> standard.",
+        "reference_model": null,
+        "unsupported_constraints": [],
+        "parser_warnings": []
+      },
+      "parse_error": null,
+      "parsed_at": "2026-09-08T13:30:20.767262Z"
+        "3799": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18481": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16801": {
+          "grade": "ACCEPT",
+          "comment": ""
+        },
+        "3910": {
+          "grade": "REJECT",
+          "comment": ""
+        }
+      },
+      "final_status": "MATCHED",
+      "final_comment": "",
+      "completed": true,
+      "cursor_index": 39
+    },
+    "gold_q002": {
+      "candidate_grades": {
+        "15317": {
+          "grade": "UNSURE",
+          "comment": ""
+        },
+        "18604": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3845": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "6565": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3846": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "15425": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "3847": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "5853": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "18807": {
+          "grade": "REJECT",
+          "comment": ""
+        },
+        "16200": {
+
+exec
+/bin/bash -lc "grep -n '\"id\": \"gold_q00[125]\\|\"id\": \"gold_q022\\|\"verdict\": \"FAIL' data/harness_baseline.json && sed -n '1,260p' data/harness_gold_combined_eval.json && grep -n -A80 -B5 '\"gold_q002\"' data/golden_100_human_review.json && grep -RIn 'standard.*bore\\|стандартное исполнение.*стандартнопроход' data src tests openspec 2>/dev/null | head -n 200" in /workspaces/ML-Cancer-Data
+ succeeded in 108ms:
+28:      "id": "gold_q001",
+61:      "id": "gold_q002",
+71:      "verdict": "FAIL_HUMAN_REJECT",
+160:      "id": "gold_q005",
+302:      "id": "gold_q022",
+312:      "verdict": "FAIL_WRONG_PRODUCT",
+359:      "verdict": "FAIL_WRONG_PRODUCT",
+407:      "verdict": "FAIL_WRONG_PRODUCT",
+884:      "verdict": "FAIL_WRONG_NOT_FOUND",
+964:      "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+{
+  "generated_at": "2026-09-09T03:13:51.012024Z",
+  "dataset": "data/harness_gold_combined.json",
+  "summary": {
+    "evaluated": 25,
+    "hard_gate_cases": 25,
+    "core_cases": 20,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.84,
+    "core_pass_rate": 0.8,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.0,
+    "human_reject_rate": 0.04,
+    "known_positive_hit_rate": 0.6,
+    "verdict_counts": {
+      "PASS": 21,
+      "FAIL_HUMAN_REJECT": 1,
+      "FAIL_WRONG_PRODUCT": 3
+    }
+  },
+  "threshold_failures": [],
+  "results": [
+    {
+      "id": "gold_q001",
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1930,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 1930,
+        "article": "21100500162MULD000000000",
+        "name": "Кран шаровый 11с67п КШРФ из стали 20 Ду50 Ру1,6МПа полнопроходной",
+        "dn": 50,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q002",
+      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15870,
+      "known_positive_eligible": true,
+      "known_positive_hit": false,
+      "human_grade": "REJECT",
+      "verdict": "FAIL_HUMAN_REJECT",
+      "reason": "Returned product is explicitly HUMAN REJECT for this query.",
+      "returned_product": {
+        "ld_id": 15870,
+        "article": "11100800162MULD000003000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду80 Ру1,6МПа полнопроходной L = 300",
+        "dn": 80,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "HUMAN_REJECT"
+    },
+    {
+      "id": "gold_q003",
+      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 16201,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 16201,
+        "article": "11111009252MULD00000000C",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду100/80 Ру2,5МПа с комплектом ответных фланцев, прокладками и крепежом",
+        "dn": 100,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": null,
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": null
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q004",
+      "query": "Кран шаровой Ду150 Ру16 фланцевый с редуктором",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 2742,
+      "known_positive_eligible": true,
+      "known_positive_hit": true,
+      "human_grade": "ACCEPT",
+      "verdict": "PASS",
+      "reason": "Returned product is explicitly HUMAN ACCEPT for this query.",
+      "returned_product": {
+        "ld_id": 2742,
+        "article": "11111509252RULD000000000",
+        "name": "Кран шаровый LD КШЦФР из стали 20 Ду150/125 Ру2,5МПа с редуктором",
+        "dn": 150,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": null,
+        "control": "gearbox",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": null
+      },
+      "decision_source": "HUMAN_ACCEPT"
+    },
+    {
+      "id": "gold_q005",
+      "query": "Кран шаровый стальной DN200 PN16 полнопроходной фл/фл",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 1251,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "human_grade": null,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "returned_product": {
+        "ld_id": 1251,
+        "article": "11112000162MULD000000000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду200 Ру1,6МПа полнопроходной",
+        "dn": 200,
+        "pn_mpa": 1.6,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "CONSTRAINTS",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "200 == 200",
+          "pn": "1.6 >= 1.6 MPa",
+          "joining_type": "'flanged' == 'flanged'",
+          "valve_type": "'standard' == 'standard'",
+          "body_material": "'steel' == 'steel'",
+          "bore_type": "'full' == 'full'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q007",
+      "query": "Кран шаровый КШЦФ 100.025 из стали 20 ручной",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15639,
+      "known_positive_eligible": false,
+      "known_positive_hit": false,
+      "human_grade": null,
+      "verdict": "PASS",
+      "reason": "Returned product satisfies all deterministic GOLD requirements.",
+      "returned_product": {
+        "ld_id": 15639,
+        "article": "11111000252MULD000003000",
+        "name": "Кран шаровый LD КШЦФ из стали 20 Ду100 Ру2,5МПа полнопроходной L = 300",
+        "dn": 100,
+        "pn_mpa": 2.5,
+        "joining_type": "flanged",
+        "thread_type": null,
+        "product_type": "ball_valve",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual",
+        "working_medium": [
+          "жидкость"
+        ],
+        "harness_bore_type": "full"
+      },
+      "decision_source": "CONSTRAINTS",
+      "requirement_decision": {
+        "status": "PASS",
+        "checks": {
+          "product_type": "'ball_valve' == 'ball_valve'",
+          "dn": "100 == 100",
+          "pn": "2.5 >= 2.5 MPa",
+          "valve_type": "'standard' == 'standard'",
+          "valve_designation": "exact normalized 'КШЦФ': True",
+          "body_material": "'steel' == 'steel'",
+          "body_material_grade": "exact '20' in 'Сталь 20'",
+          "control": "'manual' == 'manual'"
+        },
+        "unknown_fields": [],
+        "failed_fields": []
+      }
+    },
+    {
+      "id": "gold_q021",
+      "query": "Кран шаровой под приварку Ду50 Ру40 сталь 20",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "actual_status": "MATCHED",
+      "returned_ld_id": 15253,
+      "known_positive_eligible": false,
+167-      "final_status": "MATCHED",
+168-      "final_comment": "",
+169-      "completed": true,
+170-      "cursor_index": 39
+171-    },
+172:    "gold_q002": {
+173-      "candidate_grades": {
+174-        "15317": {
+175-          "grade": "UNSURE",
+176-          "comment": ""
+177-        },
+178-        "18604": {
+179-          "grade": "REJECT",
+180-          "comment": ""
+181-        },
+182-        "3845": {
+183-          "grade": "REJECT",
+184-          "comment": ""
+185-        },
+186-        "6565": {
+187-          "grade": "REJECT",
+188-          "comment": ""
+189-        },
+190-        "3846": {
+191-          "grade": "REJECT",
+192-          "comment": ""
+193-        },
+194-        "15425": {
+195-          "grade": "REJECT",
+196-          "comment": ""
+197-        },
+198-        "3847": {
+199-          "grade": "REJECT",
+200-          "comment": ""
+201-        },
+202-        "5853": {
+203-          "grade": "REJECT",
+204-          "comment": ""
+205-        },
+206-        "18807": {
+207-          "grade": "REJECT",
+208-          "comment": ""
+209-        },
+210-        "16200": {
+211-          "grade": "REJECT",
+212-          "comment": ""
+213-        },
+214-        "4093": {
+215-          "grade": "REJECT",
+216-          "comment": ""
+217-        },
+218-        "5787": {
+219-          "grade": "REJECT",
+220-          "comment": ""
+221-        },
+222-        "19078": {
+223-          "grade": "REJECT",
+224-          "comment": ""
+225-        },
+226-        "1678": {
+227-          "grade": "ACCEPT",
+228-          "comment": ""
+229-        },
+230-        "4192": {
+231-          "grade": "REJECT",
+232-          "comment": ""
+233-        },
+234-        "6669": {
+235-          "grade": "REJECT",
+236-          "comment": ""
+237-        },
+238-        "3022": {
+239-          "grade": "REJECT",
+240-          "comment": ""
+241-        },
+242-        "8872": {
+243-          "grade": "REJECT",
+244-          "comment": ""
+245-        },
+246-        "850": {
+247-          "grade": "REJECT",
+248-          "comment": ""
+249-        },
+250-        "15870": {
+251-          "grade": "REJECT",
+252-          "comment": ""
+data/golden_100_auto_label_report.json:34487:        "comment": "DN exact 50; PN16 -> pn_min_mpa=1.6; joining exact flanged; control electric_ready (под электропривод); valve_type standard (ball valve, спец. исполнение не указано); материал, среда, bore не указаны.",
+data/golden_100_query_constraints.json:960:        "comment": "DN exact 50; PN16 -> pn_min_mpa=1.6; joining exact flanged; control electric_ready (под электропривод); valve_type standard (ball valve, спец. исполнение не указано); материал, среда, bore не указаны.",
+data/harness_gold_core.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore."
+data/harness_gold_core.json:187:        "ball_valve_standard_execution=>bore_type:standard"
+data/harness_gold_negative.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore."
+data/harness_gold_combined.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
+data/harness_gold_combined.json:192:        "ball_valve_standard_execution=>bore_type:standard"
+data/harness_gold_extended.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore."
+data/harness_gold_combined_extended.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
+data/harness_gold_combined_negative.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
+data/harness_gold.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore."
+data/harness_gold.json:187:        "ball_valve_standard_execution=>bore_type:standard"
+data/golden_100_auto_labels.json:283:    "human_comment": "DN exact 50; PN16 -> pn_min_mpa=1.6; joining exact flanged; control electric_ready (под электропривод); valve_type standard (ball valve, спец. исполнение не указано); материал, среда, bore не указаны.",
+data/harness_gold_combined_core.json:14:    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
+data/harness_gold_combined_core.json:192:        "ball_valve_standard_execution=>bore_type:standard"
+src/nomenclature_matcher/query_canonicalization.py:86:    canonical = _expand_standard_bore(canonical)
+src/nomenclature_matcher/query_canonicalization.py:161:def _expand_standard_bore(text: str) -> str:
+src/nomenclature_matcher/harness_gold.py:32:            notes.append("ball_valve_standard_execution=>bore_type:standard")
+src/nomenclature_matcher/harness_gold.py:41:    ignored. A standard bore must be explicit as a passage/bore characteristic.
+tests/test_hybrid_retriever.py:139:def test_hybrid_search_uses_standard_bore_alternate_and_dedupes_by_ld_id():
+tests/test_hybrid_retriever.py:143:    canonical = "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход"
+tests/test_hybrid_retriever.py:190:def test_hybrid_search_keeps_original_standard_bore_candidates_when_alternate_fails():
+tests/test_hybrid_retriever.py:193:    canonical = "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход"
+tests/test_query_canonicalization.py:28:def test_ball_valve_standard_execution_adds_standard_bore_vocabulary():
+tests/test_query_canonicalization.py:33:        == "Кран шаровой стандартное исполнение DN 80 PN 16 фланцевый стандартнопроходной стандартный проход"
+tests/test_query_canonicalization.py:70:def test_standard_bore_expansion_is_blocked_without_explicit_ball_valve_context():
+tests/test_query_canonicalization.py:76:def test_standard_bore_expansion_is_blocked_by_conflicting_bore_type():
+tests/test_matcher.py:192:def test_match_one_hybrid_standard_bore_expansion_preserves_original_query_for_output_and_rerank():
+tests/test_matcher.py:215:            "Кран шаровой стандартное исполнение DN 80 PN 16 стандартнопроходной стандартный проход",
+tests/test_harness_gold_calibration.py:42:def test_standard_execution_calibrates_to_standard_bore():
+tests/test_harness_gold_calibration.py:48:    assert "ball_valve_standard_execution=>bore_type:standard" in notes
+tests/test_harness_gold_calibration.py:51:def test_full_bore_is_not_standard_bore():
+tests/test_harness_gold_calibration.py:63:def test_explicit_standard_bore_passes():
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:9:For a supported ball-valve tender query that explicitly states standard execution or standard passage, the system SHALL produce at most one distinct additive retrieval representation that retains every source term and adds catalog-native standard-bore vocabulary. The source tender text SHALL remain the authoritative query for original retrieval, reranking, result text, and duplicate-query caching.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:12:- **WHEN** a supported ball-valve tender includes an explicit standard-execution phrase and does not request a conflicting bore type
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:13:- **THEN** the system provides a distinct additive retrieval representation containing standard-bore vocabulary while preserving the original tender query
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:17:- **THEN** the system provides an additive representation that preserves the stated requirement and normalizes it to the catalog-native standard-bore vocabulary
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:21:The system SHALL NOT infer standard bore from generic standard wording outside an explicit supported ball-valve execution or passage context. It SHALL NOT add standard-bore vocabulary for another product family, unsupported/no-product text, or a query that explicitly requests full or reduced bore.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:23:#### Scenario: Generic standard wording is not a bore requirement
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:25:- **THEN** the system does not add standard-bore vocabulary on the basis of that wording
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:29:- **THEN** the system preserves that query's existing retrieval representation and does not add standard-bore vocabulary
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:33:The system SHALL use the standard-bore representation only as an additional retrieval input through the existing bounded hybrid-retrieval path. It SHALL retain original-query candidates if alternate retrieval is unavailable or errors, and it SHALL not duplicate an LD product solely because it was retrieved through both representations.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/specs/standard-bore-retrieval-canonicalization/spec.md:36:- **WHEN** retrieval of a standard-bore alternate fails after original-query retrieval succeeds
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md:3:See `proposal.md` for the experiment motivation. The existing pure retrieval canonicalizer already returns a normalized source query plus at most one alternate, and hybrid retrieval searches both representations, deduplicates each modality by LD id, and applies existing RRF once per modality. The matcher sends the original source query, not the alternate, to DeepSeek reranking. The harness calibration recognizes explicit standard ball-valve execution as a standard-bore requirement, and catalog product text can express that requirement as `стандартнопроходной` or `стандартный проход`.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md:24:Extend the existing canonicalization boundary only when the query contains a supported ball-valve anchor and an explicit standard-execution or standard-passage phrase. Add the catalog lexical variants `стандартнопроходной` and `стандартный проход` to the existing canonical text rather than replacing source wording. Before emitting the alternate, detect explicit full-passage or reduced-passage wording and decline the standard-bore expansion if either is present.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md:37:- [A query contains contradictory full/reduced-bore language] → Treat the conflict as ineligible for standard-bore expansion and retain existing canonicalization only.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/design.md:43:1. Add the pure, guarded standard-bore lexical expansion to the existing canonicalization flow.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/tasks.md:1:## 1. Guarded standard-bore canonicalization
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/tasks.md:3:- [x] 1.1 Extend the pure retrieval canonicalization boundary to emit at most one distinct additive representation containing catalog-native standard-bore vocabulary only for supported ball-valve queries with explicit standard-execution or standard-passage wording; verify focused unit tests assert exact source and alternate query text for representative Russian phrase variants.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/tasks.md:4:- [x] 1.2 Preserve all source requirements in the alternate and block the new expansion for generic standard wording, other product families, unsupported/no-product text, and explicit full- or reduced-bore wording; verify focused no-op and conflicting-requirement tests.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/tasks.md:8:- [x] 2.1 Verify the existing hybrid retrieval path issues both original and standard-bore alternate queries only when the alternate is distinct, deduplicates candidate IDs, and retains original-query candidates after alternate-query retrieval failure; add or update mocked hybrid-retriever tests.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/proposal.md:3:The current champion still returns a human-rejected full-bore ball valve for an explicit standard-execution request, despite the harness documenting catalog candidates with explicit standard-bore evidence. The failure is a narrow vocabulary mismatch: tender wording says `стандартное исполнение`, while catalog evidence uses standard-passage terminology. Earlier selection-adjacent experiments regressed or did not improve metrics; a bounded additive retrieval representation is the strongest remaining distinct mechanism.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/proposal.md:7:- For supported ball-valve tender queries that explicitly state standard execution, create an additive canonical retrieval representation containing catalog-native standard-bore vocabulary.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/proposal.md:16:- `standard-bore-retrieval-canonicalization`: Safely expands explicit standard-execution ball-valve terminology into an additive catalog-native retrieval representation.
+openspec/changes/cycle-09-standard-bore-retrieval-canonicalization/proposal.md:25:- Affected behavior: hybrid candidate generation may gain an additional standard-bore representation; reranking and final selection behavior remain unchanged.
+
+exec
+/bin/bash -lc "grep -n -B8 -A5 '\"verdict\": \"FAIL' data/harness_baseline.json && sed -n '1,120p' src/nomenclature_matcher/harness_gold.py && sed -n '1,110p' tests/test_harness_gold_calibration.py && sed -n '1,90p' data/harness_gold_combined.json && grep -RIn 'стандартнопроходной\\|стандартный проход' ld_products_full_nomenclature.csv 2>/dev/null | head -n 20" in /workspaces/ML-Cancer-Data
+ succeeded in 60ms:
+63-      "split": "CORE",
+64-      "hard_gate": true,
+65-      "expected_status": "MATCHED",
+66-      "actual_status": "MATCHED",
+67-      "returned_ld_id": 15870,
+68-      "known_positive_eligible": true,
+69-      "known_positive_hit": false,
+70-      "human_grade": "REJECT",
+71:      "verdict": "FAIL_HUMAN_REJECT",
+72-      "reason": "Returned product is explicitly HUMAN REJECT for this query.",
+73-      "returned_product": {
+74-        "ld_id": 15870,
+75-        "article": "11100800162MULD000003000",
+76-        "name": "Кран шаровый LD КШЦФ из стали 20 Ду80 Ру1,6МПа полнопроходной L = 300",
+--
+304-      "split": "CORE",
+305-      "hard_gate": true,
+306-      "expected_status": "MATCHED",
+307-      "actual_status": "MATCHED",
+308-      "returned_ld_id": 19270,
+309-      "known_positive_eligible": false,
+310-      "known_positive_hit": false,
+311-      "human_grade": null,
+312:      "verdict": "FAIL_WRONG_PRODUCT",
+313-      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+314-      "returned_product": {
+315-        "ld_id": 19270,
+316-        "article": "12201000252MULD182000000",
+317-        "name": "Кран шаровый LD для подземной установки КШЦП из стали 20 Ду100 Ру2,5МПа полнопроходной Н=1820мм",
+--
+351-      "split": "CORE",
+352-      "hard_gate": true,
+353-      "expected_status": "MATCHED",
+354-      "actual_status": "MATCHED",
+355-      "returned_ld_id": 17700,
+356-      "known_positive_eligible": false,
+357-      "known_positive_hit": false,
+358-      "human_grade": null,
+359:      "verdict": "FAIL_WRONG_PRODUCT",
+360-      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+361-      "returned_product": {
+362-        "ld_id": 17700,
+363-        "article": "11110500163MELD01500180C",
+364-        "name": "Кран шаровый LD для подземной установки КШЦФ Energy Gas 050.016.П/П.03. из стали 09Г2С Ду50 Ру1,6МПа Н=150мм L = 180 с комплектом ответных фланцев, прокладками и крепежом",
+--
+399-      "split": "CORE",
+400-      "hard_gate": true,
+401-      "expected_status": "MATCHED",
+402-      "actual_status": "MATCHED",
+403-      "returned_ld_id": 18787,
+404-      "known_positive_eligible": false,
+405-      "known_positive_hit": false,
+406-      "human_grade": null,
+407:      "verdict": "FAIL_WRONG_PRODUCT",
+408-      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+409-      "returned_product": {
+410-        "ld_id": 18787,
+411-        "article": "111N0800163EULD000002100",
+412-        "name": "Кран шаровый LD КШЦФЭ из стали 09Г2С Ду80 Ру1,6МПа полнопроходной E-F исп. под электропривод L = 210",
+--
+876-      "split": "CORE",
+877-      "hard_gate": true,
+878-      "expected_status": "MATCHED",
+879-      "actual_status": "NOT_FOUND",
+880-      "returned_ld_id": null,
+881-      "known_positive_eligible": true,
+882-      "known_positive_hit": false,
+883-      "human_grade": null,
+884:      "verdict": "FAIL_WRONG_NOT_FOUND",
+885-      "reason": "Constraint-based GOLD has catalog evidence for a matching product."
+886-    },
+887-    {
+888-      "id": "tender_v1_034",
+889-      "query": "кран шаровый фланцевый Ду50",
+--
+956-      "split": "CORE",
+957-      "hard_gate": true,
+958-      "expected_status": "MATCHED",
+959-      "actual_status": "MATCHED",
+960-      "returned_ld_id": 18245,
+961-      "known_positive_eligible": true,
+962-      "known_positive_hit": false,
+963-      "human_grade": null,
+964:      "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+965-      "reason": "Required fields are missing from the returned product; correctness is not provable.",
+966-      "returned_product": {
+967-        "ld_id": 18245,
+968-        "article": "LD 57.100.15.1",
+969-        "name": "Фильтр косой латунный LD Pride 57.15.В-В Ду 15 Ру 40 с биркой и хомутом",
+from __future__ import annotations
+
+import re
+from typing import Any
+
+from .golden_rules import GoldenMatchDecision, GoldenQueryConstraints, evaluate_product_strict
+from .models import LDProduct
+from .query_constraints import _norm, _property_values
+
+
+def calibrate_harness_constraints(
+    query: str,
+    constraints: GoldenQueryConstraints,
+) -> tuple[GoldenQueryConstraints, list[str]]:
+    """Apply small, versioned business calibrations used by the harness GOLD.
+
+    This is intentionally narrower than the parser sanitizer. It does not try to
+    reinterpret the whole query. It only captures business semantics that were
+    confirmed during human calibration of the GOLD set.
+    """
+
+    payload = constraints.model_dump()
+    notes: list[str] = []
+    value = _norm(query)
+
+    if constraints.product_type == "ball_valve" and re.search(
+        r"(?:\bстандартнопроход\w*\b|\bстандартн\w*\s+проход\w*\b|\bстандартн\w*\s+исполнени\w*\b)",
+        value,
+    ):
+        if payload.get("bore_type") != "standard":
+            payload["bore_type"] = "standard"
+            notes.append("ball_valve_standard_execution=>bore_type:standard")
+
+    return GoldenQueryConstraints.model_validate(payload), notes
+
+
+def harness_candidate_bore_type(product: LDProduct) -> str | None:
+    """Return an explicitly observable bore type for harness evaluation.
+
+    Generic words such as "standard execution" in a product name are deliberately
+    ignored. A standard bore must be explicit as a passage/bore characteristic.
+    """
+
+    values = [*_property_values(product, "Тип прохода", "Проход", "Исполнение прохода"), product.name]
+    for raw in values:
+        value = _norm(raw)
+        if not value:
+            continue
+        if "полнопроход" in value or re.search(r"\bполный\s+проход\b", value):
+            return "full"
+        if "редуц" in value or "неполнопроход" in value:
+            return "reduced"
+        if "стандартнопроход" in value or re.search(r"\bстандартн\w*\s+проход\w*\b", value):
+            return "standard"
+    return None
+
+
+def evaluate_harness_product(
+    product: LDProduct,
+    constraints: GoldenQueryConstraints,
+) -> GoldenMatchDecision:
+    """Evaluate a returned product with harness-specific calibrated semantics."""
+
+    if constraints.bore_type is None:
+        return evaluate_product_strict(product, constraints)
+
+    base_constraints = constraints.model_copy(update={"bore_type": None})
+    base = evaluate_product_strict(product, base_constraints)
+    if base.status == "FAIL":
+        return base
+
+    checks = dict(base.checks)
+    unknown = set(base.unknown_fields)
+    failed = set(base.failed_fields)
+    actual_bore = harness_candidate_bore_type(product)
+    checks["bore_type"] = f"{actual_bore!r} == {constraints.bore_type!r}"
+
+    if actual_bore is None:
+        unknown.add("bore_type")
+    elif actual_bore != constraints.bore_type:
+        failed.add("bore_type")
+
+    if failed:
+        status = "FAIL"
+    elif unknown:
+        status = "UNKNOWN"
+    else:
+        status = "PASS"
+
+    return GoldenMatchDecision(
+        status=status,
+        checks=checks,
+        unknown_fields=tuple(sorted(unknown)),
+        failed_fields=tuple(sorted(failed)),
+    )
+
+
+def human_grade_for_returned_id(case: dict[str, Any], returned_ld_id: int | None) -> str | None:
+    if returned_ld_id is None:
+        return None
+    if returned_ld_id in {int(value) for value in case.get("known_positive_ids", [])}:
+        return "ACCEPT"
+    if returned_ld_id in {int(value) for value in case.get("known_rejected_ids", [])}:
+        return "REJECT"
+    if returned_ld_id in {int(value) for value in case.get("known_unsure_ids", [])}:
+        return "UNSURE"
+    return None
+from types import SimpleNamespace
+
+from nomenclature_matcher.golden_rules import GoldenQueryConstraints
+from nomenclature_matcher.harness_gold import (
+    calibrate_harness_constraints,
+    evaluate_harness_product,
+    harness_candidate_bore_type,
+)
+from nomenclature_matcher.models import LDProduct
+from scripts.eval_harness_gold import _evaluate_case
+
+
+def product(*, ld_id=15870, bore="Полнопроходной"):
+    return LDProduct(
+        id=ld_id,
+        name=f"Кран шаровый LD сталь 20 DN80 PN16 фланцевый {bore}",
+        article=f"A-{ld_id}",
+        dn="80",
+        pn="1,6",
+        joining_type="Фланцевое",
+        properties=[
+            {"name": "Тип продукта", "values": ["Кран шаровый"]},
+            {"name": "Материал корпуса", "values": ["Сталь 20"]},
+            {"name": "Тип прохода", "values": [bore]},
+        ],
+    )
+
+
+def q002_constraints():
+    return GoldenQueryConstraints(
+        product_type="ball_valve",
+        dn=80,
+        pn_min_mpa=1.6,
+        joining_type="flanged",
+        valve_type="standard",
+        body_material="steel",
+        body_material_grade="20",
+        catalog_scope="in_scope",
+    )
+
+
+def test_standard_execution_calibrates_to_standard_bore():
+    calibrated, notes = calibrate_harness_constraints(
+        "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+        q002_constraints(),
+    )
+    assert calibrated.bore_type == "standard"
+    assert "ball_valve_standard_execution=>bore_type:standard" in notes
+
+
+def test_full_bore_is_not_standard_bore():
+    calibrated, _ = calibrate_harness_constraints(
+        "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+        q002_constraints(),
+    )
+    candidate = product(bore="Полнопроходной")
+    assert harness_candidate_bore_type(candidate) == "full"
+    decision = evaluate_harness_product(candidate, calibrated)
+    assert decision.status == "FAIL"
+    assert "bore_type" in decision.failed_fields
+
+
+def test_explicit_standard_bore_passes():
+    calibrated, _ = calibrate_harness_constraints(
+        "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+        q002_constraints(),
+    )
+    candidate = product(ld_id=1050, bore="Стандартнопроходной")
+    assert harness_candidate_bore_type(candidate) == "standard"
+    assert evaluate_harness_product(candidate, calibrated).status == "PASS"
+
+
+def test_human_reject_overrides_generic_constraint_match():
+    candidate = product(bore="Полнопроходной")
+    case = {
+        "id": "gold_q002",
+        "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+        "split": "CORE",
+        "hard_gate": True,
+        "expected_status": "MATCHED",
+        "requirements": {
+            "product_type": "ball_valve",
+            "dn": 80,
+            "pn_min_mpa": 1.6,
+            "joining_type": "flanged",
+            "valve_type": "standard",
+            "body_material": "steel",
+            "body_material_grade": "20",
+            "bore_type": "standard",
+        },
+        "known_positive_ids": [1050, 1678],
+        "known_rejected_ids": [15870],
+        "known_unsure_ids": [],
+    }
+    result = SimpleNamespace(status="MATCHED", ld_product=SimpleNamespace(ld_id=15870))
+    row = _evaluate_case(case, result, {15870: candidate})
+    assert row["human_grade"] == "REJECT"
+    assert row["verdict"] == "FAIL_HUMAN_REJECT"
+    assert row["decision_source"] == "HUMAN_REJECT"
+    assert row["returned_product"]["harness_bore_type"] == "full"
+{
+  "version": 3,
+  "generated_at": "2026-09-09T09:14:06.111073Z",
+  "purpose": "Combined Golden-100 + human-verified real-tender GOLD for automated RAG harness hooks.",
+  "semantics": {
+    "human_priority": "ACCEPT > REJECT > UNSURE evidence is checked before generic constraints for a returned LD id.",
+    "known_positive_ids": "Human-confirmed examples only; never exhaustive.",
+    "known_rejected_ids": "Human-confirmed rejected candidates override the generic constraint judge.",
+    "known_unsure_ids": "Human-uncertain candidates are not counted as PASS.",
+    "core": "Hard-gate MATCHED cases with deterministic requirements and catalog existence evidence.",
+    "negative": "Hard-gate explicit NOT_FOUND cases.",
+    "extended": "Diagnostic-only cases with ambiguity, unsupported constraints, or unproven catalog existence.",
+    "pn": "candidate PN must be >= query pn_min_mpa",
+    "bore_type": "full|standard|reduced; standard execution of a ball valve means standard bore.",
+    "real_tender": "Human-verified tender positives are non-exhaustive. They become hard gates only when the current deterministic requirement schema can judge an unseen returned product without relying on membership in the positive-id set."
+  },
+  "source_paths": {
+    "queries": "data/golden_queries_100.json",
+    "constraints": "data/golden_100_query_constraints.json",
+    "labels": "data/golden_100_labels.json",
+    "human_review": "data/golden_100_human_review.json",
+    "auto_report": "data/golden_100_auto_label_report.json",
+    "base_harness": "data/harness_gold.json",
+    "verified_tender_cases": "data/tender_queries_v1_harness_cases.json",
+    "verified_tender_labels": "data/tender_queries_v1_canonical_labels.json"
+  },
+  "summary": {
+    "total": 120,
+    "CORE": 25,
+    "NEGATIVE": 5,
+    "EXTENDED": 90,
+    "hard_gate": 30,
+    "verified_real_tender_cases": 20
+  },
+  "cases": [
+    {
+      "id": "gold_q001",
+      "query": "Кран шаровой стальной фланцевый Ду50 Ру16, полнопроходной, ручка",
+      "split": "CORE",
+      "hard_gate": true,
+      "expected_status": "MATCHED",
+      "requirements": {
+        "product_type": "ball_valve",
+        "dn": 50,
+        "pn_min_mpa": 1.6,
+        "joining_type": "flanged",
+        "valve_type": "standard",
+        "body_material": "steel",
+        "bore_type": "full",
+        "control": "manual"
+      },
+      "known_positive_ids": [
+        1930,
+        2836,
+        14879,
+        15905,
+        15917,
+        16801,
+        19039
+      ],
+      "known_rejected_ids": [
+        2224,
+        2244,
+        3247,
+        3642,
+        3789,
+        3799,
+        3901,
+        3902,
+        3903,
+        3904,
+        3905,
+        3906,
+        3907,
+        3908,
+        3909,
+        3910,
+        5203,
+        5207,
+        5209,
+        5211,
+        15210,
+        17862,
+        18481,
+        18559,
+        18566,
+        19220,
+        19267
+      ],
+      "known_unsure_ids": [
+
+exec
+/bin/bash -lc "grep -niE 'стандартн.{0,25}(исполн|проход)|исполн.{0,25}стандарт' data/harness_gold_combined.json | head -n 100 && grep -n -A110 -B3 '\"id\": \"gold_q002\"' data/harness_gold_combined.json | head -n 150 && grep -n -A20 -B5 '\"id\": \"gold_q022\"' data/harness_baseline.json" in /workspaces/ML-Cancer-Data
+ succeeded in 10ms:
+118:      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+114-      "strict_catalog_unknown_count": 33
+115-    },
+116-    {
+117:      "id": "gold_q002",
+118-      "query": "Кран шаровый LD сталь 20 DN80 PN16 фланцевый, стандартное исполнение",
+119-      "split": "CORE",
+120-      "hard_gate": true,
+121-      "expected_status": "MATCHED",
+122-      "requirements": {
+123-        "product_type": "ball_valve",
+124-        "dn": 80,
+125-        "pn_min_mpa": 1.6,
+126-        "joining_type": "flanged",
+127-        "valve_type": "standard",
+128-        "body_material": "steel",
+129-        "body_material_grade": "20",
+130-        "bore_type": "standard"
+131-      },
+132-      "known_positive_ids": [
+133-        1050,
+134-        1678
+135-      ],
+136-      "known_rejected_ids": [
+137-        850,
+138-        1118,
+139-        1423,
+140-        1426,
+141-        1445,
+142-        1790,
+143-        1862,
+144-        2874,
+145-        3022,
+146-        3149,
+147-        3845,
+148-        3846,
+149-        3847,
+150-        4093,
+151-        4184,
+152-        4192,
+153-        5787,
+154-        5793,
+155-        5853,
+156-        5854,
+157-        6029,
+158-        6038,
+159-        6565,
+160-        6669,
+161-        8872,
+162-        15095,
+163-        15425,
+164-        15607,
+165-        15650,
+166-        15870,
+167-        16200,
+168-        16343,
+169-        16411,
+170-        17204,
+171-        18604,
+172-        18807,
+173-        19078
+174-      ],
+175-      "known_unsure_ids": [
+176-        15317
+177-      ],
+178-      "known_positive_ids_exhaustive": false,
+179-      "label_source": "HUMAN",
+180-      "metadata": {
+181-        "category": "ball_valve",
+182-        "difficulty": "easy",
+183-        "tags": [
+184-          "steel",
+185-          "flanged",
+186-          "brand_ld"
+187-        ]
+188-      },
+189-      "unsupported_constraints": [],
+190-      "parser_warnings": [],
+191-      "calibration_notes": [
+192-        "ball_valve_standard_execution=>bore_type:standard"
+193-      ],
+194-      "strict_catalog_pass_count": 50,
+195-      "strict_catalog_unknown_count": 3
+196-    },
+197-    {
+198-      "id": "gold_q003",
+199-      "query": "Кран шаровой фланцевый DN100 PN25 из стали 20",
+200-      "split": "CORE",
+201-      "hard_gate": true,
+202-      "expected_status": "MATCHED",
+203-      "requirements": {
+204-        "product_type": "ball_valve",
+205-        "dn": 100,
+206-        "pn_min_mpa": 2.5,
+207-        "joining_type": "flanged",
+208-        "valve_type": "standard",
+209-        "body_material": "steel",
+210-        "body_material_grade": "20"
+211-      },
+212-      "known_positive_ids": [
+213-        15608,
+214-        15639,
+215-        16201,
+216-        17085
+217-      ],
+218-      "known_rejected_ids": [
+219-        1230,
+220-        1423,
+221-        1426,
+222-        1445,
+223-        1790,
+224-        1862,
+225-        2057,
+226-        2874,
+227-        3822,
+297-        "unknown_fields": [],
+298-        "failed_fields": []
+299-      }
+300-    },
+301-    {
+302:      "id": "gold_q022",
+303-      "query": "Кран шаровый сварной WW DN100 PN25",
+304-      "split": "CORE",
+305-      "hard_gate": true,
+306-      "expected_status": "MATCHED",
+307-      "actual_status": "MATCHED",
+308-      "returned_ld_id": 19270,
+309-      "known_positive_eligible": false,
+310-      "known_positive_hit": false,
+311-      "human_grade": null,
+312-      "verdict": "FAIL_WRONG_PRODUCT",
+313-      "reason": "Returned product violates one or more deterministic GOLD requirements.",
+314-      "returned_product": {
+315-        "ld_id": 19270,
+316-        "article": "12201000252MULD182000000",
+317-        "name": "Кран шаровый LD для подземной установки КШЦП из стали 20 Ду100 Ру2,5МПа полнопроходной Н=1820мм",
+318-        "dn": 100,
+319-        "pn_mpa": 2.5,
+320-        "joining_type": "welded",
+321-        "thread_type": null,
+322-        "product_type": "ball_valve",
+
+codex
+{"decision":"FIX","summary":"The target public query uses “Кран шаровый”, but the new guard recognizes only “Кран шаровой” (or “Шаровой кран”). Consequently the new expansion does not run for the stated motivating case, which remains human-rejected; the reported public gain cannot be attributed to this change.","issues":["`_BALL_VALVE_RE` omits the common “шаровый” form, so the core standard-execution query is ineligible.","Tests cover only “шаровой”; they do not cover the actual target wording or prove the alternate is generated for it."],"fix_plan":["Extend the ball-valve guard to accept both `шаровой` and `шаровый` in either word order.","Add canonicalization and hybrid/matcher regression tests using “Кран шаровый … стандартное исполнение”, including the DN80/PN16 target-shaped query.","Re-run the public evaluation and compare the target case plus safety metrics with the champion."],"next_direction":"Keep this as a bounded retrieval-vocabulary experiment, but establish that the guarded alternate actually fires for real tender spelling variants before interpreting aggregate metric movement as evidence."}
+tokens used
+55,299
+{"decision":"FIX","summary":"The target public query uses “Кран шаровый”, but the new guard recognizes only “Кран шаровой” (or “Шаровой кран”). Consequently the new expansion does not run for the stated motivating case, which remains human-rejected; the reported public gain cannot be attributed to this change.","issues":["`_BALL_VALVE_RE` omits the common “шаровый” form, so the core standard-execution query is ineligible.","Tests cover only “шаровой”; they do not cover the actual target wording or prove the alternate is generated for it."],"fix_plan":["Extend the ball-valve guard to accept both `шаровой` and `шаровый` in either word order.","Add canonicalization and hybrid/matcher regression tests using “Кран шаровый … стандартное исполнение”, including the DN80/PN16 target-shaped query.","Re-run the public evaluation and compare the target case plus safety metrics with the champion."],"next_direction":"Keep this as a bounded retrieval-vocabulary experiment, but establish that the guarded alternate actually fires for real tender spelling variants before interpreting aggregate metric movement as evidence."}

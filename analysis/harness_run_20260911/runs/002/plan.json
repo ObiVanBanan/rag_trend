@@ -1,0 +1,24 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "v2-cycle-02-query-variant-evidence-fusion",
+  "hypothesis_family": "query_variant_evidence_fusion",
+  "hypothesis": "Preserve raw-query and canonical-query retrieval hits as separate RRF evidence channels so cross-variant candidate corroboration affects ranking without changing reranker inputs or final selection.",
+  "why_now": "Canonical alternates exist for 40/130 review rows, but current per-modality deduplication discards their second rank contribution. This is distinct from rejected alias expansion, candidate pruning, and selection changes.",
+  "expected_effect": "Improve pre-rerank placement of corroborated candidates on canonical-alternate queries while preserving raw-only behavior.",
+  "expected_cases_delta": 1,
+  "confidence": 0.52,
+  "risk": "medium",
+  "success_signal": "Cross-variant hits gain their independent normal RRF terms in focused tests, while raw-only and alternate-failure paths retain existing behavior; outer public/hidden guardrails remain non-regressive.",
+  "candidate_hypotheses": [
+    "query_variant_evidence_fusion: retain raw and canonical ranks through RRF.",
+    "query_evidence_preservation: repair embedded quantity/clause-boundary truncation in canonical alternates.",
+    "catalog_scope_and_request_intent: conservatively expose uncertainty for affirmatively non-catalog service/consumable requests."
+  ],
+  "needs_reindex": false,
+  "planning_depth": "NORMAL",
+  "research_question": "",
+  "plan_summary": "Created and strictly validated OpenSpec proposal, specification, design, and tasks for retrieval-fusion only at openspec/changes/v2-cycle-02-query-variant-evidence-fusion.",
+  "mechanism_family": "query_variant_evidence_fusion",
+  "history_relation": "NEW_LAYER",
+  "information_gain": "Tests whether accepted canonicalization is bottlenecked by evidence collapse before RRF, rather than alternate queries being redundant or the primary issue being catalog scope."
+}

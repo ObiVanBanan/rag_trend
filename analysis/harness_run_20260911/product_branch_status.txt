@@ -1,0 +1,5 @@
+ M src/nomenclature_matcher/query_canonicalization.py
+ M tests/test_matcher.py
+ M tests/test_query_canonicalization.py
+?? analysis/
+?? openspec/changes/v2-cycle-03-product-span-retrieval/

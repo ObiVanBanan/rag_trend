@@ -1,0 +1,20 @@
+{
+  "question": "Does the 30с41нж designation define a flanged, wedge-gate, rising-stem DN/PN class that has a technically equivalent LD catalog family, rather than only a superficially similar gate valve?",
+  "findings": "Reject the premise of an LD-family equivalence. 30с41нж is a steel wedge-gate family at PN 1.6 MPa (PN16), offered across DN sizes; manufacturer documentation identifies its flanged version and wedge construction. One manufacturer explicitly calls it flanged with a rising stem. However, the supplied LD catalog contains no gate-valve products: its only names containing «задвижк» are six LD Стриж ball valves described as «под задвижку», all with interflange connections. A ball valve, even at matching DN/PN, is not technically equivalent to a flanged rising-stem wedge gate valve. Also, DN is not encoded as one fixed value in 30с41нж; it must be supplied separately.",
+  "decision_impact": "Do not add a designation-to-LD gate-valve alias or treat LD ball valves as substitutions for 30с41нж. Match only if a tender explicitly permits an alternative valve type; otherwise this is a catalog no-match for the LD corpus.",
+  "unresolved": "The designation’s exact connection configuration should still be verified against the procurement specification: the MZTA family page lists both welded and flanged connections, while the conventional 30с41нж product documentation describes the flanged rising-stem variant. This does not affect the lack of an LD wedge-gate family.",
+  "sources": [
+    {
+      "url": "https://mztpa.ru/catalog/products/1/5/15",
+      "claim": "Official manufacturer page: 30с41нж is a steel wedge-gate family at PN 1.6 MPa; it gives DN 50–400 examples, identifies flanged dimensions, and lists flanged and welded connection options for the family.",
+      "quality": "official",
+      "confidence": 0.96
+    },
+    {
+      "url": "https://www.ptza.ru/30s41nzh-zadvizhka-klinovaya/",
+      "claim": "Official manufacturer page: 30с41нж is described as a flanged wedge gate valve with a rising stem, PN 1.6 MPa, with a DN range rather than one fixed DN.",
+      "quality": "official",
+      "confidence": 0.94
+    }
+  ]
+}

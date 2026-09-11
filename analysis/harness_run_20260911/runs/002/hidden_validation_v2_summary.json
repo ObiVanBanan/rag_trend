@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "evaluated": 30,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8666666666666667,
+    "core_pass_rate": 0.84,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.04,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.0,
+    "human_reject_rate": 0.0,
+    "known_positive_hit_rate": 0.6,
+    "verdict_counts": {
+      "PASS": 26,
+      "FAIL_WRONG_NOT_FOUND": 1,
+      "FAIL_WRONG_PRODUCT": 3
+    }
+  }
+}

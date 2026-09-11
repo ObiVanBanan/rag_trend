@@ -1,0 +1,24 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "v2-cycle-03-product-span-retrieval",
+  "hypothesis_family": "line_item_product_decomposition",
+  "hypothesis": "Extract an explicit product-bearing span from a narrowly recognized mixed work-and-product tender clause, using it only as the existing additive retrieval alternate while preserving raw-query retrieval and final selection semantics.",
+  "why_now": "Nearby lexical, vendor-enrichment, parser, and query-fusion mechanisms are scientifically saturated or unsafe. Mixed work/product lines are a distinct upstream ambiguity, while action-only NOT_FOUND routing remains unsafe.",
+  "expected_effect": "Improve family-consistent candidate recall for explicit products embedded in work descriptions; service-only and ambiguous lines remain on their current path.",
+  "expected_cases_delta": 1,
+  "confidence": 0.58,
+  "risk": "medium",
+  "success_signal": "Eligible mixed lines add or raise family-consistent pre-rerank candidates without public/hidden safety regressions; no alternate is emitted for service-only, non-action, or ambiguous multi-clause lines.",
+  "candidate_hypotheses": [
+    "line_item_product_decomposition: additive product-span retrieval alternate",
+    "catalog_scope_uncertainty: affirmative uncertainty routing for absent catalog categories",
+    "uncertainty_preserving_result_contract: separate insufficient evidence from confident match"
+  ],
+  "needs_reindex": false,
+  "planning_depth": "NORMAL",
+  "research_question": "",
+  "plan_summary": "Created and strictly validated proposal, specification, design, and implementation tasks. The change is planning-only and leaves product code untouched.",
+  "mechanism_family": "line_item_product_decomposition",
+  "history_relation": "NEW_MECHANISM",
+  "information_gain": "Tests whether mixed service wording obscures explicitly stated product evidence versus the unresolved cases being genuinely service-only or outside catalog scope, without repeating rejected selection, alias, or fusion interventions."
+}

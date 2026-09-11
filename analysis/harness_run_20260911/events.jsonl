@@ -1,0 +1,79 @@
+{"at": "2026-09-10T11:20:49.449442Z", "event": "STATE_MIGRATED", "from_version": 2, "legacy_cycles": 17}
+{"at": "2026-09-10T11:20:49.492466Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: <urlopen error [Errno 111] Connection refused>"}
+{"at": "2026-09-10T11:21:08.219142Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: [Errno 104] Connection reset by peer"}
+{"at": "2026-09-10T11:21:21.390843Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: [Errno 104] Connection reset by peer"}
+{"at": "2026-09-10T11:22:45.762525Z", "event": "PREFLIGHT_OK", "qdrant": {"qdrant_url": "http://localhost:6333", "collection": "steel_products_active", "points_count": 15787}}
+{"at": "2026-09-10T11:22:45.763876Z", "event": "ATTEMPT_STARTED", "attempt_id": 1}
+{"at": "2026-09-10T11:22:45.772473Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "PLANNER"}
+{"at": "2026-09-10T11:24:24.232867Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "RESEARCH"}
+{"at": "2026-09-10T11:25:27.587474Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 1, "experiment_id": "alias-mapping-4e01b7f5e1", "scientific_iteration": null, "decision": "RESEARCHED", "error_code": null}
+{"at": "2026-09-10T11:25:27.589210Z", "event": "ATTEMPT_STARTED", "attempt_id": 2}
+{"at": "2026-09-10T11:25:27.593656Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "PLANNER"}
+{"at": "2026-09-10T11:28:06.915937Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T11:30:26.732236Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "TESTS"}
+{"at": "2026-09-10T11:30:29.572506Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "PUBLIC"}
+{"at": "2026-09-10T11:35:26.312612Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 2, "experiment_id": "reranking-a6b93716bb", "scientific_iteration": 1, "decision": "REJECTED", "error_code": "PUBLIC_REGRESSION"}
+{"at": "2026-09-10T14:59:11.347677Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T145911.346900Z"}
+{"at": "2026-09-10T14:59:11.389072Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: <urlopen error [Errno 111] Connection refused>"}
+{"at": "2026-09-10T14:59:30.370060Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T145930.369140Z"}
+{"at": "2026-09-10T14:59:30.406537Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: [Errno 104] Connection reset by peer"}
+{"at": "2026-09-10T14:59:37.015416Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T145937.014565Z"}
+{"at": "2026-09-10T14:59:37.066259Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: Remote end closed connection without response"}
+{"at": "2026-09-10T14:59:39.797088Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T145939.796111Z"}
+{"at": "2026-09-10T14:59:39.845361Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: [Errno 104] Connection reset by peer"}
+{"at": "2026-09-10T15:00:00.431431Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T150000.430517Z"}
+{"at": "2026-09-10T15:00:00.471929Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: [Errno 104] Connection reset by peer"}
+{"at": "2026-09-10T15:00:08.478380Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T150008.477320Z"}
+{"at": "2026-09-10T15:00:08.529218Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: [Errno 104] Connection reset by peer"}
+{"at": "2026-09-10T15:00:33.944604Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T150033.943530Z"}
+{"at": "2026-09-10T15:00:34.035473Z", "event": "PREFLIGHT_OK", "qdrant": {"qdrant_url": "http://localhost:6333", "collection": "steel_products_active", "points_count": 15787}}
+{"at": "2026-09-10T15:00:34.037112Z", "event": "ATTEMPT_STARTED", "attempt_id": 1}
+{"at": "2026-09-10T15:04:11.137355Z", "event": "RESEARCH_FIRST_COMPLETED", "attempt_id": 1}
+{"at": "2026-09-10T15:04:11.140934Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "PLANNER"}
+{"at": "2026-09-10T15:06:13.444092Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T15:08:59.210753Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "TESTS"}
+{"at": "2026-09-10T15:09:02.004659Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "PUBLIC"}
+{"at": "2026-09-10T15:13:57.519525Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "HIDDEN"}
+{"at": "2026-09-10T15:15:29.456972Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 1, "experiment_id": "alias-mapping-84a0be92e0", "scientific_iteration": 1, "decision": "REJECTED", "error_code": "METRIC_GATE_REJECT"}
+{"at": "2026-09-10T15:15:29.458712Z", "event": "ATTEMPT_STARTED", "attempt_id": 2}
+{"at": "2026-09-10T15:17:51.359559Z", "event": "RESEARCH_FIRST_COMPLETED", "attempt_id": 2}
+{"at": "2026-09-10T15:17:51.360544Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "PLANNER"}
+{"at": "2026-09-10T15:19:45.483852Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T15:22:36.870994Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "TESTS"}
+{"at": "2026-09-10T15:22:39.581312Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "PUBLIC"}
+{"at": "2026-09-10T15:27:29.924782Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "HIDDEN"}
+{"at": "2026-09-10T15:28:59.754931Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 2, "experiment_id": "alias-mapping-e3be68a678", "scientific_iteration": 2, "decision": "REJECTED", "error_code": "METRIC_GATE_REJECT"}
+{"at": "2026-09-10T15:28:59.756691Z", "event": "ATTEMPT_STARTED", "attempt_id": 3}
+{"at": "2026-09-10T15:30:49.555796Z", "event": "RESEARCH_FIRST_COMPLETED", "attempt_id": 3}
+{"at": "2026-09-10T15:30:49.556878Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "PLANNER"}
+{"at": "2026-09-10T15:33:27.680228Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T15:38:01.301759Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "TESTS"}
+{"at": "2026-09-10T15:38:04.483651Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "PUBLIC"}
+{"at": "2026-09-10T15:43:02.252681Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "HIDDEN"}
+{"at": "2026-09-10T15:44:32.148039Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 3, "experiment_id": "alias-mapping-1433dd6ac0", "scientific_iteration": 3, "decision": "REJECTED", "error_code": "METRIC_GATE_REJECT"}
+{"at": "2026-09-10T17:48:01.808686Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T174801.807249Z"}
+{"at": "2026-09-10T17:48:01.853188Z", "event": "PREFLIGHT_FAILED", "error_code": "INFRA_DEPENDENCY_UNAVAILABLE", "reason": "Qdrant unavailable at http://localhost:6333: <urlopen error [Errno 111] Connection refused>"}
+{"at": "2026-09-10T17:50:06.495513Z", "event": "NEW_CAMPAIGN_STARTED", "campaign_id": "20260910T175006.493818Z"}
+{"at": "2026-09-10T17:50:06.580492Z", "event": "PREFLIGHT_OK", "qdrant": {"qdrant_url": "http://localhost:6333", "collection": "steel_products_active", "points_count": 15787}}
+{"at": "2026-09-10T17:50:06.582305Z", "event": "ATTEMPT_STARTED", "attempt_id": 1}
+{"at": "2026-09-10T17:54:27.727975Z", "event": "RESEARCH_FIRST_COMPLETED", "attempt_id": 1}
+{"at": "2026-09-10T17:54:27.732347Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "PLANNER"}
+{"at": "2026-09-10T17:56:04.932556Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T17:58:20.403326Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "TESTS"}
+{"at": "2026-09-10T17:58:23.116022Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "PUBLIC"}
+{"at": "2026-09-10T18:03:33.869824Z", "event": "STAGE_ENTER", "cycle": 1, "stage": "HIDDEN"}
+{"at": "2026-09-10T18:05:02.181775Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 1, "experiment_id": "query-evidence-preservation-1c451c1cd8", "scientific_iteration": 1, "decision": "REJECTED", "error_code": "METRIC_GATE_REJECT"}
+{"at": "2026-09-10T18:05:02.184139Z", "event": "ATTEMPT_STARTED", "attempt_id": 2}
+{"at": "2026-09-10T18:07:29.454136Z", "event": "RESEARCH_FIRST_COMPLETED", "attempt_id": 2}
+{"at": "2026-09-10T18:07:29.455612Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "PLANNER"}
+{"at": "2026-09-10T18:09:33.171041Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T18:11:38.223488Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "TESTS"}
+{"at": "2026-09-10T18:11:40.900516Z", "event": "STAGE_ENTER", "cycle": 2, "stage": "PUBLIC"}
+{"at": "2026-09-10T18:16:31.418600Z", "event": "ATTEMPT_COMPLETED", "attempt_id": 2, "experiment_id": "query-variant-evidence-fusion-bd197b87b9", "scientific_iteration": 2, "decision": "REJECTED", "error_code": "PUBLIC_REGRESSION"}
+{"at": "2026-09-10T18:16:31.420628Z", "event": "ATTEMPT_STARTED", "attempt_id": 3}
+{"at": "2026-09-10T18:19:10.877173Z", "event": "RESEARCH_FIRST_COMPLETED", "attempt_id": 3}
+{"at": "2026-09-10T18:19:10.878911Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "PLANNER"}
+{"at": "2026-09-10T18:21:06.320155Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "IMPLEMENTER"}
+{"at": "2026-09-10T18:23:41.819351Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "TESTS"}
+{"at": "2026-09-10T18:23:44.559459Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "PUBLIC"}
+{"at": "2026-09-10T18:28:15.793747Z", "event": "STAGE_ENTER", "cycle": 3, "stage": "HIDDEN"}

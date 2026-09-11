@@ -1,0 +1,21 @@
+{
+  "status": "complete",
+  "summary": "Implemented OpenSpec change `v2-cycle-02-query-variant-evidence-fusion`. `HybridRetriever` now keeps representative candidates deduped by LD id while carrying separate dense/BM25 rank evidence for raw and distinct canonical query variants into RRF scoring. OpenSpec tasks are marked 5/5 complete.",
+  "tests": [
+    "python -m pytest -q tests/test_hybrid_retriever.py (8 passed)",
+    "python -m pytest -q (201 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": "",
+  "changed_components": [
+    "src/nomenclature_matcher/hybrid_retriever.py",
+    "tests/test_hybrid_retriever.py",
+    "openspec/changes/v2-cycle-02-query-variant-evidence-fusion/tasks.md"
+  ],
+  "mechanism_evidence": [
+    "Cross-variant LD candidate is asserted to receive four normal RRF terms from dense raw, dense canonical, BM25 raw, and BM25 canonical hits while appearing once.",
+    "Representative metadata remains strongest per modality: best dense rank/score and best BM25 rank/score are retained separately from aggregate RRF evidence.",
+    "Absent or equal canonical query paths preserve original single-query score parity.",
+    "Canonical-modality failure remains fail-open, preserving successful raw candidates without raising."
+  ]
+}

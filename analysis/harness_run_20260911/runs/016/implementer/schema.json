@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "blocked"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "needs_reindex": {
+      "type": "boolean"
+    },
+    "blocker": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "tests",
+    "needs_reindex",
+    "blocker"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-13-structural-candidate-diversification",
+  "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable ordinary/control variants currently crowded out by near-duplicate specialised variants.",
+  "why_now": "Public candidate traces show redundant underground variants dominating the RRF prefix while final selections violate execution requirements; this is a distinct candidate-set hypothesis.",
+  "expected_effect": "Keep the highest-RRF representative per reliable observable structural signature, then fill remaining reranker slots in RRF order.",
+  "expected_metric_gain": "+3.3–6.7 pp hard-pass plausible; blind gain uncertain with safety non-regression required.",
+  "lesson_from_history": "Selection, gating, prompt, and index-enrichment experiments regressed or were neutral. Cycles 11–12 were infrastructure-inconclusive, while the current redundancy evidence supports this new pre-rerank candidate-pool experiment.",
+  "candidate_hypotheses": [
+    "Structural candidate-pool diversification before the fixed reranker budget (selected).",
+    "Protected-file-safe flange-subtype verification retry.",
+    "Guarded pipe-OD-to-DN alternate-query retry.",
+    "Subject-matter-validated legacy designation mappings."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks under openspec/changes/cycle-13-structural-candidate-diversification/.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}

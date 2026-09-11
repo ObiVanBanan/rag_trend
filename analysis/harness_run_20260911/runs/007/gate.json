@@ -1,0 +1,35 @@
+{
+  "accepted": false,
+  "reason": "blind coverage regressed",
+  "public": {
+    "evaluated": 120,
+    "hard_gate_cases": 30,
+    "core_cases": 25,
+    "negative_cases": 5,
+    "hard_pass_rate": 0.8333333333333334,
+    "core_pass_rate": 0.8,
+    "negative_pass_rate": 1.0,
+    "wrong_not_found_rate": 0.0,
+    "false_match_rate": 0.0,
+    "unknown_answer_rate": 0.008333333333333333,
+    "human_reject_rate": 0.016666666666666666,
+    "known_positive_hit_rate": 0.4583333333333333,
+    "verdict_counts": {
+      "PASS": 31,
+      "FAIL_HUMAN_REJECT": 2,
+      "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+      "UNSCORED": 81,
+      "FAIL_WRONG_PRODUCT": 5
+    }
+  },
+  "blind": {
+    "hard_gate_cases": 30,
+    "hard_pass_rate": 0.8,
+    "false_match_rate": 0.0,
+    "human_reject_rate": 0.0,
+    "wrong_not_found_rate": 0.0,
+    "unknown_answer_rate": 0.03333333333333333
+  },
+  "coverage_floor": 0.93,
+  "candidate_collection_alias": "rag_harness_c07_b2_5a37156c"
+}

@@ -1,0 +1,17 @@
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-10-flange-subtype-schema",
+  "hypothesis": "Explicitly model and affirmatively verify flange construction subtype so generic or flat flanges cannot satisfy weld-neck/butt-weld requirements.",
+  "why_now": "This is an untested, high-confidence schema gap. Current code labels flange subtype unsupported; catalog evidence contains flat-flange wording but no affirmative weld-neck evidence.",
+  "expected_effect": "Safely abstain from unproved explicit flange-subtype substitutions while preserving generic flange and non-flange behavior.",
+  "expected_metric_gain": "0–3.3 pp hard-pass; primary value is safety and information gain.",
+  "lesson_from_history": "Broad gating and selection/reranker changes regressed or were neutral; retrieval canonicalization plateaued and catalog enrichment regressed. This is a distinct, narrowly scoped deterministic requirement.",
+  "candidate_hypotheses": [
+    "Deterministic flange-subtype schema and affirmative catalog verification (selected).",
+    "Pipe-OD-to-DN normalization with rising-stem semantics.",
+    "Subject-matter-validated legacy designation mappings.",
+    "Hybrid candidate-depth or fusion tuning."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-10-flange-subtype-schema/. No product code changed."
+}

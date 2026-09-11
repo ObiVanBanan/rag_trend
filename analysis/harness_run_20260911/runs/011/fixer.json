@@ -1,0 +1,9 @@
+{
+  "status": "complete",
+  "summary": "Fixed the reviewer’s concrete issues. The OD-to-DN alternate now requires locally scoped pipe/outer-diameter semantics and no longer infers DN 100 from generic valve/flange `d 108 мм` wording. Added the requested matcher-level test proving the qualified OD canonical query is passed into hybrid retrieval while the original query remains the reranker/output query.",
+  "tests": [
+    "python -m pytest tests/test_query_canonicalization.py tests/test_matcher.py -q: 27 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "summary": "Fixed the reviewer’s concrete issues. Actuation-state expansion now classifies ready intent first with added variants like `с возможностью установки электропривода`, ignores installed-phrase matches contained inside ready spans, and emits no state alternate when independent ready and installed signals conflict. Added table-driven canonicalization tests for installed, ready, ambiguous/conflicting, standalone actuator, and mutual exclusion, plus a focused hybrid retriever fixture showing the alternate can recover the state-specific candidate and ready queries do not receive installed vocabulary.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py -> 36 passed",
+    "python -m pytest -q -> 185 passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

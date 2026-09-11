@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-05-evidence-first-reranker-rubric`. Updated the versioned Russian reranker prompt with an evidence-first decision order, explicit contradiction handling, missing-evidence treatment, secondary retrieval-score usage, and bounded ball-valve passage/execution guidance. Added prompt-contract tests plus mocked reranker regressions for unchanged request configuration, candidate ordering, and existing `MATCHED`/`NOT_FOUND` parsing. Marked all OpenSpec tasks complete.",
+  "tests": [
+    "python -m pytest -q tests/test_reranker.py (13 passed)",
+    "python -m pytest -q tests/test_reranker.py tests/test_hybrid_retriever.py tests/test_serialization.py (23 passed)",
+    "python -m pytest -q (167 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

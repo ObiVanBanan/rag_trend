@@ -1,0 +1,244 @@
+diff --git a/src/nomenclature_matcher/hybrid_retriever.py b/src/nomenclature_matcher/hybrid_retriever.py
+index 02d471f..b25ff91 100644
+--- a/src/nomenclature_matcher/hybrid_retriever.py
++++ b/src/nomenclature_matcher/hybrid_retriever.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from .bm25_store import BM25Store
++from .candidate_diversification import diversify_candidates
+ from .models import SearchCandidate
+ 
+ 
+@@ -63,7 +64,8 @@ class HybridRetriever:
+         bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+         merged = self._merge_candidates(dense_candidates, bm25_candidates)
+         self._apply_rrf(merged)
+-        return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
++        ranked = sorted(merged.values(), key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id))
++        return diversify_candidates(ranked, limit)
+ 
+     def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+         candidates = search_fn(query, limit)
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a3cdc9d..b6c3b1d 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -83,6 +83,28 @@ class EchoEmbedder:
+         return [text]
+ 
+ 
++class DiversificationQdrantStore:
++    def __init__(self, payloads):
++        self.payloads = payloads
++        self.calls = []
++
++    def search(self, vector, limit):
++        self.calls.append((vector, limit))
++        return [
++            SimpleNamespace(score=score, payload=payload)
++            for score, payload in self.payloads[:limit]
++        ]
++
++
++class EmptyBM25Store:
++    def __init__(self):
++        self.calls = []
++
++    def search(self, query, limit):
++        self.calls.append((query, limit))
++        return []
++
++
+ def test_hybrid_merge_dedupes_and_uses_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+@@ -167,3 +189,92 @@ def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
+     assert {1, 2, 4}.issubset(by_id)
+     assert by_id[1].name == "Original"
+     assert by_id[4].name == "Bm25 original"
++
++
++def test_hybrid_search_diversifies_after_rrf_before_cutoff():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=2, rrf_k=60)
++    payloads = [
++        (
++            0.9,
++            {
++                "ld_id": 1,
++                "name": "Кран шаровой полнопроходной",
++                "article": "A1",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++            },
++        ),
++        (
++            0.8,
++            {
++                "ld_id": 2,
++                "name": "Кран шаровой полнопроходной",
++                "article": "A2",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++            },
++        ),
++        (
++            0.7,
++            {
++                "ld_id": 3,
++                "name": "Кран шаровой полнопроходной",
++                "article": "A3",
++                "dn": 80,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 80 PN: 16 фланцевый полнопроходной",
++            },
++        ),
++    ]
++    retriever = HybridRetriever(Embedder(), DiversificationQdrantStore(payloads), EmptyBM25Store(), settings)
++
++    results = retriever.search("query")
++
++    assert [candidate.ld_id for candidate in results] == [1, 3]
++    assert results[0].rrf_score == 1 / 61
++    assert results[1].rrf_score == 1 / 63
++
++
++def test_hybrid_search_fails_open_when_structural_signature_extraction_fails(monkeypatch):
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=2, rrf_k=60)
++    payloads = [
++        (
++            0.9,
++            {
++                "ld_id": 1,
++                "name": "Кран шаровой",
++                "article": "A1",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый",
++            },
++        ),
++        (
++            0.8,
++            {
++                "ld_id": 2,
++                "name": "Кран шаровой",
++                "article": "A2",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый",
++            },
++        ),
++    ]
++    retriever = HybridRetriever(Embedder(), DiversificationQdrantStore(payloads), EmptyBM25Store(), settings)
++
++    def raise_for_first(candidate):
++        if candidate.ld_id == 1:
++            raise ValueError("bad payload")
++        return None
++
++    monkeypatch.setattr("nomenclature_matcher.candidate_diversification.structural_signature", raise_for_first)
++
++    assert [candidate.ld_id for candidate in retriever.search("query")] == [1, 2]
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..e0cf78e 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -1,4 +1,5 @@
+ from types import SimpleNamespace
++from nomenclature_matcher.hybrid_retriever import HybridRetriever as RealHybridRetriever
+ from nomenclature_matcher.matcher import NomenclatureMatcher
+ from nomenclature_matcher.models import SearchCandidate
+ 
+@@ -36,6 +37,58 @@ class HybridRetriever:
+         return self.candidates
+ 
+ 
++class EchoEmbedder:
++    def embed_query(self, text):
++        return [text]
++
++
++class DiversificationQdrantStore:
++    def search(self, vector, limit):
++        return [
++            SimpleNamespace(
++                score=0.9,
++                payload={
++                    "ld_id": 1,
++                    "name": "Кран шаровой полнопроходной",
++                    "article": "A1",
++                    "dn": 50,
++                    "pn": 16,
++                    "joining_type": "фланцевое",
++                    "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++                },
++            ),
++            SimpleNamespace(
++                score=0.8,
++                payload={
++                    "ld_id": 2,
++                    "name": "Кран шаровой полнопроходной",
++                    "article": "A2",
++                    "dn": 50,
++                    "pn": 16,
++                    "joining_type": "фланцевое",
++                    "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++                },
++            ),
++            SimpleNamespace(
++                score=0.7,
++                payload={
++                    "ld_id": 3,
++                    "name": "Кран шаровой полнопроходной",
++                    "article": "A3",
++                    "dn": 80,
++                    "pn": 16,
++                    "joining_type": "фланцевое",
++                    "search_text": "DN: 80 PN: 16 фланцевый полнопроходной",
++                },
++            ),
++        ][:limit]
++
++
++class EmptyBM25Store:
++    def search(self, query, limit):
++        return []
++
++
+ def hit(score):
+     return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
+ 
+@@ -186,3 +239,26 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_match_one_hybrid_reranker_receives_diversified_candidates_and_original_query():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_dense_limit=50,
++        hybrid_bm25_limit=50,
++        hybrid_rerank_limit=2,
++        rrf_k=60,
++    )
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=2, confidence=0.91, reason="dn80")], reason=None)
++    reranker = Reranker(result=rerank_result)
++    hybrid = RealHybridRetriever(EchoEmbedder(), DiversificationQdrantStore(), EmptyBM25Store(), settings)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++
++    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой Ду50 Ру16  ")
++
++    assert result.query == "Кран шаровой Ду50 Ру16"
++    assert [candidate.ld_id for candidate in reranker.calls[0][1]] == [1, 3]
++    assert reranker.calls[0][0] == "Кран шаровой Ду50 Ру16"
++    assert [candidate.ld_id for candidate in result.candidates] == [1, 3]

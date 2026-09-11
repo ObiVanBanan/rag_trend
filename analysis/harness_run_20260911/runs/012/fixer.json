@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "summary": "Fixed the reviewer’s two concrete issues. `query_flange_subtype()` now only returns subtype requirements for queries classified as flange products, so non-flange welded-end/collar wording no longer triggers flange verification. `MatchResult.selected` is now built from the post-validation selected items, which means subtype-caused `NOT_FOUND` returns an empty selected list and accepted later candidates are reflected consistently.",
+  "tests": [
+    "python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py",
+    "python -m pytest -q tests/test_reranker.py"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

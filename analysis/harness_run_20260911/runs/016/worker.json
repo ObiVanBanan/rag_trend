@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-16-structural-candidate-diversification`: added a conservative structural signature/diversification helper, wired it into `HybridRetriever.search()` after RRF merge and before the reranker limit, and added focused unit/integration coverage. OpenSpec tasks are marked 6/6 complete. No catalog/index changes were made.",
+  "tests": [
+    "python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py tests/test_matcher.py (26 passed)",
+    "python -m pytest -q (172 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}

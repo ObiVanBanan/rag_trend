@@ -1,0 +1,1118 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a086e6-6de4-7021-b6dd-368eb2caacf2
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-03-query-canonicalization",
+  "hypothesis": "Deterministic, domain-preserving query canonicalization before hybrid retrieval will improve matching of compact, mixed-script, and noisy tender nomenclature without changing final-selection semantics.",
+  "why_now": "Baseline failures show catalog-vocabulary gaps in terse technical notation and a mixed-script designation embedded in procurement prose; the matcher currently only normalizes whitespace. This is distinct from the two rejected compatibility interventions.",
+  "expected_effect": "Retrieve using the original query plus at most one safe canonical representation, deduplicate candidates per modality before RRF, and retain the original query for reranking and output.",
+  "expected_metric_gain": "+3–10 pp public hard-pass and +3–7 pp blind hard-pass, with no intended false-match increase.",
+  "lesson_from_history": "Cycle 1’s candidate filtering regressed public/blind coverage, and Cycle 2’s reranker compatibility evidence regressed public safety. This proposal changes only query-time candidate recall, preserves candidate decision semantics, and fails open to original retrieval.",
+  "candidate_hypotheses": [
+    "Deterministic technical-notation query canonicalization before hybrid retrieval (selected).",
+    "Schema expansion for flange subtype, temperature range, and pipe-OD semantics.",
+    "Index-time catalog-text enrichment with alias/designation fields and fusion tuning.",
+    "Explicit subject-validated mappings for legacy valve designations."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strictly validated all OpenSpec artifacts at openspec/changes/cycle-03-query-canonicalization/: proposal, retrieval-query-canonicalization spec, design, and implementation-only tasks. No product code was changed."
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-03-query-canonicalization`: added deterministic query canonicalization, wired hybrid matching to pass at most one alternate retrieval query while preserving the original query for caching/reranking/results, and extended hybrid retrieval to retrieve original plus canonical forms with per-modality LD-id dedupe before existing RRF scoring. OpenSpec progress is 9/9 complete and `openspec validate cycle-03-query-canonicalization --strict` passes. No index rebuild is needed.",
+  "tests": [
+    "python -m pytest -q tests/test_query_canonicalization.py tests/test_hybrid_retriever.py tests/test_matcher.py: 19 passed",
+    "python -m pytest -q: 152 passed",
+    "openspec validate cycle-03-query-canonicalization --strict: passed"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.8333333333333334,
+  "core_pass_rate": 0.8,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.0,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.008333333333333333,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.4166666666666667,
+  "verdict_counts": {
+    "PASS": 30,
+    "FAIL_HUMAN_REJECT": 1,
+    "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_PRODUCT": 7
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q005",
+    "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+    "reason": "Required fields are missing from the returned product; correctness is not provable."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_PRODUCT",
+    "reason": "Returned product violates one or more deterministic GOLD requirements."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q025",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/hybrid_retriever.py b/src/nomenclature_matcher/hybrid_retriever.py
+index a995d01..02d471f 100644
+--- a/src/nomenclature_matcher/hybrid_retriever.py
++++ b/src/nomenclature_matcher/hybrid_retriever.py
+@@ -57,14 +57,45 @@ class HybridRetriever:
+             for index, hit in enumerate(hits, 1)
+         ]
+ 
+-    def search(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
++    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+         limit = limit or self.settings.hybrid_rerank_limit
+-        dense_candidates = self.search_dense(query, self.settings.hybrid_dense_limit)
+-        bm25_candidates = self.search_bm25(query, self.settings.hybrid_bm25_limit)
++        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
++        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+         merged = self._merge_candidates(dense_candidates, bm25_candidates)
+         self._apply_rrf(merged)
+         return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
+ 
++    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
++        candidates = search_fn(query, limit)
++        if not canonical_query or canonical_query == query:
++            return candidates
++        try:
++            candidates = [*candidates, *search_fn(canonical_query, limit)]
++        except Exception:
++            return candidates
++        return list(self._merge_modality_candidates(candidates).values())
++
++    def _merge_modality_candidates(self, candidates: list[SearchCandidate]) -> dict[int, SearchCandidate]:
++        merged: dict[int, SearchCandidate] = {}
++        for candidate in candidates:
++            existing = merged.get(candidate.ld_id)
++            if existing is None or self._is_stronger_modality_hit(candidate, existing):
++                merged[candidate.ld_id] = candidate
++        return merged
++
++    def _is_stronger_modality_hit(self, candidate: SearchCandidate, existing: SearchCandidate) -> bool:
++        if candidate.dense_rank is not None or existing.dense_rank is not None:
++            candidate_rank = candidate.dense_rank if candidate.dense_rank is not None else 10**9
++            existing_rank = existing.dense_rank if existing.dense_rank is not None else 10**9
++            if candidate_rank != existing_rank:
++                return candidate_rank < existing_rank
++            return (candidate.dense_score or float("-inf")) > (existing.dense_score or float("-inf"))
++        candidate_rank = candidate.bm25_rank if candidate.bm25_rank is not None else 10**9
++        existing_rank = existing.bm25_rank if existing.bm25_rank is not None else 10**9
++        if candidate_rank != existing_rank:
++            return candidate_rank < existing_rank
++        return (candidate.bm25_score or float("-inf")) > (existing.bm25_score or float("-inf"))
++
+     def _merge_candidates(
+         self,
+         dense_candidates: list[SearchCandidate],
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 77258fb..971745f 100644
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -1,6 +1,7 @@
+ from dataclasses import replace
+ 
+ from .models import MatchResult, SearchCandidate, SelectedMatch
++from .query_canonicalization import canonicalize_retrieval_query
+ 
+ 
+ class NomenclatureMatcher:
+@@ -99,12 +100,17 @@ class NomenclatureMatcher:
+         return self.rerank_candidates(query, candidates)
+ 
+     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+-        query = self._normalize_query(query)
++        canonicalization = canonicalize_retrieval_query(query)
++        query = canonicalization.source_query
+         if not query:
+             return MatchResult(query=query, status="NOT_FOUND")
+         if self.hybrid_retriever is None:
+             raise ValueError("Hybrid retriever is not configured")
+-        candidates = self.hybrid_retriever.search(query, self.settings.hybrid_rerank_limit)
++        candidates = self.hybrid_retriever.search(
++            query,
++            self.settings.hybrid_rerank_limit,
++            canonical_query=canonicalization.canonical_query,
++        )
+         return self.rerank_candidates(query, candidates)
+ 
+     def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a7ec366..ecc7a2f 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -36,6 +36,53 @@ class BM25Store:
+         ]
+ 
+ 
++class VariantQdrantStore:
++    def __init__(self):
++        self.calls = []
++
++    def search(self, vector, limit):
++        self.calls.append((vector, limit))
++        query = vector[0]
++        if query == "original":
++            return [
++                SimpleNamespace(score=0.7, payload={"ld_id": 1, "name": "Original", "article": "O", "search_text": "dense-o"}),
++                SimpleNamespace(score=0.2, payload={"ld_id": 2, "name": "Dup", "article": "D", "search_text": "dense-o"}),
++            ]
++        return [
++            SimpleNamespace(score=0.95, payload={"ld_id": 3, "name": "Canonical", "article": "C", "search_text": "dense-c"}),
++            SimpleNamespace(score=0.9, payload={"ld_id": 2, "name": "Dup", "article": "D", "search_text": "dense-c"}),
++        ]
++
++
++class VariantBM25Store:
++    def __init__(self, fail_on_canonical=False):
++        self.calls = []
++        self.fail_on_canonical = fail_on_canonical
++
++    def search(self, query, limit):
++        self.calls.append((query, limit))
++        if query == "canonical" and self.fail_on_canonical:
++            raise RuntimeError("bm25 down")
++        if query == "original":
++            return [
++                BM25Candidate(ld_id=2, name="Dup", article="D", bm25_score=0.6, search_text="bm25-o"),
++                BM25Candidate(ld_id=4, name="Bm25 original", article="B", bm25_score=0.3, search_text="bm25-o"),
++            ]
++        return [
++            BM25Candidate(ld_id=5, name="Bm25 canonical", article="BC", bm25_score=1.2, search_text="bm25-c"),
++            BM25Candidate(ld_id=2, name="Dup", article="D", bm25_score=1.0, search_text="bm25-c"),
++        ]
++
++
++class EchoEmbedder:
++    def __init__(self):
++        self.calls = []
++
++    def embed_query(self, text):
++        self.calls.append(text)
++        return [text]
++
++
+ def test_hybrid_merge_dedupes_and_uses_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+@@ -53,3 +100,42 @@ def test_hybrid_search_limits_result_count():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=1, rrf_k=60)
+     retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+     assert len(retriever.search("query")) == 1
++
++
++def test_hybrid_search_retrieves_alternate_only_when_distinct():
++    settings = SimpleNamespace(hybrid_dense_limit=7, hybrid_bm25_limit=8, hybrid_rerank_limit=20, rrf_k=60)
++    embedder = EchoEmbedder()
++    bm25 = VariantBM25Store()
++    retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
++    retriever.search("original", canonical_query="canonical")
++    assert embedder.calls == ["original", "canonical"]
++    assert bm25.calls == [("original", 8), ("canonical", 8)]
++
++    embedder = EchoEmbedder()
++    bm25 = VariantBM25Store()
++    HybridRetriever(embedder, VariantQdrantStore(), bm25, settings).search("original", canonical_query="original")
++    assert embedder.calls == ["original"]
++    assert bm25.calls == [("original", 8)]
++
++
++def test_hybrid_search_merges_variants_per_modality_before_rrf():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(), settings)
++    results = retriever.search("original", canonical_query="canonical")
++    by_id = {candidate.ld_id: candidate for candidate in results}
++    assert set(by_id) == {1, 2, 3, 4, 5}
++    assert by_id[2].dense_rank == 2
++    assert by_id[2].dense_score == 0.9
++    assert by_id[2].bm25_rank == 1
++    assert by_id[2].bm25_score == 0.6
++    assert by_id[2].rrf_score == (1 / 62) + (1 / 61)
++    assert by_id[3].retrieval_sources == ["dense"]
++    assert by_id[5].retrieval_sources == ["bm25"]
++
++
++def test_hybrid_search_fails_open_when_alternate_modality_fails():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
++    retriever = HybridRetriever(EchoEmbedder(), VariantQdrantStore(), VariantBM25Store(fail_on_canonical=True), settings)
++    results = retriever.search("original", canonical_query="canonical")
++    assert len({candidate.ld_id for candidate in results}) == len(results)
++    assert {candidate.ld_id for candidate in results} == {1, 2, 3, 4}
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index a00af36..2bbf046 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -17,8 +17,10 @@ class Reranker:
+     def __init__(self, result=None, error=None):
+         self.result = result
+         self.error = error
++        self.calls = []
+ 
+     def rerank(self, query, candidates):
++        self.calls.append((query, candidates))
+         if self.error:
+             raise self.error
+         return self.result
+@@ -29,8 +31,8 @@ class HybridRetriever:
+         self.candidates = candidates
+         self.calls = []
+ 
+-    def search(self, query, limit):
+-        self.calls.append((query, limit))
++    def search(self, query, limit, canonical_query=None):
++        self.calls.append((query, limit, canonical_query))
+         return self.candidates
+ 
+ 
+@@ -113,7 +115,8 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+         )
+     ]
+     rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+-    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+     result = matcher.match_one_hybrid_with_rerank("  query  ")
+     assert result.status == "MATCHED"
+     assert result.candidates[0].rrf_score == 0.03
+@@ -121,6 +124,7 @@ def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+     assert result.selected[0].bm25_score == 1.2
+     assert result.selected[0].rrf_score == 0.03
+     assert not hasattr(result.selected[0], "vector_score")
++    assert hybrid.calls == [("query", 20, None)]
+ 
+ 
+ def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+@@ -136,4 +140,22 @@ def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+     matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+     results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+     assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
+-    assert hybrid.calls == [("query", 20)]
++    assert hybrid.calls == [("query", 20, None)]
++
++
++def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_rerank_limit=20,
++    )
++    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
++    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
++    reranker = Reranker(result=rerank_result)
++    hybrid = HybridRetriever(candidates)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
++    assert result.query == "Кран шаровой фл. Ду25 Ру16"
++    assert hybrid.calls == [("Кран шаровой фл. Ду25 Ру16", 20, "Кран шаровой фланцевый DN 25 PN 16")]
++    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-09T16:00:43.963617Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a086e6-6de4-7021-b6dd-368eb2caacf2.tmp-1788969643493526125: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"ACCEPT","summary":"I’m reviewing the implementation against the stated retrieval-recall hypothesis, including the canonicalization rules and possible hybrid-ranking regressions. I will not inspect any hidden holdout or modify files.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "sed -n '1,240p' src/nomenclature_matcher/query_canonicalization.py && sed -n '1,220p' src/nomenclature_matcher/hybrid_retriever.py && sed -n '1,220p' src/nomenclature_matcher/matcher.py && sed -n '1,260p' tests/test_query_canonicalization.py && git diff --check && git status --short" in /workspaces/ML-Cancer-Data
+ succeeded in 14ms:
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+
+
+_DESIGNATION_CONFUSABLES = str.maketrans(
+    {
+        "A": "А",
+        "B": "В",
+        "C": "С",
+        "E": "Е",
+        "H": "Н",
+        "K": "К",
+        "M": "М",
+        "O": "О",
+        "P": "Р",
+        "T": "Т",
+        "X": "Х",
+        "Y": "У",
+        "a": "а",
+        "c": "с",
+        "e": "е",
+        "k": "к",
+        "m": "м",
+        "o": "о",
+        "p": "р",
+        "x": "х",
+        "y": "у",
+    }
+)
+_CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
+_LATIN_RE = re.compile(r"[A-Za-z]")
+_LETTER_DIGIT_RE = re.compile(r"(?=.*[A-Za-zА-Яа-яЁё])(?=.*\d)[A-Za-zА-Яа-яЁё0-9./_-]+")
+_SUPPORTED_ANCHOR_RE = re.compile(
+    r"\b(кран(?:\s+шаровой)?|клапан|задвижка|затвор|вентиль|фильтр|регулятор|фланец|муфта|переход|тройник|отвод)\b",
+    re.IGNORECASE,
+)
+_UNSUPPORTED_ANCHOR_RE = re.compile(
+    r"\b(насос|двигател|кабель|датчик|счетчик|сч[её]тчик|подшипник|болт|гайка|шайба)\b",
+    re.IGNORECASE,
+)
+
+
+@dataclass(frozen=True)
+class RetrievalQueryCanonicalization:
+    source_query: str
+    canonical_query: str | None = None
+
+
+def canonicalize_retrieval_query(query: str) -> RetrievalQueryCanonicalization:
+    source = " ".join(query.split())
+    if not source:
+        return RetrievalQueryCanonicalization(source_query="")
+
+    if _UNSUPPORTED_ANCHOR_RE.search(source) and not _SUPPORTED_ANCHOR_RE.search(source):
+        return RetrievalQueryCanonicalization(source_query=source)
+
+    has_supported_anchor = _SUPPORTED_ANCHOR_RE.search(source) is not None
+    canonical = _extract_supported_clause(source)
+    canonical = _strip_quantity_noise(canonical)
+    canonical = _normalize_dn_pn(canonical)
+    canonical = _expand_joining_and_actuation(canonical)
+    canonical = _normalize_designation_confusables(canonical)
+    canonical = _cleanup_spacing(canonical)
+
+    if canonical == source or not _has_safe_alternate(source, canonical, has_supported_anchor):
+        return RetrievalQueryCanonicalization(source_query=source)
+    return RetrievalQueryCanonicalization(source_query=source, canonical_query=canonical)
+
+
+def _extract_supported_clause(text: str) -> str:
+    anchor = _SUPPORTED_ANCHOR_RE.search(text)
+    if not anchor:
+        return text
+    start = _clause_start(text, anchor.start())
+    end = _clause_end(text, anchor.end())
+    return text[start:end].strip(" ,;:.")
+
+
+def _clause_start(text: str, anchor_start: int) -> int:
+    left = text[:anchor_start]
+    matches = list(re.finditer(r"(?:^|[.;])\s*(?:поз\.?\s*)?\d+\s*[-.):]\s*", left, re.IGNORECASE))
+    if matches:
+        return matches[-1].end()
+    punctuation = max(left.rfind(";"), left.rfind("."))
+    return punctuation + 1 if punctuation >= 0 else 0
+
+
+def _clause_end(text: str, anchor_end: int) -> int:
+    tail = text[anchor_end:]
+    stop = re.search(r"(?:[,;]\s*)?(?:кол-?во|количество|шт\.?|ед\.?\s*изм|для\s+закуп|поставка|срок)\b", tail, re.IGNORECASE)
+    punctuation_positions = [pos for pos in (tail.find(";"),) if pos >= 0]
+    positions = []
+    if stop:
+        positions.append(stop.start())
+    positions.extend(punctuation_positions)
+    return anchor_end + min(positions) if positions else len(text)
+
+
+def _strip_quantity_noise(text: str) -> str:
+    text = re.sub(r"[,;]?\s*(?:кол-?во|количество)\s*[:\-]?\s*\d+(?:[.,]\d+)?\s*(?:шт\.?|ед\.?)?\b.*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"[,;]?\s+\d+(?:[.,]\d+)?\s*(?:шт\.?|ед\.?)\s*$", "", text, flags=re.IGNORECASE)
+    return text
+
+
+def _normalize_dn_pn(text: str) -> str:
+    text = re.sub(r"\bDу\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDу(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bДу\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bДу(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDN\s*[-:]?\s*(\d+)\b", r"DN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bPN\s*[-:]?\s*(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bРу\s*[-:]?\s*(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bРу(\d+(?:[.,]\d+)?)\b", r"PN \1", text, flags=re.IGNORECASE)
+    return text
+
+
+def _expand_joining_and_actuation(text: str) -> str:
+    replacements = (
+        (r"(?<!\w)фл\.?(?!\w)", "фланцевый"),
+        (r"\bм/ф\b", "муфтовый фланцевый"),
+        (r"(?<!\w)муфт\.?(?!\w)", "муфтовый"),
+        (r"(?<!\w)резьб\.?(?!\w)", "резьбовой"),
+        (r"(?<!\w)эл\.?\s*прив\.?(?!\w)", "электропривод"),
+        (r"(?<!\w)прив\.?(?!\w)", "привод"),
+        (r"\bэ/п\b", "электропривод"),
+    )
+    for pattern, replacement in replacements:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
+
+
+def _normalize_designation_confusables(text: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(0)
+        if _CYRILLIC_RE.search(token) and _LATIN_RE.search(token):
+            return token.translate(_DESIGNATION_CONFUSABLES)
+        return token
+
+    return _LETTER_DIGIT_RE.sub(replace, text)
+
+
+def _cleanup_spacing(text: str) -> str:
+    text = re.sub(r"\s+([,;:])", r"\1", text)
+    text = re.sub(r"([,(])\s+", r"\1", text)
+    return " ".join(text.split()).strip(" ,;:.")
+
+
+def _has_safe_alternate(source: str, canonical: str, has_supported_anchor: bool) -> bool:
+    if not canonical or canonical == source:
+        return False
+    if has_supported_anchor:
+        return True
+    return bool(re.search(r"\b(?:DN|PN)\s+\d+", canonical))
+from __future__ import annotations
+
+from .bm25_store import BM25Store
+from .models import SearchCandidate
+
+
+class HybridRetriever:
+    def __init__(self, embedder, qdrant_store, bm25_store: BM25Store, settings):
+        self.embedder = embedder
+        self.qdrant_store = qdrant_store
+        self.bm25_store = bm25_store
+        self.settings = settings
+
+    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_dense_limit
+        hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search_bm25(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_bm25_limit
+        hits = self.bm25_store.search(query, limit)
+        return [
+            SearchCandidate(
+                ld_id=hit.ld_id,
+                name=hit.name,
+                article=hit.article,
+                score=float(hit.bm25_score),
+                price=hit.price,
+                dn=hit.dn,
+                pn=hit.pn,
+                joining_type=hit.joining_type,
+                url=hit.url,
+                properties=hit.properties,
+                search_text=hit.search_text,
+                bm25_score=float(hit.bm25_score),
+                bm25_rank=index,
+                retrieval_sources=["bm25"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_rerank_limit
+        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+        merged = self._merge_candidates(dense_candidates, bm25_candidates)
+        self._apply_rrf(merged)
+        return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
+
+    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+        candidates = search_fn(query, limit)
+        if not canonical_query or canonical_query == query:
+            return candidates
+        try:
+            candidates = [*candidates, *search_fn(canonical_query, limit)]
+        except Exception:
+            return candidates
+        return list(self._merge_modality_candidates(candidates).values())
+
+    def _merge_modality_candidates(self, candidates: list[SearchCandidate]) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None or self._is_stronger_modality_hit(candidate, existing):
+                merged[candidate.ld_id] = candidate
+        return merged
+
+    def _is_stronger_modality_hit(self, candidate: SearchCandidate, existing: SearchCandidate) -> bool:
+        if candidate.dense_rank is not None or existing.dense_rank is not None:
+            candidate_rank = candidate.dense_rank if candidate.dense_rank is not None else 10**9
+            existing_rank = existing.dense_rank if existing.dense_rank is not None else 10**9
+            if candidate_rank != existing_rank:
+                return candidate_rank < existing_rank
+            return (candidate.dense_score or float("-inf")) > (existing.dense_score or float("-inf"))
+        candidate_rank = candidate.bm25_rank if candidate.bm25_rank is not None else 10**9
+        existing_rank = existing.bm25_rank if existing.bm25_rank is not None else 10**9
+        if candidate_rank != existing_rank:
+            return candidate_rank < existing_rank
+        return (candidate.bm25_score or float("-inf")) > (existing.bm25_score or float("-inf"))
+
+    def _merge_candidates(
+        self,
+        dense_candidates: list[SearchCandidate],
+        bm25_candidates: list[SearchCandidate],
+    ) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in dense_candidates:
+            merged[candidate.ld_id] = candidate
+        for candidate in bm25_candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None:
+                merged[candidate.ld_id] = candidate
+                continue
+            merged[candidate.ld_id] = self._merge_pair(existing, candidate)
+        return merged
+
+    def _merge_pair(self, dense_candidate: SearchCandidate, bm25_candidate: SearchCandidate) -> SearchCandidate:
+        sources = list(dict.fromkeys([*dense_candidate.retrieval_sources, *bm25_candidate.retrieval_sources]))
+        return SearchCandidate(
+            ld_id=dense_candidate.ld_id,
+            name=dense_candidate.name or bm25_candidate.name,
+            article=dense_candidate.article or bm25_candidate.article,
+            score=dense_candidate.score if dense_candidate.score is not None else bm25_candidate.score,
+            price=dense_candidate.price if dense_candidate.price is not None else bm25_candidate.price,
+            dn=dense_candidate.dn if dense_candidate.dn is not None else bm25_candidate.dn,
+            pn=dense_candidate.pn if dense_candidate.pn is not None else bm25_candidate.pn,
+            joining_type=dense_candidate.joining_type if dense_candidate.joining_type is not None else bm25_candidate.joining_type,
+            url=dense_candidate.url if dense_candidate.url is not None else bm25_candidate.url,
+            properties=dense_candidate.properties if dense_candidate.properties is not None else bm25_candidate.properties,
+            search_text=dense_candidate.search_text or bm25_candidate.search_text,
+            dense_score=dense_candidate.dense_score,
+            dense_rank=dense_candidate.dense_rank,
+            bm25_score=bm25_candidate.bm25_score,
+            bm25_rank=bm25_candidate.bm25_rank,
+            rrf_score=None,
+            retrieval_sources=sources,
+        )
+
+    def _apply_rrf(self, candidates: dict[int, SearchCandidate]) -> None:
+        rrf_k = self.settings.rrf_k
+        for candidate in candidates.values():
+            score = 0.0
+            if candidate.dense_rank is not None:
+                score += 1.0 / (rrf_k + candidate.dense_rank)
+            if candidate.bm25_rank is not None:
+                score += 1.0 / (rrf_k + candidate.bm25_rank)
+            candidate.rrf_score = score
+            candidate.score = score
+from dataclasses import replace
+
+from .models import MatchResult, SearchCandidate, SelectedMatch
+from .query_canonicalization import canonicalize_retrieval_query
+
+
+class NomenclatureMatcher:
+    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+        self.embedder, self.store, self.settings = embedder, store, settings
+        self.reranker = reranker
+        self.hybrid_retriever = hybrid_retriever
+
+    def _normalize_query(self, query: str) -> str:
+        return " ".join(query.split())
+
+    def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
+        hits = self.store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+        )
+
+    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+            )
+        selected = []
+        for item in rerank_result.selected:
+            candidate = candidates[item.candidate_id - 1]
+            selected.append(self._build_selected_match(candidate, item))
+        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+        return MatchResult(
+            query=query,
+            status=rerank_result.status,
+            score=best.score if best else None,
+            ld_product=best if rerank_result.status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=rerank_result.reason,
+        )
+
+    def match_one(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.match_top_k)
+        best = candidates[0] if candidates else None
+        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+
+    def match_one_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+        return self.rerank_candidates(query, candidates)
+
+    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+        canonicalization = canonicalize_retrieval_query(query)
+        query = canonicalization.source_query
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        if self.hybrid_retriever is None:
+            raise ValueError("Hybrid retriever is not configured")
+        candidates = self.hybrid_retriever.search(
+            query,
+            self.settings.hybrid_rerank_limit,
+            canonical_query=canonicalization.canonical_query,
+        )
+        return self.rerank_candidates(query, candidates)
+
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
+    def match_many(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+
+    match = match_many
+from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+
+
+def test_blank_and_unchanged_queries_have_no_canonical_alternate():
+    assert canonicalize_retrieval_query("   ").source_query == ""
+    result = canonicalize_retrieval_query("Кран шаровой DN 80 PN 16 фланцевый")
+    assert result.source_query == "Кран шаровой DN 80 PN 16 фланцевый"
+    assert result.canonical_query is None
+
+
+def test_compact_dn_pn_and_joining_abbreviation_are_normalized():
+    result = canonicalize_retrieval_query("Кран шаровой фл. Ду80 Ру16")
+    assert result.canonical_query == "Кран шаровой фланцевый DN 80 PN 16"
+
+
+def test_mixed_script_designation_token_is_normalized_without_losing_constraints():
+    result = canonicalize_retrieval_query("Клапан 15с65нж DN50 PN16 стальной")
+    assert result.canonical_query == "Клапан 15с65нж DN 50 PN 16 стальной"
+
+
+def test_long_tender_prose_extracts_supported_item_clause_and_quantity_noise():
+    result = canonicalize_retrieval_query(
+        "Поставка оборудования; поз. 12 - Кран латунный шаровой муфт. Ду25 Ру16, количество 4 шт. срок 10 дней"
+    )
+    assert result.source_query.startswith("Поставка оборудования")
+    assert result.canonical_query == "Кран латунный шаровой муфтовый DN 25 PN 16"
+
+
+def test_unsupported_or_ambiguous_text_does_not_gain_catalog_domain_terms():
+    assert canonicalize_retrieval_query("Насос циркуляционный Ду25 2 шт").canonical_query is None
+    assert canonicalize_retrieval_query("Поставка оборудования количество 2 шт").canonical_query is None
+ M src/nomenclature_matcher/hybrid_retriever.py
+ M src/nomenclature_matcher/matcher.py
+ M tests/test_hybrid_retriever.py
+ M tests/test_matcher.py
+?? openspec/changes/cycle-03-query-canonicalization/
+?? src/nomenclature_matcher/query_canonicalization.py
+?? tests/test_query_canonicalization.py
+
+exec
+/bin/bash -lc "find openspec/changes/cycle-03-query-canonicalization -maxdepth 3 -type f -print | sort | xargs -r -n1 sh -c 'echo --- \""'$0"; sed -n "1,220p" "$0"'"' && rg -n \"hybrid|canonical|rrf|query\" openspec/changes/cycle-03-query-canonicalization/specs openspec/changes/cycle-03-query-canonicalization/design.md" in /workspaces/ML-Cancer-Data
+ exited 127 in 471ms:
+--- openspec/changes/cycle-03-query-canonicalization/.openspec.yaml
+schema: spec-driven
+created: 2026-09-09
+--- openspec/changes/cycle-03-query-canonicalization/design.md
+## Context
+
+See `proposal.md` for the experiment motivation. `NomenclatureMatcher._normalize_query` currently collapses whitespace only, and `HybridRetriever.search` uses that same raw text once for dense and BM25 retrieval. The reranker already receives the original query and catalog search text. Existing retrieval provenance represents only dense/BM25 ranks, so query variants must not inflate RRF merely by duplicating the same product across variants.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Improve candidate recall for catalog-vocabulary gaps caused by presentation noise and compact technical tender notation.
+- Preserve original query semantics and all existing final-selection behavior.
+- Make alternate retrieval text inspectable and deterministic so it can be unit-tested and removed cleanly if the experiment is rejected.
+- Avoid a full index rebuild by changing query-time behavior only.
+
+**Non-Goals:**
+
+- No subject-matter claim that legacy competitor designations are equivalent to a particular LD family.
+- No LLM-generated rewrite, automatic constraint extraction, candidate filtering, threshold calibration, or reranker prompt change.
+- No catalog document, embedding, Qdrant payload, BM25 corpus, or collection-alias change.
+- No interpretation of pipe OD, temperature range, flange subtype, or other currently unmodeled requirements.
+
+## Decisions
+
+### Add one bounded canonical retrieval representation
+
+Introduce a small pure query-canonicalization boundary returning the normalized original and either zero or one canonical retrieval query. It will apply a narrowly documented table/rule set: confusable-character repair only for alphanumeric designation tokens, standard spacing for compact DN/PN forms, supported joining/actuation abbreviations, removal of count-only suffixes, and extraction of a supported item clause from surrounding prose when it is unambiguous.
+
+This is deliberately additive: the raw normalized query is always retrieved. A free-form LLM rewrite was considered but rejected because it can hallucinate pressure, material, or execution requirements and makes failures hard to reproduce. A broad alias-to-product mapping was rejected for this cycle because the taxonomy says those equivalences are not yet validated.
+
+### Fuse per modality after cross-representation deduplication
+
+Run dense and BM25 retrieval for the original query and, only when distinct, the canonical query. Merge by LD id inside each modality and retain the best rank/score observed for that modality; then use the existing RRF calculation once per modality. This gives a candidate surfaced by either representation a fair entry while preventing duplicate rank contributions for the same dense/BM25 channel.
+
+Using four independent RRF terms was considered and rejected: it would overweight a product merely because a spelling normalization returned it twice. Replacing the current RRF or changing candidate limits is out of scope, so a measured outcome isolates query representation.
+
+### Keep original query at the reranker boundary and expose diagnostics
+
+The reranker continues to receive the original normalized tender string, not the alternate representation. Candidate objects keep the current retrieval evidence contract; the canonicalization result should be available in an optional, non-production diagnostic path suitable for tests and local debugging. If alternate-query retrieval raises an operational error, the original-query retrieval result remains usable rather than failing the whole match.
+
+This avoids silently changing the business decision text and makes the experiment fail-open. It also avoids repeating cycles 1 and 2, which modified compatibility handling closer to final selection and regressed public safety.
+
+## Risks / Trade-offs
+
+- [A normalization loses a meaningful token] → Limit transformations to a documented allowlist, preserve source text, and use regression tests for DN/PN/material/control/designation retention.
+- [An extracted clause omits a necessary constraint] → Use clause extraction only when a supported product phrase anchors it; otherwise emit no alternate query and retain original retrieval.
+- [Additional retrieval calls increase latency] → At most one alternate query per unique non-blank request, reuse existing configured limits, and skip it when identical to the original.
+- [Alternative candidates increase false-match opportunity] → Preserve original reranker input and candidate cap, add negative-query regression tests, and rely on outer evaluation for promotion.
+- [RRF evidence becomes ambiguous] → Deduplicate per modality before one existing RRF contribution, with tests for duplicated candidates and rank selection.
+
+## Migration Plan
+
+1. Add the pure canonicalization function and unit tests for supported transformations and safe no-op cases.
+2. Integrate additive retrieval in the hybrid retriever while preserving its current API for callers without an alternate query.
+3. Wire the matcher to generate and pass at most one alternate retrieval representation while preserving result query text and caching semantics.
+4. Run focused tests and the full pytest suite. The outer harness owns public/blind evaluation and promotion.
+5. Roll back by disabling/removing the canonical-query argument; no index or persisted-data rollback is needed.
+--- openspec/changes/cycle-03-query-canonicalization/proposal.md
+## Why
+
+The current hybrid matcher sends only whitespace-normalized tender text to both retrievers. Public hard-gate failures include compact/mixed-script designation text embedded in a long tender sentence and terse technical notation that does not use the catalog's vocabulary; this can bury compatible ordinary products under generic or specialized candidates. The prior two cycles tested candidate compatibility interventions and regressed public safety, so a retrieval-input experiment is now the highest-value distinct mechanism to test without rebuilding the index.
+
+## What Changes
+
+- Add deterministic, domain-preserving canonicalization for retrieval queries while retaining the original tender text for LLM reranking and returned results.
+- Normalize safe lexical variants that do not add engineering requirements: Unicode-confusable Latin/Cyrillic characters inside designation-like tokens, compact DN/PN notation, and known joining/actuation abbreviations.
+- Extract the item-bearing clause from multi-item tender prose only when an unambiguous, supported product phrase and its adjacent technical attributes are present; use the canonical clause as an additional retrieval representation rather than replacing the original query.
+- Issue dense and BM25 retrieval for the original normalized query plus a bounded canonical retrieval query, then merge candidates by LD id using existing source/rank evidence and RRF behavior.
+- Keep negative, blank, and unsupported product queries from gaining catalog-domain expansion; retain present behavior if canonicalization produces no meaningful alternate query.
+
+## Capabilities
+
+### New Capabilities
+
+- `retrieval-query-canonicalization`: Builds bounded, deterministic catalog-native retrieval representations from tender nomenclature while preserving original-query selection semantics.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected package code: a new query canonicalization module plus `matcher.py` and/or `hybrid_retriever.py` integration.
+- Affected behavior: hybrid candidate generation may receive an additional canonical query; DeepSeek reranking continues to receive the original tender string and the merged candidate set.
+- Affected tests: focused canonicalization, hybrid merge/deduplication, original-query preservation, and negative-query regression tests.
+- External systems: no model or Qdrant schema change and no full index rebuild.
+--- openspec/changes/cycle-03-query-canonicalization/specs/retrieval-query-canonicalization/spec.md
+## Purpose
+
+Defines safe, observable conversion of tender nomenclature into catalog-native retrieval representations without changing the source query used for matching decisions.
+
+## ADDED Requirements
+
+### Requirement: Original tender text remains authoritative
+The system SHALL preserve the caller's normalized tender text as the query shown to reranking, returned in the match result, and used for duplicate-query caching. Retrieval canonicalization SHALL NOT alter that authoritative text.
+
+#### Scenario: Canonical retrieval representation is available
+- **WHEN** a non-blank tender string has a materially different canonical retrieval representation
+- **THEN** the system uses the additional representation only for candidate generation while the reranker and returned result retain the original normalized tender text
+
+#### Scenario: No safe canonicalization exists
+- **WHEN** a tender string has no supported lexical normalization or item-bearing clause
+- **THEN** the system performs candidate generation with the original normalized text and does not manufacture an alternate query
+
+### Requirement: Canonicalization is deterministic and domain-preserving
+The system SHALL deterministically normalize only supported lexical forms: mixed-script confusables within designation-like tokens, compact DN/PN notation, quantity/noise suffixes, and documented joining or actuation abbreviations. It SHALL preserve explicit product, DN, PN, material, joining, control, and designation requirements and SHALL NOT infer an unmentioned engineering property or a catalog product identifier.
+
+#### Scenario: Mixed-script technical designation is normalized
+- **WHEN** a tender item contains a designation-like token with visually confusable Latin and Cyrillic characters
+- **THEN** the alternate retrieval representation contains the normalized token and preserves its surrounding item constraints
+
+#### Scenario: Technical notation is expanded without changing requirements
+- **WHEN** a tender item uses a supported compact joining or actuation notation
+- **THEN** the alternate representation contains catalog-native lexical equivalents without adding DN, PN, material, special execution, or product-family requirements absent from the tender
+
+#### Scenario: Quantity and surrounding tender prose are present
+- **WHEN** a long tender line contains an identifiable item clause followed by a quantity or unrelated procurement prose
+- **THEN** the alternate representation retains the item clause and its nearby technical attributes while omitting only non-nomenclature noise
+
+### Requirement: Candidate generation covers both safe representations
+The system SHALL retrieve candidates for the original query and, when present, its canonical retrieval representation. It SHALL merge duplicate LD products and retain the best available rank per retrieval modality before applying the configured fusion and candidate limit.
+
+#### Scenario: A canonical query surfaces an additional candidate
+- **WHEN** an LD product appears only in the canonical representation's dense or lexical result set
+- **THEN** the merged candidate list includes that product with usable retrieval evidence before reranking
+
+#### Scenario: Product appears in both representations
+- **WHEN** the same LD product is retrieved for both the original and canonical representations
+- **THEN** the merged list contains one occurrence of that product and its fusion contribution is not duplicated solely because two query forms were issued
+
+#### Scenario: Explicitly out-of-catalog wording is used
+- **WHEN** the query is an unsupported product class or otherwise produces no safe canonical representation
+- **THEN** the system preserves existing candidate-generation behavior and does not add catalog-domain terms that could turn the query into a false match
+
+--- openspec/changes/cycle-03-query-canonicalization/tasks.md
+/bin/bash: line 1: rg: command not found
+## 1. Deterministic Retrieval Canonicalization
+
+- [x] 1.1 Add a small pure query-canonicalization module that returns a normalized source query and at most one distinct canonical retrieval query, covering only the documented confusable designation tokens, compact DN/PN forms, allowed joining/actuation abbreviations, count-only noise, and safely anchored item clauses; verify focused unit tests cover each supported transform and an unchanged-input no-op.
+- [x] 1.2 Ensure canonicalization preserves explicit product family, designation, DN, PN, material, joining, and control text and does not infer catalog ids or engineering constraints; verify focused tests include mixed-script designation, compact notation, and long tender prose with a quantity.
+- [x] 1.3 Ensure unsupported product wording, blank input, ambiguous/no-anchor prose, and already canonical text produce no catalog-domain expansion; verify focused negative and no-op tests.
+
+## 2. Additive Hybrid Retrieval
+
+- [x] 2.1 Extend hybrid retrieval to accept an optional distinct canonical query and retrieve it in addition to the original query without changing the existing one-query caller behavior; verify mocked dense and BM25 tests assert both calls only when an alternate exists.
+- [x] 2.2 Merge original and canonical result sets by LD id per retrieval modality, retain the strongest available rank/score per modality, and apply the existing RRF contribution once per modality; verify duplicate-product, canonical-only-product, and original-only regression tests.
+- [x] 2.3 Preserve existing candidate payload fields, configured limits, and failure behavior when alternate retrieval is absent or fails; verify focused tests assert no duplicate candidates and usable original-query candidates after an alternate-query failure.
+
+## 3. Matcher Integration and Regression Coverage
+
+- [x] 3.1 Wire hybrid matching to pass the bounded canonical retrieval query while keeping the original normalized tender text for deduplication, reranker input, `MatchResult.query`, and result serialization; verify matcher tests with a recording retriever and mocked reranker.
+- [x] 3.2 Add focused regression tests for compact/mixed-script technical tender forms and for catalog-external negative queries, asserting canonicalization is additive and no false catalog-domain terms are injected.
+- [x] 3.3 Run `python -m pytest -q` and resolve any failures while keeping all product-code changes confined to this experiment’s query-time path.
+
+codex
+{"decision":"FIX","summary":"Implementation matches the additive query-recall design and preserves original text for reranking/results. The public result is measurable, but one central stated behavior lacks a valid regression test.","issues":["The purported mixed-script designation test uses `15с65нж`, which is entirely Cyrillic; it does not exercise `_normalize_designation_confusables` or prove Latin/Cyrillic repair works."],"fix_plan":["Replace or add a test using a genuinely mixed token, e.g. `15C65HЖ`, and assert the intended canonical form while retaining DN, PN, material, and product text.","Run the focused canonicalization tests and full pytest suite again; then resubmit for supervisor evaluation."],"next_direction":"This is a bounded, generally applicable recall experiment with no index rebuild. After repairing the test gap, compare its public/blind deltas to the champion; if it is not promoted, retain the lesson that query canonicalization should remain additive and preserve the raw tender text at selection time."}
+tokens used
+34,307
+{"decision":"FIX","summary":"Implementation matches the additive query-recall design and preserves original text for reranking/results. The public result is measurable, but one central stated behavior lacks a valid regression test.","issues":["The purported mixed-script designation test uses `15с65нж`, which is entirely Cyrillic; it does not exercise `_normalize_designation_confusables` or prove Latin/Cyrillic repair works."],"fix_plan":["Replace or add a test using a genuinely mixed token, e.g. `15C65HЖ`, and assert the intended canonical form while retaining DN, PN, material, and product text.","Run the focused canonicalization tests and full pytest suite again; then resubmit for supervisor evaluation."],"next_direction":"This is a bounded, generally applicable recall experiment with no index rebuild. After repairing the test gap, compare its public/blind deltas to the champion; if it is not promoted, retain the lesson that query canonicalization should remain additive and preserve the raw tender text at selection time."}

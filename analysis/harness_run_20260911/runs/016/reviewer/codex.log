@@ -1,0 +1,1532 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.6-terra
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a089ba-4cde-7b50-99f6-f04a4ba1be55
+--------
+user
+You are the read-only Reviewer. You must not edit files.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+## Infrastructure compensation
+
+The normal scientific budget is 15 cycles. When a cycle reaches implementation
+but cannot be evaluated solely because required infrastructure is unavailable,
+such as Qdrant being down, the supervisor may run up to two replacement cycles
+beyond cycle 15. These are compensation for unevaluated infrastructure failures,
+not additional budget for repeatedly testing failed hypotheses.
+
+
+ORIGINAL HYPOTHESIS
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-16-structural-candidate-diversification",
+  "hypothesis": "Diversifying structurally redundant hybrid candidates before the fixed reranker budget will surface viable variants currently crowded out by near-duplicate catalog entries.",
+  "why_now": "Cycle 13 planned this distinct mechanism but Qdrant was unavailable, so it remains unevaluated. It is the best compensation-cycle experiment with credible information gain.",
+  "expected_effect": "Retain the highest-RRF representative per reliably evidenced structural signature, then fill remaining reranker capacity in existing RRF order.",
+  "expected_metric_gain": "+3.3–6.7 pp hard-pass coverage; no intended safety regression.",
+  "lesson_from_history": "Gating, prompts, selection fallbacks, and catalog enrichment were harmful or neutral. Cycles 11–15 were infrastructure-inconclusive; Cycle 13 did not test this hypothesis scientifically.",
+  "candidate_hypotheses": [
+    "Structural candidate-pool diversification before reranking (selected).",
+    "Guarded pipe-OD-to-DN alternate retrieval normalization retry.",
+    "Protected-file-safe flange weld-neck subtype verification retry.",
+    "Installed-electric versus actuator-ready alternate retrieval expansion retry."
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, delta spec, design, and implementation-only tasks in openspec/changes/cycle-16-structural-candidate-diversification/. No product code was changed.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}
+
+IMPLEMENTER RESULT
+{
+  "status": "complete",
+  "summary": "Implemented `cycle-16-structural-candidate-diversification`: added a conservative structural signature/diversification helper, wired it into `HybridRetriever.search()` after RRF merge and before the reranker limit, and added focused unit/integration coverage. OpenSpec tasks are marked 6/6 complete. No catalog/index changes were made.",
+  "tests": [
+    "python -m pytest -q tests/test_candidate_diversification.py tests/test_hybrid_retriever.py tests/test_matcher.py (26 passed)",
+    "python -m pytest -q (172 passed)"
+  ],
+  "needs_reindex": false,
+  "blocker": ""
+}
+
+PUBLIC METRICS AFTER IMPLEMENTATION
+{
+  "evaluated": 120,
+  "hard_gate_cases": 30,
+  "core_cases": 25,
+  "negative_cases": 5,
+  "hard_pass_rate": 0.8,
+  "core_pass_rate": 0.76,
+  "negative_pass_rate": 1.0,
+  "wrong_not_found_rate": 0.08,
+  "false_match_rate": 0.0,
+  "unknown_answer_rate": 0.008333333333333333,
+  "human_reject_rate": 0.008333333333333333,
+  "known_positive_hit_rate": 0.5,
+  "verdict_counts": {
+    "PASS": 29,
+    "FAIL_HUMAN_REJECT": 1,
+    "FAIL_WRONG_NOT_FOUND": 4,
+    "FAIL_UNKNOWN_PRODUCT_DATA": 1,
+    "UNSCORED": 81,
+    "FAIL_WRONG_PRODUCT": 4
+  }
+}
+
+PUBLIC FAILURES AFTER IMPLEMENTATION
+[
+  {
+    "id": "gold_q002",
+    "verdict": "FAIL_HUMAN_REJECT",
+    "reason": "Returned product is explicitly HUMAN REJECT for this query."
+  },
+  {
+    "id": "gold_q003",
+    "verdict": "FAIL_WRONG_NOT_FOUND",
+    "reason": "Constraint-based GOLD has catalog evidence for a matching product."
+  },
+  {
+    "id": "gold_q005",
+    "verdict": "FAIL_UNKNOWN_PRODUCT_DATA",
+    "reason": "Required fields are missing from the returned product; correctness is not provable."
+  },
+  {
+    "id": "gold_q006",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q008",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q009",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q010",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q011",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q012",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q013",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q014",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q015",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q016",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q017",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q018",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q019",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q020",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q022",
+    "verdict": "FAIL_WRONG_PRODUCT",
+    "reason": "Returned product violates one or more deterministic GOLD requirements."
+  },
+  {
+    "id": "gold_q023",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  },
+  {
+    "id": "gold_q024",
+    "verdict": "UNSCORED",
+    "reason": "EXTENDED case has no trusted MATCHED/NOT_FOUND expectation."
+  }
+]
+
+GIT DIFF
+diff --git a/src/nomenclature_matcher/hybrid_retriever.py b/src/nomenclature_matcher/hybrid_retriever.py
+index 02d471f..b25ff91 100644
+--- a/src/nomenclature_matcher/hybrid_retriever.py
++++ b/src/nomenclature_matcher/hybrid_retriever.py
+@@ -1,6 +1,7 @@
+ from __future__ import annotations
+ 
+ from .bm25_store import BM25Store
++from .candidate_diversification import diversify_candidates
+ from .models import SearchCandidate
+ 
+ 
+@@ -63,7 +64,8 @@ class HybridRetriever:
+         bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+         merged = self._merge_candidates(dense_candidates, bm25_candidates)
+         self._apply_rrf(merged)
+-        return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
++        ranked = sorted(merged.values(), key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id))
++        return diversify_candidates(ranked, limit)
+ 
+     def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+         candidates = search_fn(query, limit)
+diff --git a/tests/test_hybrid_retriever.py b/tests/test_hybrid_retriever.py
+index a3cdc9d..b6c3b1d 100644
+--- a/tests/test_hybrid_retriever.py
++++ b/tests/test_hybrid_retriever.py
+@@ -83,6 +83,28 @@ class EchoEmbedder:
+         return [text]
+ 
+ 
++class DiversificationQdrantStore:
++    def __init__(self, payloads):
++        self.payloads = payloads
++        self.calls = []
++
++    def search(self, vector, limit):
++        self.calls.append((vector, limit))
++        return [
++            SimpleNamespace(score=score, payload=payload)
++            for score, payload in self.payloads[:limit]
++        ]
++
++
++class EmptyBM25Store:
++    def __init__(self):
++        self.calls = []
++
++    def search(self, query, limit):
++        self.calls.append((query, limit))
++        return []
++
++
+ def test_hybrid_merge_dedupes_and_uses_rrf():
+     settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=20, rrf_k=60)
+     retriever = HybridRetriever(Embedder(), QdrantStore(), BM25Store(), settings)
+@@ -167,3 +189,92 @@ def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
+     assert {1, 2, 4}.issubset(by_id)
+     assert by_id[1].name == "Original"
+     assert by_id[4].name == "Bm25 original"
++
++
++def test_hybrid_search_diversifies_after_rrf_before_cutoff():
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=2, rrf_k=60)
++    payloads = [
++        (
++            0.9,
++            {
++                "ld_id": 1,
++                "name": "Кран шаровой полнопроходной",
++                "article": "A1",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++            },
++        ),
++        (
++            0.8,
++            {
++                "ld_id": 2,
++                "name": "Кран шаровой полнопроходной",
++                "article": "A2",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++            },
++        ),
++        (
++            0.7,
++            {
++                "ld_id": 3,
++                "name": "Кран шаровой полнопроходной",
++                "article": "A3",
++                "dn": 80,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 80 PN: 16 фланцевый полнопроходной",
++            },
++        ),
++    ]
++    retriever = HybridRetriever(Embedder(), DiversificationQdrantStore(payloads), EmptyBM25Store(), settings)
++
++    results = retriever.search("query")
++
++    assert [candidate.ld_id for candidate in results] == [1, 3]
++    assert results[0].rrf_score == 1 / 61
++    assert results[1].rrf_score == 1 / 63
++
++
++def test_hybrid_search_fails_open_when_structural_signature_extraction_fails(monkeypatch):
++    settings = SimpleNamespace(hybrid_dense_limit=50, hybrid_bm25_limit=50, hybrid_rerank_limit=2, rrf_k=60)
++    payloads = [
++        (
++            0.9,
++            {
++                "ld_id": 1,
++                "name": "Кран шаровой",
++                "article": "A1",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый",
++            },
++        ),
++        (
++            0.8,
++            {
++                "ld_id": 2,
++                "name": "Кран шаровой",
++                "article": "A2",
++                "dn": 50,
++                "pn": 16,
++                "joining_type": "фланцевое",
++                "search_text": "DN: 50 PN: 16 фланцевый",
++            },
++        ),
++    ]
++    retriever = HybridRetriever(Embedder(), DiversificationQdrantStore(payloads), EmptyBM25Store(), settings)
++
++    def raise_for_first(candidate):
++        if candidate.ld_id == 1:
++            raise ValueError("bad payload")
++        return None
++
++    monkeypatch.setattr("nomenclature_matcher.candidate_diversification.structural_signature", raise_for_first)
++
++    assert [candidate.ld_id for candidate in retriever.search("query")] == [1, 2]
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..e0cf78e 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -1,4 +1,5 @@
+ from types import SimpleNamespace
++from nomenclature_matcher.hybrid_retriever import HybridRetriever as RealHybridRetriever
+ from nomenclature_matcher.matcher import NomenclatureMatcher
+ from nomenclature_matcher.models import SearchCandidate
+ 
+@@ -36,6 +37,58 @@ class HybridRetriever:
+         return self.candidates
+ 
+ 
++class EchoEmbedder:
++    def embed_query(self, text):
++        return [text]
++
++
++class DiversificationQdrantStore:
++    def search(self, vector, limit):
++        return [
++            SimpleNamespace(
++                score=0.9,
++                payload={
++                    "ld_id": 1,
++                    "name": "Кран шаровой полнопроходной",
++                    "article": "A1",
++                    "dn": 50,
++                    "pn": 16,
++                    "joining_type": "фланцевое",
++                    "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++                },
++            ),
++            SimpleNamespace(
++                score=0.8,
++                payload={
++                    "ld_id": 2,
++                    "name": "Кран шаровой полнопроходной",
++                    "article": "A2",
++                    "dn": 50,
++                    "pn": 16,
++                    "joining_type": "фланцевое",
++                    "search_text": "DN: 50 PN: 16 фланцевый полнопроходной",
++                },
++            ),
++            SimpleNamespace(
++                score=0.7,
++                payload={
++                    "ld_id": 3,
++                    "name": "Кран шаровой полнопроходной",
++                    "article": "A3",
++                    "dn": 80,
++                    "pn": 16,
++                    "joining_type": "фланцевое",
++                    "search_text": "DN: 80 PN: 16 фланцевый полнопроходной",
++                },
++            ),
++        ][:limit]
++
++
++class EmptyBM25Store:
++    def search(self, query, limit):
++        return []
++
++
+ def hit(score):
+     return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
+ 
+@@ -186,3 +239,26 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_match_one_hybrid_reranker_receives_diversified_candidates_and_original_query():
++    settings = SimpleNamespace(
++        match_top_k=5,
++        match_score_threshold=0.8,
++        rerank_candidate_limit=20,
++        hybrid_dense_limit=50,
++        hybrid_bm25_limit=50,
++        hybrid_rerank_limit=2,
++        rrf_k=60,
++    )
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=2, confidence=0.91, reason="dn80")], reason=None)
++    reranker = Reranker(result=rerank_result)
++    hybrid = RealHybridRetriever(EchoEmbedder(), DiversificationQdrantStore(), EmptyBM25Store(), settings)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
++
++    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой Ду50 Ру16  ")
++
++    assert result.query == "Кран шаровой Ду50 Ру16"
++    assert [candidate.ld_id for candidate in reranker.calls[0][1]] == [1, 3]
++    assert reranker.calls[0][0] == "Кран шаровой Ду50 Ру16"
++    assert [candidate.ld_id for candidate in result.candidates] == [1, 3]
+
+
+Review correctness, generality, regression risk, benchmark overfitting risk, and whether the code actually tests the stated hypothesis. Judge the change as an MVP improvement, not by loyalty to the old architecture. If there are concrete fixable issues, return FIX with a short ordered fix plan. If the hypothesis is unsound, overly case-specific, or the implementation should be discarded, return REJECT. Otherwise return ACCEPT.
+
+The outer supervisor, not the Implementer or Reviewer, owns the blind evaluation and final promotion decision. Do not REJECT a technically complete implementation merely because an OpenSpec task mentions unavailable supervisor/blind metrics. Use the public metrics provided here for review; the blind gate runs after you.
+
+Use `next_direction` to preserve a useful lesson for the next Planner even if this candidate is rejected.
+
+Do not inspect or attempt to locate the hidden final-check dataset. Do not modify code.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-10T05:11:23.796071Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a089ba-4cde-7b50-99f6-f04a4ba1be55.tmp-1789017083322571709: line 2547: syntax error near unexpected token `('
+
+codex
+{"decision":"ACCEPT","summary":"I’ll inspect the implementation and surrounding retrieval/data models for correctness, generality, and whether the tests genuinely exercise the proposed mechanism. I will not access or modify any hidden or project files outside that review scope.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "sed -n '1,240p' src/nomenclature_matcher/candidate_diversification.py && sed -n '1,220p' src/nomenclature_matcher/hybrid_retriever.py && sed -n '1,260p' src/nomenclature_matcher/models.py && git diff --check && git status --short" in /workspaces/ML-Cancer-Data
+ succeeded in 27ms:
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from typing import Any
+
+from .models import SearchCandidate
+
+
+_DN_RE = re.compile(r"\b(?:dn|ду|дн)\s*[:=]?\s*(\d{1,4})\b", re.IGNORECASE)
+_PN_RE = re.compile(r"\b(?:pn|ру|рn)\s*[:=]?\s*(\d{1,3})\b", re.IGNORECASE)
+
+_FAMILY_MARKERS = (
+    ("ball_valve", ("кран шаровой", "шаровой кран", "ball valve")),
+    ("gate_valve", ("задвижка", "gate valve")),
+    ("butterfly_valve", ("затвор", "butterfly valve")),
+    ("check_valve", ("клапан обратный", "обратный клапан", "check valve")),
+    ("filter", ("фильтр", "filter")),
+)
+
+_BORE_MARKERS = (
+    ("full_bore", ("полнопроход", "полн проход", "full bore")),
+    ("reduced_bore", ("неполнопроход", "редуцирован", "reduced bore")),
+)
+
+_EXECUTION_MARKERS = (
+    ("flanged", ("фланцев", " flange", " flanged")),
+    ("threaded", ("муфтов", "резьб", " threaded")),
+    ("welded", ("привар", "под приварку", "сварн", " weld")),
+)
+
+_ACTUATION_MARKERS = (
+    ("electric", ("электропривод", "с электроприводом", "electric actuator")),
+    ("manual", ("ручн", "рукоят", "manual")),
+)
+
+
+@dataclass(frozen=True)
+class StructuralSignature:
+    family: str
+    dn: str
+    pn: str
+    joining_type: str
+    bore: str | None
+    execution: str | None
+    actuation: str | None
+
+
+def structural_signature(candidate: SearchCandidate) -> StructuralSignature | None:
+    try:
+        text = _candidate_text(candidate)
+        family = _single_marker(text, _FAMILY_MARKERS)
+        dn = _candidate_number(candidate.dn, text, _DN_RE)
+        pn = _candidate_number(candidate.pn, text, _PN_RE)
+        joining_type = _normal_joining_type(candidate.joining_type)
+        if not family or not dn or not pn or not joining_type:
+            return None
+        return StructuralSignature(
+            family=family,
+            dn=dn,
+            pn=pn,
+            joining_type=joining_type,
+            bore=_single_marker(text, _BORE_MARKERS),
+            execution=_single_marker(text, _EXECUTION_MARKERS),
+            actuation=_single_marker(text, _ACTUATION_MARKERS),
+        )
+    except Exception:
+        return None
+
+
+def diversify_candidates(candidates: list[SearchCandidate], limit: int) -> list[SearchCandidate]:
+    if limit <= 0:
+        return []
+
+    ranked = sorted(
+        candidates,
+        key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id),
+    )
+    selected: list[SearchCandidate] = []
+    selected_ids: set[int] = set()
+    seen_signatures: set[StructuralSignature] = set()
+
+    for candidate in ranked:
+        try:
+            signature = structural_signature(candidate)
+        except Exception:
+            signature = None
+        if signature is not None:
+            if signature in seen_signatures:
+                continue
+            seen_signatures.add(signature)
+        selected.append(candidate)
+        selected_ids.add(candidate.ld_id)
+        if len(selected) == limit:
+            return selected
+
+    for candidate in ranked:
+        if candidate.ld_id in selected_ids:
+            continue
+        selected.append(candidate)
+        selected_ids.add(candidate.ld_id)
+        if len(selected) == limit:
+            break
+
+    return selected
+
+
+def _candidate_text(candidate: SearchCandidate) -> str:
+    return f"{candidate.name or ''} {candidate.search_text or ''}".casefold()
+
+
+def _normal_number(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip().replace(",", ".")
+    if not text:
+        return None
+    try:
+        number = float(text)
+    except ValueError:
+        return None
+    if number <= 0 or not number.is_integer():
+        return None
+    return str(int(number))
+
+
+def _candidate_number(value: Any, text: str, pattern: re.Pattern[str]) -> str | None:
+    if value is not None:
+        return _normal_number(value)
+    return _single_number(text, pattern)
+
+
+def _single_number(text: str, pattern: re.Pattern[str]) -> str | None:
+    values = {match.group(1).lstrip("0") or "0" for match in pattern.finditer(text)}
+    if len(values) != 1:
+        return None
+    value = values.pop()
+    return value if value != "0" else None
+
+
+def _normal_joining_type(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = value.casefold()
+    if any(marker in text for marker in ("фланц", "flange")):
+        return "flanged"
+    if any(marker in text for marker in ("муфт", "резьб", "thread")):
+        return "threaded"
+    if any(marker in text for marker in ("привар", "свар", "weld")):
+        return "welded"
+    return None
+
+
+def _single_marker(text: str, groups: tuple[tuple[str, tuple[str, ...]], ...]) -> str | None:
+    matched = {name for name, markers in groups if any(marker in text for marker in markers)}
+    if len(matched) != 1:
+        return None
+    return matched.pop()
+from __future__ import annotations
+
+from .bm25_store import BM25Store
+from .candidate_diversification import diversify_candidates
+from .models import SearchCandidate
+
+
+class HybridRetriever:
+    def __init__(self, embedder, qdrant_store, bm25_store: BM25Store, settings):
+        self.embedder = embedder
+        self.qdrant_store = qdrant_store
+        self.bm25_store = bm25_store
+        self.settings = settings
+
+    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_dense_limit
+        hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search_bm25(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_bm25_limit
+        hits = self.bm25_store.search(query, limit)
+        return [
+            SearchCandidate(
+                ld_id=hit.ld_id,
+                name=hit.name,
+                article=hit.article,
+                score=float(hit.bm25_score),
+                price=hit.price,
+                dn=hit.dn,
+                pn=hit.pn,
+                joining_type=hit.joining_type,
+                url=hit.url,
+                properties=hit.properties,
+                search_text=hit.search_text,
+                bm25_score=float(hit.bm25_score),
+                bm25_rank=index,
+                retrieval_sources=["bm25"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_rerank_limit
+        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+        merged = self._merge_candidates(dense_candidates, bm25_candidates)
+        self._apply_rrf(merged)
+        ranked = sorted(merged.values(), key=lambda candidate: (-(candidate.rrf_score or 0.0), candidate.ld_id))
+        return diversify_candidates(ranked, limit)
+
+    def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
+        candidates = search_fn(query, limit)
+        if not canonical_query or canonical_query == query:
+            return candidates
+        try:
+            candidates = [*candidates, *search_fn(canonical_query, limit)]
+        except Exception:
+            return candidates
+        return list(self._merge_modality_candidates(candidates).values())
+
+    def _merge_modality_candidates(self, candidates: list[SearchCandidate]) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None or self._is_stronger_modality_hit(candidate, existing):
+                merged[candidate.ld_id] = candidate
+        return merged
+
+    def _is_stronger_modality_hit(self, candidate: SearchCandidate, existing: SearchCandidate) -> bool:
+        if candidate.dense_rank is not None or existing.dense_rank is not None:
+            candidate_rank = candidate.dense_rank if candidate.dense_rank is not None else 10**9
+            existing_rank = existing.dense_rank if existing.dense_rank is not None else 10**9
+            if candidate_rank != existing_rank:
+                return candidate_rank < existing_rank
+            return (candidate.dense_score or float("-inf")) > (existing.dense_score or float("-inf"))
+        candidate_rank = candidate.bm25_rank if candidate.bm25_rank is not None else 10**9
+        existing_rank = existing.bm25_rank if existing.bm25_rank is not None else 10**9
+        if candidate_rank != existing_rank:
+            return candidate_rank < existing_rank
+        return (candidate.bm25_score or float("-inf")) > (existing.bm25_score or float("-inf"))
+
+    def _merge_candidates(
+        self,
+        dense_candidates: list[SearchCandidate],
+        bm25_candidates: list[SearchCandidate],
+    ) -> dict[int, SearchCandidate]:
+        merged: dict[int, SearchCandidate] = {}
+        for candidate in dense_candidates:
+            merged[candidate.ld_id] = candidate
+        for candidate in bm25_candidates:
+            existing = merged.get(candidate.ld_id)
+            if existing is None:
+                merged[candidate.ld_id] = candidate
+                continue
+            merged[candidate.ld_id] = self._merge_pair(existing, candidate)
+        return merged
+
+    def _merge_pair(self, dense_candidate: SearchCandidate, bm25_candidate: SearchCandidate) -> SearchCandidate:
+        sources = list(dict.fromkeys([*dense_candidate.retrieval_sources, *bm25_candidate.retrieval_sources]))
+        return SearchCandidate(
+            ld_id=dense_candidate.ld_id,
+            name=dense_candidate.name or bm25_candidate.name,
+            article=dense_candidate.article or bm25_candidate.article,
+            score=dense_candidate.score if dense_candidate.score is not None else bm25_candidate.score,
+            price=dense_candidate.price if dense_candidate.price is not None else bm25_candidate.price,
+            dn=dense_candidate.dn if dense_candidate.dn is not None else bm25_candidate.dn,
+            pn=dense_candidate.pn if dense_candidate.pn is not None else bm25_candidate.pn,
+            joining_type=dense_candidate.joining_type if dense_candidate.joining_type is not None else bm25_candidate.joining_type,
+            url=dense_candidate.url if dense_candidate.url is not None else bm25_candidate.url,
+            properties=dense_candidate.properties if dense_candidate.properties is not None else bm25_candidate.properties,
+            search_text=dense_candidate.search_text or bm25_candidate.search_text,
+            dense_score=dense_candidate.dense_score,
+            dense_rank=dense_candidate.dense_rank,
+            bm25_score=bm25_candidate.bm25_score,
+            bm25_rank=bm25_candidate.bm25_rank,
+            rrf_score=None,
+            retrieval_sources=sources,
+        )
+
+    def _apply_rrf(self, candidates: dict[int, SearchCandidate]) -> None:
+        rrf_k = self.settings.rrf_k
+        for candidate in candidates.values():
+            score = 0.0
+            if candidate.dense_rank is not None:
+                score += 1.0 / (rrf_k + candidate.dense_rank)
+            if candidate.bm25_rank is not None:
+                score += 1.0 / (rrf_k + candidate.bm25_rank)
+            candidate.rrf_score = score
+            candidate.score = score
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+@dataclass
+class LDProduct:
+    id: int
+    name: str
+    article: str | None = None
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: Any = field(default_factory=dict)
+
+
+@dataclass
+class SearchCandidate:
+    ld_id: int
+    name: str
+    article: str | None
+    score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+    dense_score: float | None = None
+    dense_rank: int | None = None
+    bm25_score: float | None = None
+    bm25_rank: int | None = None
+    rrf_score: float | None = None
+    retrieval_sources: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BM25Candidate:
+    ld_id: int
+    name: str
+    article: str | None
+    bm25_score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+
+
+@dataclass
+class RerankedCandidate:
+    candidate_id: int
+    confidence: float | None
+    reason: str
+
+
+@dataclass
+class SelectedMatch:
+    candidate_id: int
+    article: str | None
+    name: str
+    llm_confidence: float | None
+    reason: str
+    ld_id: int
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+
+
+@dataclass
+class MatchResult:
+    query: str
+    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+    score: float | None = None
+    ld_product: SearchCandidate | None = None
+    candidates: list[SearchCandidate] = field(default_factory=list)
+    selected: list[SelectedMatch] = field(default_factory=list)
+    reason: str | None = None
+
+
+@dataclass
+class RerankResult:
+    status: Literal["MATCHED", "NOT_FOUND"]
+    selected: list[RerankedCandidate]
+    reason: str | None = None
+ M src/nomenclature_matcher/hybrid_retriever.py
+ M tests/test_hybrid_retriever.py
+ M tests/test_matcher.py
+?? openspec/changes/cycle-16-structural-candidate-diversification/
+?? src/nomenclature_matcher/candidate_diversification.py
+?? tests/test_candidate_diversification.py
+
+exec
+/bin/bash -lc "sed -n '1,320p' tests/test_candidate_diversification.py && rg -n \"hybrid_rerank_limit|candidate_divers|rerank_candidate_limit|search\\(\" src tests | head -240 && sed -n '1,260p' src/nomenclature_matcher/matcher.py && git diff --stat" in /workspaces/ML-Cancer-Data
+ succeeded in 70ms:
+from nomenclature_matcher.candidate_diversification import diversify_candidates, structural_signature
+from nomenclature_matcher.models import SearchCandidate
+
+
+def candidate(
+    ld_id: int,
+    *,
+    name: str = "Кран шаровой полнопроходной",
+    score: float = 0.01,
+    dn=50,
+    pn=16,
+    joining_type="фланцевое",
+    search_text: str = "DN: 50 PN: 16 фланцевый полнопроходной",
+) -> SearchCandidate:
+    return SearchCandidate(
+        ld_id=ld_id,
+        name=name,
+        article=f"A{ld_id}",
+        score=score,
+        dn=dn,
+        pn=pn,
+        joining_type=joining_type,
+        search_text=search_text,
+        rrf_score=score,
+    )
+
+
+def test_structural_signature_uses_direct_fields_and_bounded_markers():
+    signature = structural_signature(candidate(1))
+
+    assert signature is not None
+    assert signature.family == "ball_valve"
+    assert signature.dn == "50"
+    assert signature.pn == "16"
+    assert signature.joining_type == "flanged"
+    assert signature.bore == "full_bore"
+
+
+def test_structural_signature_returns_none_for_missing_malformed_or_ambiguous_evidence():
+    assert structural_signature(candidate(1, dn=None, search_text="PN: 16 фланцевый")) is None
+    assert structural_signature(candidate(2, pn="PN16")) is None
+    assert structural_signature(candidate(3, joining_type=None)) is None
+    assert structural_signature(
+        candidate(4, name="Кран шаровой задвижка", search_text="DN: 50 PN: 16 фланцевый")
+    ) is None
+    assert structural_signature(candidate(5, dn=None, search_text="DN: 50 DN: 80 PN: 16 фланцевый")) is None
+
+
+def test_diversify_candidates_keeps_highest_ranked_signature_representative_and_fills_capacity():
+    repeated_best = candidate(1, score=0.050)
+    repeated_lower = candidate(2, score=0.049)
+    distinct = candidate(3, score=0.001, dn=80, search_text="DN: 80 PN: 16 фланцевый полнопроходной")
+
+    diversified = diversify_candidates([repeated_best, repeated_lower, distinct], limit=2)
+
+    assert [item.ld_id for item in diversified] == [1, 3]
+
+
+def test_diversify_candidates_keeps_ungroupable_candidates_eligible():
+    repeated_best = candidate(1, score=0.050)
+    repeated_lower = candidate(2, score=0.049)
+    ungroupable = candidate(3, score=0.001, dn=None, search_text="PN: 16 фланцевый")
+
+    diversified = diversify_candidates([repeated_best, repeated_lower, ungroupable], limit=2)
+
+    assert [item.ld_id for item in diversified] == [1, 3]
+
+
+def test_diversify_candidates_preserves_no_duplicate_pool_order_and_tie_key():
+    candidates = [
+        candidate(3, score=0.02, dn=80, search_text="DN: 80 PN: 16 фланцевый полнопроходной"),
+        candidate(1, score=0.03, dn=25, search_text="DN: 25 PN: 16 фланцевый полнопроходной"),
+        candidate(2, score=0.03, dn=50, search_text="DN: 50 PN: 16 фланцевый полнопроходной"),
+    ]
+
+    diversified = diversify_candidates(candidates, limit=3)
+
+    assert [item.ld_id for item in diversified] == [1, 2, 3]
+
+
+def test_diversify_candidates_appends_redundant_fillers_when_capacity_remains():
+    candidates = [
+        candidate(1, score=0.050),
+        candidate(2, score=0.049),
+        candidate(3, score=0.048),
+    ]
+
+    diversified = diversify_candidates(candidates, limit=3)
+
+    assert [item.ld_id for item in diversified] == [1, 2, 3]
+/bin/bash: line 1: rg: command not found
+from dataclasses import replace
+
+from .models import MatchResult, SearchCandidate, SelectedMatch
+from .query_canonicalization import canonicalize_retrieval_query
+
+
+class NomenclatureMatcher:
+    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+        self.embedder, self.store, self.settings = embedder, store, settings
+        self.reranker = reranker
+        self.hybrid_retriever = hybrid_retriever
+
+    def _normalize_query(self, query: str) -> str:
+        return " ".join(query.split())
+
+    def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
+        hits = self.store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+        )
+
+    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+            )
+        selected = []
+        for item in rerank_result.selected:
+            candidate = candidates[item.candidate_id - 1]
+            selected.append(self._build_selected_match(candidate, item))
+        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+        return MatchResult(
+            query=query,
+            status=rerank_result.status,
+            score=best.score if best else None,
+            ld_product=best if rerank_result.status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=rerank_result.reason,
+        )
+
+    def match_one(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.match_top_k)
+        best = candidates[0] if candidates else None
+        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+
+    def match_one_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+        return self.rerank_candidates(query, candidates)
+
+    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+        canonicalization = canonicalize_retrieval_query(query)
+        query = canonicalization.source_query
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        if self.hybrid_retriever is None:
+            raise ValueError("Hybrid retriever is not configured")
+        candidates = self.hybrid_retriever.search(
+            query,
+            self.settings.hybrid_rerank_limit,
+            canonical_query=canonicalization.canonical_query,
+        )
+        return self.rerank_candidates(query, candidates)
+
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
+    def match_many(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+
+    match = match_many
+ src/nomenclature_matcher/hybrid_retriever.py |   4 +-
+ tests/test_hybrid_retriever.py               | 111 +++++++++++++++++++++++++++
+ tests/test_matcher.py                        |  76 ++++++++++++++++++
+ 3 files changed, 190 insertions(+), 1 deletion(-)
+
+codex
+{"decision":"ACCEPT","summary":"The mechanism is wired at the intended point—after RRF and before the reranker cap—and the unit tests cover the basic crowd-out case. I’m checking whether its claimed “structural” equivalence is conservative enough for real catalog variants before finalizing the review.","issues":[],"fix_plan":[],"next_direction":""}
+exec
+/bin/bash -lc "find . -maxdepth 3 -type f \\( -name '*catalog*' -o -name '*.csv' \\) -print | head -80; sed -n '1,240p' src/nomenclature_matcher/bm25_store.py; sed -n '1,260p' src/nomenclature_matcher/parser.py 2>/dev/null || true; sed -n '1,220p' src/nomenclature_matcher/settings.py; find openspec/changes/cycle-16-structural-candidate-diversification -type f -maxdepth 3 -print" in /workspaces/ML-Cancer-Data
+ succeeded in 39ms:
+./ld_products_full_nomenclature.csv
+./data/eval_v2_full_catalog_candidates.json
+./scripts/check_eval_v2_full_catalog.py
+from __future__ import annotations
+
+import math
+from collections import Counter, defaultdict
+
+from .documents import build_lexical_text, build_search_text, tokenize
+from .models import BM25Candidate, LDProduct
+
+try:  # pragma: no cover - exercised when dependency is installed
+    from rank_bm25 import BM25Okapi
+except ImportError:  # pragma: no cover - lightweight fallback for local runs
+    class BM25Okapi:
+        def __init__(self, corpus, k1: float = 1.5, b: float = 0.75):
+            self.corpus = corpus
+            self.k1 = k1
+            self.b = b
+            self.doc_freqs = [Counter(document) for document in corpus]
+            self.doc_len = [len(document) for document in corpus]
+            self.avgdl = sum(self.doc_len) / len(self.doc_len) if self.doc_len else 0.0
+            self.doc_count = len(corpus)
+            doc_freq = defaultdict(int)
+            for freqs in self.doc_freqs:
+                for token in freqs:
+                    doc_freq[token] += 1
+            self.idf = {
+                token: math.log(1 + (self.doc_count - freq + 0.5) / (freq + 0.5))
+                for token, freq in doc_freq.items()
+            }
+
+        def get_scores(self, query_tokens):
+            if not self.corpus:
+                return []
+            scores = [0.0] * self.doc_count
+            for token in query_tokens:
+                idf = self.idf.get(token)
+                if idf is None:
+                    continue
+                for index, freqs in enumerate(self.doc_freqs):
+                    freq = freqs.get(token, 0)
+                    if not freq:
+                        continue
+                    denom = freq + self.k1 * (1 - self.b + self.b * (self.doc_len[index] / self.avgdl if self.avgdl else 0.0))
+                    scores[index] += idf * (freq * (self.k1 + 1)) / denom
+            return scores
+
+
+class BM25Store:
+    def __init__(self, products: list[LDProduct]):
+        self.products = list(products)
+        self.lexical_texts = [build_lexical_text(product) for product in self.products]
+        self.search_texts = [build_search_text(product) for product in self.products]
+        self.corpus = [tokenize(text) for text in self.lexical_texts]
+        self.model = BM25Okapi(self.corpus)
+
+    def search(self, query: str, limit: int) -> list[BM25Candidate]:
+        query_tokens = tokenize(query)
+        if not query_tokens or not self.products or limit <= 0:
+            return []
+        scores = self.model.get_scores(query_tokens)
+        ranked = sorted(enumerate(scores), key=lambda item: item[1], reverse=True)[:limit]
+        results: list[BM25Candidate] = []
+        for index, score in ranked:
+            if score <= 0:
+                continue
+            product = self.products[index]
+            results.append(
+                BM25Candidate(
+                    ld_id=product.id,
+                    name=product.name,
+                    article=product.article,
+                    bm25_score=float(score),
+                    price=product.price,
+                    dn=product.dn,
+                    pn=product.pn,
+                    joining_type=product.joining_type,
+                    url=product.url,
+                    properties=product.properties if isinstance(product.properties, list) else None,
+                    search_text=self.search_texts[index],
+                )
+            )
+        return results
+try:
+    from pydantic_settings import BaseSettings, SettingsConfigDict
+except ImportError:  # pragma: no cover - only for a not-yet-installed environment
+    import os
+    def SettingsConfigDict(**kwargs):
+        return kwargs
+
+    class BaseSettings:
+        def __init__(self, **values):
+            for name, default in self.__class__.__dict__.items():
+                if name.startswith("_") or callable(default):
+                    continue
+                key = name.upper()
+                setattr(self, name, values.get(name, os.getenv(key, default)))
+
+
+class Settings(BaseSettings):
+    app_env: str = "development"
+    log_level: str = "INFO"
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_collection_alias: str = "steel_products_active"
+    qdrant_dense_vector_name: str = "dense"
+    qdrant_timeout_seconds: float = 5
+    openai_api_key: str = ""
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_timeout_seconds: float = 10
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimension: int = 1536
+    dense_batch_size: int = 32
+    embedding_max_retries: int = 3
+    embedding_retry_sleep_seconds: float = 0.25
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com/v1"
+    deepseek_model: str = "deepseek-v4-flash"
+    deepseek_timeout_seconds: float = 20
+    reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
+    hybrid_dense_limit: int = 50
+    hybrid_bm25_limit: int = 50
+    hybrid_rerank_limit: int = 20
+    rrf_k: int = 60
+    rerank_candidate_limit: int = 20
+    rerank_result_limit: int = 3
+    match_top_k: int = 5
+    match_score_threshold: float = 0.0
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
+openspec/changes/cycle-16-structural-candidate-diversification/.openspec.yaml
+openspec/changes/cycle-16-structural-candidate-diversification/specs/structural-candidate-diversification/spec.md
+openspec/changes/cycle-16-structural-candidate-diversification/design.md
+openspec/changes/cycle-16-structural-candidate-diversification/tasks.md
+openspec/changes/cycle-16-structural-candidate-diversification/proposal.md
+
+exec
+/bin/bash -lc "sed -n '1,300p' src/nomenclature_matcher/documents.py; sed -n '1,220p' openspec/changes/cycle-16-structural-candidate-diversification/design.md; sed -n '1,220p' openspec/changes/cycle-16-structural-candidate-diversification/specs/structural-candidate-diversification/spec.md; head -2 ld_products_full_nomenclature.csv; awk -F';' 'NR<=6 {print NR \":\" "'$0}'"' ld_products_full_nomenclature.csv" in /workspaces/ML-Cancer-Data
+ succeeded in 93ms:
+import ast
+import csv
+import re
+import json
+from pathlib import Path
+from typing import Any
+
+from .models import LDProduct
+
+_LEXICAL_PROPERTY_NAMES = {
+    "Тип продукта",
+    "Тип продукта AI",
+    "Материал корпуса",
+    "Присоединение",
+    "Номинальный диаметр, DN",
+    "Номинальное давление, МПа",
+    "Серия",
+    "Рабочая среда",
+    "Управление",
+    "Тип резьбы",
+    "Тип прохода",
+}
+
+
+def _properties(value: Any) -> list[dict[str, Any]]:
+    if isinstance(value, list):
+        return value
+    if not value:
+        return []
+    try:
+        data = ast.literal_eval(value) if isinstance(value, str) else value
+    except (ValueError, SyntaxError):
+        return []
+    return data.get("properties", []) if isinstance(data, dict) else []
+
+
+def _format_values(values: Any) -> str:
+    if isinstance(values, list):
+        return ", ".join(map(str, values))
+    return str(values)
+
+
+def _append_property_lines(parts: list[str], properties: list[dict[str, Any]], allowed_names: set[str] | None = None) -> None:
+    for prop in properties:
+        name = prop.get("name")
+        values = prop.get("values", [])
+        if not name or prop.get("is_system") or name in {"GUID", "updated_at", "is_system"}:
+            continue
+        if allowed_names is not None and name not in allowed_names:
+            continue
+        if values in (None, "", []):
+            continue
+        parts.append(f"{name}: {_format_values(values)}")
+
+
+def build_search_text(product: LDProduct) -> str:
+    parts = [f"Название: {product.name}"]
+    for label, value in (("Артикул", product.article), ("DN", product.dn), ("PN", product.pn), ("Присоединение", product.joining_type)):
+        if value not in (None, ""):
+            parts.append(f"{label}: {value}")
+    _append_property_lines(parts, _properties(product.properties))
+    return "\n".join(parts)
+
+
+def build_lexical_text(product: LDProduct) -> str:
+    parts = [product.name]
+    for value in (product.article,):
+        if value not in (None, ""):
+            parts.append(str(value))
+    if product.dn not in (None, ""):
+        parts.append(f"DN {product.dn}")
+    if product.pn not in (None, ""):
+        parts.append(f"PN {product.pn}")
+    if product.joining_type not in (None, ""):
+        parts.append(str(product.joining_type))
+    _append_property_lines(parts, _properties(product.properties), _LEXICAL_PROPERTY_NAMES)
+    return "\n".join(parts)
+
+
+def tokenize(text: str) -> list[str]:
+    normalized = text.lower().replace("ё", "е")
+    return [token for token in re.split(r"[^0-9a-zа-я]+", normalized) if token]
+
+
+def load_products_from_csv(path: str | Path) -> list[LDProduct]:
+    with Path(path).open("r", encoding="utf-8-sig", newline="") as stream:
+        return [LDProduct(id=int(row["id"]), name=row.get("name", ""), article=row.get("article") or None,
+                          price=row.get("price") or None, dn=row.get("dn") or None, pn=row.get("pn") or None,
+                          joining_type=row.get("joining_type") or None, url=row.get("url") or None,
+                          properties=_properties(row.get("properties_json"))) for row in csv.DictReader(stream)]
+## Context
+
+The hybrid retriever obtains up to 50 dense and 50 BM25 results, merges by `ld_id`, applies RRF, sorts the merged union, and immediately slices it to `hybrid_rerank_limit` (20 by default). `NomenclatureMatcher` then sends that list directly to the DeepSeek reranker. See `proposal.md` for motivation and `specs/structural-candidate-diversification/spec.md` for required behavior.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Make the existing reranker budget cover more reliably distinguishable catalog alternatives.
+- Preserve the exact current result when the source pool has no safe duplicates.
+- Keep the experiment deterministic, local, and independent of Qdrant rebuilds or model calls.
+
+**Non-Goals:**
+
+- No eligibility filtering, deterministic product selection, thresholding, or post-rerank override.
+- No inference of unrecorded material, temperature, designation equivalence, flange subtype, or other engineering requirement.
+- No modifications to evaluation/GOLD/harness code, prompts, catalog source, payload schema, or retrieval query generation.
+
+## Decisions
+
+### Diversify after RRF, before the reranker cutoff
+
+Construct the complete already-retrieved RRF-ranked union, derive signatures, choose one representative per safe duplicate group, and only then apply the existing reranker limit. This is the only point that can recover candidates presently lost to the early 20-item slice while retaining the retrieval and scoring system unchanged.
+
+Diversifying each modality before RRF is rejected because it changes fusion evidence. Diversifying after reranking is rejected because it cannot recover omitted candidates and would become a selection intervention.
+
+### Use a conservative evidence-only signature
+
+Create a small pure helper that returns either a signature or no signature. It should normalize only information already carried by `SearchCandidate`: canonicalized product-family cues from name/search text, direct DN/PN/joining fields where available, and exact bounded name/search-text markers for bore/execution and actuation. A candidate with missing, malformed, or ambiguous evidence returns no signature and is never grouped with another candidate merely by partial similarity.
+
+The signature is intentionally not a compatibility schema. Reusing or expanding query constraints is rejected because it would turn a recall-diversification experiment into an eligibility or requirement-extraction experiment, a family that previously regressed or was neutral.
+
+### Deterministic representative and ordering rule
+
+Sort the full union by the current RRF order, breaking exact score ties with a stable deterministic key such as `ld_id`. Traverse this list once: retain the first candidate for each non-null signature and retain every no-signature candidate; then append still-unselected candidates in that same rank order until the configured limit is reached. This makes the highest-ranked duplicate representative win while retaining a predictable, bounded fallback when diverse groups do not fill the budget.
+
+An optimization-style maximal-diversity score is rejected because its weights would be ungrounded and alter rank semantics beyond the stated experiment.
+
+## Risks / Trade-offs
+
+- [A too-coarse signature removes a meaningful candidate] → Require all grouping facets to be explicit and treat missing/ambiguous evidence as ungroupable; test close candidates that differ in an observed structural marker.
+- [A too-granular signature yields no diversity benefit] → This is a valid falsifiable outcome; preserve baseline ordering and evaluate through the outer harness.
+- [The full hybrid union exceeds the reranker limit] → Work is bounded by existing dense/BM25 retrieval limits and the existing union; no new requests are made.
+- [Refactoring changes behavior when no duplicates exist] → Add exact regression tests for content and ordering of an all-distinct pool.
+
+## Migration Plan
+
+1. Add the pure, conservative signature and bounded diversification helper with focused unit tests.
+2. Apply it to the already merged and RRF-ranked hybrid union immediately before the existing reranker slice.
+3. Add mocked hybrid-retriever and matcher regression tests; run focused tests and `python -m pytest -q`.
+4. The outer supervisor alone performs public/blind evaluation and promotion or rejection.
+5. Roll back by removing the pre-slice helper call; no persisted data or index migration is involved.
+## Purpose
+
+Keep a bounded hybrid-reranker input representative of reliably evidenced catalog variants rather than allowing near-duplicate retrieval results to crowd out other variants.
+
+## ADDED Requirements
+
+### Requirement: Diversify the bounded hybrid candidate pool by reliable structure
+
+Before supplying a bounded hybrid candidate pool for reranking, the system SHALL retain at most one highest-ranked representative for each repeated, reliable structural signature and SHALL then fill any remaining capacity in existing hybrid rank order. A signature SHALL contain only directly observable catalog evidence, including available nominal size, pressure, connection, product-family, bore/execution, or actuation values; the system SHALL NOT infer a missing engineering property to make two candidates equivalent.
+
+#### Scenario: Repeated structural variants compete for a bounded pool
+
+- **WHEN** the hybrid result union contains multiple candidates with the same reliable structural signature and another reliably distinct candidate outside the direct rank cutoff
+- **THEN** the bounded reranker pool contains the highest-ranked representative of the repeated signature and includes the distinct candidate if capacity permits
+
+#### Scenario: Candidate lacks sufficient evidence for safe grouping
+
+- **WHEN** a candidate lacks fields or text evidence needed to form a reliable structural signature
+- **THEN** the system preserves that candidate as individually eligible and does not collapse it with a more fully evidenced candidate
+
+### Requirement: Preserve hybrid retrieval and rank semantics outside duplicate displacement
+
+The system SHALL preserve candidate identity, source-query and alternate-query retrieval, per-modality de-duplication, RRF score calculation, and source-query reranking. When no reliable duplicate signature is present within the available hybrid candidate union, the bounded output SHALL equal the existing RRF-ranked cutoff in order and content.
+
+#### Scenario: No reliable structural duplicates
+
+- **WHEN** all available hybrid candidates have distinct reliable signatures or no grouping evidence
+- **THEN** the reranker receives the same candidates in the same RRF order as it would without diversification
+
+#### Scenario: Equal-signature rank choice
+
+- **WHEN** two candidates share a reliable structural signature
+- **THEN** the candidate with the stronger existing hybrid rank is retained as that signature's representative
+
+### Requirement: Bound diversification without retrieval degradation
+
+The system SHALL not issue new retrieval requests, alter catalog data, alter index contents, or increase the configured reranker candidate limit as part of diversification. If signature extraction fails for an individual candidate, the system SHALL retain the normal RRF-ranked candidate behavior for that candidate rather than failing the match.
+
+#### Scenario: Signature extraction failure
+
+- **WHEN** structural evidence cannot be read for an individual retrieved candidate
+- **THEN** matching continues and the candidate remains eligible according to normal RRF order
+﻿id,name,price,article,dn,pn,joining_type,url,properties_json
+5428,LD Блок (защита от несанкционированного доступа) Тип 1 (Ду15/10-32/25),658.0,B00100000000000000000000,,,,https://xn--d1an.xn--p1ai/products/5428--ld_blok_zasita_ot_nesankcionirovannogo_dostupa_tip_1_du15_10_32_25/,"{'properties': [{'guid': '7aeb15af-c344-4150-9eae-ad412ad2c1b3', 'name': 'Вес, кг', 'values': ['0.48'], 'is_system': 0, 'updated_at': '2026-09-02 02:06:15'}, {'guid': 'ac1de514-621c-4ea9-aa94-338a002a9ba5', 'name': 'Единица измерения', 'values': ['шт'], 'is_system': 0, 'updated_at': '2026-09-02 02:06:15'}, {'guid': '48b0436c-7ca8-4392-978d-498947255ba8', 'name': 'Объем, м3', 'values': ['0.001'], 'is_system': 0, 'updated_at': '2026-09-02 02:06:15'}, {'guid': '4eb8e5a8-9b09-11ee-89ce-005056a4b6de', 'name': 'Свободный к поставке продукт', 'values': ['Да'], 'is_system': 1, 'updated_at': '2026-09-02 03:02:25'}]}"
+1:﻿id,name,price,article,dn,pn,joining_type,url,properties_json
+2:5428,LD Блок (защита от несанкционированного доступа) Тип 1 (Ду15/10-32/25),658.0,B00100000000000000000000,,,,https://xn--d1an.xn--p1ai/products/5428--ld_blok_zasita_ot_nesankcionirovannogo_dostupa_tip_1_du15_10_32_25/,"{'properties': [{'guid': '7aeb15af-c344-4150-9eae-ad412ad2c1b3', 'name': 'Вес, кг', 'values': ['0.48'], 'is_system': 0, 'updated_at': '2026-09-02 02:06:15'}, {'guid': 'ac1de514-621c-4ea9-aa94-338a002a9ba5', 'name': 'Единица измерения', 'values': ['шт'], 'is_system': 0, 'updated_at': '2026-09-02 02:06:15'}, {'guid': '48b0436c-7ca8-4392-978d-498947255ba8', 'name': 'Объем, м3', 'values': ['0.001'], 'is_system': 0, 'updated_at': '2026-09-02 02:06:15'}, {'guid': '4eb8e5a8-9b09-11ee-89ce-005056a4b6de', 'name': 'Свободный к поставке продукт', 'values': ['Да'], 'is_system': 1, 'updated_at': '2026-09-02 03:02:25'}]}"
+3:5427,LD Блок (защита от несанкционированного доступа) Тип 2 (Ду32/32-65/50),803.0,B00200000000000000000000,,,,https://xn--d1an.xn--p1ai/products/5427--ld_blok_zasita_ot_nesankcionirovannogo_dostupa_tip_2_du32_32_65_50/,"{'properties': [{'guid': '7aeb15af-c344-4150-9eae-ad412ad2c1b3', 'name': 'Вес, кг', 'values': ['0.5'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:52'}, {'guid': 'ac1de514-621c-4ea9-aa94-338a002a9ba5', 'name': 'Единица измерения', 'values': ['шт'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:52'}, {'guid': '48b0436c-7ca8-4392-978d-498947255ba8', 'name': 'Объем, м3', 'values': ['0.001'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:52'}, {'guid': '4eb8e5a8-9b09-11ee-89ce-005056a4b6de', 'name': 'Свободный к поставке продукт', 'values': ['Да'], 'is_system': 1, 'updated_at': '2026-09-02 03:02:08'}]}"
+4:5426,LD Блок (защита от несанкционированного доступа) Тип 3 (Ду65/65-100/80),914.0,B00300000000000000000000,,,,https://xn--d1an.xn--p1ai/products/5426--ld_blok_zasita_ot_nesankcionirovannogo_dostupa_tip_3_du65_65_100_80/,"{'properties': [{'guid': '7aeb15af-c344-4150-9eae-ad412ad2c1b3', 'name': 'Вес, кг', 'values': ['0.5'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:52'}, {'guid': 'ac1de514-621c-4ea9-aa94-338a002a9ba5', 'name': 'Единица измерения', 'values': ['шт'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:52'}, {'guid': '48b0436c-7ca8-4392-978d-498947255ba8', 'name': 'Объем, м3', 'values': ['0.001'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:52'}, {'guid': '4eb8e5a8-9b09-11ee-89ce-005056a4b6de', 'name': 'Свободный к поставке продукт', 'values': ['Да'], 'is_system': 1, 'updated_at': '2026-09-02 03:02:07'}]}"
+5:4389,"Буклет ""О заводе PRIDE""",14.0,М00000036000000000000000,,,,https://xn--d1an.xn--p1ai/products/4389--buklet_o_zavode_pride/,"{'properties': [{'guid': '7aeb15af-c344-4150-9eae-ad412ad2c1b3', 'name': 'Вес, кг', 'values': ['0.008'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:49'}, {'guid': 'ac1de514-621c-4ea9-aa94-338a002a9ba5', 'name': 'Единица измерения', 'values': ['шт'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:49'}, {'guid': '48b0436c-7ca8-4392-978d-498947255ba8', 'name': 'Объем, м3', 'values': ['0.0000080'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:49'}, {'guid': '4eb8e5a8-9b09-11ee-89ce-005056a4b6de', 'name': 'Свободный к поставке продукт', 'values': ['Да'], 'is_system': 1, 'updated_at': '2026-09-02 03:01:54'}, {'guid': '3936386b-d2b7-11ec-b925-005056a4b6de', 'name': 'Страна изготовления', 'values': ['Россия'], 'is_system': 0, 'updated_at': '2026-09-02 03:05:16'}]}"
+6:4390,"Буклет ""О производстве""",23.0,М00000014000000000000000,,,,https://xn--d1an.xn--p1ai/products/4390--buklet_o_proizvodstve/,"{'properties': [{'guid': '7aeb15af-c344-4150-9eae-ad412ad2c1b3', 'name': 'Вес, кг', 'values': ['0.05'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:58'}, {'guid': 'ac1de514-621c-4ea9-aa94-338a002a9ba5', 'name': 'Единица измерения', 'values': ['шт'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:58'}, {'guid': '48b0436c-7ca8-4392-978d-498947255ba8', 'name': 'Объем, м3', 'values': ['0.000060'], 'is_system': 0, 'updated_at': '2026-09-02 02:05:58'}, {'guid': '4eb8e5a8-9b09-11ee-89ce-005056a4b6de', 'name': 'Свободный к поставке продукт', 'values': ['Да'], 'is_system': 1, 'updated_at': '2026-09-02 03:02:09'}, {'guid': '3936386b-d2b7-11ec-b925-005056a4b6de', 'name': 'Страна изготовления', 'values': ['Россия'], 'is_system': 0, 'updated_at': '2026-09-02 03:05:20'}]}"
+
+exec
+/bin/bash -lc "python - <<'PY'
+from collections import defaultdict, Counter
+from nomenclature_matcher.documents import load_products_from_csv, build_search_text
+from nomenclature_matcher.models import SearchCandidate
+from nomenclature_matcher.candidate_diversification import structural_signature
+products=load_products_from_csv('ld_products_full_nomenclature.csv')
+groups=defaultdict(list)
+for p in products:
+ c=SearchCandidate(p.id,p.name,p.article,0,dn=p.dn,pn=p.pn,joining_type=p.joining_type,properties=p.properties,search_text=build_search_text(p))
+ s=structural_signature(c)
+ if s: groups[s].append(p)
+repeated=[(s, ps) for s,ps in groups.items() if len(ps)>1]
+print('products',len(products),'signed',sum(map(len,groups.values())),'groups',len(groups),'repeated groups',len(repeated),'repeated products',sum(len(ps) for _,ps in repeated),'largest',max(map(lambda x:len(x[1]),repeated),default=0))
+for s,ps in sorted(repeated,key=lambda x:-len(x[1]))[:8]:
+ print('\\n',s,'count',len(ps))
+ for p in ps[:4]:
+  vals={x.get('name'):tuple(x.get('values',[])) for x in (p.properties or []) if x.get('name') in {'Материал корпуса','Рабочая среда','Тип резьбы','Серия','Управление','Тип прохода','Класс герметичности','Температура рабочей среды'}}
+  print(p.id, p.name[:95], vals)
+PY" in /workspaces/ML-Cancer-Data
+ succeeded in 18482ms:
+products 15788 signed 3278 groups 169 repeated groups 128 repeated products 3237 largest 429
+
+ StructuralSignature(family='ball_valve', dn='50', pn='4', joining_type='welded', bore=None, execution='welded', actuation='manual') count 429
+19092 Кран шаровый LD для подземной установки КШЦП Energy Gas 050.040.П/П.03. из стали 09Г2С Ду50 Ру4 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+19371 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа Н=1450мм {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+18910 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа Н=600мм L=1000 {'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Energy',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+18909 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа Н=600мм L=1500 {'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Energy',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+
+ StructuralSignature(family='ball_valve', dn='40', pn='4', joining_type='welded', bore=None, execution='welded', actuation='manual') count 228
+19089 Кран шаровый LD для подземной установки КШЦП Energy Gas 040.040.П/П.03. из стали 09Г2С Ду40 Ру4 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+19088 Кран шаровый LD для подземной установки КШЦП Energy Gas 040.040.П/П.03. из стали 09Г2С Ду40 Ру4 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+4822 Кран шаровый LD для подземной установки КШЦП Gas 040.040.Н/П.02. из стали 20 Ду40 Ру4,0МПа Н=10 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4733 Кран шаровый LD для подземной установки КШЦП Gas 040.040.Н/П.02. из стали 20 Ду40 Ру4,0МПа Н=12 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+
+ StructuralSignature(family='ball_valve', dn='15', pn='4', joining_type='threaded', bore=None, execution='threaded', actuation='manual') count 201
+19422 Кран шаровой для подключения манометра LD Pride 44.15.В-В.МЦ.Ф Ду15 Ру40 {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Флажок',)}
+19423 Кран шаровой для подключения манометра LD Pride 44.15.В-В.МЦ.Ф Ду15 Ру40 (red) {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Флажок',)}
+19376 Кран шаровой для подключения манометра LD Pride 44.15.В-В.МЦ.Ф М20 Ду15 Ру40 (red) с метрическо {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Флажок',)}
+19375 Кран шаровой для подключения манометра LD Pride 44.15.В-В.МЦ.Ф М20 Ду15 Ру40 с метрической резь {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Флажок',)}
+
+ StructuralSignature(family='ball_valve', dn='50', pn='4', joining_type='welded', bore='full_bore', execution='welded', actuation='manual') count 182
+10891 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа полнопроходной {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+18863 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа полнопроходной {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Серия': ('LD Energy',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+11887 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа полнопроходной {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+11877 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду50 Ру4,0МПа полнопроходной {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Тип прохода': ('Полный проход',), 'Управление': ('Ручное',)}
+
+ StructuralSignature(family='ball_valve', dn='50', pn='4', joining_type='welded', bore=None, execution='welded', actuation=None) count 157
+11698 Кран шаровый LD для подземной установки КШЦП Energy Gas 050.040.Н/П.03. из стали 09Г2С Ду50 Ру4 {'Материал корпуса': ('Сталь 09Г2С',), 'Тип прохода': ('Неполный проход',)}
+11178 Кран шаровый LD для подземной установки КШЦП Energy Gas 050.040.Н/П.03. из стали 09Г2С Ду50 Ру4 {'Материал корпуса': ('Сталь 09Г2С',), 'Тип прохода': ('Неполный проход',)}
+12204 Кран шаровый LD для подземной установки КШЦП Energy Gas 050.040.Н/П.03. из стали 09Г2С Ду50 Ру4 {'Материал корпуса': ('Сталь 09Г2С',), 'Тип прохода': ('Неполный проход',)}
+10393 Кран шаровый LD для подземной установки КШЦП Energy Gas 050.040.П/П.03. из стали 09Г2С Ду50 Ру4 {'Материал корпуса': ('Сталь 09Г2С',), 'Тип прохода': ('Полный проход',)}
+
+ StructuralSignature(family='ball_valve', dn='32', pn='4', joining_type='welded', bore=None, execution='welded', actuation='manual') count 157
+19432 Кран шаровый LD для подземной установки КШЦП Energy из стали 09Г2С Ду32 Ру4,0МПа Н=1100мм L=150 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 09Г2С',), 'Рабочая среда': ('Жидкость',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4821 Кран шаровый LD для подземной установки КШЦП Gas 032.040.Н/П.02. из стали 20 Ду32 Ру4,0МПа Н=10 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4731 Кран шаровый LD для подземной установки КШЦП Gas 032.040.Н/П.02. из стали 20 Ду32 Ру4,0МПа Н=12 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4806 Кран шаровый LD для подземной установки КШЦП Gas 032.040.Н/П.02. из стали 20 Ду32 Ру4,0МПа Н=14 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+
+ StructuralSignature(family='ball_valve', dn='25', pn='4', joining_type='welded', bore=None, execution='welded', actuation='manual') count 157
+4820 Кран шаровый LD для подземной установки КШЦП Gas 025.040.Н/П.02. из стали 20 Ду25 Ру4,0МПа Н=10 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4732 Кран шаровый LD для подземной установки КШЦП Gas 025.040.Н/П.02. из стали 20 Ду25 Ру4,0МПа Н=12 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4752 Кран шаровый LD для подземной установки КШЦП Gas 025.040.Н/П.02. из стали 20 Ду25 Ру4,0МПа Н=14 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+4756 Кран шаровый LD для подземной установки КШЦП Gas 025.040.Н/П.02. из стали 20 Ду25 Ру4,0МПа Н=15 {'Класс герметичности': ('А',), 'Материал корпуса': ('Сталь 20',), 'Рабочая среда': ('Газ',), 'Серия': ('LD',), 'Тип прохода': ('Неполный проход',), 'Управление': ('Ручное',)}
+
+ StructuralSignature(family='ball_valve', dn='20', pn='4', joining_type='threaded', bore=None, execution='threaded', actuation='manual') count 140
+17803 Кран шаровой латунный LD Pride 47.15.Н-Н.Р GAS Ду 15 Ру 40 рычаг с биркой {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Газ',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Наружная',), 'Управление': ('Рычаг',)}
+18271 Кран шаровой латунный LD Pride 47.20.В-В.Б GAS ГС Ду 20 Ру 40 бабочка {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Газ',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Бабочка',)}
+1006 Кран шаровой латунный LD Pride 47.20.В-В.Б GAS Ду 20 Ру 40 бабочка {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Газ',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Бабочка',)}
+17931 Кран шаровой латунный LD Pride 47.20.В-В.Б GAS Ду 20 Ру 40 бабочка с биркой {'Класс герметичности': ('А',), 'Материал корпуса': ('Латунь ЛС59-1',), 'Рабочая среда': ('Газ',), 'Серия': ('LD Pride',), 'Тип резьбы': ('Внутренняя',), 'Управление': ('Бабочка',)}
+
+codex
+{"decision":"FIX","summary":"The insertion point and basic crowd-out behavior are correct, but the signature is far too coarse to safely call candidates redundant in this catalog.","issues":["Candidates sharing family/DN/PN/connection/bore/execution/actuation can differ materially in catalog evidence that tender queries may require. For example, the current catalog groups hundreds of DN50 PN4 welded manual ball valves despite differences in material, medium, bore, series, thread/configuration, and installation dimensions. The first RRF item can suppress the correct variant.","Direct DN/PN fields override contradictory name/search-text evidence, so inconsistent payloads can be grouped under an incorrect signature.","Tests use synthetic near-identical candidates and do not cover catalog-realistic variants that must remain independently eligible; therefore they do not establish the stated reliable-structure safety claim."],"fix_plan":["Make grouping genuinely conservative: only collapse candidates whose relevant observable catalog evidence is equivalent, or explicitly return no signature when semantic properties/text conflict or differ.","Validate direct DN/PN against explicit conflicting text rather than blindly preferring the payload field.","Add regression tests with same primary dimensions but differing material, medium, pass type, thread/configuration, and installation dimensions; assert those variants remain in the bounded pool. Then rerun the public measurement."],"next_direction":"Candidate diversification remains a credible recall experiment, but it needs a much stricter equivalence definition. The catalog has very large coarse structural groups, so coarse signatures are a likely safety regression rather than benign near-duplicate removal."}
+tokens used
+61,431
+{"decision":"FIX","summary":"The insertion point and basic crowd-out behavior are correct, but the signature is far too coarse to safely call candidates redundant in this catalog.","issues":["Candidates sharing family/DN/PN/connection/bore/execution/actuation can differ materially in catalog evidence that tender queries may require. For example, the current catalog groups hundreds of DN50 PN4 welded manual ball valves despite differences in material, medium, bore, series, thread/configuration, and installation dimensions. The first RRF item can suppress the correct variant.","Direct DN/PN fields override contradictory name/search-text evidence, so inconsistent payloads can be grouped under an incorrect signature.","Tests use synthetic near-identical candidates and do not cover catalog-realistic variants that must remain independently eligible; therefore they do not establish the stated reliable-structure safety claim."],"fix_plan":["Make grouping genuinely conservative: only collapse candidates whose relevant observable catalog evidence is equivalent, or explicitly return no signature when semantic properties/text conflict or differ.","Validate direct DN/PN against explicit conflicting text rather than blindly preferring the payload field.","Add regression tests with same primary dimensions but differing material, medium, pass type, thread/configuration, and installation dimensions; assert those variants remain in the bounded pool. Then rerun the public measurement."],"next_direction":"Candidate diversification remains a credible recall experiment, but it needs a much stricter equivalence definition. The catalog has very large coarse structural groups, so coarse signatures are a likely safety regression rather than benign near-duplicate removal."}

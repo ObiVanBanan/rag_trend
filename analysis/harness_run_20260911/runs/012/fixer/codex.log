@@ -1,0 +1,2572 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR] (network access enabled)
+reasoning effort: low
+reasoning summaries: none
+session id: 01a0897d-c0cb-7941-8e61-83b0f6add458
+--------
+user
+You are the Fixer. Another agent implemented the hypothesis and a read-only Reviewer produced a correction plan.
+
+GOAL
+# Goal
+
+Improve the accuracy and reliability of the current LD nomenclature-matching MVP through measured autonomous experimentation.
+
+The harness starts from the current baseline and runs at most 15 research cycles. Each cycle should form one falsifiable hypothesis, implement it, review it, measure it, and either promote it as the new champion or reject it.
+
+## Primary objective
+
+Maximize the measured quality of the current MVP. The Planner is deliberately free to change any implementation component when evidence suggests it can improve the result: query processing, normalization, parsing, structured constraints, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, business logic, model choice, index representation, thresholds, or the overall matching architecture.
+
+The existing architecture is not sacred. The failure taxonomy and research references are evidence and idea sources, not a mandatory implementation order.
+
+Do not optimize by hardcoding a known test id, exact GOLD answer, or one-off lookup for a single benchmark string. Prefer changes that plausibly improve a class of real tender inputs. A hypothesis may be narrow enough to test cleanly, but it must be justified as an MVP improvement rather than a patch for one case.
+
+## Success and guardrails
+
+Success means:
+
+- blind final-check hard-pass coverage reaches at least 93%;
+- a candidate must not regress blind coverage versus the current champion;
+- false matches, explicit human-reject failures, and other safety failures must not regress;
+- public metrics are used as detailed development feedback and should improve where possible;
+- the project remains testable and every promoted change is supported by measured evidence;
+- no more than five full index rebuilds are used across the entire run.
+
+The 93% value is a success target, not a requirement to burn all 15 cycles. The Planner may stop early below 93% when the complete experiment history and remaining evidence no longer suggest any credible new experiment with positive expected metric gain or useful information gain. It should prefer a clear `DONE`/exhausted conclusion over inventing a weak or repetitive hypothesis merely to spend another cycle.
+
+The Planner must use the complete experiment history: previous hypotheses, decisions, public/blind metric results, rejection reasons, and lessons. Repeating a failed idea is acceptable only when new evidence materially changes the hypothesis.
+
+The final holdout must live outside the repository and must never be shown to Planner, Implementer, Reviewer, or Fixer. Agents may receive only aggregate final-check metrics produced by the supervisor.
+
+
+ORIGINAL PLAN
+{
+  "action": "IMPLEMENT",
+  "change_name": "cycle-12-protected-flange-subtype-verification",
+  "hypothesis": "Explicit flange construction subtype verification will prevent unproved flat, loose, counter, or generic flanges from satisfying weld-neck/butt-weld requirements.",
+  "why_now": "Cycle 10 was blocked by a protected-file violation before evaluation, so this high-confidence schema gap remains scientifically untested. The new plan confines changes to production code, prompt assets, and focused tests.",
+  "expected_effect": "For explicit subtype queries, expose deterministic subtype evidence to reranking and return a match only for an affirmatively evidenced compatible selected candidate; preserve generic flange and non-flange behavior.",
+  "expected_metric_gain": "0–3.3 pp hard-pass coverage; primary value is reduced unsafe or unprovable selections.",
+  "lesson_from_history": "Broad gating and selection changes regressed or were neutral, retrieval canonicalization plateaued, and index enrichment regressed. This is a narrow, evidence-based retry of an unevaluated schema gap, not a repeat of the Cycle 10 contract failure.",
+  "candidate_hypotheses": [
+    "Protected-file-safe flange subtype verification (selected)",
+    "Guarded pipe-OD-to-DN alternate-query retry",
+    "Subject-matter-validated legacy designation equivalence mapping",
+    "Hybrid candidate-depth/RRF tuning"
+  ],
+  "needs_reindex": false,
+  "plan_summary": "Created and strict-validated proposal, capability spec, design, and implementation-only tasks in openspec/changes/cycle-12-protected-flange-subtype-verification/.",
+  "used_external_research": false,
+  "research_sources": [],
+  "research_summary": ""
+}
+
+REVIEW
+{
+  "decision": "FIX",
+  "summary": "The subtype guard is correctly conservative for flange candidates, but it is not scoped to flange queries and can turn ordinary welded-end valve requests into false NOT_FOUND results. The returned selected list also remains inconsistent with the verified final match.",
+  "issues": [
+    "query_flange_subtype() recognizes cues such as «приварной в стык» without first confirming that the query is for a flange. Thus a valid non-flange query such as «Кран шаровой приварной в стык DN80» receives weld_neck as a flange requirement; all ball-valve candidates are then unknown and the matcher abstains. This contradicts the stated preservation of non-flange behavior and is not covered by the tests.",
+    "After subtype verification, MatchResult.selected is built from every LLM-selected item rather than the compatible selected_items. A NOT_FOUND response can therefore still expose incompatible selections, while a MATCHED response can expose a rejected flat flange ahead of its accepted weld-neck result. This is misleading to CLI/serialization/evaluation consumers that use selected."
+  ],
+  "fix_plan": [
+    "Scope query_flange_subtype() to flange product queries (or apply the guard only when the query product type is flange), then add regression tests for non-flange queries containing weld/butt-weld or collar wording.",
+    "Build MatchResult.selected from the post-validation selected_items; return an empty selected list on subtype-caused NOT_FOUND. Extend matcher tests to assert those output invariants.",
+    "Re-run focused and full tests, then let the supervisor repeat public evaluation when Qdrant is available."
+  ],
+  "next_direction": "Keep this deterministic affirmative-evidence approach, but enforce subtype semantics only in their product-class context. The supplied public evaluation produced no quality result because Qdrant was unavailable, so the repaired candidate still needs measured comparison."
+}
+
+RULES
+- Fix only the Reviewer's concrete issues. Do not introduce a new hypothesis.
+- Preserve the general MVP-level intent; do not turn the fix into a benchmark-specific special case.
+- Run focused tests.
+- NEVER run a full catalog index rebuild yourself. If fixes require one, set `needs_reindex=true` and let the supervisor do it.
+- Do not inspect or search for the hidden final-check dataset.
+- Do not alter harness policy, GOLD/eval answers, or files under `harness_rag/`.
+- Do not run git commit/push/reset/checkout/rebase.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-10T04:05:15.477390Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a0897d-c0cb-7941-8e61-83b0f6add458.tmp-1789013115090718437: line 2547: syntax error near unexpected token `('
+
+codex
+{"status":"complete","summary":"I’ll apply the existing OpenSpec implementation skill for this fix, then inspect the touched matcher code and tests so the changes stay limited to the reviewer’s two issues.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,220p' /workspaces/ML-Cancer-Data/.agents/skills/openspec-apply-change/SKILL.md && pwd && rg -n \"query_flange_subtype|flange_subtype|MatchResult|selected_items|selected\" src tests openspec/changes/cycle-12-protected-flange-subtype-verification -S" in /workspaces/ML-Cancer-Data
+ exited 127 in 30ms:
+---
+name: openspec-apply-change
+description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.
+allowed-tools: Bash(openspec:*)
+license: MIT
+compatibility: Requires openspec CLI.
+metadata:
+  author: openspec
+  version: "1.0"
+  generatedBy: "1.12.0"
+---
+
+Implement tasks from an OpenSpec change.
+
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+
+**Input**: Optionally specify a change name (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Steps**
+
+1. **Select the change**
+
+   If a name is provided, use it. Otherwise:
+   - Infer from conversation context if the user mentioned a change
+   - Auto-select if only one active change exists
+   - If ambiguous, run `openspec list --json` to get available changes and ask the user to select one
+
+   Always announce: "Using change: <name>" and how to override (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) <other>`).
+
+2. **Check status to understand the schema**
+   ```bash
+   openspec status --change "<name>" --json
+   ```
+   Parse the JSON to understand:
+   - `schemaName`: The workflow being used (e.g., "spec-driven")
+   - `planningHome`, `changeRoot`, and `actionContext`: planning scope and edit constraints
+   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+
+3. **Get apply instructions**
+
+   ```bash
+   openspec instructions apply --change "<name>" --json
+   ```
+
+   This returns:
+   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
+   - Progress (total, complete, remaining)
+   - Task list with status
+   - Dynamic instruction based on current state
+   - Optional `context`: current required project instruction input from the selected root
+   - Optional `operationGuidance`: current advisory guidance for apply
+
+   **Handle states:**
+   - If `state: "blocked"` (missing artifacts): show message, suggest using `$openspec-continue-change (Codex) or /openspec-continue-change (other agents)` (if it is not installed, run `openspec status --change "<name>" --json` to see the next artifact and `openspec instructions <artifact-id> --change "<name>" --json` for how to create it)
+   - If `state: "all_done"`: congratulate, suggest archive
+   - Otherwise: proceed to implementation
+
+   Treat `context` as a required prompt-level input. Read and consider it, and
+   apply relevant project facts, conventions, and constraints while implementing.
+   Treat `operationGuidance` as optional additive advice. Read and consider every
+   entry, and follow entries that are applicable and compatible with the built-in
+   workflow.
+
+   Keep both fields separate from CLI-returned state, missing artifacts, tasks,
+   progress, `contextFiles`, and the built-in `instruction`. They are not
+   evidence of task completion, do not replace the built-in instruction, and do
+   not permit bypassing a blocked state. If context conflicts with the built-in
+   instruction, an explicit user choice, or a CLI-controlled value, report the
+   conflict and preserve the controlling value. If guidance is inapplicable or
+   conflicts with those controlling inputs, do not follow it and explain why.
+   These are prompt-level behavior contracts, not enforceable checks.
+
+4. **Read context files**
+
+   Read every file path listed under `contextFiles` from the apply instructions output.
+   The files depend on the schema being used:
+   - **spec-driven**: proposal, specs, design, tasks
+   - Other schemas: follow the contextFiles from CLI output
+
+   Do not copy `context` or `operationGuidance` verbatim into implementation
+   files or planning artifacts unless the user separately asks for that content.
+
+5. **Show current progress**
+
+   Display:
+   - Schema being used
+   - Progress: "N/M tasks complete"
+   - Remaining tasks overview
+   - Dynamic instruction from CLI
+
+6. **Implement tasks (loop until done or blocked)**
+
+   For each pending task:
+   - Show which task is being worked on
+   - Make the code changes required
+   - Keep changes minimal and focused
+   - Mark task complete in the tasks file: `- [ ]` → `- [x]`
+   - Continue to next task
+
+   **Pause if:**
+   - Task is unclear → ask for clarification
+   - Implementation reveals a design issue → suggest updating artifacts
+   - A task needs work beyond what the spec and tasks describe, or you are tempted to drop, narrow, defer, or accept exceptions to specified behavior to make it fit → surface the added scope and ask; do not absorb it silently
+   - Error or blocker encountered → report and wait for guidance
+   - User interrupts
+
+7. **On completion or pause, show status**
+
+   Display:
+   - Tasks completed this session
+   - Overall progress: "N/M tasks complete"
+   - If all done: suggest archive
+   - If paused: explain why and wait for guidance
+
+**Output During Implementation**
+
+```
+## Implementing: <change-name> (schema: <schema-name>)
+
+Working on task 3/7: <task description>
+[...implementation happening...]
+✓ Task complete
+
+Working on task 4/7: <task description>
+[...implementation happening...]
+✓ Task complete
+```
+
+**Output On Completion**
+
+```
+## Implementation Complete
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 7/7 tasks complete ✓
+
+### Completed This Session
+- [x] Task 1
+- [x] Task 2
+...
+
+All tasks complete! You can archive this change with `$openspec-archive-change (Codex) or /openspec-archive-change (other agents)`.
+```
+
+**Output On Pause (Issue Encountered)**
+
+```
+## Implementation Paused
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 4/7 tasks complete
+
+### Issue Encountered
+<description of the issue>
+
+**Options:**
+1. <option 1>
+2. <option 2>
+3. Other approach
+
+What would you like to do?
+```
+
+**Guardrails**
+- Keep going through tasks until done or blocked
+- Always read context files before starting (from the apply instructions output)
+- If task is ambiguous, pause and ask before implementing
+- If implementation reveals issues, pause and suggest artifact updates
+- Keep code changes minimal and scoped to each task
+- Update task checkbox immediately after completing each task
+- Pause on errors, blockers, or unclear requirements - don't guess
+- When a task needs work beyond what the spec describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
+- Only mark a task `- [x]` when its specified behavior is fully implemented, not when it is partially done or deferred
+- Use contextFiles from CLI output, don't assume specific file names
+- Do not use context or operation guidance as proof that a task is complete
+- Apply relevant project context; report conflicts with controlling workflow inputs
+- Consider every guidance entry; explain any inapplicable or conflicting advice
+- Do not copy runtime context or operation guidance into implementation files or planning artifacts
+- Preserve CLI-controlled blocked/ready/all-done behavior and completion criteria
+
+**Fluid Workflow Integration**
+
+This skill supports the "actions on a change" model:
+
+- **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+/workspaces/ML-Cancer-Data
+/bin/bash: line 1: rg: command not found
+
+codex
+{"status":"complete","summary":"Using change: cycle-12-protected-flange-subtype-verification. `rg` is not installed in this container, so I’m falling back to `grep`/`find` and reading the OpenSpec status/context before editing.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'openspec instructions apply --change "cycle-12-protected-flange-subtype-verification" --json' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'openspec status --change "cycle-12-protected-flange-subtype-verification" --json' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "grep -RIn \"query_flange_subtype\\|flange_subtype\\|selected_items\\|MatchResult\\|selected\" src tests | head -200" in /workspaces/ML-Cancer-Data
+ succeeded in 447ms:
+src/nomenclature_matcher/query_constraints.py:36:    flange_subtype: str | None = None
+src/nomenclature_matcher/query_constraints.py:55:    @field_validator("flange_subtype")
+src/nomenclature_matcher/query_constraints.py:57:    def _validate_flange_subtype(cls, value: str | None) -> str | None:
+src/nomenclature_matcher/query_constraints.py:59:            raise ValueError("flange_subtype must be weld_neck, flat, loose, counter, or null")
+src/nomenclature_matcher/query_constraints.py:188:def query_flange_subtype(text: Any) -> str | None:
+src/nomenclature_matcher/query_constraints.py:197:def candidate_flange_subtype(product: LDProduct) -> str:
+src/nomenclature_matcher/query_constraints.py:519:    if constraints.flange_subtype is not None:
+src/nomenclature_matcher/query_constraints.py:520:        actual_flange_subtype = candidate_flange_subtype(product)
+src/nomenclature_matcher/query_constraints.py:521:        checks["flange_subtype"] = f"{actual_flange_subtype} == {constraints.flange_subtype}"
+src/nomenclature_matcher/query_constraints.py:522:        if actual_flange_subtype != constraints.flange_subtype:
+src/nomenclature_matcher/query_constraints.py:550:    if constraints is not None and constraints.flange_subtype is not None:
+src/nomenclature_matcher/query_constraints.py:551:        snapshot["flange_subtype"] = candidate_flange_subtype(product)
+src/nomenclature_matcher/eval_v2_ground_truth.py:17:    selected: list[str] = []
+src/nomenclature_matcher/eval_v2_ground_truth.py:23:            selected.append(query_id)
+src/nomenclature_matcher/eval_v2_ground_truth.py:24:    return selected
+src/nomenclature_matcher/eval_v2_ground_truth.py:154:    selected_ids = select_queries_for_expanded_review(candidates_payload, review_state)
+src/nomenclature_matcher/eval_v2_ground_truth.py:156:        if query_item["id"] not in selected_ids:
+src/nomenclature_matcher/eval_v2.py:43:    selected: dict[str, list[str]] = {}
+src/nomenclature_matcher/eval_v2.py:50:            selected[name] = values
+src/nomenclature_matcher/eval_v2.py:51:    return selected
+src/nomenclature_matcher/reranker.py:7:from .query_constraints import candidate_flange_subtype, query_flange_subtype
+src/nomenclature_matcher/reranker.py:68:        required_flange_subtype = query_flange_subtype(query)
+src/nomenclature_matcher/reranker.py:70:        if required_flange_subtype is not None:
+src/nomenclature_matcher/reranker.py:75:                    f"required_flange_subtype: {required_flange_subtype}",
+src/nomenclature_matcher/reranker.py:76:                    "Only affirmative equal candidate_flange_subtype evidence satisfies this requirement.",
+src/nomenclature_matcher/reranker.py:101:            if required_flange_subtype is not None:
+src/nomenclature_matcher/reranker.py:102:                subtype = candidate_flange_subtype(_candidate_as_product(candidate))
+src/nomenclature_matcher/reranker.py:106:                        f"required_flange_subtype: {required_flange_subtype}",
+src/nomenclature_matcher/reranker.py:107:                        f"candidate_flange_subtype: {subtype}",
+src/nomenclature_matcher/reranker.py:108:                        f"candidate_flange_subtype_evidence: {evidence}",
+src/nomenclature_matcher/reranker.py:116:                '{"status":"MATCHED","selected":[{"candidate_id":1,"confidence":0.95,"reason":"..."}],"reason":"..."}',
+src/nomenclature_matcher/reranker.py:117:                'или {"status":"NOT_FOUND","selected":[],"reason":"..."}',
+src/nomenclature_matcher/reranker.py:128:        selected = []
+src/nomenclature_matcher/reranker.py:130:        for item in payload.get("selected", []):
+src/nomenclature_matcher/reranker.py:144:            selected.append(RerankedCandidate(candidate_id=candidate_id, confidence=confidence, reason=reason))
+src/nomenclature_matcher/reranker.py:145:            if len(selected) >= self.settings.rerank_result_limit:
+src/nomenclature_matcher/reranker.py:148:        if selected:
+src/nomenclature_matcher/reranker.py:149:            return RerankResult(status="MATCHED", selected=selected, reason=reason)
+src/nomenclature_matcher/reranker.py:150:        return RerankResult(status="NOT_FOUND", selected=[], reason=reason)
+src/nomenclature_matcher/eval_utils.py:39:            if has_overlap(item["deepseek_selected_ld_ids"], item["acceptable_ld_ids"]):
+src/nomenclature_matcher/eval_utils.py:93:    hits = sum(1 for item in relevant if has_overlap(item["deepseek_selected_ld_ids"], item["acceptable_ld_ids"]))
+src/nomenclature_matcher/matcher.py:3:from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/matcher.py:5:from .query_constraints import candidate_flange_subtype, query_flange_subtype
+src/nomenclature_matcher/matcher.py:53:    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+src/nomenclature_matcher/matcher.py:70:    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+src/nomenclature_matcher/matcher.py:72:            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+src/nomenclature_matcher/matcher.py:78:            return MatchResult(
+src/nomenclature_matcher/matcher.py:86:        selected = []
+src/nomenclature_matcher/matcher.py:87:        for item in rerank_result.selected:
+src/nomenclature_matcher/matcher.py:89:            selected.append(self._build_selected_match(candidate, item))
+src/nomenclature_matcher/matcher.py:90:        selected_items = rerank_result.selected
+src/nomenclature_matcher/matcher.py:91:        required_flange_subtype = query_flange_subtype(query)
+src/nomenclature_matcher/matcher.py:93:        if required_flange_subtype is not None and rerank_result.status == "MATCHED":
+src/nomenclature_matcher/matcher.py:94:            selected_items = []
+src/nomenclature_matcher/matcher.py:96:            for item in rerank_result.selected:
+src/nomenclature_matcher/matcher.py:98:                actual_subtype = candidate_flange_subtype(_candidate_as_product(candidate))
+src/nomenclature_matcher/matcher.py:99:                if actual_subtype == required_flange_subtype:
+src/nomenclature_matcher/matcher.py:100:                    selected_items = [item]
+src/nomenclature_matcher/matcher.py:103:            if not selected_items:
+src/nomenclature_matcher/matcher.py:105:                    "No reranker-selected candidate has affirmative compatible flange subtype "
+src/nomenclature_matcher/matcher.py:106:                    f"{required_flange_subtype}; selected evidence: {', '.join(incompatible) or 'none'}"
+src/nomenclature_matcher/matcher.py:108:        best = candidates[selected_items[0].candidate_id - 1] if selected_items else None
+src/nomenclature_matcher/matcher.py:114:        return MatchResult(
+src/nomenclature_matcher/matcher.py:120:            selected=selected,
+src/nomenclature_matcher/matcher.py:124:    def match_one(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:127:            return MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:131:        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+src/nomenclature_matcher/matcher.py:133:    def match_one_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:136:            return MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:140:    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+src/nomenclature_matcher/matcher.py:144:            return MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:154:    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+src/nomenclature_matcher/matcher.py:163:            else MatchResult(query=query, status="NOT_FOUND")
+src/nomenclature_matcher/matcher.py:167:    def match_many(self, queries: list[str]) -> list[MatchResult]:
+src/nomenclature_matcher/matcher.py:170:    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+src/nomenclature_matcher/serialization.py:6:from .models import MatchResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/serialization.py:49:def selected_debug_payload(selected: SelectedMatch) -> dict[str, Any]:
+src/nomenclature_matcher/serialization.py:51:        "candidate_id": selected.candidate_id,
+src/nomenclature_matcher/serialization.py:52:        "ld_id": selected.ld_id,
+src/nomenclature_matcher/serialization.py:53:        "article": selected.article,
+src/nomenclature_matcher/serialization.py:54:        "name": selected.name,
+src/nomenclature_matcher/serialization.py:55:        "dn": selected.dn,
+src/nomenclature_matcher/serialization.py:56:        "pn": selected.pn,
+src/nomenclature_matcher/serialization.py:57:        "joining_type": selected.joining_type,
+src/nomenclature_matcher/serialization.py:58:        "url": selected.url,
+src/nomenclature_matcher/serialization.py:59:        "dense_score": selected.dense_score,
+src/nomenclature_matcher/serialization.py:60:        "bm25_score": selected.bm25_score,
+src/nomenclature_matcher/serialization.py:61:        "rrf_score": selected.rrf_score,
+src/nomenclature_matcher/serialization.py:62:        "llm_confidence": selected.llm_confidence,
+src/nomenclature_matcher/serialization.py:63:        "reason": selected.reason,
+src/nomenclature_matcher/serialization.py:67:def match_result_payload(result: MatchResult, *, include_debug: bool = True) -> dict[str, Any]:
+src/nomenclature_matcher/serialization.py:81:            "selected": [selected_debug_payload(item) for item in result.selected],
+src/nomenclature_matcher/serialization.py:86:def match_results_payload(results: list[MatchResult], *, include_debug: bool = True) -> list[dict[str, Any]]:
+src/nomenclature_matcher/__init__.py:2:from .models import LDProduct, MatchResult, RerankResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/__init__.py:4:__all__ = ["LDProduct", "MatchResult", "NomenclatureMatcher", "RerankResult", "SearchCandidate", "SelectedMatch"]
+src/nomenclature_matcher/golden_rules.py:134:        flange_subtype = re.search(
+src/nomenclature_matcher/golden_rules.py:138:        if flange_subtype:
+src/nomenclature_matcher/golden_rules.py:141:                "flange_subtype",
+src/nomenclature_matcher/golden_rules.py:142:                flange_subtype.group(0),
+src/nomenclature_matcher/models.py:79:class MatchResult:
+src/nomenclature_matcher/models.py:85:    selected: list[SelectedMatch] = field(default_factory=list)
+src/nomenclature_matcher/models.py:92:    selected: list[RerankedCandidate]
+src/nomenclature_matcher/remaining_gold_review.py:28:    llm_selected = bool(candidate.get("llm_selected"))
+src/nomenclature_matcher/remaining_gold_review.py:30:        0 if llm_selected else 1,
+src/nomenclature_matcher/prompts/reranker_system.md:15:Если во входе есть `required_flange_subtype`, это обязательное поле совместимости для фланцев. Выбирай фланец только при равном `candidate_flange_subtype` с `candidate_flange_subtype_evidence: affirmative`; generic flange similarity, DN, PN или материал не доказывают конструкцию фланца.
+tests/test_query_constraints.py:4:    candidate_flange_subtype,
+tests/test_query_constraints.py:8:    query_flange_subtype,
+tests/test_query_constraints.py:204:def test_query_flange_subtype_recognizes_allowlisted_cues():
+tests/test_query_constraints.py:205:    assert query_flange_subtype("Фланец воротниковый DN80 PN16") == "weld_neck"
+tests/test_query_constraints.py:206:    assert query_flange_subtype("Фланец приварной в стык DN80") == "weld_neck"
+tests/test_query_constraints.py:207:    assert query_flange_subtype("Фланец weld neck type 11") == "weld_neck"
+tests/test_query_constraints.py:208:    assert query_flange_subtype("Фланец плоский стальной") == "flat"
+tests/test_query_constraints.py:209:    assert query_flange_subtype("Фланец свободный на приварном кольце") == "loose"
+tests/test_query_constraints.py:210:    assert query_flange_subtype("Ответный фланец DN80") == "counter"
+tests/test_query_constraints.py:213:def test_query_flange_subtype_leaves_generic_or_ambiguous_unspecified():
+tests/test_query_constraints.py:214:    assert query_flange_subtype("Фланец стальной DN80 PN16") is None
+tests/test_query_constraints.py:215:    assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+tests/test_query_constraints.py:218:def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+tests/test_query_constraints.py:219:    assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+tests/test_query_constraints.py:220:    assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+tests/test_query_constraints.py:221:    assert candidate_flange_subtype(flange("Фланец свободный тип 02 DN80")) == "loose"
+tests/test_query_constraints.py:222:    assert candidate_flange_subtype(flange("Контрфланец стальной DN80")) == "counter"
+tests/test_query_constraints.py:223:    assert candidate_flange_subtype(flange("Фланец стальной DN80 PN16")) == "unknown"
+tests/test_query_constraints.py:224:    assert candidate_flange_subtype(flange("Фланец плоский воротниковый DN80")) == "unknown"
+tests/test_query_constraints.py:227:def test_flange_subtype_constraint_rejects_flat_or_unknown_for_weld_neck():
+tests/test_query_constraints.py:228:    weld_neck = constraints(product_type="flange", flange_subtype="weld_neck", dn=None, pn_min_mpa=None, joining_type=None, valve_type=None)
+tests/test_query_constraints.py:235:    generic = constraints(product_type="flange", flange_subtype=None, dn=None, pn_min_mpa=None, joining_type=None, valve_type=None)
+tests/test_query_constraints.py:239:    assert "flange_subtype" not in snapshot
+tests/test_query_constraints.py:240:    assert "flange_subtype" not in snapshot["checks"]
+tests/test_eval_v2.py:111:            "deepseek_selected_ld_ids": [1],
+tests/test_eval_v2.py:124:            "deepseek_selected_ld_ids": [2],
+tests/test_serialization.py:3:from nomenclature_matcher.models import MatchResult, SearchCandidate, SelectedMatch
+tests/test_serialization.py:30:    selected = SelectedMatch(
+tests/test_serialization.py:45:    result = MatchResult(
+tests/test_serialization.py:51:        selected=[selected],
+tests/test_serialization.py:58:    assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+tests/test_serialization.py:62:def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+tests/test_serialization.py:63:    result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+tests/test_serialization.py:71:    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
+tests/test_eval_utils.py:46:            "deepseek_selected_ld_ids": [7],
+tests/test_eval_utils.py:54:            "deepseek_selected_ld_ids": [],
+tests/test_eval_utils.py:71:            "deepseek_selected_ld_ids": [7],
+tests/test_eval_utils.py:80:            "deepseek_selected_ld_ids": [],
+tests/test_eval_utils.py:219:            "deepseek_selected_ld_ids": [],
+tests/test_eval_utils.py:227:            "deepseek_selected_ld_ids": [3],
+tests/test_eval_utils.py:235:            "deepseek_selected_ld_ids": [9],
+tests/test_remaining_gold_review.py:26:    selected = select_top_candidates(candidates, limit=3)
+tests/test_remaining_gold_review.py:27:    assert [row["ld_id"] for row in selected] == [1, 2, 3]
+tests/test_remaining_gold_review.py:28:    assert selected[0]["hybrid_rank"] == 1
+tests/test_reranker.py:75:    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}]})))
+tests/test_reranker.py:78:    assert [item.candidate_id for item in result.selected] == [2]
+tests/test_reranker.py:82:    reranker = DeepSeekReranker(settings(), client=FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": [], "reason": "no match"})))
+tests/test_reranker.py:85:    assert result.selected == []
+tests/test_reranker.py:92:        client=FakeClient(content=json.dumps({"status": "MATCHED", "selected": [{"candidate_id": 2}, {"candidate_id": 2}, {"candidate_id": 999}]})),
+tests/test_reranker.py:96:    assert [item.candidate_id for item in result.selected] == [2]
+tests/test_reranker.py:138:def test_build_prompt_exposes_flange_subtype_labels_only_for_explicit_query():
+tests/test_reranker.py:141:    assert "required_flange_subtype:" not in generic_prompt
+tests/test_reranker.py:142:    assert "candidate_flange_subtype:" not in generic_prompt
+tests/test_reranker.py:145:    assert "required_flange_subtype: weld_neck" in explicit_prompt
+tests/test_reranker.py:146:    assert "candidate_flange_subtype: flat" in explicit_prompt
+tests/test_reranker.py:147:    assert "candidate_flange_subtype: weld_neck" in explicit_prompt
+tests/test_reranker.py:148:    assert "candidate_flange_subtype: unknown" in explicit_prompt
+tests/test_reranker.py:149:    assert "candidate_flange_subtype_evidence: affirmative" in explicit_prompt
+tests/test_reranker.py:150:    assert "candidate_flange_subtype_evidence: unknown" in explicit_prompt
+tests/test_reranker.py:153:def test_system_prompt_requires_explicit_flange_subtype_compatibility():
+tests/test_reranker.py:155:    assert "required_flange_subtype" in prompt
+tests/test_reranker.py:156:    assert "candidate_flange_subtype_evidence: affirmative" in prompt
+tests/test_reranker.py:164:    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
+tests/test_matcher.py:90:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:93:    assert result.selected[0].llm_confidence == 0.93
+tests/test_matcher.py:94:    assert result.selected[0].reason == "best"
+tests/test_matcher.py:127:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:133:    assert result.selected[0].dense_score == 0.9
+tests/test_matcher.py:134:    assert result.selected[0].bm25_score == 1.2
+tests/test_matcher.py:135:    assert result.selected[0].rrf_score == 0.03
+tests/test_matcher.py:136:    assert not hasattr(result.selected[0], "vector_score")
+tests/test_matcher.py:148:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+tests/test_matcher.py:164:    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
+tests/test_matcher.py:182:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="ww")], reason=None)
+tests/test_matcher.py:201:def test_explicit_flange_subtype_rejects_incompatible_top_selection():
+tests/test_matcher.py:204:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="flat")], reason=None)
+tests/test_matcher.py:214:def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+tests/test_matcher.py:222:        selected=[
+tests/test_matcher.py:237:def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+tests/test_matcher.py:240:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="generic")], reason=None)
+tests/test_matcher.py:252:    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="generic")], reason=None)
+
+ succeeded in 1278ms:
+{
+  "changeName": "cycle-12-protected-flange-subtype-verification",
+  "schemaName": "spec-driven",
+  "planningHome": {
+    "kind": "repo",
+    "root": "/workspaces/ML-Cancer-Data",
+    "changesDir": "/workspaces/ML-Cancer-Data/openspec/changes",
+    "defaultSchema": "spec-driven"
+  },
+  "changeRoot": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification",
+  "artifactPaths": {
+    "proposal": {
+      "outputPath": "proposal.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/proposal.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/proposal.md"
+      ]
+    },
+    "specs": {
+      "outputPath": "specs/**/*.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/specs/**/*.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/specs/flange-subtype-verification/spec.md"
+      ]
+    },
+    "design": {
+      "outputPath": "design.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/design.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/design.md"
+      ]
+    },
+    "tasks": {
+      "outputPath": "tasks.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/tasks.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/tasks.md"
+      ]
+    }
+  },
+  "isPlanningComplete": true,
+  "isComplete": true,
+  "applyRequires": [
+    "tasks"
+  ],
+  "nextSteps": [
+    "All planning artifacts are complete. Run openspec instructions apply --change \"cycle-12-protected-flange-subtype-verification\" --json to inspect implementation progress."
+  ],
+  "actionContext": {
+    "mode": "repo-local",
+    "sourceOfTruth": "repo",
+    "planningArtifacts": [
+      "proposal",
+      "specs",
+      "design",
+      "tasks"
+    ],
+    "linkedContext": [],
+    "allowedEditRoots": [
+      "/workspaces/ML-Cancer-Data"
+    ],
+    "requiresAffectedAreaSelection": false,
+    "constraints": [
+      "Repo-local change artifacts and implementation edits are scoped to this project."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "proposal",
+      "outputPath": "proposal.md",
+      "status": "done",
+      "requires": []
+    },
+    {
+      "id": "specs",
+      "outputPath": "specs/**/*.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "design",
+      "outputPath": "design.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "tasks",
+      "outputPath": "tasks.md",
+      "status": "done",
+      "requires": [
+        "specs",
+        "design"
+      ]
+    }
+  ],
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+ succeeded in 1307ms:
+{
+  "changeName": "cycle-12-protected-flange-subtype-verification",
+  "changeDir": "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/proposal.md"
+    ],
+    "specs": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/specs/flange-subtype-verification/spec.md"
+    ],
+    "design": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/design.md"
+    ],
+    "tasks": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/cycle-12-protected-flange-subtype-verification/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 7,
+    "complete": 7,
+    "remaining": 0
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 Add the optional flange-subtype query field and deterministic query/candidate subtype helpers in production constraint code, using only allowlisted affirmative catalog cues and an `unknown` candidate result when no cue proves a subtype; verify focused query-constraint tests cover weld-neck, flat, loose, counter, generic, and absent-evidence inputs.",
+      "done": true
+    },
+    {
+      "id": "2",
+      "description": "1.2 Include subtype compatibility in the production constraint decision/snapshot only when the query explicitly supplies a subtype; verify a flat or unknown candidate fails a weld-neck constraint while generic flange constraints retain their existing result.",
+      "done": true
+    },
+    {
+      "id": "3",
+      "description": "2.1 Enrich the production reranker request for explicit flange-subtype queries with deterministic required-subtype and per-candidate subtype/evidence labels, without changing raw query text or catalog fields; verify a reranker prompt unit test exposes those labels only for explicit subtype input.",
+      "done": true
+    },
+    {
+      "id": "4",
+      "description": "2.2 Update the reranked matcher path to retain the first reranker-selected candidate with equal affirmative subtype evidence and otherwise return `NOT_FOUND` with a diagnostic reason; verify matcher unit tests cover incompatible top selection, compatible later selected alternative, and no compatible selected candidate.",
+      "done": true
+    },
+    {
+      "id": "5",
+      "description": "2.3 Preserve existing reranked result behavior for non-flange and generic-flange queries; verify regression tests assert that no subtype check or altered selected result occurs when the query has no explicit subtype.",
+      "done": true
+    },
+    {
+      "id": "6",
+      "description": "3.1 Update the production reranker system prompt to treat explicit flange construction as a required compatibility field and to prefer affirmative catalog evidence over generic flange similarity; verify the prompt-loading or reranker tests assert the required instruction is present.",
+      "done": true
+    },
+    {
+      "id": "7",
+      "description": "3.2 Run the focused query-constraint, matcher, and reranker tests plus `python -m pytest -q`; verify all pass and the implementation diff is limited to production matcher/constraint/reranker modules, production prompt assets, and focused tests (with no edits to GOLD rules, harness scripts, evaluation data, labels, or generated artifacts).",
+      "done": true
+    }
+  ],
+  "state": "all_done",
+  "instruction": "All tasks are complete! This change is ready to be archived.\nConsider running tests and reviewing the changes before archiving.",
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+codex
+{"status":"complete","summary":"The OpenSpec tasks are already marked complete, so this is a review repair on top of that implementation. I found the two likely hotspots: subtype detection in `query_constraints.py` and final selected construction in `matcher.py`.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc "sed -n '1,280p' src/nomenclature_matcher/query_constraints.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '180,280p' tests/test_query_constraints.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,180p' src/nomenclature_matcher/matcher.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,290p' tests/test_matcher.py" in /workspaces/ML-Cancer-Data
+ succeeded in 299ms:
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+from openai import OpenAI
+from pydantic import BaseModel, ConfigDict, field_validator
+
+from .models import LDProduct
+
+
+DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
+    Path(__file__).resolve().parent / "prompts" / "query_constraints_system.md"
+)
+_ALNUM_RU = "0-9a-zа-я"
+
+
+class QueryConstraints(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_type: str
+    dn: int | None = None
+    pn_min_mpa: float | None = None
+    joining_type: str | None = None
+    thread_type: str | None = None
+    working_medium: str | None = None
+    valve_type: str | None = None
+    valve_designation: str | None = None
+    body_material: str | None = None
+    body_material_grade: str | None = None
+    bore_type: str | None = None
+    control: str | None = None
+    flange_subtype: str | None = None
+    catalog_scope: str = "uncertain"
+    ambiguous: bool = False
+    comment: str = ""
+
+    @field_validator("dn")
+    @classmethod
+    def _validate_dn(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("dn must be positive")
+        return value
+
+    @field_validator("pn_min_mpa")
+    @classmethod
+    def _validate_pn(cls, value: float | None) -> float | None:
+        if value is not None and value <= 0:
+            raise ValueError("pn_min_mpa must be positive")
+        return value
+
+    @field_validator("flange_subtype")
+    @classmethod
+    def _validate_flange_subtype(cls, value: str | None) -> str | None:
+        if value is not None and value not in {"weld_neck", "flat", "loose", "counter"}:
+            raise ValueError("flange_subtype must be weld_neck, flat, loose, counter, or null")
+        return value
+
+
+class DeepSeekQueryConstraintExtractor:
+    def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+        self.settings = settings
+        self.prompt_path = Path(prompt_path) if prompt_path else DEFAULT_QUERY_CONSTRAINTS_PROMPT
+        self.system_prompt = self.prompt_path.read_text(encoding="utf-8").strip()
+        self.client = client or OpenAI(
+            api_key=settings.deepseek_api_key,
+            base_url=settings.deepseek_base_url,
+            timeout=settings.deepseek_timeout_seconds,
+        )
+
+    def extract(self, query: str) -> QueryConstraints:
+        response = self.client.chat.completions.create(
+            model=self.settings.deepseek_model,
+            temperature=0,
+            response_format={"type": "json_object"},
+            extra_body={"thinking": {"type": "disabled"}},
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": f"QUERY:\n{query}"},
+            ],
+        )
+        content = response.choices[0].message.content or "{}"
+        return QueryConstraints.model_validate(json.loads(content))
+
+
+def _norm(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    text = str(value).lower().replace("ё", "е")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _compact(value: Any) -> str:
+    return re.sub(rf"[^{_ALNUM_RU}]+", "", _norm(value))
+
+
+def _exact_token_match(text: Any, token: Any) -> bool:
+    expected = _norm(token)
+    if not expected:
+        return True
+    pattern = rf"(?<![{_ALNUM_RU}]){re.escape(expected)}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flexible_code_match(text: Any, code: Any) -> bool:
+    """Match an exact designation while ignoring punctuation inside it.
+
+    КШ.Ф.050.080-02 matches кшф05008002, but КШЦФ does not match КШЦФЭ.
+    """
+    expected = _compact(code)
+    if not expected:
+        return True
+    separator = rf"[^{_ALNUM_RU}]*"
+    body = separator.join(re.escape(char) for char in expected)
+    pattern = rf"(?<![{_ALNUM_RU}]){body}(?![{_ALNUM_RU}])"
+    return re.search(pattern, _norm(text)) is not None
+
+
+def _flatten_values(value: Any) -> list[str]:
+    if value in (None, "", []):
+        return []
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(_flatten_values(item))
+        return result
+    return [str(value)]
+
+
+def _property_values(product: LDProduct, *names: str) -> list[str]:
+    wanted = {_norm(name) for name in names}
+    result: list[str] = []
+    for prop in product.properties or []:
+        if _norm(prop.get("name")) not in wanted:
+            continue
+        result.extend(_flatten_values(prop.get("values")))
+    return result
+
+
+def _product_text(product: LDProduct) -> str:
+    parts = [product.name, product.article or "", str(product.joining_type or "")]
+    for prop in product.properties or []:
+        parts.append(str(prop.get("name") or ""))
+        parts.extend(_flatten_values(prop.get("values")))
+    return " \n ".join(parts)
+
+
+def _has_any_pattern(text: Any, patterns: tuple[str, ...]) -> bool:
+    value = _norm(text)
+    return any(re.search(pattern, value) for pattern in patterns)
+
+
+_FLANGE_SUBTYPE_PATTERNS: dict[str, tuple[str, ...]] = {
+    "weld_neck": (
+        rf"(?<![{_ALNUM_RU}])воротников\w*",
+        rf"(?<![{_ALNUM_RU}])приварн\w*\s+в\s*стык(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])weld\s*neck(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])butt\s*weld(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])тип\s*11(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])type\s*11(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])исп\w*\s*11(?![{_ALNUM_RU}])",
+    ),
+    "flat": (
+        rf"(?<![{_ALNUM_RU}])плоск\w*",
+        rf"(?<![{_ALNUM_RU}])тип\s*01(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])type\s*01(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])исп\w*\s*01(?![{_ALNUM_RU}])",
+    ),
+    "loose": (
+        rf"(?<![{_ALNUM_RU}])свободн\w*",
+        rf"(?<![{_ALNUM_RU}])loose(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])тип\s*02(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])type\s*02(?![{_ALNUM_RU}])",
+        rf"(?<![{_ALNUM_RU}])исп\w*\s*02(?![{_ALNUM_RU}])",
+    ),
+    "counter": (
+        rf"(?<![{_ALNUM_RU}])ответн\w*",
+        rf"(?<![{_ALNUM_RU}])контрфлан\w*",
+        rf"(?<![{_ALNUM_RU}])counter\s*flange(?![{_ALNUM_RU}])",
+    ),
+}
+
+
+def query_flange_subtype(text: Any) -> str | None:
+    matches = [
+        subtype
+        for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+        if _has_any_pattern(text, patterns)
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def candidate_flange_subtype(product: LDProduct) -> str:
+    if candidate_product_type(product) != "flange":
+        return "unknown"
+    text = _product_text(product)
+    matches = [
+        subtype
+        for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+        if _has_any_pattern(text, patterns)
+    ]
+    return matches[0] if len(matches) == 1 else "unknown"
+
+
+def _first_number(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    match = re.search(r"\d+(?:[.,]\d+)?", str(value))
+    if not match:
+        return None
+    return float(match.group(0).replace(",", "."))
+
+
+def candidate_dn(product: LDProduct) -> int | None:
+    values = [product.dn, *_property_values(product, "Номинальный диаметр, DN", "DN")]
+    for value in values:
+        number = _first_number(value)
+        if number is not None:
+            return int(round(number))
+    return None
+
+
+def candidate_pn_mpa(product: LDProduct) -> float | None:
+    values = [product.pn, *_property_values(product, "Номинальное давление, МПа", "PN")]
+    for value in values:
+        number = _first_number(value)
+        if number is None:
+            continue
+        if number > 10:
+            number /= 10.0
+        return number
+    return None
+
+
+def canonical_product_type(text: str) -> str:
+    value = _norm(text)
+    if "ремкомплект" in value:
+        return "repair_kit"
+    if "комплект" in value and "флан" in value:
+        return "accessory"
+    if "кран" in value and "шар" in value:
+        return "ball_valve"
+    if "затвор" in value and ("диск" in value or "поворот" in value):
+        return "butterfly_valve"
+    if "задвиж" in value:
+        return "gate_valve"
+    if "клапан" in value and "обрат" in value:
+        return "check_valve"
+    if "фильтр" in value:
+        return "filter"
+    if "фланец" in value or "фланцы" in value:
+        return "flange"
+    if "редуктор" in value and "привод" not in value:
+        return "gearbox"
+    if "электропривод" in value or "пневмопривод" in value:
+        return "actuator"
+    return "other"
+
+
+def candidate_product_type(product: LDProduct) -> str:
+    explicit = _property_values(product, "Тип продукта AI", "Тип продукта")
+    for value in explicit:
+        result = canonical_product_type(value)
+        if result != "other":
+            return result
+    return canonical_product_type(_product_text(product))
+
+
+def canonical_joining_type(text: Any) -> str | None:
+    value = _norm(text)
+    if not value:
+        return None
+    if "межфлан" in value:
+        return "wafer"
+    if "компресс" in value or "обжим" in value:
+        return "compression"
+
+ succeeded in 299ms:
+from dataclasses import replace
+
+from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
+from .query_canonicalization import canonicalize_retrieval_query
+from .query_constraints import candidate_flange_subtype, query_flange_subtype
+
+
+def _candidate_as_product(candidate: SearchCandidate) -> LDProduct:
+    return LDProduct(
+        id=candidate.ld_id,
+        name=candidate.name,
+        article=candidate.article,
+        price=candidate.price,
+        dn=candidate.dn,
+        pn=candidate.pn,
+        joining_type=candidate.joining_type,
+        url=candidate.url,
+        properties=candidate.properties,
+    )
+
+
+class NomenclatureMatcher:
+    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+        self.embedder, self.store, self.settings = embedder, store, settings
+        self.reranker = reranker
+        self.hybrid_retriever = hybrid_retriever
+
+    def _normalize_query(self, query: str) -> str:
+        return " ".join(query.split())
+
+    def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
+        hits = self.store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+        )
+
+    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+            )
+        selected = []
+        for item in rerank_result.selected:
+            candidate = candidates[item.candidate_id - 1]
+            selected.append(self._build_selected_match(candidate, item))
+        selected_items = rerank_result.selected
+        required_flange_subtype = query_flange_subtype(query)
+        subtype_rejection_reason = None
+        if required_flange_subtype is not None and rerank_result.status == "MATCHED":
+            selected_items = []
+            incompatible = []
+            for item in rerank_result.selected:
+                candidate = candidates[item.candidate_id - 1]
+                actual_subtype = candidate_flange_subtype(_candidate_as_product(candidate))
+                if actual_subtype == required_flange_subtype:
+                    selected_items = [item]
+                    break
+                incompatible.append(f"{candidate.ld_id}:{actual_subtype}")
+            if not selected_items:
+                subtype_rejection_reason = (
+                    "No reranker-selected candidate has affirmative compatible flange subtype "
+                    f"{required_flange_subtype}; selected evidence: {', '.join(incompatible) or 'none'}"
+                )
+        best = candidates[selected_items[0].candidate_id - 1] if selected_items else None
+        status = rerank_result.status
+        reason = rerank_result.reason
+        if subtype_rejection_reason is not None:
+            status = "NOT_FOUND"
+            reason = subtype_rejection_reason
+        return MatchResult(
+            query=query,
+            status=status,
+            score=best.score if best else None,
+            ld_product=best if status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=reason,
+        )
+
+    def match_one(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.match_top_k)
+        best = candidates[0] if candidates else None
+        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+
+    def match_one_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+        return self.rerank_candidates(query, candidates)
+
+    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+        canonicalization = canonicalize_retrieval_query(query)
+        query = canonicalization.source_query
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        if self.hybrid_retriever is None:
+            raise ValueError("Hybrid retriever is not configured")
+        candidates = self.hybrid_retriever.search(
+            query,
+            self.settings.hybrid_rerank_limit,
+            canonical_query=canonicalization.canonical_query,
+        )
+        return self.rerank_candidates(query, candidates)
+
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
+    def match_many(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+
+    match = match_many
+
+ succeeded in 323ms:
+    )
+    result = evaluate_product(
+        candidate,
+        constraints(
+            working_medium=None,
+            body_material=None,
+            body_material_grade=None,
+            bore_type=None,
+            control=None,
+        ),
+    )
+    assert result.matches is True
+
+
+def flange(name, *, properties=None):
+    return LDProduct(
+        id=10,
+        name=name,
+        article="F-10",
+        joining_type="Фланцевое",
+        properties=properties or [{"name": "Тип продукта", "values": ["Фланец"]}],
+    )
+
+
+def test_query_flange_subtype_recognizes_allowlisted_cues():
+    assert query_flange_subtype("Фланец воротниковый DN80 PN16") == "weld_neck"
+    assert query_flange_subtype("Фланец приварной в стык DN80") == "weld_neck"
+    assert query_flange_subtype("Фланец weld neck type 11") == "weld_neck"
+    assert query_flange_subtype("Фланец плоский стальной") == "flat"
+    assert query_flange_subtype("Фланец свободный на приварном кольце") == "loose"
+    assert query_flange_subtype("Ответный фланец DN80") == "counter"
+
+
+def test_query_flange_subtype_leaves_generic_or_ambiguous_unspecified():
+    assert query_flange_subtype("Фланец стальной DN80 PN16") is None
+    assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+
+
+def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+    assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+    assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+    assert candidate_flange_subtype(flange("Фланец свободный тип 02 DN80")) == "loose"
+    assert candidate_flange_subtype(flange("Контрфланец стальной DN80")) == "counter"
+    assert candidate_flange_subtype(flange("Фланец стальной DN80 PN16")) == "unknown"
+    assert candidate_flange_subtype(flange("Фланец плоский воротниковый DN80")) == "unknown"
+
+
+def test_flange_subtype_constraint_rejects_flat_or_unknown_for_weld_neck():
+    weld_neck = constraints(product_type="flange", flange_subtype="weld_neck", dn=None, pn_min_mpa=None, joining_type=None, valve_type=None)
+    assert evaluate_product(flange("Фланец воротниковый тип 11 DN80"), weld_neck).matches is True
+    assert evaluate_product(flange("Фланец плоский тип 01 DN80"), weld_neck).matches is False
+    assert evaluate_product(flange("Фланец стальной DN80"), weld_neck).matches is False
+
+
+def test_generic_flange_constraint_and_snapshot_do_not_apply_subtype():
+    generic = constraints(product_type="flange", flange_subtype=None, dn=None, pn_min_mpa=None, joining_type=None, valve_type=None)
+    candidate = flange("Фланец стальной DN80")
+    assert evaluate_product(candidate, generic).matches is True
+    snapshot = product_snapshot(candidate, generic)
+    assert "flange_subtype" not in snapshot
+    assert "flange_subtype" not in snapshot["checks"]
+
+ succeeded in 313ms:
+from types import SimpleNamespace
+from nomenclature_matcher.matcher import NomenclatureMatcher
+from nomenclature_matcher.models import SearchCandidate
+
+
+class Embedder:
+    def __init__(self): self.calls = []
+    def embed_query(self, text): self.calls.append(text); return [1.0]
+
+
+class Store:
+    def __init__(self, hits): self.hits, self.calls = hits, 0
+    def search(self, vector, limit): self.calls += 1; return self.hits
+
+
+class Reranker:
+    def __init__(self, result=None, error=None):
+        self.result = result
+        self.error = error
+        self.calls = []
+
+    def rerank(self, query, candidates):
+        self.calls.append((query, candidates))
+        if self.error:
+            raise self.error
+        return self.result
+
+
+class HybridRetriever:
+    def __init__(self, candidates):
+        self.candidates = candidates
+        self.calls = []
+
+    def search(self, query, limit, canonical_query=None):
+        self.calls.append((query, limit, canonical_query))
+        return self.candidates
+
+
+def hit(score):
+    return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
+
+
+def flange_candidate(ld_id, name):
+    return SearchCandidate(
+        ld_id=ld_id,
+        name=name,
+        article=f"F{ld_id}",
+        score=0.01,
+        properties=[{"name": "Тип продукта", "values": ["Фланец"]}],
+    )
+
+
+def test_match_threshold_and_empty():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.9)])
+    matcher = NomenclatureMatcher(embedder, store, settings)
+    assert matcher.match_one(" x ").status == "MATCHED"
+    assert matcher.match_one("low").status == "MATCHED"
+    assert matcher.match_one("   ").status == "NOT_FOUND"
+    assert len(embedder.calls) == 2
+
+
+def test_not_found_cases_and_duplicate_queries():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.2)])
+    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", "same", "   ", "other"])
+    assert [r.status for r in results] == ["NOT_FOUND", "NOT_FOUND", "NOT_FOUND", "NOT_FOUND"]
+    assert len(embedder.calls) == 2
+    assert store.calls == 2
+
+
+def test_duplicate_queries_are_cached_after_normalization():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+    embedder, store = Embedder(), Store([hit(.9)])
+    results = NomenclatureMatcher(embedder, store, settings).match_many(["same", " same ", "same"])
+    assert [r.status for r in results] == ["MATCHED", "MATCHED", "MATCHED"]
+    assert [r.query for r in results] == ["same", " same ", "same"]
+    assert len(embedder.calls) == 1
+    assert store.calls == 1
+
+
+def test_empty_qdrant_result():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0)
+    result = NomenclatureMatcher(Embedder(), Store([]), settings).match_one("query")
+    assert result.status == "NOT_FOUND"
+
+
+def test_match_one_with_rerank_selects_llm_candidate():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(result=rerank_result)).match_one_with_rerank("query")
+    assert result.status == "MATCHED"
+    assert result.selected[0].llm_confidence == 0.93
+    assert result.selected[0].reason == "best"
+
+
+def test_match_one_with_rerank_handles_invalid_json_or_timeout():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20)
+    result = NomenclatureMatcher(Embedder(), Store([hit(0.2)]), settings, reranker=Reranker(error=TimeoutError("timeout"))).match_one_with_rerank("query")
+    assert result.status == "RERANK_FAILED"
+    assert result.candidates
+    assert result.ld_product is None
+
+
+def test_match_one_hybrid_with_rerank_uses_hybrid_candidates():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [
+        SearchCandidate(
+            ld_id=1,
+            name="A",
+            article="A1",
+            score=0.01,
+            dense_score=0.9,
+            dense_rank=1,
+            bm25_score=1.2,
+            bm25_rank=2,
+            rrf_score=0.03,
+            retrieval_sources=["dense", "bm25"],
+            search_text="DN: 25",
+        )
+    ]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+    result = matcher.match_one_hybrid_with_rerank("  query  ")
+    assert result.status == "MATCHED"
+    assert result.candidates[0].rrf_score == 0.03
+    assert result.selected[0].dense_score == 0.9
+    assert result.selected[0].bm25_score == 1.2
+    assert result.selected[0].rrf_score == 0.03
+    assert not hasattr(result.selected[0], "vector_score")
+    assert hybrid.calls == [("query", 20, None)]
+
+
+def test_match_many_hybrid_with_rerank_dedupes_normalized_queries():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.93, reason="best")], reason=None)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=hybrid)
+    results = matcher.match_many_hybrid_with_rerank(["query", " query ", "   "])
+    assert [result.status for result in results] == ["MATCHED", "MATCHED", "NOT_FOUND"]
+    assert hybrid.calls == [("query", 20, None)]
+
+
+def test_match_one_hybrid_passes_canonical_query_but_reranks_original_query():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="A", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="NOT_FOUND", selected=[], reason="no")
+    reranker = Reranker(result=rerank_result)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+    result = matcher.match_one_hybrid_with_rerank("  Кран шаровой фл. Ду25 Ру16  ")
+    assert result.query == "Кран шаровой фл. Ду25 Ру16"
+    assert hybrid.calls == [("Кран шаровой фл. Ду25 Ру16", 20, "Кран шаровой фланцевый DN 25 PN 16")]
+    assert reranker.calls[0][0] == "Кран шаровой фл. Ду25 Ру16"
+
+
+def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_rerank():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    candidates = [SearchCandidate(ld_id=1, name="Кран приварной", article="A1", score=0.01)]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="ww")], reason=None)
+    reranker = Reranker(result=rerank_result)
+    hybrid = HybridRetriever(candidates)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=reranker, hybrid_retriever=hybrid)
+    query = "  Кран шаровой WW DN100 PN25  "
+
+    result = matcher.match_one_hybrid_with_rerank(query)
+
+    assert result.query == "Кран шаровой WW DN100 PN25"
+    assert hybrid.calls == [
+        (
+            "Кран шаровой WW DN100 PN25",
+            20,
+            "Кран шаровой WW приварной под приварку сварной DN 100 PN 25",
+        )
+    ]
+    assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
+
+
+def test_explicit_flange_subtype_rejects_incompatible_top_selection():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
+    candidates = [flange_candidate(1, "Фланец плоский стальной тип 01 DN80")]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="flat")], reason=None)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
+
+    result = matcher.match_one_hybrid_with_rerank("Фланец воротниковый DN80 PN16")
+
+    assert result.status == "NOT_FOUND"
+    assert result.ld_product is None
+    assert "flange subtype weld_neck" in result.reason
+
+
+def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
+    candidates = [
+        flange_candidate(1, "Фланец плоский стальной тип 01 DN80"),
+        flange_candidate(2, "Фланец воротниковый стальной тип 11 DN80"),
+    ]
+    rerank_result = SimpleNamespace(
+        status="MATCHED",
+        selected=[
+            SimpleNamespace(candidate_id=1, confidence=0.91, reason="flat"),
+            SimpleNamespace(candidate_id=2, confidence=0.88, reason="weld neck"),
+        ],
+        reason=None,
+    )
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
+
+    result = matcher.match_one_hybrid_with_rerank("Фланец воротниковый DN80 PN16")
+
+    assert result.status == "MATCHED"
+    assert result.ld_product.ld_id == 2
+    assert result.score == candidates[1].score
+
+
+def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
+    candidates = [flange_candidate(1, "Фланец стальной DN80 PN16")]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="generic")], reason=None)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
+
+    result = matcher.match_one_hybrid_with_rerank("Фланец воротниковый DN80 PN16")
+
+    assert result.status == "NOT_FOUND"
+    assert "1:unknown" in result.reason
+
+
+def test_generic_flange_query_keeps_existing_reranker_selection():
+    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
+    candidates = [flange_candidate(1, "Фланец стальной DN80 PN16")]
+    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="generic")], reason=None)
+    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
+
+    result = matcher.match_one_hybrid_with_rerank("Фланец стальной DN80 PN16")
+
+    assert result.status == "MATCHED"
+    assert result.ld_product.ld_id == 1
+    assert result.reason is None
+
+codex
+{"status":"complete","summary":"I’m going to make two narrow edits now: require the query itself to classify as a flange before subtype cues count, and construct `MatchResult.selected` only after subtype validation has chosen the surviving reranker selections.","tests":[],"needs_reindex":false,"blocker":""}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/matcher.py
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/query_constraints.py
+/workspaces/ML-Cancer-Data/tests/test_matcher.py
+/workspaces/ML-Cancer-Data/tests/test_query_constraints.py
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 4407c3ed5ec8f65a758cad35db6febe5296ca09c..b3a71214e9e4fd69dd440566c5cf8650c4d4ec4a
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -83,10 +83,6 @@
+                 candidates=candidates,
+                 reason=str(exc),
+             )
+-        selected = []
+-        for item in rerank_result.selected:
+-            candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+         selected_items = rerank_result.selected
+         required_flange_subtype = query_flange_subtype(query)
+         subtype_rejection_reason = None
+@@ -111,6 +107,10 @@
+         if subtype_rejection_reason is not None:
+             status = "NOT_FOUND"
+             reason = subtype_rejection_reason
++        selected = []
++        for item in selected_items:
++            candidate = candidates[item.candidate_id - 1]
++            selected.append(self._build_selected_match(candidate, item))
+         return MatchResult(
+             query=query,
+             status=status,
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index a7cc7f3591d5d305e77893e962b2d7b88ab6ff03..c4534b10b6539aa8593f77cc946bf3b1a245006d
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -186,6 +186,8 @@
+ 
+ 
+ def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
+     matches = [
+         subtype
+         for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index b49a84ee2e97098d55a2b093b8c8a40f93fc82df..4582214253fb8d9d23631a557a40e454ad5c3942
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -50,6 +50,13 @@
+     )
+ 
+ 
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -209,6 +216,7 @@
+     assert result.status == "NOT_FOUND"
+     assert result.ld_product is None
+     assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+@@ -232,6 +240,7 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 2
+     assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
+ 
+ 
+ def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+@@ -244,6 +253,7 @@
+ 
+     assert result.status == "NOT_FOUND"
+     assert "1:unknown" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_generic_flange_query_keeps_existing_reranker_selection():
+@@ -257,3 +267,16 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 1
+     assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 42f4e899bd52cdd1612f59c360c541e0ec3d0b72..520f651a75da875802357dbf52021a769e075356
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -215,6 +215,12 @@
+     assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+ 
+ 
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
+ def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+     assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+     assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 4407c3ed5ec8f65a758cad35db6febe5296ca09c..b3a71214e9e4fd69dd440566c5cf8650c4d4ec4a
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -83,10 +83,6 @@
+                 candidates=candidates,
+                 reason=str(exc),
+             )
+-        selected = []
+-        for item in rerank_result.selected:
+-            candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+         selected_items = rerank_result.selected
+         required_flange_subtype = query_flange_subtype(query)
+         subtype_rejection_reason = None
+@@ -111,6 +107,10 @@
+         if subtype_rejection_reason is not None:
+             status = "NOT_FOUND"
+             reason = subtype_rejection_reason
++        selected = []
++        for item in selected_items:
++            candidate = candidates[item.candidate_id - 1]
++            selected.append(self._build_selected_match(candidate, item))
+         return MatchResult(
+             query=query,
+             status=status,
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index a7cc7f3591d5d305e77893e962b2d7b88ab6ff03..c4534b10b6539aa8593f77cc946bf3b1a245006d
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -186,6 +186,8 @@
+ 
+ 
+ def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
+     matches = [
+         subtype
+         for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index b49a84ee2e97098d55a2b093b8c8a40f93fc82df..4582214253fb8d9d23631a557a40e454ad5c3942
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -50,6 +50,13 @@
+     )
+ 
+ 
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -209,6 +216,7 @@
+     assert result.status == "NOT_FOUND"
+     assert result.ld_product is None
+     assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+@@ -232,6 +240,7 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 2
+     assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
+ 
+ 
+ def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+@@ -244,6 +253,7 @@
+ 
+     assert result.status == "NOT_FOUND"
+     assert "1:unknown" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_generic_flange_query_keeps_existing_reranker_selection():
+@@ -257,3 +267,16 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 1
+     assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 42f4e899bd52cdd1612f59c360c541e0ec3d0b72..520f651a75da875802357dbf52021a769e075356
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -215,6 +215,12 @@
+     assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+ 
+ 
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
+ def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+     assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+     assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+
+codex
+{"status":"complete","summary":"The repair is in place. I’m running the focused constraint and matcher tests first, since those exercise both reviewer concerns directly.","tests":[],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py' in /workspaces/ML-Cancer-Data
+ succeeded in 1798ms:
+..................................                                       [100%]
+34 passed in 1.10s
+
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 4407c3ed5ec8f65a758cad35db6febe5296ca09c..b3a71214e9e4fd69dd440566c5cf8650c4d4ec4a
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -83,10 +83,6 @@
+                 candidates=candidates,
+                 reason=str(exc),
+             )
+-        selected = []
+-        for item in rerank_result.selected:
+-            candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+         selected_items = rerank_result.selected
+         required_flange_subtype = query_flange_subtype(query)
+         subtype_rejection_reason = None
+@@ -111,6 +107,10 @@
+         if subtype_rejection_reason is not None:
+             status = "NOT_FOUND"
+             reason = subtype_rejection_reason
++        selected = []
++        for item in selected_items:
++            candidate = candidates[item.candidate_id - 1]
++            selected.append(self._build_selected_match(candidate, item))
+         return MatchResult(
+             query=query,
+             status=status,
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index a7cc7f3591d5d305e77893e962b2d7b88ab6ff03..c4534b10b6539aa8593f77cc946bf3b1a245006d
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -186,6 +186,8 @@
+ 
+ 
+ def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
+     matches = [
+         subtype
+         for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index b49a84ee2e97098d55a2b093b8c8a40f93fc82df..4582214253fb8d9d23631a557a40e454ad5c3942
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -50,6 +50,13 @@
+     )
+ 
+ 
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -209,6 +216,7 @@
+     assert result.status == "NOT_FOUND"
+     assert result.ld_product is None
+     assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+@@ -232,6 +240,7 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 2
+     assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
+ 
+ 
+ def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+@@ -244,6 +253,7 @@
+ 
+     assert result.status == "NOT_FOUND"
+     assert "1:unknown" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_generic_flange_query_keeps_existing_reranker_selection():
+@@ -257,3 +267,16 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 1
+     assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 42f4e899bd52cdd1612f59c360c541e0ec3d0b72..520f651a75da875802357dbf52021a769e075356
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -215,6 +215,12 @@
+     assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+ 
+ 
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
+ def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+     assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+     assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+
+codex
+{"status":"complete","summary":"Focused tests passed. I’m doing a quick diff review now to confirm the patch stayed out of harness/eval data and did not create an index-rebuild requirement.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'git diff -- src/nomenclature_matcher/query_constraints.py src/nomenclature_matcher/matcher.py tests/test_query_constraints.py tests/test_matcher.py' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git status --short' in /workspaces/ML-Cancer-Data
+ succeeded in 121ms:
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 971745f..b3a7121 100644
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -1,7 +1,22 @@
+ from dataclasses import replace
+ 
+-from .models import MatchResult, SearchCandidate, SelectedMatch
++from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
+ from .query_canonicalization import canonicalize_retrieval_query
++from .query_constraints import candidate_flange_subtype, query_flange_subtype
++
++
++def _candidate_as_product(candidate: SearchCandidate) -> LDProduct:
++    return LDProduct(
++        id=candidate.ld_id,
++        name=candidate.name,
++        article=candidate.article,
++        price=candidate.price,
++        dn=candidate.dn,
++        pn=candidate.pn,
++        joining_type=candidate.joining_type,
++        url=candidate.url,
++        properties=candidate.properties,
++    )
+ 
+ 
+ class NomenclatureMatcher:
+@@ -68,19 +83,42 @@ class NomenclatureMatcher:
+                 candidates=candidates,
+                 reason=str(exc),
+             )
++        selected_items = rerank_result.selected
++        required_flange_subtype = query_flange_subtype(query)
++        subtype_rejection_reason = None
++        if required_flange_subtype is not None and rerank_result.status == "MATCHED":
++            selected_items = []
++            incompatible = []
++            for item in rerank_result.selected:
++                candidate = candidates[item.candidate_id - 1]
++                actual_subtype = candidate_flange_subtype(_candidate_as_product(candidate))
++                if actual_subtype == required_flange_subtype:
++                    selected_items = [item]
++                    break
++                incompatible.append(f"{candidate.ld_id}:{actual_subtype}")
++            if not selected_items:
++                subtype_rejection_reason = (
++                    "No reranker-selected candidate has affirmative compatible flange subtype "
++                    f"{required_flange_subtype}; selected evidence: {', '.join(incompatible) or 'none'}"
++                )
++        best = candidates[selected_items[0].candidate_id - 1] if selected_items else None
++        status = rerank_result.status
++        reason = rerank_result.reason
++        if subtype_rejection_reason is not None:
++            status = "NOT_FOUND"
++            reason = subtype_rejection_reason
+         selected = []
+-        for item in rerank_result.selected:
++        for item in selected_items:
+             candidate = candidates[item.candidate_id - 1]
+             selected.append(self._build_selected_match(candidate, item))
+-        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+         return MatchResult(
+             query=query,
+-            status=rerank_result.status,
++            status=status,
+             score=best.score if best else None,
+-            ld_product=best if rerank_result.status == "MATCHED" else None,
++            ld_product=best if status == "MATCHED" else None,
+             candidates=candidates,
+             selected=selected,
+-            reason=rerank_result.reason,
++            reason=reason,
+         )
+ 
+     def match_one(self, query: str) -> MatchResult:
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index 3c52290..c4534b1 100644
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -33,6 +33,7 @@ class QueryConstraints(BaseModel):
+     body_material_grade: str | None = None
+     bore_type: str | None = None
+     control: str | None = None
++    flange_subtype: str | None = None
+     catalog_scope: str = "uncertain"
+     ambiguous: bool = False
+     comment: str = ""
+@@ -51,6 +52,13 @@ class QueryConstraints(BaseModel):
+             raise ValueError("pn_min_mpa must be positive")
+         return value
+ 
++    @field_validator("flange_subtype")
++    @classmethod
++    def _validate_flange_subtype(cls, value: str | None) -> str | None:
++        if value is not None and value not in {"weld_neck", "flat", "loose", "counter"}:
++            raise ValueError("flange_subtype must be weld_neck, flat, loose, counter, or null")
++        return value
++
+ 
+ class DeepSeekQueryConstraintExtractor:
+     def __init__(self, settings, client=None, prompt_path: str | Path | None = None):
+@@ -141,6 +149,65 @@ def _product_text(product: LDProduct) -> str:
+     return " \n ".join(parts)
+ 
+ 
++def _has_any_pattern(text: Any, patterns: tuple[str, ...]) -> bool:
++    value = _norm(text)
++    return any(re.search(pattern, value) for pattern in patterns)
++
++
++_FLANGE_SUBTYPE_PATTERNS: dict[str, tuple[str, ...]] = {
++    "weld_neck": (
++        rf"(?<![{_ALNUM_RU}])воротников\w*",
++        rf"(?<![{_ALNUM_RU}])приварн\w*\s+в\s*стык(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])weld\s*neck(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])butt\s*weld(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])тип\s*11(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])type\s*11(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])исп\w*\s*11(?![{_ALNUM_RU}])",
++    ),
++    "flat": (
++        rf"(?<![{_ALNUM_RU}])плоск\w*",
++        rf"(?<![{_ALNUM_RU}])тип\s*01(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])type\s*01(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])исп\w*\s*01(?![{_ALNUM_RU}])",
++    ),
++    "loose": (
++        rf"(?<![{_ALNUM_RU}])свободн\w*",
++        rf"(?<![{_ALNUM_RU}])loose(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])тип\s*02(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])type\s*02(?![{_ALNUM_RU}])",
++        rf"(?<![{_ALNUM_RU}])исп\w*\s*02(?![{_ALNUM_RU}])",
++    ),
++    "counter": (
++        rf"(?<![{_ALNUM_RU}])ответн\w*",
++        rf"(?<![{_ALNUM_RU}])контрфлан\w*",
++        rf"(?<![{_ALNUM_RU}])counter\s*flange(?![{_ALNUM_RU}])",
++    ),
++}
++
++
++def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
++    matches = [
++        subtype
++        for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
++        if _has_any_pattern(text, patterns)
++    ]
++    return matches[0] if len(matches) == 1 else None
++
++
++def candidate_flange_subtype(product: LDProduct) -> str:
++    if candidate_product_type(product) != "flange":
++        return "unknown"
++    text = _product_text(product)
++    matches = [
++        subtype
++        for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
++        if _has_any_pattern(text, patterns)
++    ]
++    return matches[0] if len(matches) == 1 else "unknown"
++
++
+ def _first_number(value: Any) -> float | None:
+     if value in (None, ""):
+         return None
+@@ -451,6 +518,12 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
+         if actual_control != constraints.control:
+             return MatchDecision(False, checks)
+ 
++    if constraints.flange_subtype is not None:
++        actual_flange_subtype = candidate_flange_subtype(product)
++        checks["flange_subtype"] = f"{actual_flange_subtype} == {constraints.flange_subtype}"
++        if actual_flange_subtype != constraints.flange_subtype:
++            return MatchDecision(False, checks)
++
+     return MatchDecision(True, checks)
+ 
+ 
+@@ -476,6 +549,8 @@ def product_snapshot(product: LDProduct, constraints: QueryConstraints | None =
+         "control": candidate_control(product),
+         "working_medium": _medium_values(product),
+     }
++    if constraints is not None and constraints.flange_subtype is not None:
++        snapshot["flange_subtype"] = candidate_flange_subtype(product)
+     if constraints is not None:
+         snapshot["checks"] = asdict(evaluate_product(product, constraints))["checks"]
+     return snapshot
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index 3756a80..4582214 100644
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -40,6 +40,23 @@ def hit(score):
+     return SimpleNamespace(score=score, payload={"ld_id": 1, "name": "Кран", "article": "A", "search_text": "DN: 80"})
+ 
+ 
++def flange_candidate(ld_id, name):
++    return SearchCandidate(
++        ld_id=ld_id,
++        name=name,
++        article=f"F{ld_id}",
++        score=0.01,
++        properties=[{"name": "Тип продукта", "values": ["Фланец"]}],
++    )
++
++
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -186,3 +203,80 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
+         )
+     ]
+     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
++
++
++def test_explicit_flange_subtype_rejects_incompatible_top_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [flange_candidate(1, "Фланец плоский стальной тип 01 DN80")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="flat")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Фланец воротниковый DN80 PN16")
++
++    assert result.status == "NOT_FOUND"
++    assert result.ld_product is None
++    assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
++
++
++def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [
++        flange_candidate(1, "Фланец плоский стальной тип 01 DN80"),
++        flange_candidate(2, "Фланец воротниковый стальной тип 11 DN80"),
++    ]
++    rerank_result = SimpleNamespace(
++        status="MATCHED",
++        selected=[
++            SimpleNamespace(candidate_id=1, confidence=0.91, reason="flat"),
++            SimpleNamespace(candidate_id=2, confidence=0.88, reason="weld neck"),
++        ],
++        reason=None,
++    )
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Фланец воротниковый DN80 PN16")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 2
++    assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
++
++
++def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [flange_candidate(1, "Фланец стальной DN80 PN16")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="generic")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Фланец воротниковый DN80 PN16")
++
++    assert result.status == "NOT_FOUND"
++    assert "1:unknown" in result.reason
++    assert result.selected == []
++
++
++def test_generic_flange_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [flange_candidate(1, "Фланец стальной DN80 PN16")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="generic")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Фланец стальной DN80 PN16")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 7c2d3b3..520f651 100644
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -1,8 +1,11 @@
+ from nomenclature_matcher.models import LDProduct
+ from nomenclature_matcher.query_constraints import (
+     QueryConstraints,
++    candidate_flange_subtype,
+     candidate_pn_mpa,
+     evaluate_product,
++    product_snapshot,
++    query_flange_subtype,
+ )
+ 
+ 
+@@ -186,3 +189,58 @@ def test_unspecified_fields_do_not_filter_candidates():
+         ),
+     )
+     assert result.matches is True
++
++
++def flange(name, *, properties=None):
++    return LDProduct(
++        id=10,
++        name=name,
++        article="F-10",
++        joining_type="Фланцевое",
++        properties=properties or [{"name": "Тип продукта", "values": ["Фланец"]}],
++    )
++
++
++def test_query_flange_subtype_recognizes_allowlisted_cues():
++    assert query_flange_subtype("Фланец воротниковый DN80 PN16") == "weld_neck"
++    assert query_flange_subtype("Фланец приварной в стык DN80") == "weld_neck"
++    assert query_flange_subtype("Фланец weld neck type 11") == "weld_neck"
++    assert query_flange_subtype("Фланец плоский стальной") == "flat"
++    assert query_flange_subtype("Фланец свободный на приварном кольце") == "loose"
++    assert query_flange_subtype("Ответный фланец DN80") == "counter"
++
++
++def test_query_flange_subtype_leaves_generic_or_ambiguous_unspecified():
++    assert query_flange_subtype("Фланец стальной DN80 PN16") is None
++    assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
++
++
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
++def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
++    assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
++    assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
++    assert candidate_flange_subtype(flange("Фланец свободный тип 02 DN80")) == "loose"
++    assert candidate_flange_subtype(flange("Контрфланец стальной DN80")) == "counter"
++    assert candidate_flange_subtype(flange("Фланец стальной DN80 PN16")) == "unknown"
++    assert candidate_flange_subtype(flange("Фланец плоский воротниковый DN80")) == "unknown"
++
++
++def test_flange_subtype_constraint_rejects_flat_or_unknown_for_weld_neck():
++    weld_neck = constraints(product_type="flange", flange_subtype="weld_neck", dn=None, pn_min_mpa=None, joining_type=None, valve_type=None)
++    assert evaluate_product(flange("Фланец воротниковый тип 11 DN80"), weld_neck).matches is True
++    assert evaluate_product(flange("Фланец плоский тип 01 DN80"), weld_neck).matches is False
++    assert evaluate_product(flange("Фланец стальной DN80"), weld_neck).matches is False
++
++
++def test_generic_flange_constraint_and_snapshot_do_not_apply_subtype():
++    generic = constraints(product_type="flange", flange_subtype=None, dn=None, pn_min_mpa=None, joining_type=None, valve_type=None)
++    candidate = flange("Фланец стальной DN80")
++    assert evaluate_product(candidate, generic).matches is True
++    snapshot = product_snapshot(candidate, generic)
++    assert "flange_subtype" not in snapshot
++    assert "flange_subtype" not in snapshot["checks"]
+
+ succeeded in 103ms:
+ M src/nomenclature_matcher/matcher.py
+ M src/nomenclature_matcher/prompts/reranker_system.md
+ M src/nomenclature_matcher/query_constraints.py
+ M src/nomenclature_matcher/reranker.py
+ M tests/test_matcher.py
+ M tests/test_query_constraints.py
+ M tests/test_reranker.py
+?? openspec/changes/cycle-12-protected-flange-subtype-verification/
+
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 4407c3ed5ec8f65a758cad35db6febe5296ca09c..b3a71214e9e4fd69dd440566c5cf8650c4d4ec4a
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -83,10 +83,6 @@
+                 candidates=candidates,
+                 reason=str(exc),
+             )
+-        selected = []
+-        for item in rerank_result.selected:
+-            candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+         selected_items = rerank_result.selected
+         required_flange_subtype = query_flange_subtype(query)
+         subtype_rejection_reason = None
+@@ -111,6 +107,10 @@
+         if subtype_rejection_reason is not None:
+             status = "NOT_FOUND"
+             reason = subtype_rejection_reason
++        selected = []
++        for item in selected_items:
++            candidate = candidates[item.candidate_id - 1]
++            selected.append(self._build_selected_match(candidate, item))
+         return MatchResult(
+             query=query,
+             status=status,
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index a7cc7f3591d5d305e77893e962b2d7b88ab6ff03..c4534b10b6539aa8593f77cc946bf3b1a245006d
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -186,6 +186,8 @@
+ 
+ 
+ def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
+     matches = [
+         subtype
+         for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index b49a84ee2e97098d55a2b093b8c8a40f93fc82df..4582214253fb8d9d23631a557a40e454ad5c3942
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -50,6 +50,13 @@
+     )
+ 
+ 
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -209,6 +216,7 @@
+     assert result.status == "NOT_FOUND"
+     assert result.ld_product is None
+     assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+@@ -232,6 +240,7 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 2
+     assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
+ 
+ 
+ def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+@@ -244,6 +253,7 @@
+ 
+     assert result.status == "NOT_FOUND"
+     assert "1:unknown" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_generic_flange_query_keeps_existing_reranker_selection():
+@@ -257,3 +267,16 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 1
+     assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 42f4e899bd52cdd1612f59c360c541e0ec3d0b72..520f651a75da875802357dbf52021a769e075356
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -215,6 +215,12 @@
+     assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+ 
+ 
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
+ def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+     assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+     assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+
+codex
+{"status":"complete","summary":"The diff is limited to the cycle’s production matcher/constraint/reranker areas, prompt, tests, and OpenSpec artifacts already present; no harness or eval files changed. I’m also running the reranker-focused tests because subtype prompt scoping depends on the same helper.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py"],"needs_reindex":false,"blocker":""}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_reranker.py' in /workspaces/ML-Cancer-Data
+ succeeded in 1307ms:
+.........                                                                [100%]
+9 passed in 0.87s
+
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 4407c3ed5ec8f65a758cad35db6febe5296ca09c..b3a71214e9e4fd69dd440566c5cf8650c4d4ec4a
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -83,10 +83,6 @@
+                 candidates=candidates,
+                 reason=str(exc),
+             )
+-        selected = []
+-        for item in rerank_result.selected:
+-            candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+         selected_items = rerank_result.selected
+         required_flange_subtype = query_flange_subtype(query)
+         subtype_rejection_reason = None
+@@ -111,6 +107,10 @@
+         if subtype_rejection_reason is not None:
+             status = "NOT_FOUND"
+             reason = subtype_rejection_reason
++        selected = []
++        for item in selected_items:
++            candidate = candidates[item.candidate_id - 1]
++            selected.append(self._build_selected_match(candidate, item))
+         return MatchResult(
+             query=query,
+             status=status,
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index a7cc7f3591d5d305e77893e962b2d7b88ab6ff03..c4534b10b6539aa8593f77cc946bf3b1a245006d
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -186,6 +186,8 @@
+ 
+ 
+ def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
+     matches = [
+         subtype
+         for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index b49a84ee2e97098d55a2b093b8c8a40f93fc82df..4582214253fb8d9d23631a557a40e454ad5c3942
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -50,6 +50,13 @@
+     )
+ 
+ 
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -209,6 +216,7 @@
+     assert result.status == "NOT_FOUND"
+     assert result.ld_product is None
+     assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+@@ -232,6 +240,7 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 2
+     assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
+ 
+ 
+ def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+@@ -244,6 +253,7 @@
+ 
+     assert result.status == "NOT_FOUND"
+     assert "1:unknown" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_generic_flange_query_keeps_existing_reranker_selection():
+@@ -257,3 +267,16 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 1
+     assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 42f4e899bd52cdd1612f59c360c541e0ec3d0b72..520f651a75da875802357dbf52021a769e075356
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -215,6 +215,12 @@
+     assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+ 
+ 
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
+ def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+     assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+     assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+
+codex
+{"status":"complete","summary":"Fixed the reviewer’s two concrete issues. `query_flange_subtype()` now only returns subtype requirements for queries classified as flange products, so non-flange welded-end/collar wording no longer triggers flange verification. `MatchResult.selected` is now built from the post-validation selected items, which means subtype-caused `NOT_FOUND` returns an empty selected list and accepted later candidates are reflected consistently.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py","python -m pytest -q tests/test_reranker.py"],"needs_reindex":false,"blocker":""}
+diff --git a/src/nomenclature_matcher/matcher.py b/src/nomenclature_matcher/matcher.py
+index 4407c3ed5ec8f65a758cad35db6febe5296ca09c..b3a71214e9e4fd69dd440566c5cf8650c4d4ec4a
+--- a/src/nomenclature_matcher/matcher.py
++++ b/src/nomenclature_matcher/matcher.py
+@@ -83,10 +83,6 @@
+                 candidates=candidates,
+                 reason=str(exc),
+             )
+-        selected = []
+-        for item in rerank_result.selected:
+-            candidate = candidates[item.candidate_id - 1]
+-            selected.append(self._build_selected_match(candidate, item))
+         selected_items = rerank_result.selected
+         required_flange_subtype = query_flange_subtype(query)
+         subtype_rejection_reason = None
+@@ -111,6 +107,10 @@
+         if subtype_rejection_reason is not None:
+             status = "NOT_FOUND"
+             reason = subtype_rejection_reason
++        selected = []
++        for item in selected_items:
++            candidate = candidates[item.candidate_id - 1]
++            selected.append(self._build_selected_match(candidate, item))
+         return MatchResult(
+             query=query,
+             status=status,
+diff --git a/src/nomenclature_matcher/query_constraints.py b/src/nomenclature_matcher/query_constraints.py
+index a7cc7f3591d5d305e77893e962b2d7b88ab6ff03..c4534b10b6539aa8593f77cc946bf3b1a245006d
+--- a/src/nomenclature_matcher/query_constraints.py
++++ b/src/nomenclature_matcher/query_constraints.py
+@@ -186,6 +186,8 @@
+ 
+ 
+ def query_flange_subtype(text: Any) -> str | None:
++    if canonical_product_type(_norm(text)) != "flange":
++        return None
+     matches = [
+         subtype
+         for subtype, patterns in _FLANGE_SUBTYPE_PATTERNS.items()
+diff --git a/tests/test_matcher.py b/tests/test_matcher.py
+index b49a84ee2e97098d55a2b093b8c8a40f93fc82df..4582214253fb8d9d23631a557a40e454ad5c3942
+--- a/tests/test_matcher.py
++++ b/tests/test_matcher.py
+@@ -50,6 +50,13 @@
+     )
+ 
+ 
++def candidate(ld_id, name, *, product_type=None):
++    properties = []
++    if product_type is not None:
++        properties.append({"name": "Тип продукта", "values": [product_type]})
++    return SearchCandidate(ld_id=ld_id, name=name, article=f"A{ld_id}", score=0.01, properties=properties)
++
++
+ def test_match_threshold_and_empty():
+     settings = SimpleNamespace(match_top_k=5, match_score_threshold=.8)
+     embedder, store = Embedder(), Store([hit(.9)])
+@@ -209,6 +216,7 @@
+     assert result.status == "NOT_FOUND"
+     assert result.ld_product is None
+     assert "flange subtype weld_neck" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_explicit_flange_subtype_keeps_compatible_later_selected_candidate():
+@@ -232,6 +240,7 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 2
+     assert result.score == candidates[1].score
++    assert [item.ld_id for item in result.selected] == [2]
+ 
+ 
+ def test_explicit_flange_subtype_rejects_unknown_selected_candidates():
+@@ -244,6 +253,7 @@
+ 
+     assert result.status == "NOT_FOUND"
+     assert "1:unknown" in result.reason
++    assert result.selected == []
+ 
+ 
+ def test_generic_flange_query_keeps_existing_reranker_selection():
+@@ -257,3 +267,16 @@
+     assert result.status == "MATCHED"
+     assert result.ld_product.ld_id == 1
+     assert result.reason is None
++
++
++def test_non_flange_butt_weld_query_keeps_existing_reranker_selection():
++    settings = SimpleNamespace(match_top_k=5, match_score_threshold=0.8, rerank_candidate_limit=20, hybrid_rerank_limit=20)
++    candidates = [candidate(1, "Кран шаровой приварной DN80", product_type="Кран шаровой")]
++    rerank_result = SimpleNamespace(status="MATCHED", selected=[SimpleNamespace(candidate_id=1, confidence=0.91, reason="valve")], reason=None)
++    matcher = NomenclatureMatcher(Embedder(), Store([]), settings, reranker=Reranker(result=rerank_result), hybrid_retriever=HybridRetriever(candidates))
++
++    result = matcher.match_one_hybrid_with_rerank("Кран шаровой приварной в стык DN80")
++
++    assert result.status == "MATCHED"
++    assert result.ld_product.ld_id == 1
++    assert [item.ld_id for item in result.selected] == [1]
+diff --git a/tests/test_query_constraints.py b/tests/test_query_constraints.py
+index 42f4e899bd52cdd1612f59c360c541e0ec3d0b72..520f651a75da875802357dbf52021a769e075356
+--- a/tests/test_query_constraints.py
++++ b/tests/test_query_constraints.py
+@@ -215,6 +215,12 @@
+     assert query_flange_subtype("Фланец плоский воротниковый DN80") is None
+ 
+ 
++def test_query_flange_subtype_ignores_non_flange_weld_and_collar_cues():
++    assert query_flange_subtype("Кран шаровой приварной в стык DN80") is None
++    assert query_flange_subtype("Кран шаровой с воротниковым патрубком DN80") is None
++    assert query_flange_subtype("Переход приварной в стык тип 11 DN80") is None
++
++
+ def test_candidate_flange_subtype_requires_affirmative_catalog_evidence():
+     assert candidate_flange_subtype(flange("Фланец воротниковый стальной тип 11 DN80")) == "weld_neck"
+     assert candidate_flange_subtype(flange("Фланец плоский стальной тип 01 DN80")) == "flat"
+
+tokens used
+46,095
+{"status":"complete","summary":"Fixed the reviewer’s two concrete issues. `query_flange_subtype()` now only returns subtype requirements for queries classified as flange products, so non-flange welded-end/collar wording no longer triggers flange verification. `MatchResult.selected` is now built from the post-validation selected items, which means subtype-caused `NOT_FOUND` returns an empty selected list and accepted later candidates are reflected consistently.","tests":["python -m pytest -q tests/test_query_constraints.py tests/test_matcher.py","python -m pytest -q tests/test_reranker.py"],"needs_reindex":false,"blocker":""}
