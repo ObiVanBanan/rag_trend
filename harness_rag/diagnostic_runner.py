@@ -9,6 +9,12 @@ from .provenance_runner import install_campaign_provenance
 from .research_first_runner import install_research_first
 
 
+# This helper only repairs harness research evidence. Treat it like the runner
+# itself so adopting harness-only HEADs cannot be blocked by the maintenance
+# script that was added alongside provenance support.
+core.HARNESS_ONLY_EXACT.add("scripts/rebuild_research_review_pool.py")
+
+
 _ORIGINAL_ACCEPT_CANDIDATE = core.accept_candidate
 _ORIGINAL_ROLLBACK_AND_RECORD = core._rollback_and_record
 
