@@ -5,6 +5,7 @@ from typing import Any
 from . import v2 as core
 from . import v2_runner
 from .policy import Metrics
+from .provenance_runner import install_campaign_provenance
 from .research_first_runner import install_research_first
 
 
@@ -179,9 +180,10 @@ def _rollback_and_record_diagnostic(
 
 
 def main() -> int:
-    # Install the simplified research-first pipeline, then retain metric-aware
-    # guardrails/diagnostics and scientific accounting from v2_runner.
+    # Install research-first reasoning, then campaign/provenance isolation, then
+    # retain metric-aware guardrails/diagnostics and scientific accounting.
     install_research_first()
+    install_campaign_provenance()
     core._public_precheck = _public_precheck
     core.accept_candidate = _accept_candidate
     core._rollback_and_record = _rollback_and_record_diagnostic
