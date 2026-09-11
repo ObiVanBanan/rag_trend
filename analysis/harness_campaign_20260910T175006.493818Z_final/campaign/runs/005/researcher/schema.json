@@ -1,0 +1,139 @@
+{
+  "type": "object",
+  "properties": {
+    "question": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "string"
+    },
+    "decision_impact": {
+      "type": "string"
+    },
+    "unresolved": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "official",
+              "secondary",
+              "community"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        },
+        "required": [
+          "url",
+          "claim",
+          "quality",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "evidence_patterns": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "supporting_experiments": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string"
+            }
+          },
+          "interpretation": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          }
+        },
+        "required": [
+          "pattern",
+          "supporting_experiments",
+          "interpretation",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "candidate_directions": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "properties": {
+          "mechanism_family": {
+            "type": "string"
+          },
+          "history_relation": {
+            "type": "string",
+            "enum": [
+              "NEW_MECHANISM",
+              "NEW_LAYER",
+              "REFINEMENT",
+              "REPEAT"
+            ]
+          },
+          "causal_mechanism": {
+            "type": "string"
+          },
+          "competing_explanation": {
+            "type": "string"
+          },
+          "falsifier": {
+            "type": "string"
+          },
+          "information_gain": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mechanism_family",
+          "history_relation",
+          "causal_mechanism",
+          "competing_explanation",
+          "falsifier",
+          "information_gain"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "question",
+    "findings",
+    "decision_impact",
+    "unresolved",
+    "sources",
+    "evidence_patterns",
+    "candidate_directions"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,80 @@
+{
+  "question": "What causal mechanisms remain credible for Harness v2 attempt 4 after inspecting the champion, corpus, code, and experiment ledger?",
+  "findings": "The champion retrieves the raw query plus at most one canonical alternate, collapses each modality’s raw/alternate hits to the single strongest rank per product, RRF-fuses top candidates, and asks the reranker to return only MATCHED or NOT_FOUND against the untouched raw query. Although up to three candidates can be selected, there is no uncertainty state. The prompt explicitly favors avoiding NOT_FOUND when a candidate is reasonably compatible.\n\nThe intended review set reconstructs to 130 rows when the 90 keyed labels and 33 provisional rows are excluded from all 253 rows. The supervisor digest’s 220-row reconstruction conflicts with the valid keyed-label JSON and README because it reports zero parsed labels; its class counts should not be combined with 130-row research counts until that ingestion contract is corrected. On the reconstructed set, 40 rows receive a canonical alternate; 17 have clear cartridge/media/water-treatment cues and 18 have service-action cues. These include both genuine service/consumable requests and product-bearing work lines, so neither “filter” nor an action verb alone supports abstention. Catalog text contains zero occurrences of cartridge, ЭФГ, Lewatit, Honeywell, IVR, VALTEC, water-treatment, or ion-exchange terminology, while its filter products are predominantly грязевики.\n\nThe local retrieval-normalization space is saturated: prior semantic expansion, branded-query genericization/enrichment, canonical-evidence preservation, variant fusion, and work/product decomposition all produced either no safe gain or increased wrong-NOT_FOUND. No evidence supports another nearby alternate-query or fusion refinement.",
+  "decision_impact": "The meaningful unresolved trade-off is whether a large portion of real-tender difficulty is genuine catalog-scope/evidence insufficiency rather than missing retrieval vocabulary. The next experiment should distinguish those explanations without converting product-bearing service lines into NOT_FOUND. Separately, resolve the corpus label-schema mismatch before using the deterministic 220-row reconstructed pool to prioritize mechanisms.",
+  "unresolved": "The unresolved corpus has no end-to-end truth labels, so category prevalence is opportunity evidence rather than measured uplift. It is unmeasured whether users benefit more from an explicit uncertain candidate set than from the present forced binary decision. A scope signal must prove both the requested non-sellable category and absence from the LD taxonomy; lexical absence alone is insufficient.",
+  "sources": [],
+  "evidence_patterns": [
+    {
+      "pattern": "Query rewriting and retrieval-evidence refinements have repeatedly improved intermediate retrieval behavior or plausibility without safe end-to-end utility.",
+      "supporting_experiments": [
+        "Legacy cycles 3–4 accepted narrow additive canonicalization.",
+        "Legacy cycles 6, 9, and 17 rejected flanged, standard-bore, and actuation-state expansion.",
+        "Attempt 1 query_evidence_preservation improved public known-positive hit rate but raised hidden wrong-NOT_FOUND by 0.08.",
+        "Attempt 2 query_variant_evidence_fusion improved several public coverage metrics but raised public wrong-NOT_FOUND by 0.04.",
+        "Attempt 3 line_item_product_decomposition improved public known-positive hit rate but raised hidden wrong-NOT_FOUND by 0.04."
+      ],
+      "interpretation": "The causal bottleneck is unlikely to be another way of producing, preserving, or rewarding a canonical alternate. The raw query remains active, and added alternate evidence has repeatedly changed candidate availability/rank without safely improving the final decision.",
+      "confidence": 0.97
+    },
+    {
+      "pattern": "Genericizing branded nomenclature or importing external manufacturer facts is a repeated unsafe causal family.",
+      "supporting_experiments": [
+        "Alias-mapping attempt 1: threaded/inch expansion increased hidden wrong-NOT_FOUND by 0.04.",
+        "Alias-mapping attempt 2: supplier/model-noise suppression increased hidden wrong-NOT_FOUND by 0.04.",
+        "Alias-mapping attempt 3: trusted manufacturer/model fact enrichment increased hidden wrong-NOT_FOUND by 0.08.",
+        "Reconstructed review corpus contains many branded/model-bearing rows; catalog text has no IVR, VALTEC, or TECOFI occurrences."
+      ],
+      "interpretation": "Brand/model opacity is real, but foreign-product facts do not establish a suitable LD equivalent. Another branded-token, supplier suppression, or runtime enrichment refinement lacks a changed causal premise.",
+      "confidence": 0.98
+    },
+    {
+      "pattern": "Candidate manipulation and final-selection interventions have not safely resolved the main problem.",
+      "supporting_experiments": [
+        "Legacy cycles 1–2: gating and compatibility intervention regressed.",
+        "Legacy cycle 5: reranker-rubric change regressed.",
+        "Legacy cycle 7: catalog structural enrichment reduced hidden coverage.",
+        "Legacy cycle 8: post-rerank compatibility fallback was neutral.",
+        "Legacy cycle 16: candidate diversification reduced public coverage."
+      ],
+      "interpretation": "A new selection rule should require a sharply separable affirmative signal. Generic compatibility filtering, pruning, prompt tightening, and catalog retrieval rewriting are locally unsupported.",
+      "confidence": 0.94
+    },
+    {
+      "pattern": "The corpus contains an apparent non-catalog/service segment, while the runtime contract cannot express evidence insufficiency separately from catalog absence.",
+      "supporting_experiments": [
+        "Reconstructed review inspection found clear cartridge/media/water-treatment and service-action rows, including both service-only and product-bearing examples.",
+        "Catalog lexical inspection found zero cartridge, ЭФГ, ion-exchange, water-treatment, Lewatit, and Honeywell terms; it contains only limited грязевик-style filter coverage.",
+        "Current MatchResult and reranker JSON permit only MATCHED or NOT_FOUND; reranker instructions prioritize avoiding NOT_FOUND."
+      ],
+      "interpretation": "This is a distinct product mechanism from retrieval tuning: users may need an explicit no-catalog-evidence or uncertain-candidate outcome. It must remain fail-open because work descriptions can contain a purchasable valve or filter.",
+      "confidence": 0.91
+    }
+  ],
+  "candidate_directions": [
+    {
+      "mechanism_family": "catalog_scope_uncertainty",
+      "history_relation": "NEW_LAYER",
+      "causal_mechanism": "Use affirmative combined evidence that the requested item is a non-sellable consumable, water-treatment medium/system, or service-only work and that its category is absent from the LD taxonomy, then expose an uncertain/no-catalog-evidence outcome. Preserve ordinary raw retrieval for ambiguous lines and for any line with a purchasable product requirement.",
+      "competing_explanation": "Catalog lexical absence may reflect synonymy or incomplete representation, and service wording may describe installation or replacement of a sellable LD product.",
+      "falsifier": "A blinded non-benchmark review of rows satisfying the combined rule finds a material share with viable LD products, or regression evaluation increases wrong-NOT_FOUND.",
+      "information_gain": "High: directly separates genuine catalog noncoverage from retrieval failure in a sizeable real-tender class and tests the stated product preference for honest uncertainty."
+    },
+    {
+      "mechanism_family": "uncertainty_preserving_result_contract",
+      "history_relation": "NEW_LAYER",
+      "causal_mechanism": "Represent supported match, plausible candidate set with insufficient evidence, and no catalog evidence as distinct result states, preserving selected candidates and reasons rather than forcing the reranker’s binary MATCHED/NOT_FOUND outcome to carry all uncertainty semantics.",
+      "competing_explanation": "The present multi-candidate selection may already provide enough practical uncertainty, and added states could merely rename outcomes without improving user decisions.",
+      "falsifier": "A blinded review workflow cannot reliably distinguish unsupported matches from useful candidate sets under the new state model, or the state increases unsupported acceptance/abstention on regression gates.",
+      "information_gain": "High: tests whether the binary decision contract, rather than candidate retrieval, is the limiting cause of low usefulness on underspecified real tenders."
+    },
+    {
+      "mechanism_family": "pipeline_stage_observability",
+      "history_relation": "NEW_LAYER",
+      "causal_mechanism": "Add read-only provenance and evidence-state instrumentation that stratifies real-tender outcomes into candidate absence, family/constraint conflict, multiple plausible candidates, and catalog-scope evidence, without changing retrieval, ranking, or selection.",
+      "competing_explanation": "Existing aggregate evaluations and review artifacts may already distinguish these stages sufficiently; instrumentation may not yield actionable separations.",
+      "falsifier": "A stratified manual audit shows the recorded states do not correlate with independent assessment of retrieval absence, incompatibility, or scope uncertainty.",
+      "information_gain": "High: safely establishes whether future value lies in candidate generation, final decision calibration, or catalog-scope routing after multiple behavior-changing retrieval experiments have failed."
+    }
+  ]
+}

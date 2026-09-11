@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-11T03:28:08.804834Z",
+  "ok": true,
+  "qdrant": {
+    "qdrant_url": "http://localhost:6333",
+    "collection": "steel_products_active",
+    "points_count": 15787
+  },
+  "public_dataset": "/workspaces/ML-Cancer-Data/data/harness_gold_combined.json"
+}

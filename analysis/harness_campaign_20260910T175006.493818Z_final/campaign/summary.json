@@ -1,0 +1,8 @@
+{
+  "campaign_id": "20260910T175006.493818Z",
+  "outcome": "MAX_SCIENTIFIC_ITERATIONS",
+  "attempts_started": 5,
+  "scientific_iterations": 5,
+  "champion_commit": "e1242be4d4f203063e5c1bd489b1878179454256",
+  "campaign_artifact_root": "campaigns/20260910T175006.493818Z"
+}

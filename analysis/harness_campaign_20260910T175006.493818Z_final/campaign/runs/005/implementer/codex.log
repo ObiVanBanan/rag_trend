@@ -1,0 +1,4188 @@
+OpenAI Codex v0.153.4
+--------
+workdir: /workspaces/ML-Cancer-Data
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR] (network access enabled)
+reasoning effort: low
+reasoning summaries: none
+session id: 01a08e95-2d3c-7830-bbd9-1d22d241a384
+--------
+user
+You are the low-cost Implementer for Harness v2.
+
+GOAL
+# Goal
+
+Improve the usefulness, accuracy and reliability of the LD nomenclature-matching service on real incoming tender nomenclature.
+
+The product task is simple: a user supplies a tender nomenclature line, the service should find the most appropriate LD catalog product or useful set of candidates. If the available evidence is insufficient or no suitable LD product exists, an honest `NOT_FOUND`/uncertain outcome is better than confidently returning an unrelated product.
+
+The current matcher architecture is not sacred. Research and implementation may change query understanding, parsing, aliases, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, catalog/index representation, confidence logic, external enrichment, model choice, or the larger matching pipeline when evidence supports it.
+
+## Research-first cycle
+
+Every new attempt follows one simple sequence:
+
+1. **Research** — inspect the current champion, durable experiment memory and the real-tender working corpus. Use external sources only when useful. Identify recurring failure classes and promising solution directions before a hypothesis is selected.
+2. **Planner** — use the fresh research and the product goal to choose one bounded falsifiable implementation hypothesis, or stop with `DONE` when no credible direction remains.
+3. **Implementer** — implement only that hypothesis. The default worker is the cheaper `gpt-5.5` with low reasoning.
+4. **Test + evaluation** — run deterministic tests and the existing public/hidden regression gates. Rebuild the index only when required.
+5. **Cheap validator** — only candidates that survive the metric guardrails receive one `gpt-5.5` low read-only ACCEPT/REJECT mechanism/value check.
+6. **Promote or rollback** — an accepted candidate becomes the new champion. A rejected candidate rolls back to the current champion, not the original baseline.
+
+There is no mandatory second research pass, no strong Reviewer pass and no Fixer loop in the default pipeline.
+
+## Real-tender working corpus
+
+The primary material for discovering what to improve is the new Kontur tender corpus:
+
+- 253 unique real tender nomenclature rows;
+- 90 high-confidence first-pass labels: 72 `MATCHED`, 18 `NOT_FOUND`;
+- 130 unresolved/review cases;
+- 33 probable `NOT_FOUND` cases that still require stronger catalog evidence.
+
+The 90 first-pass labels are useful supporting evidence but are not claimed to be exhaustive final truth. The 130 + 33 unresolved cases are especially valuable for discovering missing capabilities. Research should reason about recurring classes of inputs rather than memorize individual rows.
+
+Runtime lookup of a manufacturer/model/designation on the public internet, followed by query enrichment before local LD retrieval, is an allowed hypothesis family when the data supports it. It is not a prescribed solution and should compete with simpler alternatives.
+
+## Benchmark role
+
+The existing manually verified public GOLD and adaptive hidden validation are **regression guardrails**, not the main research target. They are intentionally small and should not dominate hypothesis generation.
+
+Agents must not mine benchmark answer ids or one-off benchmark strings to choose fixes. The Planner receives aggregate benchmark metrics but not the public case-level failure list under the research-first runner.
+
+A candidate is rejected if it materially violates the existing public/hidden coverage or safety gates. A candidate whose old benchmark stays safely flat may continue to the cheap validator, because its main value may be on broader real-tender inputs not represented by the small benchmark.
+
+The optional sealed final holdout remains separate and is evaluated only at campaign end under the existing supervisor rules.
+
+## Evolution semantics
+
+The project evolves cumulatively:
+
+`champion -> hypothesis -> evaluate -> ACCEPT -> new champion -> next hypothesis`
+
+or
+
+`champion -> hypothesis -> evaluate -> REJECT -> rollback to champion -> next hypothesis`.
+
+Every new accepted experiment therefore builds on previously accepted improvements. The original baseline is historical reference, not the reset point for each cycle.
+
+## Guardrails
+
+- Preserve uncertainty: missing catalog evidence is not a negative fact and must not silently become a default.
+- Do not hardcode benchmark ids, GOLD answers, known LD ids or one-off tender strings.
+- Prefer mechanisms that plausibly improve a class of real tender inputs.
+- Do not return a product merely to avoid `NOT_FOUND`; low-value or technically incompatible matches are product failures.
+- Infrastructure/provider failures do not count as scientific evidence and must preserve the active stage for resume.
+- Respect agent-call, research-call and index-build budgets.
+
+
+PLAN
+{
+  "action": "IMPLEMENT",
+  "change_name": "v2-cycle-05-uncertainty-result-set",
+  "hypothesis_family": "uncertainty_preserving_result_set_contract",
+  "hypothesis": "Expose the reranker’s existing ordered selections as a production `candidate_set` with product identity, confidence, and reason, while preserving the current primary product and binary outcome semantics.",
+  "why_now": "Retrieval and scope-routing variants are saturated or unsafe; the current pipeline already produces multi-candidate ambiguity but discards it outside debug output.",
+  "expected_effect": "More useful ambiguity handling for real tender inputs without changing retrieval, reranking, automatic NOT_FOUND behavior, or index contents.",
+  "expected_cases_delta": 0,
+  "confidence": 0.66,
+  "risk": "medium",
+  "success_signal": "Ambiguous MATCHED results expose ordered, evidence-backed alternatives; the first remains identical to `ld_product`, non-matches expose an empty set, and regression metrics stay flat.",
+  "candidate_hypotheses": [
+    "uncertainty-preserving result-set contract",
+    "pipeline-stage observability",
+    "offline catalog-coverage provenance"
+  ],
+  "needs_reindex": false,
+  "planning_depth": "NORMAL",
+  "research_question": "",
+  "plan_summary": "Created and strictly validated proposal, design, spec, and implementation tasks for the additive result-contract experiment.",
+  "mechanism_family": "uncertainty_preserving_result_set_contract",
+  "history_relation": "NEW_MECHANISM",
+  "information_gain": "Tests whether useful uncertainty already exists downstream of reranking, separating a result-presentation bottleneck from further retrieval or catalog-scope intervention."
+}
+
+RULES
+- Read and apply the OpenSpec change `v2-cycle-05-uncertainty-result-set`.
+- Implement only the selected hypothesis; avoid unrelated cleanup.
+- Never hardcode public benchmark ids/answers or infer hidden examples.
+- Preserve uncertainty: unknown catalog evidence must not silently become a negative/default fact.
+- Add focused tests that demonstrate the proposed MECHANISM, not just that a function was called.
+- Report those checks in `mechanism_evidence` and the touched areas in `changed_components`.
+- Run focused tests while working. The supervisor will run the full suite and all evaluations.
+- Do not run a full index rebuild; set `needs_reindex=true` if required.
+- Do not edit harness policy, GOLD/evaluator answers, `harness_rag/`, or protected data.
+- Do not run git commit/push/reset/checkout/rebase.
+- Return blocked only for a real implementation blocker.
+
+warning: Codex could not find bubblewrap on PATH. Install bubblewrap with your OS package manager. See the sandbox prerequisites: https://developers.openai.com/codex/concepts/sandboxing#prerequisites. Codex will use the bundled bubblewrap in the meantime.
+2026-09-11T03:48:56.607180Z ERROR codex_core::shell_snapshot: Shell snapshot validation failed: Snapshot command exited with status exit status: 2: /home/codespace/.codex/shell_snapshots/01a08e95-2d3c-7830-bbd9-1d22d241a384.tmp-1789098536255130763: line 2547: syntax error near unexpected token `('
+
+codex
+{"status":"complete","summary":"I’ll use the OpenSpec apply-change skill for this implementation pass, then keep the edit tightly scoped to the result-contract hypothesis.","tests":[],"needs_reindex":false,"blocker":"","changed_components":[],"mechanism_evidence":[]}
+exec
+/bin/bash -lc "sed -n '1,220p' /workspaces/ML-Cancer-Data/.agents/skills/openspec-apply-change/SKILL.md && pwd && rg --files openspec . | sed -n '1,200p'" in /workspaces/ML-Cancer-Data
+ succeeded in 21ms:
+---
+name: openspec-apply-change
+description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.
+allowed-tools: Bash(openspec:*)
+license: MIT
+compatibility: Requires openspec CLI.
+metadata:
+  author: openspec
+  version: "1.0"
+  generatedBy: "1.12.0"
+---
+
+Implement tasks from an OpenSpec change.
+
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+
+**Input**: Optionally specify a change name (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Steps**
+
+1. **Select the change**
+
+   If a name is provided, use it. Otherwise:
+   - Infer from conversation context if the user mentioned a change
+   - Auto-select if only one active change exists
+   - If ambiguous, run `openspec list --json` to get available changes and ask the user to select one
+
+   Always announce: "Using change: <name>" and how to override (e.g., `$openspec-apply-change (Codex) or /openspec-apply-change (other agents) <other>`).
+
+2. **Check status to understand the schema**
+   ```bash
+   openspec status --change "<name>" --json
+   ```
+   Parse the JSON to understand:
+   - `schemaName`: The workflow being used (e.g., "spec-driven")
+   - `planningHome`, `changeRoot`, and `actionContext`: planning scope and edit constraints
+   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+
+3. **Get apply instructions**
+
+   ```bash
+   openspec instructions apply --change "<name>" --json
+   ```
+
+   This returns:
+   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
+   - Progress (total, complete, remaining)
+   - Task list with status
+   - Dynamic instruction based on current state
+   - Optional `context`: current required project instruction input from the selected root
+   - Optional `operationGuidance`: current advisory guidance for apply
+
+   **Handle states:**
+   - If `state: "blocked"` (missing artifacts): show message, suggest using `$openspec-continue-change (Codex) or /openspec-continue-change (other agents)` (if it is not installed, run `openspec status --change "<name>" --json` to see the next artifact and `openspec instructions <artifact-id> --change "<name>" --json` for how to create it)
+   - If `state: "all_done"`: congratulate, suggest archive
+   - Otherwise: proceed to implementation
+
+   Treat `context` as a required prompt-level input. Read and consider it, and
+   apply relevant project facts, conventions, and constraints while implementing.
+   Treat `operationGuidance` as optional additive advice. Read and consider every
+   entry, and follow entries that are applicable and compatible with the built-in
+   workflow.
+
+   Keep both fields separate from CLI-returned state, missing artifacts, tasks,
+   progress, `contextFiles`, and the built-in `instruction`. They are not
+   evidence of task completion, do not replace the built-in instruction, and do
+   not permit bypassing a blocked state. If context conflicts with the built-in
+   instruction, an explicit user choice, or a CLI-controlled value, report the
+   conflict and preserve the controlling value. If guidance is inapplicable or
+   conflicts with those controlling inputs, do not follow it and explain why.
+   These are prompt-level behavior contracts, not enforceable checks.
+
+4. **Read context files**
+
+   Read every file path listed under `contextFiles` from the apply instructions output.
+   The files depend on the schema being used:
+   - **spec-driven**: proposal, specs, design, tasks
+   - Other schemas: follow the contextFiles from CLI output
+
+   Do not copy `context` or `operationGuidance` verbatim into implementation
+   files or planning artifacts unless the user separately asks for that content.
+
+5. **Show current progress**
+
+   Display:
+   - Schema being used
+   - Progress: "N/M tasks complete"
+   - Remaining tasks overview
+   - Dynamic instruction from CLI
+
+6. **Implement tasks (loop until done or blocked)**
+
+   For each pending task:
+   - Show which task is being worked on
+   - Make the code changes required
+   - Keep changes minimal and focused
+   - Mark task complete in the tasks file: `- [ ]` → `- [x]`
+   - Continue to next task
+
+   **Pause if:**
+   - Task is unclear → ask for clarification
+   - Implementation reveals a design issue → suggest updating artifacts
+   - A task needs work beyond what the spec and tasks describe, or you are tempted to drop, narrow, defer, or accept exceptions to specified behavior to make it fit → surface the added scope and ask; do not absorb it silently
+   - Error or blocker encountered → report and wait for guidance
+   - User interrupts
+
+7. **On completion or pause, show status**
+
+   Display:
+   - Tasks completed this session
+   - Overall progress: "N/M tasks complete"
+   - If all done: suggest archive
+   - If paused: explain why and wait for guidance
+
+**Output During Implementation**
+
+```
+## Implementing: <change-name> (schema: <schema-name>)
+
+Working on task 3/7: <task description>
+[...implementation happening...]
+✓ Task complete
+
+Working on task 4/7: <task description>
+[...implementation happening...]
+✓ Task complete
+```
+
+**Output On Completion**
+
+```
+## Implementation Complete
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 7/7 tasks complete ✓
+
+### Completed This Session
+- [x] Task 1
+- [x] Task 2
+...
+
+All tasks complete! You can archive this change with `$openspec-archive-change (Codex) or /openspec-archive-change (other agents)`.
+```
+
+**Output On Pause (Issue Encountered)**
+
+```
+## Implementation Paused
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Progress:** 4/7 tasks complete
+
+### Issue Encountered
+<description of the issue>
+
+**Options:**
+1. <option 1>
+2. <option 2>
+3. Other approach
+
+What would you like to do?
+```
+
+**Guardrails**
+- Keep going through tasks until done or blocked
+- Always read context files before starting (from the apply instructions output)
+- If task is ambiguous, pause and ask before implementing
+- If implementation reveals issues, pause and suggest artifact updates
+- Keep code changes minimal and scoped to each task
+- Update task checkbox immediately after completing each task
+- Pause on errors, blockers, or unclear requirements - don't guess
+- When a task needs work beyond what the spec describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
+- Only mark a task `- [x]` when its specified behavior is fully implemented, not when it is partially done or deferred
+- Use contextFiles from CLI output, don't assume specific file names
+- Do not use context or operation guidance as proof that a task is complete
+- Apply relevant project context; report conflicts with controlling workflow inputs
+- Consider every guidance entry; explain any inapplicable or conflicting advice
+- Do not copy runtime context or operation guidance into implementation files or planning artifacts
+- Preserve CLI-controlled blocked/ready/all-done behavior and completion criteria
+
+**Fluid Workflow Integration**
+
+This skill supports the "actions on a change" model:
+
+- **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
+/workspaces/ML-Cancer-Data
+/bin/bash: line 1: rg: command not found
+
+codex
+{"status":"complete","summary":"Using change: v2-cycle-05-uncertainty-result-set. `rg` is not installed here, so I’m using the OpenSpec CLI plus ordinary shell reads to gather the required artifacts.","tests":[],"needs_reindex":false,"blocker":"","changed_components":[],"mechanism_evidence":[]}
+exec
+/bin/bash -lc 'openspec status --change "v2-cycle-05-uncertainty-result-set" --json && openspec instructions apply --change "v2-cycle-05-uncertainty-result-set" --json' in /workspaces/ML-Cancer-Data
+ succeeded in 1555ms:
+{
+  "changeName": "v2-cycle-05-uncertainty-result-set",
+  "schemaName": "spec-driven",
+  "planningHome": {
+    "kind": "repo",
+    "root": "/workspaces/ML-Cancer-Data",
+    "changesDir": "/workspaces/ML-Cancer-Data/openspec/changes",
+    "defaultSchema": "spec-driven"
+  },
+  "changeRoot": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set",
+  "artifactPaths": {
+    "proposal": {
+      "outputPath": "proposal.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/proposal.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/proposal.md"
+      ]
+    },
+    "specs": {
+      "outputPath": "specs/**/*.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/specs/**/*.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/specs/uncertainty-preserving-result-set/spec.md"
+      ]
+    },
+    "design": {
+      "outputPath": "design.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/design.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/design.md"
+      ]
+    },
+    "tasks": {
+      "outputPath": "tasks.md",
+      "resolvedOutputPath": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md",
+      "existingOutputPaths": [
+        "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"
+      ]
+    }
+  },
+  "isPlanningComplete": true,
+  "isComplete": true,
+  "applyRequires": [
+    "tasks"
+  ],
+  "nextSteps": [
+    "All planning artifacts are complete. Run openspec instructions apply --change \"v2-cycle-05-uncertainty-result-set\" --json to inspect implementation progress."
+  ],
+  "actionContext": {
+    "mode": "repo-local",
+    "sourceOfTruth": "repo",
+    "planningArtifacts": [
+      "proposal",
+      "specs",
+      "design",
+      "tasks"
+    ],
+    "linkedContext": [],
+    "allowedEditRoots": [
+      "/workspaces/ML-Cancer-Data"
+    ],
+    "requiresAffectedAreaSelection": false,
+    "constraints": [
+      "Repo-local change artifacts and implementation edits are scoped to this project."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "proposal",
+      "outputPath": "proposal.md",
+      "status": "done",
+      "requires": []
+    },
+    {
+      "id": "specs",
+      "outputPath": "specs/**/*.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "design",
+      "outputPath": "design.md",
+      "status": "done",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "tasks",
+      "outputPath": "tasks.md",
+      "status": "done",
+      "requires": [
+        "specs",
+        "design"
+      ]
+    }
+  ],
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+{
+  "changeName": "v2-cycle-05-uncertainty-result-set",
+  "changeDir": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/proposal.md"
+    ],
+    "specs": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/specs/uncertainty-preserving-result-set/spec.md"
+    ],
+    "design": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/design.md"
+    ],
+    "tasks": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 7,
+    "complete": 0,
+    "remaining": 7
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.",
+      "done": false
+    },
+    {
+      "id": "2",
+      "description": "1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.",
+      "done": false
+    },
+    {
+      "id": "3",
+      "description": "2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.",
+      "done": false
+    },
+    {
+      "id": "4",
+      "description": "2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.",
+      "done": false
+    },
+    {
+      "id": "5",
+      "description": "2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.",
+      "done": false
+    },
+    {
+      "id": "6",
+      "description": "3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.",
+      "done": false
+    },
+    {
+      "id": "7",
+      "description": "3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.",
+      "done": false
+    }
+  ],
+  "state": "ready",
+  "instruction": "Read context files, work through pending tasks, mark complete as you go.\nPause if you hit blockers or need clarification.",
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+codex
+{"status":"complete","summary":"## Implementing: v2-cycle-05-uncertainty-result-set (schema: spec-driven)\nProgress is 0/7 tasks complete. I’m reading the proposal, design, spec, and task checklist now, then I’ll wire the candidate-set contract without touching retrieval behavior.","tests":[],"needs_reindex":false,"blocker":"","changed_components":[],"mechanism_evidence":[]}
+exec
+/bin/bash -lc "sed -n '1,240p' openspec/changes/v2-cycle-05-uncertainty-result-set/proposal.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' openspec/changes/v2-cycle-05-uncertainty-result-set/design.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,260p' openspec/changes/v2-cycle-05-uncertainty-result-set/specs/uncertainty-preserving-result-set/spec.md" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,220p' openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md" in /workspaces/ML-Cancer-Data
+ succeeded in 250ms:
+## Why
+
+The matcher can already return up to three reranker-selected candidates, but production JSON discards every selection except the primary `ld_product`; the rest is visible only in debug data. Real tender evidence and the experiment history indicate that more retrieval rewriting and automatic scope routing are saturated or unsafe, so the next bounded experiment should test whether already-supported ambiguity can be made useful without changing matching decisions.
+
+## What Changes
+
+- Add an optional, production-safe structured candidate-set field that exposes the ordered reranker selections and their per-candidate evidence when the result is `MATCHED`.
+- Keep the existing top-level `status`, `score`, and `ld_product` payload fields unchanged, with the first selected candidate remaining the primary product.
+- Do not add a new terminal status, alter retrieval, candidate fusion, reranking prompts, selection limits, or automatically convert any request to `NOT_FOUND`.
+- Keep the candidate set absent or empty for `NOT_FOUND` and `RERANK_FAILED`; do not promote raw retrieval candidates into a user-facing candidate set.
+- Add focused matcher and serialization coverage for ordered selections, compatibility, and non-match/failure behavior.
+
+## Capabilities
+
+### New Capabilities
+
+- `uncertainty-preserving-result-set`: Exposes evidence-backed, ordered reranker selections as an optional candidate set while retaining the legacy primary-match contract.
+
+### Modified Capabilities
+
+- None.
+
+## Impact
+
+- Affected package code: `models.py`, `matcher.py`, and `serialization.py`.
+- Affected interface: JSON emitted by `scripts/match_batch.py`; the additive field is available even with `--no-debug` and must not change existing fields.
+- Affected tests: matcher and serialization unit tests with mocked reranker output.
+- No prompt/provider changes, catalog/index changes, dependencies, Qdrant migration, or index rebuild are required.
+
+ succeeded in 282ms:
+## Context
+
+See `proposal.md` for motivation and `specs/uncertainty-preserving-result-set/spec.md` for the external contract. `NomenclatureMatcher.rerank_candidates` already turns each valid reranker selection into a `SelectedMatch` in reranker order and uses its first candidate as `ld_product`. `match_result_payload` currently emits only that primary product outside `debug`; all remaining selected candidates and their reasons are debug-only.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Make existing, reranker-evidenced ambiguity available in normal batch JSON without changing matching behavior.
+- Preserve the primary product and all current terminal-status semantics for downstream compatibility.
+- Keep the production representation deliberately smaller than debug candidate diagnostics.
+
+**Non-Goals:**
+
+- No new `UNCERTAIN` status, automatic abstention/scope routing, confidence threshold, prompt, retrieval, fusion, or reranker-limit change.
+- No exposure of raw retrieved-but-unselected products as customer-facing alternatives.
+- No index rebuild or external provider dependency.
+
+## Decisions
+
+### Derive the production candidate set exclusively from `MatchResult.selected`
+
+The matcher already validates candidate IDs, de-duplicates them, and builds `SelectedMatch` objects only from reranker selections. Serialization will project that list into the new public `candidate_set` field. This makes the field evidence-backed and assures the first item and legacy `ld_product` are sourced from the same decision.
+
+Using all retrieved candidates is rejected because it would turn ranking noise into a claimed alternative. Re-running or changing reranking to decide ambiguity is rejected because prior selection-adjacent changes were unsafe and would confound this contract experiment.
+
+### Keep a stable minimal public entry shape
+
+Each public entry carries `{name, article, confidence, reason}`. Retrieval ranks, `ld_id`, dimensions, URLs, and source signals remain in debug diagnostics, where they already exist. This preserves customer-oriented product identification and the reranker's rationale without expanding the production API with internal retrieval detail.
+
+Returning `selected_debug_payload` verbatim is rejected because it exposes debug identifiers and retrieval details under a production contract. Exposing only name and article is rejected because it would not test the stated uncertainty/evidence mechanism.
+
+### Always serialize the additive field and fail closed for non-matches
+
+`candidate_set` is always present: it is populated for valid `MATCHED` selections and empty for `NOT_FOUND` or `RERANK_FAILED`. It appears independently of `include_debug`. This creates a predictable response shape and avoids implying that retrieval candidates are selected when the matcher could not support a match.
+
+Omitting the key for non-matches is rejected because consumers then need to distinguish missing serialization support from no supported alternatives. Adding a new terminal status is out of scope and would change existing evaluation/integration semantics.
+
+## Risks / Trade-offs
+
+- [Selected alternatives are redundant or not useful to users] → Preserve order, reasons, and primary compatibility; outer real-tender evaluation decides whether the information is valuable before promotion.
+- [Consumers rely on exact payload keys] → Add only an additive top-level field and retain all existing values and debug behavior.
+- [A malformed reranker response includes invalid IDs] → Rely on existing reranker validation and serialize only `MatchResult.selected`.
+- [Reranker returns `MATCHED` but no valid selection] → Preserve the existing normalized `NOT_FOUND` result and emit an empty set.
+
+## Migration Plan
+
+1. Add a focused public projection for selected matches and attach it to every serialized result.
+2. Add unit tests for multi-selection order/evidence, single selection, `NOT_FOUND`, `RERANK_FAILED`, and `include_debug=False` compatibility.
+3. Run focused tests and `python -m pytest -q`; the outer supervisor owns benchmark evaluation, promotion, and rollback.
+4. Roll back by removing the additive field projection; no data, index, or persisted state requires migration.
+
+ succeeded in 295ms:
+## Purpose
+
+Expose reranker-supported alternatives so consumers can act on genuine matching ambiguity without changing the established primary-match outcome.
+
+## ADDED Requirements
+
+### Requirement: Matched responses expose an evidence-backed candidate set
+For every `MATCHED` response with one or more reranker selections, the production payload SHALL include a `candidate_set` array in the reranker selection order. Each entry SHALL identify the selected catalog product by `name` and `article` and SHALL include the reranker `confidence` and `reason`. The first entry SHALL identify the same product as the existing `ld_product` field.
+
+#### Scenario: Reranker selects multiple compatible products
+- **WHEN** the reranker returns `MATCHED` with two valid selected candidates
+- **THEN** the payload contains both candidates in reranker order, includes each selection's confidence and reason, and keeps `ld_product` equal to the first candidate
+
+#### Scenario: Reranker selects one product
+- **WHEN** the reranker returns `MATCHED` with one valid selected candidate
+- **THEN** the payload contains a one-entry `candidate_set` and preserves the existing `ld_product`, `status`, and `score` values
+
+### Requirement: Candidate-set exposure preserves non-match semantics and compatibility
+The candidate set SHALL be derived only from valid reranker selections. `NOT_FOUND` and `RERANK_FAILED` payloads SHALL expose an empty `candidate_set`; they SHALL NOT expose unselected retrieval candidates. Existing top-level `query`, `status`, `score`, and `ld_product` fields SHALL retain their current meaning and values, and disabling debug output SHALL NOT remove `candidate_set`.
+
+#### Scenario: No reranker-supported product exists
+- **WHEN** a result is `NOT_FOUND` or `RERANK_FAILED`
+- **THEN** the payload contains an empty `candidate_set`, preserves the current null `ld_product` behavior, and does not convert retrieved candidates into selections
+
+#### Scenario: Consumer requests no debug information
+- **WHEN** a matched response is serialized with debug output disabled
+- **THEN** the payload still contains the production candidate set and omits only the debug section
+
+ succeeded in 290ms:
+## 1. Production result-set projection
+
+- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+
+## 2. Focused behavioral coverage
+
+- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+
+## 3. Verification
+
+- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+- [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+
+codex
+{"status":"complete","summary":"Working on tasks 1.1 and 1.2: I’ve confirmed the contract is serialization-only. Next I’m locating `MatchResult`, `SelectedMatch`, and payload generation so the production projection stays separate from debug diagnostics.","tests":[],"needs_reindex":false,"blocker":"","changed_components":[],"mechanism_evidence":[]}
+exec
+/bin/bash -lc "find src tests scripts -type f | sort | sed -n '1,220p'" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "grep -R \"class SelectedMatch\\|SelectedMatch\\|match_result_payload\\|candidate_set\" -n src tests scripts | head -200" in /workspaces/ML-Cancer-Data
+ succeeded in 133ms:
+scripts/__pycache__/build_golden_100_canonical.cpython-312.pyc
+scripts/__pycache__/build_harness_gold.cpython-312.pyc
+scripts/__pycache__/build_index.cpython-312.pyc
+scripts/__pycache__/eval.cpython-312.pyc
+scripts/__pycache__/eval_harness_gold.cpython-312.pyc
+scripts/__pycache__/prepare_eval_v2_retrieval_miss_review.cpython-312.pyc
+scripts/__pycache__/review_eval_v2.cpython-312.pyc
+scripts/__pycache__/search.cpython-312.pyc
+scripts/annotate_golden.py
+scripts/auto_label_golden.py
+scripts/build_blind_holdout.py
+scripts/build_combined_harness_gold.py
+scripts/build_golden_100_canonical.py
+scripts/build_harness_gold.py
+scripts/build_index.py
+scripts/build_tender_v1_harness_cases.py
+scripts/check_eval_v2_full_catalog.py
+scripts/codex_loop.py
+scripts/eval.py
+scripts/eval_harness_gold.py
+scripts/match_batch.py
+scripts/prepare_chatgpt_gold_batches.py
+scripts/prepare_eval_labels.py
+scripts/prepare_eval_v2_retrieval_miss_review.py
+scripts/prepare_eval_v2_review.py
+scripts/prepare_review_candidates.py
+scripts/prepare_tender_v1_deep_review.py
+scripts/rebuild_research_review_pool.py
+scripts/review_eval_v2.py
+scripts/review_remaining_gold_top3.py
+scripts/run_rag_harness.py
+scripts/search.py
+scripts/verify_chatgpt_gold_accepts.py
+scripts/verify_tender_v1_accepts.py
+scripts/verify_tender_v1_deep_accepts.py
+src/nomenclature_matcher/__init__.py
+src/nomenclature_matcher/__pycache__/__init__.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/bm25_store.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/candidate_diversification.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/catalog_scope.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/chatgpt_gold.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/deep_gold.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/designation_normalization.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/documents.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/embeddings.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_dataset.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_label_builder.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_utils.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_v2.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/eval_v2_ground_truth.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/experiments.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/golden_rules.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/harness_gold.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/hybrid_retriever.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/indexer.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/matcher.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/model_enrichment.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/models.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/qdrant_store.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/query_canonicalization.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/query_constraints.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/query_plan.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/remaining_gold_review.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/reranker.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/reranker_evidence.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/review_state.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/serialization.cpython-312.pyc
+src/nomenclature_matcher/__pycache__/settings.cpython-312.pyc
+src/nomenclature_matcher/bm25_store.py
+src/nomenclature_matcher/chatgpt_gold.py
+src/nomenclature_matcher/deep_gold.py
+src/nomenclature_matcher/documents.py
+src/nomenclature_matcher/embeddings.py
+src/nomenclature_matcher/eval_dataset.py
+src/nomenclature_matcher/eval_label_builder.py
+src/nomenclature_matcher/eval_utils.py
+src/nomenclature_matcher/eval_v2.py
+src/nomenclature_matcher/eval_v2_ground_truth.py
+src/nomenclature_matcher/experiments.py
+src/nomenclature_matcher/golden_rules.py
+src/nomenclature_matcher/harness_gold.py
+src/nomenclature_matcher/hybrid_retriever.py
+src/nomenclature_matcher/indexer.py
+src/nomenclature_matcher/matcher.py
+src/nomenclature_matcher/models.py
+src/nomenclature_matcher/prompts/golden_query_constraints_system.md
+src/nomenclature_matcher/prompts/query_constraints_system.md
+src/nomenclature_matcher/prompts/reranker_system.md
+src/nomenclature_matcher/qdrant_store.py
+src/nomenclature_matcher/query_canonicalization.py
+src/nomenclature_matcher/query_constraints.py
+src/nomenclature_matcher/remaining_gold_review.py
+src/nomenclature_matcher/reranker.py
+src/nomenclature_matcher/review_state.py
+src/nomenclature_matcher/serialization.py
+src/nomenclature_matcher/settings.py
+tests/__pycache__/test_bm25.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_bm25.cpython-312.pyc
+tests/__pycache__/test_candidate_diversification.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_candidate_diversification.cpython-312.pyc
+tests/__pycache__/test_catalog_scope.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_chatgpt_gold.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_documents.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_documents.cpython-312.pyc
+tests/__pycache__/test_embeddings.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_embeddings.cpython-312.pyc
+tests/__pycache__/test_eval_dataset.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_label_builder.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_utils.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_v2.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_v2_ground_truth.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_eval_v2_ground_truth.cpython-312.pyc
+tests/__pycache__/test_experiments.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_golden_100_canonical.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_golden_queries_100.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_golden_rules.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_harness_gold.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_harness_gold_calibration.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_hybrid_retriever.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_hybrid_retriever.cpython-312.pyc
+tests/__pycache__/test_matcher.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_matcher.cpython-312.pyc
+tests/__pycache__/test_model_enrichment.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_query_canonicalization.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_query_constraints.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_query_plan.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_blind.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_planner_memory.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_policy.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_resume.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_resume_push.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2_diagnostics.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2_hidden_summary.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2_provenance.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2_recovery.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2_research_first.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_rag_harness_v2_scientific_budget.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_remaining_gold_review.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_reranker.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_reranker.cpython-312.pyc
+tests/__pycache__/test_reranker_evidence.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_review_state.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_review_state.cpython-312.pyc
+tests/__pycache__/test_serialization.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_canonical_labels.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_deep_review.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_harness_cases.cpython-312-pytest-9.1.1.pyc
+tests/__pycache__/test_tender_unresolved_taxonomy.cpython-312-pytest-9.1.1.pyc
+tests/test_bm25.py
+tests/test_chatgpt_gold.py
+tests/test_documents.py
+tests/test_embeddings.py
+tests/test_eval_dataset.py
+tests/test_eval_label_builder.py
+tests/test_eval_utils.py
+tests/test_eval_v2.py
+tests/test_eval_v2_ground_truth.py
+tests/test_experiments.py
+tests/test_golden_100_canonical.py
+tests/test_golden_queries_100.py
+tests/test_golden_rules.py
+tests/test_harness_gold.py
+tests/test_harness_gold_calibration.py
+tests/test_hybrid_retriever.py
+tests/test_matcher.py
+tests/test_query_canonicalization.py
+tests/test_query_constraints.py
+tests/test_rag_harness_blind.py
+tests/test_rag_harness_planner_memory.py
+tests/test_rag_harness_policy.py
+tests/test_rag_harness_resume.py
+tests/test_rag_harness_resume_push.py
+tests/test_rag_harness_v2.py
+tests/test_rag_harness_v2_diagnostics.py
+tests/test_rag_harness_v2_hidden_summary.py
+tests/test_rag_harness_v2_provenance.py
+tests/test_rag_harness_v2_recovery.py
+tests/test_rag_harness_v2_research_first.py
+tests/test_rag_harness_v2_scientific_budget.py
+tests/test_remaining_gold_review.py
+tests/test_reranker.py
+tests/test_review_state.py
+tests/test_serialization.py
+tests/test_tender_canonical_labels.py
+tests/test_tender_deep_review.py
+tests/test_tender_harness_cases.py
+tests/test_tender_unresolved_taxonomy.py
+
+ succeeded in 449ms:
+grep: src/nomenclature_matcher/__pycache__/__init__.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/models.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/serialization.cpython-312.pyc: binary file matches
+grep: src/nomenclature_matcher/__pycache__/matcher.cpython-312.pyc: binary file matches
+grep: tests/__pycache__/test_serialization.cpython-312-pytest-9.1.1.pyc: binary file matches
+src/nomenclature_matcher/matcher.py:3:from .models import MatchResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/matcher.py:38:    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+src/nomenclature_matcher/matcher.py:39:        return SelectedMatch(
+src/nomenclature_matcher/serialization.py:6:from .models import MatchResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/serialization.py:49:def selected_debug_payload(selected: SelectedMatch) -> dict[str, Any]:
+src/nomenclature_matcher/serialization.py:67:def match_result_payload(result: MatchResult, *, include_debug: bool = True) -> dict[str, Any]:
+src/nomenclature_matcher/serialization.py:87:    return [match_result_payload(result, include_debug=include_debug) for result in results]
+src/nomenclature_matcher/__init__.py:2:from .models import LDProduct, MatchResult, RerankResult, SearchCandidate, SelectedMatch
+src/nomenclature_matcher/__init__.py:4:__all__ = ["LDProduct", "MatchResult", "NomenclatureMatcher", "RerankResult", "SearchCandidate", "SelectedMatch"]
+src/nomenclature_matcher/models.py:62:class SelectedMatch:
+src/nomenclature_matcher/models.py:85:    selected: list[SelectedMatch] = field(default_factory=list)
+tests/test_serialization.py:3:from nomenclature_matcher.models import MatchResult, SearchCandidate, SelectedMatch
+tests/test_serialization.py:4:from nomenclature_matcher.serialization import match_result_payload, match_results_payload
+tests/test_serialization.py:30:    selected = SelectedMatch(
+tests/test_serialization.py:53:    payload = match_result_payload(result)
+tests/test_serialization.py:64:    payload = match_result_payload(result)
+tests/test_serialization.py:72:    payload = match_result_payload(result, include_debug=False)
+
+exec
+/bin/bash -lc "sed -n '1,180p' src/nomenclature_matcher/models.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,180p' src/nomenclature_matcher/serialization.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,180p' tests/test_serialization.py" in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc "sed -n '1,220p' src/nomenclature_matcher/matcher.py" in /workspaces/ML-Cancer-Data
+ succeeded in 320ms:
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
+@dataclass
+class LDProduct:
+    id: int
+    name: str
+    article: str | None = None
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: Any = field(default_factory=dict)
+
+
+@dataclass
+class SearchCandidate:
+    ld_id: int
+    name: str
+    article: str | None
+    score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+    dense_score: float | None = None
+    dense_rank: int | None = None
+    bm25_score: float | None = None
+    bm25_rank: int | None = None
+    rrf_score: float | None = None
+    retrieval_sources: list[str] = field(default_factory=list)
+
+
+@dataclass
+class BM25Candidate:
+    ld_id: int
+    name: str
+    article: str | None
+    bm25_score: float
+    price: Any = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+    properties: list[dict[str, Any]] | None = None
+    search_text: str | None = None
+
+
+@dataclass
+class RerankedCandidate:
+    candidate_id: int
+    confidence: float | None
+    reason: str
+
+
+@dataclass
+class SelectedMatch:
+    candidate_id: int
+    article: str | None
+    name: str
+    llm_confidence: float | None
+    reason: str
+    ld_id: int
+    dense_score: float | None = None
+    bm25_score: float | None = None
+    rrf_score: float | None = None
+    dn: Any = None
+    pn: Any = None
+    joining_type: str | None = None
+    url: str | None = None
+
+
+@dataclass
+class MatchResult:
+    query: str
+    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+    score: float | None = None
+    ld_product: SearchCandidate | None = None
+    candidates: list[SearchCandidate] = field(default_factory=list)
+    selected: list[SelectedMatch] = field(default_factory=list)
+    reason: str | None = None
+
+
+@dataclass
+class RerankResult:
+    status: Literal["MATCHED", "NOT_FOUND"]
+    selected: list[RerankedCandidate]
+    reason: str | None = None
+
+ succeeded in 301ms:
+import json
+
+from nomenclature_matcher.models import MatchResult, SearchCandidate, SelectedMatch
+from nomenclature_matcher.serialization import match_result_payload, match_results_payload
+
+
+def candidate():
+    return SearchCandidate(
+        ld_id=7,
+        name="Кран LD",
+        article="LD-7",
+        score=0.03,
+        price="100",
+        dn="80",
+        pn="16",
+        joining_type="Фланцевое",
+        url="https://example.test/7",
+        properties=[{"name": "Материал", "values": ["Сталь"]}],
+        search_text="Название: Кран LD",
+        dense_score=0.9,
+        dense_rank=1,
+        bm25_score=2.0,
+        bm25_rank=2,
+        rrf_score=0.03,
+        retrieval_sources=["dense", "bm25"],
+    )
+
+
+def test_matched_payload_splits_production_and_debug_fields():
+    selected = SelectedMatch(
+        candidate_id=1,
+        article="LD-7",
+        name="Кран LD",
+        llm_confidence=0.91,
+        reason="best",
+        ld_id=7,
+        dense_score=0.9,
+        bm25_score=2.0,
+        rrf_score=0.03,
+        dn="80",
+        pn="16",
+        joining_type="Фланцевое",
+        url="https://example.test/7",
+    )
+    result = MatchResult(
+        query="Кран",
+        status="MATCHED",
+        score=0.03,
+        ld_product=candidate(),
+        candidates=[candidate()],
+        selected=[selected],
+    )
+    payload = match_result_payload(result)
+    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+    assert "ld_id" not in payload["ld_product"]
+    assert payload["debug"]["candidates"][0]["ld_id"] == 7
+    assert payload["debug"]["candidates"][0]["dn"] == "80"
+    assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+    json.dumps(payload, ensure_ascii=False)
+
+
+def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+    result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+    payload = match_result_payload(result)
+    assert payload["ld_product"] is None
+    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+    assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+
+
+def test_payload_can_omit_debug():
+    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
+    payload = match_result_payload(result, include_debug=False)
+    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
+
+ succeeded in 332ms:
+from __future__ import annotations
+
+from dataclasses import asdict, is_dataclass
+from typing import Any
+
+from .models import MatchResult, SearchCandidate, SelectedMatch
+
+
+def _clean(value: Any) -> Any:
+    if is_dataclass(value):
+        return _clean(asdict(value))
+    if isinstance(value, dict):
+        return {key: _clean(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_clean(item) for item in value]
+    return value
+
+
+def production_product(candidate: SearchCandidate | None) -> dict[str, Any] | None:
+    if candidate is None:
+        return None
+    return {"name": candidate.name, "article": candidate.article}
+
+
+def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+    payload = {
+        "candidate_id": candidate_id,
+        "ld_id": candidate.ld_id,
+        "article": candidate.article,
+        "name": candidate.name,
+        "dn": candidate.dn,
+        "pn": candidate.pn,
+        "joining_type": candidate.joining_type,
+        "price": candidate.price,
+        "url": candidate.url,
+        "properties": _clean(candidate.properties),
+        "search_text": candidate.search_text,
+        "score": candidate.score,
+        "dense_score": candidate.dense_score,
+        "dense_rank": candidate.dense_rank,
+        "bm25_score": candidate.bm25_score,
+        "bm25_rank": candidate.bm25_rank,
+        "rrf_score": candidate.rrf_score,
+        "retrieval_sources": list(candidate.retrieval_sources),
+    }
+    return {key: value for key, value in payload.items() if value is not None}
+
+
+def selected_debug_payload(selected: SelectedMatch) -> dict[str, Any]:
+    return {
+        "candidate_id": selected.candidate_id,
+        "ld_id": selected.ld_id,
+        "article": selected.article,
+        "name": selected.name,
+        "dn": selected.dn,
+        "pn": selected.pn,
+        "joining_type": selected.joining_type,
+        "url": selected.url,
+        "dense_score": selected.dense_score,
+        "bm25_score": selected.bm25_score,
+        "rrf_score": selected.rrf_score,
+        "llm_confidence": selected.llm_confidence,
+        "reason": selected.reason,
+    }
+
+
+def match_result_payload(result: MatchResult, *, include_debug: bool = True) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "query": result.query,
+        "status": result.status,
+        "score": result.score,
+        "ld_product": production_product(result.ld_product),
+    }
+    if include_debug:
+        payload["debug"] = {
+            "reason": result.reason,
+            "candidates": [
+                candidate_debug_payload(candidate, index)
+                for index, candidate in enumerate(result.candidates, 1)
+            ],
+            "selected": [selected_debug_payload(item) for item in result.selected],
+        }
+    return _clean(payload)
+
+
+def match_results_payload(results: list[MatchResult], *, include_debug: bool = True) -> list[dict[str, Any]]:
+    return [match_result_payload(result, include_debug=include_debug) for result in results]
+
+ succeeded in 309ms:
+from dataclasses import replace
+
+from .models import MatchResult, SearchCandidate, SelectedMatch
+from .query_canonicalization import canonicalize_retrieval_query
+
+
+class NomenclatureMatcher:
+    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+        self.embedder, self.store, self.settings = embedder, store, settings
+        self.reranker = reranker
+        self.hybrid_retriever = hybrid_retriever
+
+    def _normalize_query(self, query: str) -> str:
+        return " ".join(query.split())
+
+    def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
+        hits = self.store.search(self.embedder.embed_query(query), limit)
+        return [
+            SearchCandidate(
+                ld_id=int(hit.payload["ld_id"]),
+                name=hit.payload.get("name", ""),
+                article=hit.payload.get("article"),
+                score=float(hit.score),
+                price=hit.payload.get("price"),
+                dn=hit.payload.get("dn"),
+                pn=hit.payload.get("pn"),
+                joining_type=hit.payload.get("joining_type"),
+                url=hit.payload.get("url"),
+                properties=hit.payload.get("properties"),
+                search_text=hit.payload.get("search_text"),
+                dense_score=float(hit.score),
+                dense_rank=index,
+                retrieval_sources=["dense"],
+            )
+            for index, hit in enumerate(hits, 1)
+        ]
+
+    def _build_selected_match(self, candidate: SearchCandidate, item) -> SelectedMatch:
+        return SelectedMatch(
+            candidate_id=item.candidate_id,
+            article=candidate.article,
+            name=candidate.name,
+            llm_confidence=item.confidence,
+            reason=item.reason,
+            ld_id=candidate.ld_id,
+            dense_score=candidate.dense_score,
+            bm25_score=candidate.bm25_score,
+            rrf_score=candidate.rrf_score,
+            dn=candidate.dn,
+            pn=candidate.pn,
+            joining_type=candidate.joining_type,
+            url=candidate.url,
+        )
+
+    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+        if not candidates:
+            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+        if self.reranker is None:
+            raise ValueError("Reranker is not configured")
+        try:
+            rerank_result = self.reranker.rerank(query, candidates)
+        except Exception as exc:
+            return MatchResult(
+                query=query,
+                status="RERANK_FAILED",
+                score=candidates[0].score,
+                ld_product=None,
+                candidates=candidates,
+                reason=str(exc),
+            )
+        selected = []
+        for item in rerank_result.selected:
+            candidate = candidates[item.candidate_id - 1]
+            selected.append(self._build_selected_match(candidate, item))
+        best = candidates[rerank_result.selected[0].candidate_id - 1] if rerank_result.selected else None
+        return MatchResult(
+            query=query,
+            status=rerank_result.status,
+            score=best.score if best else None,
+            ld_product=best if rerank_result.status == "MATCHED" else None,
+            candidates=candidates,
+            selected=selected,
+            reason=rerank_result.reason,
+        )
+
+    def match_one(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.match_top_k)
+        best = candidates[0] if candidates else None
+        status = "MATCHED" if best and best.score >= self.settings.match_score_threshold else "NOT_FOUND"
+        return MatchResult(query=query, status=status, score=best.score if best else None, ld_product=best if status == "MATCHED" else None, candidates=candidates)
+
+    def match_one_with_rerank(self, query: str) -> MatchResult:
+        query = self._normalize_query(query)
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
+        return self.rerank_candidates(query, candidates)
+
+    def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
+        canonicalization = canonicalize_retrieval_query(query)
+        query = canonicalization.source_query
+        if not query:
+            return MatchResult(query=query, status="NOT_FOUND")
+        if self.hybrid_retriever is None:
+            raise ValueError("Hybrid retriever is not configured")
+        candidates = self.hybrid_retriever.search(
+            query,
+            self.settings.hybrid_rerank_limit,
+            canonical_query=canonicalization.canonical_query,
+        )
+        return self.rerank_candidates(query, candidates)
+
+    def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
+        cache = {}
+        for query in queries:
+            normalized = self._normalize_query(query)
+            if normalized and normalized not in cache:
+                cache[normalized] = match_one(normalized)
+        return [
+            replace(cache[normalized], query=query)
+            if (normalized := self._normalize_query(query)) and normalized in cache
+            else MatchResult(query=query, status="NOT_FOUND")
+            for query in queries
+        ]
+
+    def match_many(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one)
+
+    def match_many_hybrid_with_rerank(self, queries: list[str]) -> list[MatchResult]:
+        return self._match_many_with(queries, self.match_one_hybrid_with_rerank)
+
+    match = match_many
+
+codex
+{"status":"complete","summary":"I’m making the scoped serialization edit now: a small public `SelectedMatch` projection and an always-present `candidate_set` built only from `MatchResult.selected`. After that I’ll add behavior tests for the matched and failure shapes.","tests":[],"needs_reindex":false,"blocker":"","changed_components":[],"mechanism_evidence":[]}
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/src/nomenclature_matcher/serialization.py
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/tests/test_serialization.py
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+codex
+{"status":"complete","summary":"Tasks 1.1 through 2.3 are now implemented in code and tests: matched results expose ordered selections, non-matches stay empty, and `include_debug=False` still includes the public candidate set.","tests":[],"needs_reindex":false,"blocker":"","changed_components":["src/nomenclature_matcher/serialization.py","tests/test_serialization.py"],"mechanism_evidence":["candidate_set is derived only from MatchResult.selected, not retrieved candidates","public selected projection contains only name, article, confidence, and reason"]}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_serialization.py' in /workspaces/ML-Cancer-Data
+ succeeded in 1139ms:
+.....                                                                    [100%]
+5 passed in 0.03s
+
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..578c023f773205c2efd129627061ef43eafee06e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..578c023f773205c2efd129627061ef43eafee06e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+codex
+{"status":"complete","summary":"Working on verification task 3.1 now. The focused serialization tests pass, and I’m running the requested result-contract test trio next to catch any compatibility fallout in matcher or reranker behavior.","tests":["python -m pytest -q tests/test_serialization.py"],"needs_reindex":false,"blocker":"","changed_components":["src/nomenclature_matcher/serialization.py","tests/test_serialization.py","openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"],"mechanism_evidence":["single-selection MATCHED payload exposes a one-item candidate_set with only production fields","multi-selection MATCHED payload preserves reranker order and keeps candidate_set[0] equal to ld_product","NOT_FOUND and RERANK_FAILED payloads keep candidate_set empty despite retrieved candidates","include_debug=False omits debug while retaining candidate_set"]}
+exec
+/bin/bash -lc 'python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py' in /workspaces/ML-Cancer-Data
+ succeeded in 1362ms:
+......................                                                   [100%]
+22 passed in 0.88s
+
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..578c023f773205c2efd129627061ef43eafee06e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,13 +1,13 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..abc15463fb3ec7cca1cfac128c56c233b42c7d6d
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+ - [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..abc15463fb3ec7cca1cfac128c56c233b42c7d6d
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+ - [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+codex
+{"status":"complete","summary":"Focused verification passed: 22 tests across serialization, matcher, and reranker are green. I’m running the full deterministic suite now for task 3.2; no index rebuild is involved.","tests":["python -m pytest -q tests/test_serialization.py","python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py"],"needs_reindex":false,"blocker":"","changed_components":["src/nomenclature_matcher/serialization.py","tests/test_serialization.py","openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"],"mechanism_evidence":["candidate_set is derived only from MatchResult.selected, not retrieved candidates","public selected projection contains only name, article, confidence, and reason","single-selection MATCHED payload exposes a one-item candidate_set","multi-selection MATCHED payload preserves reranker order and keeps candidate_set[0] equal to ld_product","NOT_FOUND and RERANK_FAILED payloads keep candidate_set empty despite retrieved candidates","include_debug=False omits debug while retaining candidate_set"]}
+exec
+/bin/bash -lc 'python -m pytest -q' in /workspaces/ML-Cancer-Data
+ succeeded in 3683ms:
+........................................................................ [ 34%]
+........................................................................ [ 69%]
+...............................................................          [100%]
+207 passed in 2.85s
+
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..abc15463fb3ec7cca1cfac128c56c233b42c7d6d
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+ - [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+apply patch
+patch: completed
+/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..74fce0baa404aeeb269a0b33036e02b4cf1d5e0e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+-- [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..74fce0baa404aeeb269a0b33036e02b4cf1d5e0e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+-- [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+codex
+{"status":"complete","summary":"Full deterministic verification passed: 207 tests green. I’m doing a quick final status/diff sanity check now so the handoff is precise and doesn’t include any accidental scope creep.","tests":["python -m pytest -q tests/test_serialization.py","python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py","python -m pytest -q"],"needs_reindex":false,"blocker":"","changed_components":["src/nomenclature_matcher/serialization.py","tests/test_serialization.py","openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"],"mechanism_evidence":["candidate_set is derived only from MatchResult.selected, not retrieved candidates","public selected projection contains only name, article, confidence, and reason","single-selection MATCHED payload exposes a one-item candidate_set","multi-selection MATCHED payload preserves reranker order and keeps candidate_set[0] equal to ld_product","NOT_FOUND and RERANK_FAILED payloads keep candidate_set empty despite retrieved candidates","include_debug=False omits debug while retaining candidate_set"]}
+exec
+/bin/bash -lc 'openspec instructions apply --change "v2-cycle-05-uncertainty-result-set" --json' in /workspaces/ML-Cancer-Data
+exec
+/bin/bash -lc 'git diff -- src/nomenclature_matcher/serialization.py tests/test_serialization.py openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md' in /workspaces/ML-Cancer-Data
+ succeeded in 211ms:
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f..2453e36 100644
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@ def production_product(candidate: SearchCandidate | None) -> dict[str, Any] | No
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@ def match_result_payload(result: MatchResult, *, include_debug: bool = True) ->
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa3..7266219 100644
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@ def candidate():
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@ def test_matched_payload_splits_production_and_debug_fields():
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..74fce0baa404aeeb269a0b33036e02b4cf1d5e0e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+-- [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+ succeeded in 824ms:
+{
+  "changeName": "v2-cycle-05-uncertainty-result-set",
+  "changeDir": "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/proposal.md"
+    ],
+    "specs": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/specs/uncertainty-preserving-result-set/spec.md"
+    ],
+    "design": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/design.md"
+    ],
+    "tasks": [
+      "/workspaces/ML-Cancer-Data/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 7,
+    "complete": 7,
+    "remaining": 0
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.",
+      "done": true
+    },
+    {
+      "id": "2",
+      "description": "1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.",
+      "done": true
+    },
+    {
+      "id": "3",
+      "description": "2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.",
+      "done": true
+    },
+    {
+      "id": "4",
+      "description": "2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.",
+      "done": true
+    },
+    {
+      "id": "5",
+      "description": "2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.",
+      "done": true
+    },
+    {
+      "id": "6",
+      "description": "3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.",
+      "done": true
+    },
+    {
+      "id": "7",
+      "description": "3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.",
+      "done": true
+    }
+  ],
+  "state": "all_done",
+  "instruction": "All tasks are complete! This change is ready to be archived.\nConsider running tests and reviewing the changes before archiving.",
+  "root": {
+    "path": "/workspaces/ML-Cancer-Data",
+    "source": "nearest"
+  }
+}
+
+codex
+{"status":"complete","summary":"Implemented `v2-cycle-05-uncertainty-result-set`. Serialized match payloads now always include `candidate_set`, derived only from `MatchResult.selected`; each public entry exposes only `name`, `article`, `confidence`, and `reason`. Existing `query`, `status`, `score`, and `ld_product` semantics are preserved, with non-match/failure results returning an empty candidate set.","tests":["python -m pytest -q tests/test_serialization.py","python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py","python -m pytest -q"],"needs_reindex":false,"blocker":"","changed_components":["src/nomenclature_matcher/serialization.py","tests/test_serialization.py","openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"],"mechanism_evidence":["Public selected projection contains only name, article, confidence, and reason, excluding debug-only fields such as ld_id, scores, dimensions, and URLs.","candidate_set is populated from MatchResult.selected in order, not from raw retrieved candidates.","Multi-selection MATCHED test verifies candidate_set order, per-item confidence/reason, and candidate_set[0] equality with ld_product.","Single-selection MATCHED test verifies one-entry candidate_set and preserved legacy top-level fields.","NOT_FOUND and RERANK_FAILED tests verify empty candidate_set, null ld_product, and no promotion of retrieved candidates.","include_debug=False regression verifies candidate_set remains present while debug is absent.","OpenSpec apply status reports 7/7 tasks complete."]}
+diff --git a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+index 7e679594a9dfc7537258fb0e682ff59f382c2ff2..74fce0baa404aeeb269a0b33036e02b4cf1d5e0e
+--- a/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
++++ b/openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md
+@@ -1,15 +1,15 @@
+ ## 1. Production result-set projection
+ 
+-- [ ] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
+-- [ ] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
++- [x] 1.1 Add a focused public serialization projection for `SelectedMatch` that returns only `name`, `article`, `confidence`, and `reason`; verify it does not expose retrieval/debug-only fields.
++- [x] 1.2 Add the always-present `candidate_set` field to serialized match results, populated in `MatchResult.selected` order and empty when there are no valid selections; verify the legacy `query`, `status`, `score`, and `ld_product` values remain unchanged.
+ 
+ ## 2. Focused behavioral coverage
+ 
+-- [ ] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
+-- [ ] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
+-- [ ] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
++- [x] 2.1 Add serialization tests for multi-selected and single-selected `MATCHED` results, verifying order, per-item confidence/reason, and equality of the first candidate-set product with `ld_product`.
++- [x] 2.2 Add serialization tests for `NOT_FOUND` and `RERANK_FAILED`, verifying empty candidate sets, null primary products, and no promotion of retrieved candidates.
++- [x] 2.3 Add a `include_debug=False` regression test verifying `candidate_set` remains available while the debug section is absent.
+ 
+ ## 3. Verification
+ 
+-- [ ] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
+-- [ ] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
++- [x] 3.1 Run `python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py` and verify all focused result-contract tests pass.
++- [x] 3.2 Run `python -m pytest -q` and verify the full deterministic suite passes; leave public/hidden evaluation, promotion, rollback, git actions, and index budgeting to the outer supervisor.
+diff --git a/src/nomenclature_matcher/serialization.py b/src/nomenclature_matcher/serialization.py
+index 5adf05f055666dd8d909af4e04668a4adacf06b3..2453e36859a51f55dd7aba9ff860f555db90ed90
+--- a/src/nomenclature_matcher/serialization.py
++++ b/src/nomenclature_matcher/serialization.py
+@@ -22,6 +22,15 @@
+     return {"name": candidate.name, "article": candidate.article}
+ 
+ 
++def production_selected_match(selected: SelectedMatch) -> dict[str, Any]:
++    return {
++        "name": selected.name,
++        "article": selected.article,
++        "confidence": selected.llm_confidence,
++        "reason": selected.reason,
++    }
++
++
+ def candidate_debug_payload(candidate: SearchCandidate, candidate_id: int | None = None) -> dict[str, Any]:
+     payload = {
+         "candidate_id": candidate_id,
+@@ -70,6 +79,7 @@
+         "status": result.status,
+         "score": result.score,
+         "ld_product": production_product(result.ld_product),
++        "candidate_set": [production_selected_match(item) for item in result.selected],
+     }
+     if include_debug:
+         payload["debug"] = {
+diff --git a/tests/test_serialization.py b/tests/test_serialization.py
+index 5b61aa338f6414dc7c89f6229fe2301c9efcec35..72662194dfbdf49ed584cc7480b11bb866b0fbfd
+--- a/tests/test_serialization.py
++++ b/tests/test_serialization.py
+@@ -26,22 +26,41 @@
+     )
+ 
+ 
+-def test_matched_payload_splits_production_and_debug_fields():
+-    selected = SelectedMatch(
+-        candidate_id=1,
+-        article="LD-7",
+-        name="Кран LD",
+-        llm_confidence=0.91,
+-        reason="best",
+-        ld_id=7,
++def other_candidate():
++    return SearchCandidate(
++        ld_id=9,
++        name="Задвижка LD",
++        article="LD-9",
++        score=0.02,
++        dn="80",
++        pn="16",
++        dense_score=0.8,
++        bm25_score=1.7,
++        rrf_score=0.02,
++        retrieval_sources=["dense"],
++    )
++
++
++def selected_match(candidate_id=1, article="LD-7", name="Кран LD", confidence=0.91, reason="best", ld_id=7):
++    return SelectedMatch(
++        candidate_id=candidate_id,
++        article=article,
++        name=name,
++        llm_confidence=confidence,
++        reason=reason,
++        ld_id=ld_id,
+         dense_score=0.9,
+         bm25_score=2.0,
+         rrf_score=0.03,
+         dn="80",
+         pn="16",
+         joining_type="Фланцевое",
+-        url="https://example.test/7",
++        url=f"https://example.test/{ld_id}",
+     )
++
++
++def test_matched_payload_splits_production_and_debug_fields():
++    selected = selected_match()
+     result = MatchResult(
+         query="Кран",
+         status="MATCHED",
+@@ -53,21 +72,91 @@
+     payload = match_result_payload(result)
+     assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
+     assert "ld_id" not in payload["ld_product"]
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++    ]
++    assert set(payload["candidate_set"][0]) == {"name", "article", "confidence", "reason"}
+     assert payload["debug"]["candidates"][0]["ld_id"] == 7
+     assert payload["debug"]["candidates"][0]["dn"] == "80"
+     assert payload["debug"]["selected"][0]["llm_confidence"] == 0.91
+     json.dumps(payload, ensure_ascii=False)
+ 
+ 
++def test_matched_payload_candidate_set_preserves_reranker_order():
++    first = selected_match()
++    second = selected_match(
++        candidate_id=2,
++        article="LD-9",
++        name="Задвижка LD",
++        confidence=0.74,
++        reason="compatible fallback",
++        ld_id=9,
++    )
++    result = MatchResult(
++        query="Кран или задвижка",
++        status="MATCHED",
++        score=0.03,
++        ld_product=candidate(),
++        candidates=[candidate(), other_candidate()],
++        selected=[first, second],
++    )
++    payload = match_result_payload(result)
++    assert payload["query"] == "Кран или задвижка"
++    assert payload["status"] == "MATCHED"
++    assert payload["score"] == 0.03
++    assert payload["ld_product"] == {"name": "Кран LD", "article": "LD-7"}
++    assert payload["candidate_set"] == [
++        {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"},
++        {
++            "name": "Задвижка LD",
++            "article": "LD-9",
++            "confidence": 0.74,
++            "reason": "compatible fallback",
++        },
++    ]
++    assert payload["candidate_set"][0]["name"] == payload["ld_product"]["name"]
++    assert payload["candidate_set"][0]["article"] == payload["ld_product"]["article"]
++
++
+ def test_not_found_payload_has_no_selected_product_but_keeps_candidates():
+     result = MatchResult(query="Фланцы", status="NOT_FOUND", score=0.02, candidates=[candidate()])
+     payload = match_result_payload(result)
+     assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
+     assert payload["debug"]["candidates"][0]["article"] == "LD-7"
+     assert match_results_payload([result])[0]["status"] == "NOT_FOUND"
+ 
+ 
++def test_rerank_failed_payload_does_not_promote_candidates():
++    result = MatchResult(
++        query="Фланцы",
++        status="RERANK_FAILED",
++        score=0.02,
++        ld_product=None,
++        candidates=[candidate()],
++        reason="provider unavailable",
++    )
++    payload = match_result_payload(result)
++    assert payload["ld_product"] is None
++    assert payload["candidate_set"] == []
++    assert payload["debug"]["candidates"][0]["article"] == "LD-7"
++
++
+ def test_payload_can_omit_debug():
+-    result = MatchResult(query="Кран", status="MATCHED", ld_product=candidate())
++    result = MatchResult(
++        query="Кран",
++        status="MATCHED",
++        ld_product=candidate(),
++        selected=[selected_match()],
++    )
+     payload = match_result_payload(result, include_debug=False)
+-    assert payload == {"query": "Кран", "status": "MATCHED", "score": None, "ld_product": {"name": "Кран LD", "article": "LD-7"}}
++    assert payload == {
++        "query": "Кран",
++        "status": "MATCHED",
++        "score": None,
++        "ld_product": {"name": "Кран LD", "article": "LD-7"},
++        "candidate_set": [
++            {"name": "Кран LD", "article": "LD-7", "confidence": 0.91, "reason": "best"}
++        ],
++    }
++    assert "debug" not in payload
+
+tokens used
+47,902
+{"status":"complete","summary":"Implemented `v2-cycle-05-uncertainty-result-set`. Serialized match payloads now always include `candidate_set`, derived only from `MatchResult.selected`; each public entry exposes only `name`, `article`, `confidence`, and `reason`. Existing `query`, `status`, `score`, and `ld_product` semantics are preserved, with non-match/failure results returning an empty candidate set.","tests":["python -m pytest -q tests/test_serialization.py","python -m pytest -q tests/test_serialization.py tests/test_matcher.py tests/test_reranker.py","python -m pytest -q"],"needs_reindex":false,"blocker":"","changed_components":["src/nomenclature_matcher/serialization.py","tests/test_serialization.py","openspec/changes/v2-cycle-05-uncertainty-result-set/tasks.md"],"mechanism_evidence":["Public selected projection contains only name, article, confidence, and reason, excluding debug-only fields such as ld_id, scores, dimensions, and URLs.","candidate_set is populated from MatchResult.selected in order, not from raw retrieved candidates.","Multi-selection MATCHED test verifies candidate_set order, per-item confidence/reason, and candidate_set[0] equality with ld_product.","Single-selection MATCHED test verifies one-entry candidate_set and preserved legacy top-level fields.","NOT_FOUND and RERANK_FAILED tests verify empty candidate_set, null ld_product, and no promotion of retrieved candidates.","include_debug=False regression verifies candidate_set remains present while debug is absent.","OpenSpec apply status reports 7/7 tasks complete."]}

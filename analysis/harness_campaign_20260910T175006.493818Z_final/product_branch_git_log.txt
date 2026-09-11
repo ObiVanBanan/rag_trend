@@ -1,0 +1,30 @@
+e1242be Allow review-pool repair as harness-only maintenance
+1e667d3 Fix review pool repair utility
+baac9b6 Add review pool repair utility
+7a4fb96 Test campaign provenance and corpus digest
+4d27fed Install campaign provenance layer
+74ef09d Scope harness artifacts by campaign
+8f27f54 Add deterministic research corpus digest
+988bf1e Test causal research memory and mechanism ledger
+ed06172 Add causal experiment memory to research-first harness
+d9c0189 Update Harness v2 config test for research-first pipeline
+4723b7f Preserve champion state across research corpus update
+1cd0fe6 Make Harness v2 research-first on real tender corpus
+65cc9ee Use metric diagnostics for module entrypoint
+b3df9e0 Route Harness v2 through metric diagnostics
+d121dd4 Test Harness v2 rejection diagnostics
+412ed1b Add metric-aware Harness v2 reject diagnostics
+29d098a Test legacy campaign rehome for v2 accounting
+d04375f Report legacy state separately from v2 attempts
+eaea8fc Rehome legacy campaign state before v2 accounting
+e686419 Fix standalone infra pause recovery test
+866fb69 Keep experiment identity across Harness v2 resume
+45a3a63 Finish Harness v2 scientific iteration accounting
+7d4adce Test safe hidden aggregate retention
+90ee3d9 Add compact Harness v2 status command
+ff39728 Persist safe aggregate hidden validation history
+2b9faa3 Pause on evaluator provider outages and limits
+a0df1b9 Update research library for Harness v2 lessons
+cfbdfe3 Make Harness v2 planner context just-in-time
+fa24532 Fix v2 preflight recovery test assumptions
+c97965a Test v2 preflight and pause-resume semantics
