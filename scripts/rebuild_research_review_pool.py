@@ -44,7 +44,7 @@ def main() -> int:
     review_rows = reconstruct_review_rows(all_rows, gold_rows, provisional_rows)
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    with gzip.open(output, "wt", encoding="utf-8", mtime=0) as handle:  # type: ignore[call-arg]
+    with gzip.open(output, "wt", encoding="utf-8") as handle:
         json.dump(review_rows, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
 
