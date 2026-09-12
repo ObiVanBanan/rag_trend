@@ -40,6 +40,6 @@ class Settings(BaseSettings):
     rrf_k: int = 60
     rerank_candidate_limit: int = 20
     rerank_result_limit: int = 3
-    match_top_k: int = 5
+    match_top_k: int = 20
     match_score_threshold: float = 0.0
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
