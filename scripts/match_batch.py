@@ -29,6 +29,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", help="Path to JSON array of nomenclature strings. Reads stdin when omitted.")
     parser.add_argument("--csv", default=str(Path(__file__).resolve().parents[1] / "ld_products_full_nomenclature.csv"))
+    parser.add_argument("--output", help="Write JSON directly as UTF-8 to this path instead of stdout.")
     parser.add_argument("--no-debug", action="store_true", help="Omit debug candidates and LLM details from JSON output.")
     args = parser.parse_args()
 
@@ -45,7 +46,17 @@ def main() -> None:
         query_interpreter=DeepSeekQueryInterpreter(settings),
     )
     results = matcher.match_many_hybrid_with_rerank(_read_queries(args.input))
-    print(json.dumps(match_results_payload(results, include_debug=not args.no_debug), ensure_ascii=False, indent=2))
+    payload = json.dumps(
+        match_results_payload(results, include_debug=not args.no_debug),
+        ensure_ascii=False,
+        indent=2,
+    )
+    if args.output:
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(payload + "\n", encoding="utf-8")
+    else:
+        print(payload)
 
 
 if __name__ == "__main__":
