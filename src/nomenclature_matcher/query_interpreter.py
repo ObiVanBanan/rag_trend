@@ -79,6 +79,47 @@ class DeepSeekQueryInterpreter:
             return "manual"
         return None
 
+    @staticmethod
+    def _looks_like_service_query(query: str) -> bool:
+        text = " ".join(query.lower().replace("ё", "е").split())
+        return bool(
+            re.match(
+                r"^(?:монтаж|установка|снятие|демонтаж|замена|смена|ремонт|"
+                r"обследование|устройство|техническое обслуживание|то\b)",
+                text,
+            )
+        )
+
+    @staticmethod
+    def _has_model_token(query: str) -> bool:
+        text = query.lower().replace("ё", "е")
+        text = re.sub(r"\b(?:ду|dn|dy|du|ру|pn)\s*[-:]?\s*\d+(?:[.,]\d+)?\b", " ", text)
+        text = re.sub(r"\b[мm]\s*\d+\s*[xх]\s*\d+(?:[.,]\d+)?\b", " ", text)
+        for token in re.findall(r"[a-zа-я0-9][a-zа-я0-9._/-]{3,}", text):
+            if re.search(r"[a-zа-я]", token) and re.search(r"\d", token):
+                return True
+        return False
+
+    @staticmethod
+    def _specificity_score(constraints: dict) -> int:
+        values = [
+            constraints.get("dn"),
+            constraints.get("pn_min_mpa"),
+            constraints.get("joining_type"),
+            constraints.get("thread_type"),
+            constraints.get("working_medium"),
+            constraints.get("valve_designation"),
+            constraints.get("body_material"),
+            constraints.get("body_material_grade"),
+            constraints.get("bore_type"),
+            constraints.get("control"),
+        ]
+        score = sum(value not in (None, "") for value in values)
+        valve_type = constraints.get("valve_type")
+        if valve_type not in (None, "", "standard"):
+            score += 1
+        return score
+
     def _sanitize_payload(self, query: str, payload: dict) -> dict:
         constraints = payload.get("constraints")
         if not isinstance(constraints, dict):
@@ -105,6 +146,17 @@ class DeepSeekQueryInterpreter:
         explicit_thread = self._explicit_thread_type(query)
         if explicit_thread is not None:
             constraints["thread_type"] = explicit_thread
+
+        if payload.get("searchable"):
+            if self._looks_like_service_query(query):
+                payload["searchable"] = False
+                payload["reason"] = "Строка описывает работу/услугу над оборудованием, а не конкретный товар для подбора."
+            elif self._specificity_score(constraints) < 2 and not self._has_model_token(query):
+                payload["searchable"] = False
+                payload["reason"] = (
+                    "Недостаточно различающих характеристик для выбора конкретного LD-аналога: "
+                    "нужны как минимум два технических признака либо точная модель/обозначение."
+                )
 
         return payload
 
