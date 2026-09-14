@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any
 
 from openai import OpenAI
 
@@ -35,7 +36,12 @@ class DeepSeekReranker:
             timeout=settings.deepseek_timeout_seconds,
         )
 
-    def rerank(self, query: str, candidates: list[SearchCandidate]) -> RerankResult:
+    def rerank(
+        self,
+        query: str,
+        candidates: list[SearchCandidate],
+        constraints: dict[str, Any] | None = None,
+    ) -> RerankResult:
         response = self.client.chat.completions.create(
             model=self.settings.deepseek_model,
             temperature=0,
@@ -43,14 +49,28 @@ class DeepSeekReranker:
             extra_body={"thinking": {"type": "disabled"}},
             messages=[
                 {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": self._build_prompt(query, candidates)},
+                {"role": "user", "content": self._build_prompt(query, candidates, constraints)},
             ],
         )
         content = response.choices[0].message.content or "{}"
         return self._parse_result(content, len(candidates))
 
-    def _build_prompt(self, query: str, candidates: list[SearchCandidate]) -> str:
-        blocks = [f"QUERY:\n{query}", "", "CANDIDATES:"]
+    def _build_prompt(
+        self,
+        query: str,
+        candidates: list[SearchCandidate],
+        constraints: dict[str, Any] | None = None,
+    ) -> str:
+        blocks = [f"QUERY:\n{query}"]
+        if constraints:
+            blocks.extend(
+                [
+                    "",
+                    "QUERY_CONSTRAINTS:",
+                    json.dumps(constraints, ensure_ascii=False, indent=2),
+                ]
+            )
+        blocks.extend(["", "CANDIDATES:"])
         for index, candidate in enumerate(candidates, 1):
             dense_rank = candidate.dense_rank if candidate.dense_rank is not None else "-"
             dense_score = f"{candidate.dense_score:.4f}" if candidate.dense_score is not None else "-"
