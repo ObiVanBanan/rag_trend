@@ -11,7 +11,6 @@ from .models import LDProduct, SearchCandidate
 from .query_constraints import (
     QueryConstraints,
     candidate_bore_type,
-    candidate_control,
     candidate_dn,
     candidate_joining_type,
     candidate_material,
@@ -90,13 +89,20 @@ def _flatten_values(value: Any) -> list[str]:
     return [str(value)]
 
 
+def _property_values(product: LDProduct, property_name: str) -> list[str]:
+    expected = property_name.strip().lower().replace("ё", "е")
+    result: list[str] = []
+    for prop in product.properties or []:
+        actual = str(prop.get("name") or "").strip().lower().replace("ё", "е")
+        if actual == expected:
+            result.extend(_flatten_values(prop.get("values")))
+    return result
+
+
 def runtime_candidate_bore_type(product: LDProduct) -> str | None:
     """Understand the exact catalog vocabulary before falling back to legacy parsing."""
 
-    values = [product.name]
-    for prop in product.properties or []:
-        if str(prop.get("name") or "").strip().lower().replace("ё", "е") == "тип прохода":
-            values.extend(_flatten_values(prop.get("values")))
+    values = [product.name, *_property_values(product, "Тип прохода")]
     text = " ".join(values).lower().replace("ё", "е")
 
     # Check reduced forms first because "неполнопроходной" contains "полнопроходной".
@@ -105,6 +111,24 @@ def runtime_candidate_bore_type(product: LDProduct) -> str | None:
     if "полный проход" in text or "полнопроход" in text:
         return "full"
     return candidate_bore_type(product)
+
+
+def runtime_candidate_control(product: LDProduct) -> str | None:
+    """Use only explicit control evidence; do not assume every ordinary ball valve is manual."""
+
+    values = [product.name, *_property_values(product, "Управление")]
+    text = " ".join(values).lower().replace("ё", "е")
+    if "под электропривод" in text:
+        return "electric_ready"
+    if "электропривод" in text:
+        return "electric"
+    if "пневмопривод" in text:
+        return "pneumatic"
+    if "редуктор" in text:
+        return "gearbox"
+    if any(token in text for token in ("ручное", "ручной", "рукоят", "ручка")):
+        return "manual"
+    return None
 
 
 def explicit_constraint_violations(candidate: SearchCandidate, constraints: QueryConstraints) -> list[str]:
@@ -148,7 +172,7 @@ def explicit_constraint_violations(candidate: SearchCandidate, constraints: Quer
             violations.append(f"bore_type:{actual}!={constraints.bore_type}")
 
     if constraints.control is not None:
-        actual = candidate_control(product)
+        actual = runtime_candidate_control(product)
         if actual is not None and actual != constraints.control:
             violations.append(f"control:{actual}!={constraints.control}")
 
