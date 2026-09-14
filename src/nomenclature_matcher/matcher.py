@@ -2,13 +2,23 @@ from dataclasses import replace
 
 from .models import MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import canonicalize_retrieval_query
+from .query_interpreter import filter_explicit_contradictions
 
 
 class NomenclatureMatcher:
-    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+    def __init__(
+        self,
+        embedder,
+        store,
+        settings,
+        reranker=None,
+        hybrid_retriever=None,
+        query_interpreter=None,
+    ):
         self.embedder, self.store, self.settings = embedder, store, settings
         self.reranker = reranker
         self.hybrid_retriever = hybrid_retriever
+        self.query_interpreter = query_interpreter
 
     def _normalize_query(self, query: str) -> str:
         return " ".join(query.split())
@@ -100,18 +110,65 @@ class NomenclatureMatcher:
         return self.rerank_candidates(query, candidates)
 
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
-        canonicalization = canonicalize_retrieval_query(query)
-        query = canonicalization.source_query
+        query = self._normalize_query(query)
         if not query:
             return MatchResult(query=query, status="NOT_FOUND")
         if self.hybrid_retriever is None:
             raise ValueError("Hybrid retriever is not configured")
+
+        retrieval_query = query
+        query_analysis = None
+        interpretation = None
+
+        if self.query_interpreter is not None:
+            try:
+                interpretation = self.query_interpreter.interpret(query)
+                query_analysis = interpretation.model_dump()
+                if interpretation.eligibility != "SEARCHABLE":
+                    return MatchResult(
+                        query=query,
+                        status="NOT_FOUND",
+                        reason=f"QUERY_GATE_{interpretation.eligibility}: {interpretation.reason}",
+                        query_analysis=query_analysis,
+                    )
+                retrieval_query = interpretation.normalized_query.strip() or query
+            except Exception as exc:
+                # Fail open to the previous retrieval path; the debug payload records the interpreter failure.
+                query_analysis = {
+                    "eligibility": "INTERPRETER_FAILED",
+                    "normalized_query": query,
+                    "reason": f"{type(exc).__name__}: {exc}",
+                }
+
+        canonicalization = canonicalize_retrieval_query(retrieval_query)
         candidates = self.hybrid_retriever.search(
-            query,
+            retrieval_query,
             self.settings.hybrid_rerank_limit,
             canonical_query=canonicalization.canonical_query,
         )
-        return self.rerank_candidates(query, candidates)
+
+        if interpretation is not None:
+            candidates, rejected = filter_explicit_contradictions(
+                candidates,
+                interpretation.constraints,
+            )
+            if query_analysis is not None:
+                query_analysis["rejected_candidates"] = [
+                    {"ld_id": ld_id, "violations": violations}
+                    for ld_id, violations in rejected.items()
+                ]
+            if not candidates:
+                return MatchResult(
+                    query=query,
+                    status="NOT_FOUND",
+                    candidates=[],
+                    reason="QUERY_CONSTRAINTS_FILTERED_ALL_CANDIDATES",
+                    query_analysis=query_analysis,
+                )
+
+        result = self.rerank_candidates(query, candidates)
+        result.query_analysis = query_analysis
+        return result
 
     def _match_many_with(self, queries: list[str], match_one) -> list[MatchResult]:
         cache = {}
