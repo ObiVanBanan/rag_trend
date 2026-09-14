@@ -11,6 +11,7 @@ from nomenclature_matcher.embeddings import OpenAIEmbedder
 from nomenclature_matcher.hybrid_retriever import HybridRetriever
 from nomenclature_matcher.matcher import NomenclatureMatcher
 from nomenclature_matcher.qdrant_store import QdrantStore
+from nomenclature_matcher.query_interpreter import DeepSeekQueryInterpreter
 from nomenclature_matcher.reranker import DeepSeekReranker
 from nomenclature_matcher.serialization import match_results_payload
 from nomenclature_matcher.settings import Settings
@@ -29,6 +30,11 @@ def main() -> None:
     parser.add_argument("--input", help="Path to JSON array of nomenclature strings. Reads stdin when omitted.")
     parser.add_argument("--csv", default=str(Path(__file__).resolve().parents[1] / "ld_products_full_nomenclature.csv"))
     parser.add_argument("--no-debug", action="store_true", help="Omit debug candidates and LLM details from JSON output.")
+    parser.add_argument(
+        "--legacy-query-path",
+        action="store_true",
+        help="Disable the DeepSeek query interpreter and use the previous retrieval path.",
+    )
     args = parser.parse_args()
 
     settings = Settings()
@@ -41,6 +47,7 @@ def main() -> None:
         settings,
         reranker=DeepSeekReranker(settings),
         hybrid_retriever=HybridRetriever(embedder, qdrant_store, BM25Store(products), settings),
+        query_interpreter=None if args.legacy_query_path else DeepSeekQueryInterpreter(settings),
     )
     results = matcher.match_many_hybrid_with_rerank(_read_queries(args.input))
     print(json.dumps(match_results_payload(results, include_debug=not args.no_debug), ensure_ascii=False, indent=2))
