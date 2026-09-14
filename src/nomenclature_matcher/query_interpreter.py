@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from openai import OpenAI
 from pydantic import BaseModel, ConfigDict
@@ -79,6 +79,34 @@ def candidate_as_product(candidate: SearchCandidate) -> LDProduct:
     )
 
 
+def _flatten_values(value: Any) -> list[str]:
+    if value in (None, "", []):
+        return []
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(_flatten_values(item))
+        return result
+    return [str(value)]
+
+
+def runtime_candidate_bore_type(product: LDProduct) -> str | None:
+    """Understand the exact catalog vocabulary before falling back to legacy parsing."""
+
+    values = [product.name]
+    for prop in product.properties or []:
+        if str(prop.get("name") or "").strip().lower().replace("ё", "е") == "тип прохода":
+            values.extend(_flatten_values(prop.get("values")))
+    text = " ".join(values).lower().replace("ё", "е")
+
+    # Check reduced forms first because "неполнопроходной" contains "полнопроходной".
+    if any(token in text for token in ("неполный проход", "неполнопроход", "редуц", "стандартнопроход", "стандартный проход")):
+        return "reduced"
+    if "полный проход" in text or "полнопроход" in text:
+        return "full"
+    return candidate_bore_type(product)
+
+
 def explicit_constraint_violations(candidate: SearchCandidate, constraints: QueryConstraints) -> list[str]:
     """Return only provable contradictions; missing catalog data is not a violation."""
 
@@ -115,7 +143,7 @@ def explicit_constraint_violations(candidate: SearchCandidate, constraints: Quer
             violations.append(f"body_material:{actual}!={constraints.body_material}")
 
     if constraints.bore_type is not None:
-        actual = candidate_bore_type(product)
+        actual = runtime_candidate_bore_type(product)
         if actual is not None and actual != constraints.bore_type:
             violations.append(f"bore_type:{actual}!={constraints.bore_type}")
 
