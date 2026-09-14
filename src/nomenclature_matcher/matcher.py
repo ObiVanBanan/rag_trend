@@ -17,6 +17,10 @@ class NomenclatureMatcher:
         self.embedder, self.store, self.settings = embedder, store, settings
         self.reranker = reranker
         self.hybrid_retriever = hybrid_retriever
+        if query_interpreter is None and getattr(settings, "query_interpreter_enabled", False):
+            from .query_interpreter import DeepSeekQueryInterpreter
+
+            query_interpreter = DeepSeekQueryInterpreter(settings)
         self.query_interpreter = query_interpreter
 
     def _normalize_query(self, query: str) -> str:
