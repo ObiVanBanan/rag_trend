@@ -10,7 +10,7 @@ from nomenclature_matcher.settings import Settings
 
 
 def _read_queries(path: str | None) -> list[str]:
-    raw = Path(path).read_text(encoding="utf-8") if path else sys.stdin.read()
+    raw = Path(path).read_text(encoding="utf-8-sig") if path else sys.stdin.read().lstrip("\ufeff")
     payload = json.loads(raw)
     if not isinstance(payload, list) or not all(isinstance(item, str) for item in payload):
         raise ValueError("Input must be a JSON array of strings")
