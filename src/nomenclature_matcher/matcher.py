@@ -5,10 +5,19 @@ from .query_canonicalization import canonicalize_retrieval_query
 
 
 class NomenclatureMatcher:
-    def __init__(self, embedder, store, settings, reranker=None, hybrid_retriever=None):
+    def __init__(
+        self,
+        embedder,
+        store,
+        settings,
+        reranker=None,
+        hybrid_retriever=None,
+        query_interpreter=None,
+    ):
         self.embedder, self.store, self.settings = embedder, store, settings
         self.reranker = reranker
         self.hybrid_retriever = hybrid_retriever
+        self.query_interpreter = query_interpreter
 
     def _normalize_query(self, query: str) -> str:
         return " ".join(query.split())
@@ -52,13 +61,28 @@ class NomenclatureMatcher:
             url=candidate.url,
         )
 
-    def rerank_candidates(self, query: str, candidates: list[SearchCandidate]) -> MatchResult:
+    def rerank_candidates(
+        self,
+        query: str,
+        candidates: list[SearchCandidate],
+        *,
+        constraints: dict | None = None,
+        query_interpretation: dict | None = None,
+    ) -> MatchResult:
         if not candidates:
-            return MatchResult(query=query, status="NOT_FOUND", candidates=[])
+            return MatchResult(
+                query=query,
+                status="NOT_FOUND",
+                candidates=[],
+                query_interpretation=query_interpretation,
+            )
         if self.reranker is None:
             raise ValueError("Reranker is not configured")
         try:
-            rerank_result = self.reranker.rerank(query, candidates)
+            if constraints is None:
+                rerank_result = self.reranker.rerank(query, candidates)
+            else:
+                rerank_result = self.reranker.rerank(query, candidates, constraints=constraints)
         except Exception as exc:
             return MatchResult(
                 query=query,
@@ -67,6 +91,7 @@ class NomenclatureMatcher:
                 ld_product=None,
                 candidates=candidates,
                 reason=str(exc),
+                query_interpretation=query_interpretation,
             )
         selected = []
         for item in rerank_result.selected:
@@ -81,6 +106,7 @@ class NomenclatureMatcher:
             candidates=candidates,
             selected=selected,
             reason=rerank_result.reason,
+            query_interpretation=query_interpretation,
         )
 
     def match_one(self, query: str) -> MatchResult:
@@ -100,12 +126,46 @@ class NomenclatureMatcher:
         return self.rerank_candidates(query, candidates)
 
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
-        canonicalization = canonicalize_retrieval_query(query)
-        query = canonicalization.source_query
+        query = self._normalize_query(query)
         if not query:
             return MatchResult(query=query, status="NOT_FOUND")
         if self.hybrid_retriever is None:
             raise ValueError("Hybrid retriever is not configured")
+
+        if self.query_interpreter is not None:
+            try:
+                interpretation = self.query_interpreter.interpret(query)
+            except Exception as exc:
+                return MatchResult(
+                    query=query,
+                    status="RERANK_FAILED",
+                    reason=f"QUERY_INTERPRET_FAILED: {type(exc).__name__}: {exc}",
+                )
+
+            interpretation_payload = interpretation.model_dump()
+            if not interpretation.searchable:
+                return MatchResult(
+                    query=query,
+                    status="NOT_FOUND",
+                    reason=f"QUERY_REJECTED: {interpretation.reason}",
+                    query_interpretation=interpretation_payload,
+                )
+
+            normalized_query = self._normalize_query(interpretation.normalized_query) or query
+            canonical_query = normalized_query if normalized_query != query else None
+            candidates = self.hybrid_retriever.search(
+                query,
+                self.settings.hybrid_rerank_limit,
+                canonical_query=canonical_query,
+            )
+            return self.rerank_candidates(
+                query,
+                candidates,
+                constraints=interpretation.constraints.model_dump(),
+                query_interpretation=interpretation_payload,
+            )
+
+        canonicalization = canonicalize_retrieval_query(query)
         candidates = self.hybrid_retriever.search(
             query,
             self.settings.hybrid_rerank_limit,
