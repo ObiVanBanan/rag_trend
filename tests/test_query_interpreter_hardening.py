@@ -89,8 +89,46 @@ def test_explicit_thread_orientation_overrides_llm_slip():
     assert result.constraints.thread_type == "female_female"
 
 
+def test_type_plus_dn_without_model_is_rejected_even_if_llm_marks_searchable():
+    data = payload()
+    data["constraints"]["dn"] = 50
+    client = SequenceClient([json.dumps(data, ensure_ascii=False)])
+
+    result = DeepSeekQueryInterpreter(settings(), client=client).interpret("Кран шаровыйДу50")
+
+    assert result.searchable is False
+    assert "Недостаточно различающих характеристик" in result.reason
+
+
+def test_exact_source_model_can_keep_sparse_query_searchable():
+    data = payload()
+    data["constraints"]["dn"] = 20
+    client = SequenceClient([json.dumps(data, ensure_ascii=False)])
+
+    result = DeepSeekQueryInterpreter(settings(), client=client).interpret('Кран VT.245 3/4"')
+
+    assert result.searchable is True
+
+
+def test_service_query_is_rejected_even_if_llm_marks_searchable():
+    data = payload()
+    data["constraints"]["dn"] = 80
+    data["constraints"]["pn_min_mpa"] = 1.6
+    client = SequenceClient([json.dumps(data, ensure_ascii=False)])
+
+    result = DeepSeekQueryInterpreter(settings(), client=client).interpret(
+        "Смена крана шарового диаметром 80 мм"
+    )
+
+    assert result.searchable is False
+    assert "работу/услугу" in result.reason
+
+
 def test_invalid_json_is_retried_once():
-    valid = json.dumps(payload(), ensure_ascii=False)
+    data = payload()
+    data["constraints"]["dn"] = 50
+    data["constraints"]["pn_min_mpa"] = 1.6
+    valid = json.dumps(data, ensure_ascii=False)
     client = SequenceClient(["{broken", valid])
 
     result = DeepSeekQueryInterpreter(settings(), client=client).interpret("Кран шаровой Ду50 Ру16")
