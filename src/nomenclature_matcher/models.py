@@ -84,6 +84,7 @@ class MatchResult:
     candidates: list[SearchCandidate] = field(default_factory=list)
     selected: list[SelectedMatch] = field(default_factory=list)
     reason: str | None = None
+    query_interpretation: dict[str, Any] | None = None
 
 
 @dataclass
