@@ -11,6 +11,7 @@ from nomenclature_matcher.embeddings import OpenAIEmbedder
 from nomenclature_matcher.hybrid_retriever import HybridRetriever
 from nomenclature_matcher.matcher import NomenclatureMatcher
 from nomenclature_matcher.qdrant_store import QdrantStore
+from nomenclature_matcher.query_interpreter import DeepSeekQueryInterpreter
 from nomenclature_matcher.reranker import DeepSeekReranker
 from nomenclature_matcher.serialization import match_results_payload
 from nomenclature_matcher.settings import Settings
@@ -41,6 +42,7 @@ def main() -> None:
         settings,
         reranker=DeepSeekReranker(settings),
         hybrid_retriever=HybridRetriever(embedder, qdrant_store, BM25Store(products), settings),
+        query_interpreter=DeepSeekQueryInterpreter(settings),
     )
     results = matcher.match_many_hybrid_with_rerank(_read_queries(args.input))
     print(json.dumps(match_results_payload(results, include_debug=not args.no_debug), ensure_ascii=False, indent=2))
