@@ -9,6 +9,7 @@ from nomenclature_matcher.embeddings import OpenAIEmbedder
 from nomenclature_matcher.hybrid_retriever import HybridRetriever
 from nomenclature_matcher.matcher import NomenclatureMatcher
 from nomenclature_matcher.qdrant_store import QdrantStore
+from nomenclature_matcher.query_interpreter import DeepSeekQueryInterpreter
 from nomenclature_matcher.reranker import DeepSeekReranker
 from nomenclature_matcher.settings import Settings
 
@@ -16,21 +17,30 @@ parser = argparse.ArgumentParser()
 parser.add_argument("query")
 parser.add_argument("--mode", choices=["dense", "dense-rerank", "hybrid-rerank"], default="dense")
 parser.add_argument("--csv", default=str(Path(__file__).resolve().parents[1] / "ld_products_full_nomenclature.csv"))
+parser.add_argument(
+    "--legacy-query-path",
+    action="store_true",
+    help="Disable the DeepSeek query interpreter for hybrid-rerank.",
+)
 args = parser.parse_args()
 settings = Settings()
 embedder = OpenAIEmbedder(settings)
 qdrant_store = QdrantStore(settings)
 reranker = DeepSeekReranker(settings) if args.mode in {"dense-rerank", "hybrid-rerank"} else None
 hybrid_retriever = None
+query_interpreter = None
 if args.mode == "hybrid-rerank":
     products = load_products_from_csv(args.csv)
     hybrid_retriever = HybridRetriever(embedder, qdrant_store, BM25Store(products), settings)
+    if not args.legacy_query_path:
+        query_interpreter = DeepSeekQueryInterpreter(settings)
 matcher = NomenclatureMatcher(
     embedder,
     qdrant_store,
     settings,
     reranker=reranker,
     hybrid_retriever=hybrid_retriever,
+    query_interpreter=query_interpreter,
 )
 try:
     if args.mode == "dense":
@@ -43,6 +53,9 @@ except Exception as exc:
     print(f"ERROR: {exc}", file=sys.stderr)
     raise SystemExit(1)
 print(f"QUERY:\n{args.query}")
+if result.query_analysis:
+    print("\nQUERY ANALYSIS")
+    print(result.query_analysis)
 if args.mode == "dense":
     print(f"\nSTATUS: {result.status}")
 elif args.mode == "dense-rerank":
