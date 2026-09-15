@@ -93,7 +93,11 @@ class DeepSeekQueryInterpreter:
     @staticmethod
     def _has_model_token(query: str) -> bool:
         text = query.lower().replace("ё", "е")
-        text = re.sub(r"\b(?:ду|dn|dy|du|ру|pn)\s*[-:]?\s*\d+(?:[.,]\d+)?\b", " ", text)
+        # Strip technical size/pressure notation before looking for mixed
+        # alpha-numeric model codes. Do not require a word boundary before
+        # Ду/DN/etc.: tender text often contains missing spaces, e.g.
+        # "Кран шаровыйДу50", which must not make "шаровыйду50" look like a model.
+        text = re.sub(r"(?:ду|dn|dy|du|ру|pn)\s*[-:]?\s*\d+(?:[.,]\d+)?", " ", text)
         text = re.sub(r"\b[мm]\s*\d+\s*[xх]\s*\d+(?:[.,]\d+)?\b", " ", text)
         for token in re.findall(r"[a-zа-я0-9][a-zа-я0-9._/-]{3,}", text):
             if re.search(r"[a-zа-я]", token) and re.search(r"\d", token):
