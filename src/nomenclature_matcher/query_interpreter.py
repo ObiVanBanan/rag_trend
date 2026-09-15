@@ -124,6 +124,14 @@ class DeepSeekQueryInterpreter:
             score += 1
         return score
 
+    @classmethod
+    def _has_specific_anchor(cls, query: str, constraints: dict) -> bool:
+        return bool(
+            constraints.get("dn") is not None
+            or constraints.get("valve_designation")
+            or cls._has_model_token(query)
+        )
+
     def _sanitize_payload(self, query: str, payload: dict) -> dict:
         constraints = payload.get("constraints")
         if not isinstance(constraints, dict):
@@ -151,16 +159,41 @@ class DeepSeekQueryInterpreter:
         if explicit_thread is not None:
             constraints["thread_type"] = explicit_thread
 
-        if payload.get("searchable"):
-            if self._looks_like_service_query(query):
-                payload["searchable"] = False
-                payload["reason"] = "Строка описывает работу/услугу над оборудованием, а не конкретный товар для подбора."
-            elif self._specificity_score(constraints) < 2 and not self._has_model_token(query):
-                payload["searchable"] = False
-                payload["reason"] = (
-                    "Недостаточно различающих характеристик для выбора конкретного LD-аналога: "
-                    "нужны как минимум два технических признака либо точная модель/обозначение."
-                )
+        # Eligibility has a deterministic floor and ceiling around the LLM decision.
+        # - Services and explicitly out-of-scope/ambiguous rows are never rescued.
+        # - A broad category remains rejected unless it has a concrete anchor plus
+        #   at least one additional technical discriminator.
+        # - Conversely, if DeepSeek is overly conservative but extracted enough
+        #   in-scope constraints, let the query reach retrieval.
+        service_query = self._looks_like_service_query(query)
+        score = self._specificity_score(constraints)
+        model_token = self._has_model_token(query)
+        anchored = self._has_specific_anchor(query, constraints)
+        scope = constraints.get("catalog_scope")
+        ambiguous = bool(constraints.get("ambiguous"))
+        sufficiently_specific = model_token or (anchored and score >= 2)
+
+        if service_query:
+            payload["searchable"] = False
+            payload["reason"] = "Строка описывает работу/услугу над оборудованием, а не конкретный товар для подбора."
+        elif scope == "out_of_scope" or ambiguous:
+            payload["searchable"] = False
+        elif payload.get("searchable") and not sufficiently_specific:
+            payload["searchable"] = False
+            payload["reason"] = (
+                "Недостаточно различающих характеристик для выбора конкретного LD-аналога: "
+                "нужны конкретный размер/обозначение и ещё один технический признак либо точная модель."
+            )
+        elif (
+            not payload.get("searchable")
+            and scope == "in_scope"
+            and sufficiently_specific
+        ):
+            payload["searchable"] = True
+            payload["reason"] = (
+                "Извлечено достаточно технических признаков для подбора LD-аналога; "
+                "поиск разрешён deterministic eligibility gate."
+            )
 
         return payload
 
