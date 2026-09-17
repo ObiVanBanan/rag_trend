@@ -12,6 +12,7 @@ on:
       - src/nomenclature_matcher/prompts/query_interpreter_system.md
       - scripts/test_mcp_web_search.py
       - tests/test_web_search_mcp.py
+      - tests/test_competitor_lookup.py
       - pyproject.toml
       - .github/workflows/test-competitor-lookup.yml
   workflow_dispatch:
