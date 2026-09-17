@@ -4,7 +4,6 @@ __pycache__/
 *.py[cod]
 
 # Generated run artifacts
-mcp_783_run.log
 mcp_web_search_only.json
 mcp_web_search_test.json
 
