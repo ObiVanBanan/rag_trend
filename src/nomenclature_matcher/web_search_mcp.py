@@ -134,8 +134,11 @@ class MCPWebSearchLookup:
         )
         self._portal_cm = None
         self._portal = None
-        self._client_cm = None
-        self._client = None
+        self._loop = None
+        self._queue = None
+        self._ready = threading.Event()
+        self._worker_done = threading.Event()
+        self._start_error: BaseException | None = None
         self._lock = threading.Lock()
         self._closed = False
         atexit.register(self.close)
@@ -144,20 +147,31 @@ class MCPWebSearchLookup:
     def should_lookup(query: str) -> bool:
         return has_product_identity(query)
 
-    def _ensure_portal(self):
+    def _ensure_worker(self):
         if self._portal is not None:
-            return self._portal
+            return
         from anyio.from_thread import start_blocking_portal
 
         self._portal_cm = start_blocking_portal()
         self._portal = self._portal_cm.__enter__()
-        return self._portal
+        # Run the whole MCP client lifecycle inside a single long-lived portal task.
+        # Entering/exiting anyio async context managers from different portal tasks
+        # breaks cancel scopes, so a persistent worker is the only safe shape.
+        self._portal.start_task_soon(self._worker_main_async)
+        if not self._ready.wait(timeout=self.timeout_seconds):
+            if self._start_error is not None:
+                raise self._start_error
+            raise RuntimeError("MCP web search worker did not start in time")
+        if self._start_error is not None:
+            raise self._start_error
 
-    async def _ensure_client_async(self):
-        if self._client is not None:
-            return self._client
+    async def _worker_main_async(self):
+        import asyncio
+
         from mcp import Client, StdioServerParameters
 
+        self._loop = asyncio.get_running_loop()
+        self._queue = asyncio.Queue()
         server = StdioServerParameters(
             command=self.command,
             args=[
@@ -173,17 +187,33 @@ class MCPWebSearchLookup:
                 "DDG_SEARCH_BACKEND": "auto",
             },
         )
-        self._client_cm = Client(server)
-        self._client = await self._client_cm.__aenter__()
-        return self._client
+        try:
+            async with Client(server) as client:
+                self._ready.set()
+                while True:
+                    item = await self._queue.get()
+                    if item is None:
+                        return
+                    query, future = item
+                    try:
+                        async with asyncio.timeout(self.timeout_seconds):
+                            result = await self._lookup_async(client, query)
+                        future.set_result(result)
+                    except Exception as exc:  # noqa: BLE001 - propagate to sync caller
+                        future.set_exception(exc)
+        except BaseException as exc:
+            if not self._ready.is_set():
+                self._start_error = exc
+                self._ready.set()
+            elif not isinstance(exc, (asyncio.CancelledError, GeneratorExit)):
+                # Worker died mid-run; surface on subsequent lookups via _ready reset.
+                self._start_error = exc
+        finally:
+            self._worker_done.set()
 
-    async def _lookup_async(self, query: str) -> WebSearchLookupResult:
-        import asyncio
-
+    async def _lookup_async(self, client, query: str) -> WebSearchLookupResult:
         search_query = build_search_query(query)
-        async with asyncio.timeout(self.timeout_seconds):
-            client = await self._ensure_client_async()
-            search_result = await client.call_tool(
+        search_result = await client.call_tool(
                 "search",
                 {
                     "query": search_query,
@@ -191,9 +221,9 @@ class MCPWebSearchLookup:
                     "region": self.region,
                 },
             )
-            search_text = _result_text(search_result)
-            if getattr(search_result, "is_error", False):
-                return WebSearchLookupResult(
+        search_text = _result_text(search_result)
+        if getattr(search_result, "is_error", False):
+            return WebSearchLookupResult(
                     attempted=True,
                     accepted=False,
                     reason=f"mcp_search_error:{search_text[:500]}",
@@ -202,19 +232,19 @@ class MCPWebSearchLookup:
                     search_results=search_text[:8000],
                 )
 
-            # One conservative retry with the original query helps obscure industrial
-            # article numbers where extra Russian spec words make the SERP too narrow.
-            if not search_text.strip():
-                retry_result = await client.call_tool(
-                    "search",
-                    {"query": query[:400], "max_results": self.max_results, "region": self.region},
-                )
-                search_text = _result_text(retry_result)
+        # One conservative retry with the original query helps obscure industrial
+        # article numbers where extra Russian spec words make the SERP too narrow.
+        if not search_text.strip():
+            retry_result = await client.call_tool(
+                "search",
+                {"query": query[:400], "max_results": self.max_results, "region": self.region},
+            )
+            search_text = _result_text(retry_result)
 
-            targets = extract_fetch_targets(search_text, self.fetch_pages)
-            pages: list[WebPageEvidence] = []
-            for target in targets:
-                page_result = await client.call_tool(
+        targets = extract_fetch_targets(search_text, self.fetch_pages)
+        pages: list[WebPageEvidence] = []
+        for target in targets:
+            page_result = await client.call_tool(
                     "fetch_content",
                     {
                         "url": target,
@@ -224,22 +254,22 @@ class MCPWebSearchLookup:
                         "parse_mode": "main",
                     },
                 )
-                if getattr(page_result, "is_error", False):
-                    continue
-                page_text = _result_text(page_result).strip()
-                if page_text:
-                    pages.append(WebPageEvidence(target=target, text=page_text[: self.fetch_chars]))
+            if getattr(page_result, "is_error", False):
+                continue
+            page_text = _result_text(page_result).strip()
+            if page_text:
+                pages.append(WebPageEvidence(target=target, text=page_text[: self.fetch_chars]))
 
-            accepted = bool(search_text.strip() or pages)
-            return WebSearchLookupResult(
-                attempted=True,
-                accepted=accepted,
-                reason="web_evidence_found" if accepted else "no_web_evidence",
-                query=query,
-                search_query=search_query,
-                search_results=search_text[:8000],
-                pages=pages,
-            )
+        accepted = bool(search_text.strip() or pages)
+        return WebSearchLookupResult(
+            attempted=True,
+            accepted=accepted,
+            reason="web_evidence_found" if accepted else "no_web_evidence",
+            query=query,
+            search_query=search_query,
+            search_results=search_text[:8000],
+            pages=pages,
+        )
 
     def lookup(self, query: str) -> WebSearchLookupResult:
         query = " ".join(str(query or "").split())
@@ -251,24 +281,35 @@ class MCPWebSearchLookup:
             raise RuntimeError("MCP web search lookup is already closed")
 
         with self._lock:
-            portal = self._ensure_portal()
-            return portal.call(self._lookup_async, query)
+            self._ensure_worker()
+            import concurrent.futures
 
-    async def _close_async(self) -> None:
-        if self._client_cm is not None:
-            await self._client_cm.__aexit__(None, None, None)
-        self._client_cm = None
-        self._client = None
+            future: concurrent.futures.Future = concurrent.futures.Future()
+            self._loop.call_soon_threadsafe(self._queue.put_nowait, (query, future))
+            return future.result(timeout=self.timeout_seconds + 10)
 
     def close(self) -> None:
         if self._closed:
             return
         self._closed = True
         with self._lock:
-            if self._portal is not None:
+            portal = self._portal
+            portal_cm = self._portal_cm
+            self._portal = None
+            self._portal_cm = None
+        if portal is None:
+            return
+        try:
+            if self._worker_done.is_set() or not self._ready.is_set():
+                pass
+            elif self._loop is not None and self._queue is not None:
                 try:
-                    self._portal.call(self._close_async)
-                finally:
-                    self._portal_cm.__exit__(None, None, None)
-        self._portal = None
-        self._portal_cm = None
+                    self._loop.call_soon_threadsafe(self._queue.put_nowait, None)
+                except RuntimeError:
+                    pass
+            self._worker_done.wait(timeout=15)
+        finally:
+            try:
+                portal_cm.__exit__(None, None, None)
+            except Exception:  # noqa: BLE001 - shutdown best effort
+                pass
