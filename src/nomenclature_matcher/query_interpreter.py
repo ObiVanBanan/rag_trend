@@ -8,6 +8,7 @@ from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 from .query_constraints import QueryConstraints
+from .query_signals import explicit_dn_from_query, has_product_identity
 
 
 DEFAULT_QUERY_INTERPRETER_PROMPT = (
@@ -92,17 +93,9 @@ class DeepSeekQueryInterpreter:
 
     @staticmethod
     def _has_model_token(query: str) -> bool:
-        text = query.lower().replace("ё", "е")
-        # Strip technical size/pressure notation before looking for mixed
-        # alpha-numeric model codes. Do not require a word boundary before
-        # Ду/DN/etc.: tender text often contains missing spaces, e.g.
-        # "Кран шаровыйДу50", which must not make "шаровыйду50" look like a model.
-        text = re.sub(r"(?:ду|dn|dy|du|ру|pn)\s*[-:]?\s*\d+(?:[.,]\d+)?", " ", text)
-        text = re.sub(r"\b[мm]\s*\d+\s*[xх]\s*\d+(?:[.,]\d+)?\b", " ", text)
-        for token in re.findall(r"[a-zа-я0-9][a-zа-я0-9._/-]{3,}", text):
-            if re.search(r"[a-zа-я]", token) and re.search(r"\d", token):
-                return True
-        return False
+        # Kept as a compatibility shim for callers/tests; identity detection is shared
+        # with the competitor lookup gate and includes long numeric articles.
+        return has_product_identity(query)
 
     @staticmethod
     def _specificity_score(constraints: dict) -> int:
@@ -129,7 +122,7 @@ class DeepSeekQueryInterpreter:
         return bool(
             constraints.get("dn") is not None
             or constraints.get("valve_designation")
-            or cls._has_model_token(query)
+            or has_product_identity(query)
         )
 
     def _sanitize_payload(self, query: str, payload: dict) -> dict:
@@ -137,42 +130,32 @@ class DeepSeekQueryInterpreter:
         if not isinstance(constraints, dict):
             return payload
 
-        # DeepSeek occasionally returns null for an unknown product family even though
-        # QueryConstraints historically required a string. Keep the runtime robust:
-        # `other` means "no known supported family" and is harmless for rejected queries.
         if constraints.get("product_type") is None:
             constraints["product_type"] = "other"
 
-        # valve_type describes variants of ball valves only in our candidate normalizer.
-        # Applying `standard` to filters, butterfly valves, flanges, etc. makes every
-        # otherwise-valid candidate fail the deterministic hard filter.
         if constraints.get("product_type") != "ball_valve":
             constraints["valve_type"] = None
 
-        # Control remains a hard constraint only when explicit in the tender query.
-        # Enrichment context can explain the source item to the LLM, but it must not
-        # silently turn an inferred/default manual drive into a hard LD constraint.
+        # Control is hard only when it is explicit in the tender query.
         constraints["control"] = self._explicit_control(query)
 
-        # Explicit ВР/НР notation is deterministic and should override an occasional
-        # LLM orientation slip such as "вн.-вн." -> male_male.
+        # Explicit thread orientation is deterministic and overrides LLM slips.
         explicit_thread = self._explicit_thread_type(query)
         if explicit_thread is not None:
             constraints["thread_type"] = explicit_thread
 
-        # Eligibility has a deterministic floor and ceiling around the LLM decision.
-        # - Services and explicitly out-of-scope/ambiguous rows are never rescued.
-        # - A broad category remains rejected unless it has a concrete anchor plus
-        #   at least one additional technical discriminator.
-        # - Conversely, if DeepSeek is overly conservative but extracted enough
-        #   in-scope constraints, let the query reach retrieval.
+        # Explicit DN/inch notation is deterministic and must override model/web guesses.
+        explicit_dn = explicit_dn_from_query(query)
+        if explicit_dn is not None:
+            constraints["dn"] = explicit_dn
+
         service_query = self._looks_like_service_query(query)
         score = self._specificity_score(constraints)
-        model_token = self._has_model_token(query)
+        identity_anchor = has_product_identity(query)
         anchored = self._has_specific_anchor(query, constraints)
         scope = constraints.get("catalog_scope")
         ambiguous = bool(constraints.get("ambiguous"))
-        sufficiently_specific = model_token or (anchored and score >= 2)
+        sufficiently_specific = identity_anchor or (anchored and score >= 2)
 
         if service_query:
             payload["searchable"] = False
@@ -183,7 +166,7 @@ class DeepSeekQueryInterpreter:
             payload["searchable"] = False
             payload["reason"] = (
                 "Недостаточно различающих характеристик для выбора конкретного LD-аналога: "
-                "нужны конкретный размер/обозначение и ещё один технический признак либо точная модель."
+                "нужны конкретный размер/обозначение и ещё один технический признак либо точная модель/артикул."
             )
         elif (
             not payload.get("searchable")
