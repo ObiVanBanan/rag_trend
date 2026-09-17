@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import shlex
+import shutil
 import subprocess
 import uuid
 from pathlib import Path
@@ -131,6 +132,24 @@ def _agent_env(alias: str | None) -> dict[str, str]:
     return env
 
 
+def _resolve_codex_cli() -> str:
+    """Return an executable path that CreateProcess can launch directly.
+
+    PowerShell resolves npm command shims such as ``codex.cmd`` automatically,
+    while ``subprocess.run(["codex", ...], shell=False)`` may fail on Windows.
+    Resolve the shim explicitly so the same harness works on Windows and POSIX.
+    """
+    candidates = ("codex.exe", "codex.cmd", "codex.bat", "codex") if os.name == "nt" else ("codex",)
+    for candidate in candidates:
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+    raise HarnessError(
+        "Codex CLI was not found in PATH. Verify `codex --version` and `where.exe codex` "
+        "(Windows) or `which codex` (POSIX), then rerun the harness with --resume."
+    )
+
+
 def run_codex(
     *,
     role: str,
@@ -152,7 +171,7 @@ def run_codex(
     result_path.unlink(missing_ok=True)
 
     args = [
-        "codex", "exec", "-m", model,
+        _resolve_codex_cli(), "exec", "-m", model,
         "--sandbox", sandbox,
         "--ephemeral", "--color", "never",
         "--config", 'approval_policy="never"',
