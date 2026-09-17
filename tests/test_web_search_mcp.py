@@ -1,3 +1,4 @@
+from nomenclature_matcher.query_interpreter import DeepSeekQueryInterpreter
 from nomenclature_matcher.web_search_mcp import (
     build_search_query,
     extract_fetch_targets,
@@ -39,3 +40,13 @@ def test_extract_fetch_targets_deduplicates_urls_and_refs():
         'ref://abc123',
         'https://example.org/c?x=1',
     ]
+
+
+def test_interpreter_labels_external_evidence_as_generic_competitor_context():
+    message = DeepSeekQueryInterpreter._user_message(
+        'Кран VALTEC VT.214 1"',
+        {'source': 'duckduckgo_mcp_web_search', 'search_results': 'example'},
+    )
+    assert 'COMPETITOR_CONTEXT:' in message
+    assert 'LOCAL_COMPETITOR_CONTEXT:' not in message
+    assert 'duckduckgo_mcp_web_search' in message
