@@ -6,15 +6,9 @@ import threading
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from .query_signals import has_product_identity
 
-_TECH_NOTATION = re.compile(
-    r"(?:ду|dn|dy|du|ру|pn)\s*[-:]?\s*\d+(?:[.,]\d+)?|"
-    r"\b[мm]\s*\d+\s*[xх]\s*\d+(?:[.,]\d+)?\b",
-    re.IGNORECASE,
-)
-_MIXED_MODEL = re.compile(r"(?i)(?<![a-zа-я0-9])[a-zа-я0-9][a-zа-я0-9._/-]{3,}(?![a-zа-я0-9])")
-_BRAND_NUMBER = re.compile(r"(?i)\b([a-z]{2,20})\s+([0-9]{2,4})\b")
-_LONG_NUMBER = re.compile(r"(?<!\d)\d{5,}(?!\d)")
+
 _TARGET = re.compile(r"(?:https?://[^\s<>\"')\]]+|ref://[A-Za-z0-9._~-]+)")
 
 
@@ -59,34 +53,6 @@ class WebSearchLookupResult:
                 "characteristic is uncertain, do not turn it into a hard constraint."
             ),
         }
-
-
-def _normalize(value: str) -> str:
-    return " ".join(str(value or "").lower().replace("ё", "е").split())
-
-
-def has_product_identity(query: str) -> bool:
-    """Return True only when a query contains a model/article-like identity anchor.
-
-    Broad category queries must not become specific merely because the web happens to
-    return one particular product. Technical DN/PN/M-thread notation is stripped before
-    mixed alphanumeric model detection.
-    """
-
-    cleaned = _TECH_NOTATION.sub(" ", _normalize(query))
-    if _LONG_NUMBER.search(cleaned):
-        return True
-    if _BRAND_NUMBER.search(cleaned):
-        return True
-    for token in _MIXED_MODEL.findall(cleaned):
-        compact = re.sub(r"[^a-zа-я0-9]+", "", token, flags=re.IGNORECASE)
-        if (
-            len(compact) >= 4
-            and re.search(r"[a-zа-я]", token, re.IGNORECASE)
-            and re.search(r"\d", token)
-        ):
-            return True
-    return False
 
 
 def build_search_query(query: str) -> str:
@@ -154,9 +120,6 @@ class MCPWebSearchLookup:
 
         self._portal_cm = start_blocking_portal()
         self._portal = self._portal_cm.__enter__()
-        # Run the whole MCP client lifecycle inside a single long-lived portal task.
-        # Entering/exiting anyio async context managers from different portal tasks
-        # breaks cancel scopes, so a persistent worker is the only safe shape.
         self._portal.start_task_soon(self._worker_main_async)
         if not self._ready.wait(timeout=self.timeout_seconds):
             if self._start_error is not None:
@@ -199,14 +162,13 @@ class MCPWebSearchLookup:
                         async with asyncio.timeout(self.timeout_seconds):
                             result = await self._lookup_async(client, query)
                         future.set_result(result)
-                    except Exception as exc:  # noqa: BLE001 - propagate to sync caller
+                    except Exception as exc:  # noqa: BLE001
                         future.set_exception(exc)
         except BaseException as exc:
             if not self._ready.is_set():
                 self._start_error = exc
                 self._ready.set()
             elif not isinstance(exc, (asyncio.CancelledError, GeneratorExit)):
-                # Worker died mid-run; surface on subsequent lookups via _ready reset.
                 self._start_error = exc
         finally:
             self._worker_done.set()
@@ -214,26 +176,24 @@ class MCPWebSearchLookup:
     async def _lookup_async(self, client, query: str) -> WebSearchLookupResult:
         search_query = build_search_query(query)
         search_result = await client.call_tool(
-                "search",
-                {
-                    "query": search_query,
-                    "max_results": self.max_results,
-                    "region": self.region,
-                },
-            )
+            "search",
+            {
+                "query": search_query,
+                "max_results": self.max_results,
+                "region": self.region,
+            },
+        )
         search_text = _result_text(search_result)
         if getattr(search_result, "is_error", False):
             return WebSearchLookupResult(
-                    attempted=True,
-                    accepted=False,
-                    reason=f"mcp_search_error:{search_text[:500]}",
-                    query=query,
-                    search_query=search_query,
-                    search_results=search_text[:8000],
-                )
+                attempted=True,
+                accepted=False,
+                reason=f"mcp_search_error:{search_text[:500]}",
+                query=query,
+                search_query=search_query,
+                search_results=search_text[:8000],
+            )
 
-        # One conservative retry with the original query helps obscure industrial
-        # article numbers where extra Russian spec words make the SERP too narrow.
         if not search_text.strip():
             retry_result = await client.call_tool(
                 "search",
@@ -245,15 +205,15 @@ class MCPWebSearchLookup:
         pages: list[WebPageEvidence] = []
         for target in targets:
             page_result = await client.call_tool(
-                    "fetch_content",
-                    {
-                        "url": target,
-                        "start_index": 0,
-                        "max_length": self.fetch_chars,
-                        "backend": "auto",
-                        "parse_mode": "main",
-                    },
-                )
+                "fetch_content",
+                {
+                    "url": target,
+                    "start_index": 0,
+                    "max_length": self.fetch_chars,
+                    "backend": "auto",
+                    "parse_mode": "main",
+                },
+            )
             if getattr(page_result, "is_error", False):
                 continue
             page_text = _result_text(page_result).strip()
@@ -311,5 +271,5 @@ class MCPWebSearchLookup:
         finally:
             try:
                 portal_cm.__exit__(None, None, None)
-            except Exception:  # noqa: BLE001 - shutdown best effort
+            except Exception:  # noqa: BLE001
                 pass
