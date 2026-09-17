@@ -3,6 +3,7 @@ from dataclasses import replace
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import canonicalize_retrieval_query
 from .query_constraints import QueryConstraints, evaluate_product
+from .query_signals import explicit_technical_signal_count, has_product_identity
 
 
 class NomenclatureMatcher:
@@ -213,6 +214,36 @@ class NomenclatureMatcher:
             }
             return None, None, debug
 
+    def _enrichment_gate(self, query: str, interpretation) -> tuple[bool, str]:
+        if self.competitor_lookup is None:
+            return False, "enrichment_disabled"
+        constraints = interpretation.constraints
+        if constraints.catalog_scope == "out_of_scope":
+            return False, "pre_enrichment_out_of_scope"
+        if constraints.ambiguous:
+            return False, "pre_enrichment_ambiguous"
+        if not interpretation.searchable and constraints.catalog_scope != "uncertain":
+            return False, "pre_enrichment_not_searchable"
+        if not has_product_identity(query):
+            return False, "pre_enrichment_no_product_identity"
+        # Rich queries already contain enough explicit facts; web would mostly add
+        # redundant attributes and latency while increasing false hard constraints.
+        if explicit_technical_signal_count(query) >= 4:
+            return False, "pre_enrichment_enough_explicit_detail"
+        return True, "pre_enrichment_eligible"
+
+    @staticmethod
+    def _hard_constraints(pre_interpretation, enriched_interpretation=None) -> dict:
+        """Keep web-derived characteristics soft for retrieval, not hard filtering."""
+        hard = pre_interpretation.constraints.model_dump()
+        if enriched_interpretation is not None:
+            enriched = enriched_interpretation.constraints
+            # Product family is the only web-derived field allowed to become hard,
+            # and only when the first pass could not identify a supported family.
+            if hard.get("product_type") == "other" and enriched.product_type != "other":
+                hard["product_type"] = enriched.product_type
+        return hard
+
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
         query = self._normalize_query(query)
         if not query:
@@ -221,29 +252,63 @@ class NomenclatureMatcher:
             raise ValueError("Hybrid retriever is not configured")
 
         if self.query_interpreter is not None:
-            lookup_result, competitor_context, lookup_debug = self._lookup_competitor(query)
             try:
-                if competitor_context is None:
-                    interpretation = self.query_interpreter.interpret(query)
-                else:
-                    interpretation = self.query_interpreter.interpret(
-                        query,
-                        competitor_context=competitor_context,
-                    )
+                pre_interpretation = self.query_interpreter.interpret(query)
             except Exception as exc:
-                debug_payload = None
-                if lookup_debug is not None:
-                    debug_payload = {"competitor_lookup": lookup_debug}
                 return MatchResult(
                     query=query,
                     status="RERANK_FAILED",
                     reason=f"QUERY_INTERPRET_FAILED: {type(exc).__name__}: {exc}",
-                    query_interpretation=debug_payload,
                 )
 
+            interpretation = pre_interpretation
+            lookup_debug = None
+            enriched_interpretation = None
+            should_enrich, gate_reason = self._enrichment_gate(query, pre_interpretation)
+
+            if should_enrich:
+                _, competitor_context, lookup_debug = self._lookup_competitor(query)
+                if competitor_context is not None:
+                    try:
+                        enriched_interpretation = self.query_interpreter.interpret(
+                            query,
+                            competitor_context=competitor_context,
+                        )
+                        interpretation = enriched_interpretation
+                    except Exception as exc:
+                        # Web enrichment is optional. If the second pass fails, retain
+                        # the valid first-pass interpretation instead of failing matching.
+                        if lookup_debug is None:
+                            lookup_debug = {}
+                        lookup_debug["enrichment_interpret_error"] = (
+                            f"{type(exc).__name__}: {exc}"
+                        )
+                elif lookup_debug is None:
+                    lookup_debug = {
+                        "attempted": False,
+                        "accepted": False,
+                        "reason": "enrichment_returned_no_context",
+                    }
+            elif self.competitor_lookup is not None:
+                lookup_debug = {
+                    "attempted": False,
+                    "accepted": False,
+                    "reason": gate_reason,
+                }
+
+            hard_constraints = self._hard_constraints(
+                pre_interpretation,
+                enriched_interpretation,
+            )
             interpretation_payload = interpretation.model_dump()
+            interpretation_payload["hard_constraints"] = hard_constraints
+            if enriched_interpretation is not None:
+                interpretation_payload["pre_enrichment_interpretation"] = (
+                    pre_interpretation.model_dump()
+                )
             if lookup_debug is not None:
                 interpretation_payload["competitor_lookup"] = lookup_debug
+
             if not interpretation.searchable:
                 return MatchResult(
                     query=query,
@@ -262,7 +327,7 @@ class NomenclatureMatcher:
             return self.rerank_candidates(
                 query,
                 candidates,
-                constraints=interpretation.constraints.model_dump(),
+                constraints=hard_constraints,
                 query_interpretation=interpretation_payload,
             )
 
