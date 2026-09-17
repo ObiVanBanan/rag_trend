@@ -16,6 +16,7 @@ from .research_first_runner import install_research_first
 core.HARNESS_ONLY_EXACT.add(".github/workflows/test-competitor-lookup.yml")
 core.HARNESS_ONLY_EXACT.add(".gitignore")
 
+_ORIGINAL_ADOPT_HARNESS_ONLY_HEAD = core._adopt_harness_only_head
 
 _CANDIDATE_STAGES = {
     "TESTS",
@@ -27,6 +28,28 @@ _CANDIDATE_STAGES = {
     "REVIEWER",
     "FIXER",
 }
+
+
+def _adopt_harness_only_head_with_current_dataset(state: dict, state_path) -> None:
+    previous_commit = str(state.get("champion_commit") or "")
+    current_record = state.get("champion_current_dataset")
+    _ORIGINAL_ADOPT_HARNESS_ONLY_HEAD(state, state_path)
+    current_commit = str(state.get("champion_commit") or "")
+    if (
+        current_commit
+        and current_commit != previous_commit
+        and isinstance(current_record, dict)
+        and current_record.get("commit") == previous_commit
+    ):
+        promoted_record = dict(current_record)
+        promoted_record["commit"] = current_commit
+        state["champion_current_dataset"] = promoted_record
+        core.write_json(state_path, state)
+        print(
+            f"Retained 783 champion baseline across harness-only HEAD adoption "
+            f"{previous_commit[:12]} -> {current_commit[:12]}.",
+            flush=True,
+        )
 
 
 def _recover_already_rolled_back_resume() -> bool:
@@ -84,5 +107,6 @@ def main() -> int:
     core._public_precheck = _public_precheck
     core.accept_candidate = _accept_candidate
     core._rollback_and_record = _rollback_and_record_diagnostic
+    core._adopt_harness_only_head = _adopt_harness_only_head_with_current_dataset
     _recover_already_rolled_back_resume()
     return v2_runner.main()
