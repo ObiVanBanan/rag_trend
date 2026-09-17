@@ -8,40 +8,11 @@ from typing import Any
 
 
 _STOPWORDS = {
-    "кран",
-    "краны",
-    "шаровой",
-    "шаровый",
-    "затвор",
-    "дисковый",
-    "поворотный",
-    "клапан",
-    "фланец",
-    "фланцы",
-    "фильтр",
-    "задвижка",
-    "ду",
-    "dn",
-    "dy",
-    "du",
-    "ру",
-    "pn",
-    "вр",
-    "нр",
-    "вн",
-    "нар",
-    "резьбовой",
-    "резьбовая",
-    "фланцевый",
-    "фланцевое",
-    "межфланцевый",
-    "под",
-    "сварку",
-    "стальной",
-    "стальная",
-    "латунный",
-    "нержавеющий",
-    "нержавеющая",
+    "кран", "краны", "шаровой", "шаровый", "затвор", "дисковый", "поворотный",
+    "клапан", "фланец", "фланцы", "фильтр", "задвижка", "ду", "dn", "dy", "du",
+    "ру", "pn", "вр", "нр", "вн", "нар", "резьбовой", "резьбовая", "фланцевый",
+    "фланцевое", "межфланцевый", "под", "сварку", "стальной", "стальная",
+    "латунный", "нержавеющий", "нержавеющая",
 }
 
 _RELEVANT_PROPERTY_KEY = re.compile(
@@ -176,26 +147,25 @@ def _identity_terms(query: str) -> list[LookupTerm]:
         has_separator = any(ch in normalized for ch in ".-/")
         compact = _compact(normalized)
         if has_alpha and has_digit and len(compact) >= 4:
-            add(normalized, "model", 30)
+            add(normalized, "model", 32)
             modelish_found = True
         elif has_digit and has_separator and len(compact) >= 4:
-            add(normalized, "model", 26)
+            add(normalized, "model", 28)
             modelish_found = True
         elif normalized.isdigit() and len(normalized) >= 5:
-            add(normalized, "article", 34)
+            add(normalized, "article", 38)
             modelish_found = True
 
-    # Common catalog notation is a pure brand/series token followed by a numeric model,
-    # e.g. "IVR 60" or "IVR 956". Keep the pair together; the number alone is too broad.
+    # Brand + pure numeric model, e.g. IVR 60 / IVR 956. The pair is atomic for identity:
+    # a random article "956" from another brand must never be treated as IVR 956.
     for match in re.finditer(r"\b([a-z]{2,16})\s+([0-9]{2,4})\b", cleaned):
         brand, number = match.groups()
         if brand not in _STOPWORDS:
-            add(brand, "brand", 16)
-            add(number, "model_number", 22)
+            add(brand, "brand", 20)
+            add(number, "model_number", 26)
             modelish_found = True
 
     if modelish_found:
-        # A nearby Latin brand is useful for disambiguating families such as VALTEC VT.214.
         for token in raw_tokens:
             normalized = token.strip("._/-")
             if (
@@ -204,7 +174,7 @@ def _identity_terms(query: str) -> list[LookupTerm]:
                 and normalized.isascii()
                 and 3 <= len(normalized) <= 20
             ):
-                add(normalized, "brand", 12)
+                add(normalized, "brand", 14)
 
     return terms
 
@@ -215,10 +185,10 @@ def _explicit_dn_signals(query: str) -> set[int]:
         int(match.group(1))
         for match in re.finditer(r"(?:ду|dn|dy|du)\s*[-:]?\s*(\d{1,4})", text)
     }
-    inch_pattern = re.compile(
-        r"(?<!\d)(2\s+1/2|1\s+1/2|1\s+1/4|1/2|3/4|1|2|3|4)\s*[\"″]"
-    )
-    for match in inch_pattern.finditer(text):
+    for match in re.finditer(
+        r"(?<!\d)(2\s+1/2|1\s+1/2|1\s+1/4|1/2|3/4|1|2|3|4)\s*[\"″]",
+        text,
+    ):
         key = " ".join(match.group(1).split())
         if key in _INCH_TO_DN:
             values.add(_INCH_TO_DN[key])
@@ -245,24 +215,62 @@ def _relevant_properties(raw: Any, limit: int = 28) -> dict[str, str]:
         return {}
     result: dict[str, str] = {}
     for key, value in payload.items():
-        if not _RELEVANT_PROPERTY_KEY.search(str(key)):
-            continue
-        if isinstance(value, (dict, list)):
+        if not _RELEVANT_PROPERTY_KEY.search(str(key)) or isinstance(value, (dict, list)):
             continue
         text = " ".join(str(value or "").split())
-        if not text:
-            continue
-        result[str(key)] = text[:180]
+        if text:
+            result[str(key)] = text[:180]
         if len(result) >= limit:
             break
     return result
 
 
-class LocalCompetitorLookup:
-    """Deterministic lookup over the compact local competitor Parquet.
+def _term_hits(term: LookupTerm, blob: str) -> bool:
+    value = _normalize(term.value)
+    if term.kind == "brand":
+        return bool(re.search(rf"(?<![a-zа-я0-9]){re.escape(value)}(?![a-zа-я0-9])", blob))
+    if term.kind == "model_number":
+        return bool(re.search(rf"(?<!\d){re.escape(value)}(?!\d)", blob))
+    compact_value = _compact(value)
+    return value in blob or (compact_value and compact_value in _compact(blob))
 
-    The lookup does not infer LD constraints itself. It only resolves a likely source
-    competitor product and passes its catalog facts to the query interpreter.
+
+def _logical_identity(candidate: CompetitorCandidate) -> str:
+    # Prefer manufacturer-facing identifiers. This collapses the same product scraped
+    # from several distributors while keeping genuinely different size variants apart.
+    for value in (candidate.manufacturer_code, candidate.vendor_article, candidate.article):
+        compact = _compact(value)
+        if len(compact) >= 4 and re.search(r"[a-zа-я]", compact) and re.search(r"\d", compact):
+            return f"id:{compact}"
+    model = _compact(candidate.model)
+    if model:
+        return f"model:{model}:dn:{_compact(candidate.dn_text)}"
+    return f"product:{candidate.product_id}"
+
+
+def _candidate_completeness(candidate: CompetitorCandidate) -> int:
+    fields = (
+        candidate.vendor_article,
+        candidate.manufacturer_code,
+        candidate.brand,
+        candidate.model,
+        candidate.series,
+        candidate.dn_text,
+        candidate.pn_text,
+        candidate.joining_type,
+        candidate.thread_type,
+        candidate.body_material,
+        candidate.control,
+        candidate.working_medium,
+    )
+    return sum(value not in (None, "", "Не указано") for value in fields) + len(candidate.properties)
+
+
+class LocalCompetitorLookup:
+    """Resolve a source competitor item from a local structured Parquet catalog.
+
+    The lookup only supplies source-product facts. It never chooses an LD product and
+    never manufactures hard constraints itself; DeepSeek remains the query interpreter.
     """
 
     def __init__(self, settings, path: str | Path | None = None):
@@ -310,26 +318,11 @@ class LocalCompetitorLookup:
             row[0] for row in con.execute("DESCRIBE SELECT * FROM competitor_catalog_raw").fetchall()
         }
         searchable = [
-            name
-            for name in (
-                "name",
-                "article",
-                "vendor_article",
-                "manufacturer_code",
-                "brand",
-                "model",
-                "series",
-                "product_name",
-                "product_type",
-                "product_variant",
-                "dn_text",
-                "pn_text",
-                "joining_type",
-                "thread_type",
-                "connection_size",
-                "properties_json",
-            )
-            if name in self._columns
+            name for name in (
+                "name", "article", "vendor_article", "manufacturer_code", "brand", "model",
+                "series", "product_name", "product_type", "product_variant", "dn_text", "pn_text",
+                "joining_type", "thread_type", "connection_size", "properties_json",
+            ) if name in self._columns
         ]
         concat = ", ".join(f"coalesce({name}, '')" for name in searchable)
         con.execute(
@@ -344,57 +337,29 @@ class LocalCompetitorLookup:
     def should_lookup(query: str) -> bool:
         return bool(_identity_terms(query))
 
-    def _row_dicts(self, query: str, terms: list[LookupTerm]) -> list[dict[str, Any]]:
+    def _row_dicts(self, terms: list[LookupTerm]) -> list[dict[str, Any]]:
         con = self._ensure_connection()
         select_columns = [
-            name
-            for name in (
-                "product_id",
-                "family",
-                "name",
-                "article",
-                "vendor_article",
-                "manufacturer_code",
-                "brand",
-                "model",
-                "series",
-                "dn_text",
-                "pn_text",
-                "joining_type",
-                "thread_type",
-                "connection_size",
-                "body_material",
-                "seal_material",
-                "control",
-                "working_medium",
-                "url",
-                "properties_json",
-            )
-            if name in self._columns
+            name for name in (
+                "product_id", "family", "name", "article", "vendor_article", "manufacturer_code",
+                "brand", "model", "series", "dn_text", "pn_text", "joining_type", "thread_type",
+                "connection_size", "body_material", "seal_material", "control", "working_medium",
+                "url", "properties_json",
+            ) if name in self._columns
         ]
-        score_parts: list[str] = []
-        params: list[Any] = []
-        where_parts: list[str] = []
-        for term in terms:
-            pattern = f"%{_normalize(term.value)}%"
-            score_parts.append(f"CASE WHEN _search_blob LIKE ? THEN {term.weight} ELSE 0 END")
-            params.append(pattern)
-            where_parts.append("_search_blob LIKE ?")
-            params.append(pattern)
-        if not where_parts:
+        if not terms:
             return []
-        # Parameters are interleaved above, but SQL expects score params first and WHERE params second.
-        score_params = [f"%{_normalize(term.value)}%" for term in terms]
-        where_params = [f"%{_normalize(term.value)}%" for term in terms]
+        score_parts = [f"CASE WHEN _search_blob LIKE ? THEN {term.weight} ELSE 0 END" for term in terms]
+        where_parts = ["_search_blob LIKE ?" for _ in terms]
+        params = [f"%{_normalize(term.value)}%" for term in terms]
         sql = (
-            f"SELECT {', '.join(select_columns)}, "
-            f"({' + '.join(score_parts)}) AS _pre_score, _search_blob "
+            f"SELECT {', '.join(select_columns)}, ({' + '.join(score_parts)}) AS _pre_score, _search_blob "
             "FROM competitor_catalog "
             f"WHERE {' OR '.join(where_parts)} "
             "ORDER BY _pre_score DESC "
             f"LIMIT {self.prelimit}"
         )
-        cursor = con.execute(sql, score_params + where_params)
+        cursor = con.execute(sql, params + params)
         names = [description[0] for description in cursor.description]
         return [dict(zip(names, row)) for row in cursor.fetchall()]
 
@@ -406,81 +371,64 @@ class LocalCompetitorLookup:
         inch_signals: list[str],
     ) -> CompetitorCandidate:
         blob = _normalize(row.get("_search_blob"))
-        compact_blob = _compact(blob)
-        identifiers = {
+        strong_identifiers = {
             key: _compact(row.get(key))
-            for key in ("article", "vendor_article", "manufacturer_code", "model")
+            for key in ("article", "vendor_article", "manufacturer_code")
             if row.get(key)
         }
-        matched_terms: list[str] = []
+        matched_terms = [term.value for term in terms if _term_hits(term, blob)]
         basis: list[str] = []
-        raw_score = 0.0
+        raw_score = sum(term.weight for term in terms if term.value in matched_terms)
         exact_identifier = False
-        model_prefix = False
-        model_terms = [term for term in terms if term.kind in {"model", "article", "model_number"}]
 
         for term in terms:
-            normalized = _normalize(term.value)
             compact = _compact(term.value)
-            hit = normalized in blob or (compact and compact in compact_blob)
-            if hit:
-                matched_terms.append(term.value)
-                raw_score += float(term.weight)
-            if compact and any(compact == value for value in identifiers.values()):
+            if compact and term.kind in {"article", "model"} and any(
+                compact == value for value in strong_identifiers.values()
+            ):
                 exact_identifier = True
                 raw_score += 120.0
                 basis.append(f"exact_identifier:{term.value}")
-            model_value = identifiers.get("model")
-            if compact and model_value and len(compact) >= 3:
-                if model_value.startswith(compact) or compact.startswith(model_value):
-                    model_prefix = True
-                    raw_score += 70.0
-                    basis.append(f"model_prefix:{term.value}")
 
-        if terms and len(matched_terms) == len(terms):
-            raw_score += 20.0
+        if len(matched_terms) == len(terms):
+            raw_score += 24.0
             basis.append("all_identity_terms")
 
-        dn_hit = False
         candidate_dn_numbers = {
             int(value)
             for value in re.findall(r"\d{1,4}", str(row.get("dn_text") or ""))
             if int(value) <= 2000
         }
-        if dn_signals and candidate_dn_numbers.intersection(dn_signals):
-            dn_hit = True
-            raw_score += 30.0
+        dn_hit = bool(dn_signals and candidate_dn_numbers.intersection(dn_signals))
+        if dn_hit:
+            raw_score += 36.0
             basis.append("explicit_dn")
 
-        inch_hit = False
         size_blob = _normalize(
-            " ".join(
-                str(row.get(key) or "")
-                for key in ("connection_size", "name", "properties_json")
-            )
-        )
+            " ".join(str(row.get(key) or "") for key in ("connection_size", "name", "properties_json"))
+        ).replace("'", '"')
+        inch_hit = False
         for inch in inch_signals:
             compact_inch = inch.replace(" ", "")
             if re.search(rf"(?<!\d){re.escape(compact_inch)}\s*[\"″]", size_blob.replace(" ", "")):
                 inch_hit = True
-                raw_score += 18.0
+                raw_score += 22.0
                 basis.append(f"explicit_inch:{inch}")
                 break
 
-        matched_model_terms = [term for term in model_terms if term.value in matched_terms]
-        if exact_identifier:
+        # Identity is only high-confidence if every identity token is present. This is
+        # critical for brand+numeric models (IVR 956 must contain both IVR and 956).
+        all_identity = len(matched_terms) == len(terms)
+        if exact_identifier and all_identity:
             confidence = 0.99
-        elif model_prefix and matched_model_terms:
-            confidence = 0.95 if (dn_hit or inch_hit) else 0.91
-        elif model_terms and len(matched_model_terms) == len(model_terms):
-            if len(terms) >= 2 and len(matched_terms) == len(terms):
-                confidence = 0.92 if (dn_hit or inch_hit) else 0.88
-            else:
-                confidence = 0.87 if (dn_hit or inch_hit) else 0.82
-        elif len(matched_terms) >= 2:
-            confidence = 0.80
+        elif all_identity and (dn_hit or inch_hit):
+            confidence = 0.94
+        elif all_identity and len(terms) >= 2:
+            confidence = 0.89
+        elif all_identity:
+            confidence = 0.84
         else:
-            confidence = 0.60
+            confidence = 0.55
 
         return CompetitorCandidate(
             product_id=str(row.get("product_id") or ""),
@@ -509,43 +457,62 @@ class LocalCompetitorLookup:
             properties=_relevant_properties(row.get("properties_json")),
         )
 
+    @staticmethod
+    def _deduplicate(candidates: list[CompetitorCandidate]) -> list[CompetitorCandidate]:
+        best: dict[str, CompetitorCandidate] = {}
+        for candidate in candidates:
+            key = _logical_identity(candidate)
+            current = best.get(key)
+            if current is None or (candidate.score, _candidate_completeness(candidate)) > (
+                current.score,
+                _candidate_completeness(current),
+            ):
+                best[key] = candidate
+        return list(best.values())
+
     def lookup(self, query: str) -> CompetitorLookupResult:
         terms = _identity_terms(query)
         if not terms:
-            return CompetitorLookupResult(
-                attempted=False,
-                accepted=False,
-                reason="no_external_identity_signal",
-                query=query,
-            )
+            return CompetitorLookupResult(False, False, "no_external_identity_signal", query)
 
         availability_error = self._availability_error()
         if availability_error:
             return CompetitorLookupResult(
-                attempted=True,
-                accepted=False,
-                reason=availability_error,
-                query=query,
-                identity_terms=[term.value for term in terms],
+                True, False, availability_error, query, [term.value for term in terms]
             )
 
-        rows = self._row_dicts(query, terms)
+        rows = self._row_dicts(terms)
         if not rows:
             return CompetitorLookupResult(
-                attempted=True,
-                accepted=False,
-                reason="no_local_catalog_candidate",
-                query=query,
-                identity_terms=[term.value for term in terms],
+                True, False, "no_local_catalog_candidate", query, [term.value for term in terms]
             )
 
         dn_signals = _explicit_dn_signals(query)
         inch_signals = _explicit_inch_signals(query)
-        candidates = [
-            self._score_candidate(row, terms, dn_signals, inch_signals)
-            for row in rows
-        ]
-        candidates.sort(key=lambda candidate: (-candidate.score, -candidate.confidence, candidate.product_id))
+        scored = [self._score_candidate(row, terms, dn_signals, inch_signals) for row in rows]
+
+        # If the query carries multiple identity tokens, partial matches are noise.
+        # This removes false positives such as a non-IVR product whose article is merely "956".
+        if len(terms) >= 2:
+            scored = [candidate for candidate in scored if len(candidate.matched_terms) == len(terms)]
+        if not scored:
+            return CompetitorLookupResult(
+                True,
+                False,
+                "no_candidate_matches_all_identity_terms",
+                query,
+                [term.value for term in terms],
+            )
+
+        candidates = self._deduplicate(scored)
+        candidates.sort(
+            key=lambda candidate: (
+                -candidate.score,
+                -candidate.confidence,
+                -_candidate_completeness(candidate),
+                candidate.product_id,
+            )
+        )
         candidates = candidates[: self.limit]
         top = candidates[0]
         second = candidates[1] if len(candidates) > 1 else None
@@ -560,10 +527,10 @@ class LocalCompetitorLookup:
             else f"ambiguous_local_identity confidence={top.confidence:.2f} margin={margin:.1f}"
         )
         return CompetitorLookupResult(
-            attempted=True,
-            accepted=accepted,
-            reason=reason,
-            query=query,
-            identity_terms=[term.value for term in terms],
-            candidates=candidates,
+            True,
+            accepted,
+            reason,
+            query,
+            [term.value for term in terms],
+            candidates,
         )
