@@ -1,0 +1,187 @@
+name: Temporary analyze MCP 783 results
+
+on:
+  push:
+    branches:
+      - codex/deepseek-query-interpreter
+    paths:
+      - .github/workflows/tmp-analyze-mcp-results.yml
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout without all LFS objects
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 1
+
+      - name: Materialize only MCP result JSON
+        shell: bash
+        run: |
+          git lfs install
+          git lfs pull --include="data/kontur_all_783_match_results_mcp.json" --exclude=""
+          ls -lh data/kontur_all_783_match_results_mcp.json
+          if head -n 1 data/kontur_all_783_match_results_mcp.json | grep -q 'git-lfs.github.com/spec'; then
+            echo "Result is still an LFS pointer"
+            exit 1
+          fi
+
+      - name: Analyze result JSON
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from collections import Counter, defaultdict
+          from pathlib import Path
+
+          path = Path('data/kontur_all_783_match_results_mcp.json')
+          rows = json.loads(path.read_text(encoding='utf-8'))
+
+          statuses = Counter()
+          stages = Counter()
+          lookup_reasons = Counter()
+          web_by_status = Counter()
+          accepted_by_status = Counter()
+          page_counts = Counter()
+          searchable = Counter()
+          catalog_scope = Counter()
+          product_types = Counter()
+          web_attempted = 0
+          web_accepted = 0
+          lookup_errors = 0
+          attempted_query_rejected = 0
+          accepted_query_rejected = 0
+          attempted_out_of_scope = 0
+          accepted_out_of_scope = 0
+          accepted_not_found = []
+          attempted_rejected_samples = []
+
+          def stage_for(row):
+              status = row.get('status')
+              reason = ((row.get('debug') or {}).get('reason') or '')
+              if reason.startswith('QUERY_REJECTED:'):
+                  return 'QUERY_REJECTED'
+              if reason.startswith('HARD_CONSTRAINT_FILTER:'):
+                  return 'HARD_CONSTRAINT_FILTER'
+              if reason.startswith('QUERY_INTERPRET_FAILED:'):
+                  return 'QUERY_INTERPRET_FAILED'
+              if status == 'MATCHED':
+                  return 'MATCHED'
+              if status == 'RERANK_FAILED':
+                  return 'RERANK_FAILED'
+              if status == 'NOT_FOUND':
+                  return 'RERANK_NOT_FOUND'
+              return status or 'UNKNOWN'
+
+          for row in rows:
+              status = row.get('status') or 'UNKNOWN'
+              statuses[status] += 1
+              stage = stage_for(row)
+              stages[stage] += 1
+              debug = row.get('debug') or {}
+              qi = debug.get('query_interpretation') or {}
+              if 'searchable' in qi:
+                  searchable[str(bool(qi.get('searchable')))] += 1
+              constraints = qi.get('constraints') or {}
+              if constraints.get('catalog_scope') is not None:
+                  catalog_scope[str(constraints.get('catalog_scope'))] += 1
+              if constraints.get('product_type') is not None:
+                  product_types[str(constraints.get('product_type'))] += 1
+
+              lookup = qi.get('competitor_lookup')
+              if not isinstance(lookup, dict):
+                  continue
+              attempted = bool(lookup.get('attempted'))
+              accepted = bool(lookup.get('accepted'))
+              reason = str(lookup.get('reason') or '')
+              lookup_reasons[reason] += 1
+              page_counts[len(lookup.get('pages') or [])] += 1
+              if reason.startswith('lookup_error:'):
+                  lookup_errors += 1
+              if attempted:
+                  web_attempted += 1
+                  web_by_status[status] += 1
+                  if stage == 'QUERY_REJECTED':
+                      attempted_query_rejected += 1
+                      if len(attempted_rejected_samples) < 15:
+                          attempted_rejected_samples.append(row.get('query'))
+                  if constraints.get('catalog_scope') == 'out_of_scope':
+                      attempted_out_of_scope += 1
+              if accepted:
+                  web_accepted += 1
+                  accepted_by_status[status] += 1
+                  if stage == 'QUERY_REJECTED':
+                      accepted_query_rejected += 1
+                  if constraints.get('catalog_scope') == 'out_of_scope':
+                      accepted_out_of_scope += 1
+                  if status != 'MATCHED' and len(accepted_not_found) < 20:
+                      accepted_not_found.append({
+                          'query': row.get('query'),
+                          'stage': stage,
+                          'scope': constraints.get('catalog_scope'),
+                          'product_type': constraints.get('product_type'),
+                          'lookup_reason': reason,
+                          'pages': len(lookup.get('pages') or []),
+                      })
+
+          needles = ['082X4424R', 'VT.214', 'IVR 60', 'IVR 956', '2378929', 'BV17']
+          known = []
+          for needle in needles:
+              for row in rows:
+                  if needle.lower() not in str(row.get('query') or '').lower():
+                      continue
+                  debug = row.get('debug') or {}
+                  qi = debug.get('query_interpretation') or {}
+                  lookup = qi.get('competitor_lookup') or {}
+                  known.append({
+                      'needle': needle,
+                      'query': row.get('query'),
+                      'status': row.get('status'),
+                      'stage': stage_for(row),
+                      'ld_product': row.get('ld_product'),
+                      'searchable': qi.get('searchable'),
+                      'constraints': qi.get('constraints'),
+                      'web_attempted': lookup.get('attempted'),
+                      'web_accepted': lookup.get('accepted'),
+                      'web_pages': len(lookup.get('pages') or []),
+                      'lookup_reason': lookup.get('reason'),
+                  })
+                  break
+
+          summary = {
+              'rows': len(rows),
+              'statuses': dict(statuses),
+              'stages': dict(stages),
+              'searchable': dict(searchable),
+              'catalog_scope': dict(catalog_scope),
+              'product_types': dict(product_types),
+              'web': {
+                  'attempted': web_attempted,
+                  'accepted': web_accepted,
+                  'accept_rate_of_attempted': round(web_accepted / web_attempted, 4) if web_attempted else None,
+                  'lookup_errors': lookup_errors,
+                  'attempted_by_final_status': dict(web_by_status),
+                  'accepted_by_final_status': dict(accepted_by_status),
+                  'lookup_reasons': dict(lookup_reasons),
+                  'page_counts': dict(sorted(page_counts.items())),
+                  'attempted_query_rejected': attempted_query_rejected,
+                  'accepted_query_rejected': accepted_query_rejected,
+                  'attempted_out_of_scope': attempted_out_of_scope,
+                  'accepted_out_of_scope': accepted_out_of_scope,
+              },
+              'known_cases': known,
+              'samples': {
+                  'web_attempted_but_query_rejected': attempted_rejected_samples,
+                  'web_accepted_but_not_matched': accepted_not_found,
+              },
+          }
+          print('=== MCP_783_SUMMARY_BEGIN ===')
+          print(json.dumps(summary, ensure_ascii=False, indent=2))
+          print('=== MCP_783_SUMMARY_END ===')
+          PY
