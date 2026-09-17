@@ -1,18 +1,16 @@
-name: Test local competitor lookup
+name: Test matcher and MCP web search
 
 on:
   push:
     branches:
       - codex/deepseek-query-interpreter
     paths:
-      - src/nomenclature_matcher/competitor_lookup.py
+      - src/nomenclature_matcher/web_search_mcp.py
       - src/nomenclature_matcher/query_interpreter.py
       - src/nomenclature_matcher/matcher.py
       - src/nomenclature_matcher/settings.py
-      - src/nomenclature_matcher/prompts/query_interpreter_system.md
-      - scripts/inspect_competitor_lookup.py
-      - data/competitor_lookup_cases.json
-      - tests/test_competitor_lookup.py
+      - scripts/test_mcp_web_search.py
+      - tests/test_web_search_mcp.py
       - pyproject.toml
       - .github/workflows/test-competitor-lookup.yml
   workflow_dispatch:
@@ -29,38 +27,19 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout without all LFS payloads
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: false
           fetch-depth: 1
-
-      - name: Pull only compact competitor parquet
-        shell: bash
-        run: |
-          git lfs install --local
-          git lfs fetch origin "$GITHUB_SHA" --include="data/competitors/santech_ld_scope.parquet"
-          git lfs checkout data/competitors/santech_ld_scope.parquet
-          ls -lh data/competitors/santech_ld_scope.parquet
-          if head -n 1 data/competitors/santech_ld_scope.parquet | grep -q 'git-lfs.github.com/spec'; then
-            echo 'Parquet is still an LFS pointer'
-            exit 1
-          fi
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install project and tests
-        run: python -m pip install --disable-pip-version-check -e '.[test]'
+      - name: Install project and test dependencies
+        run: python -m pip install --disable-pip-version-check -e '.[test,review]'
 
       - name: Run full regression suite
         run: python -m pytest -q
-
-      - name: Inspect real competitor lookup cases
-        run: |
-          python scripts/inspect_competitor_lookup.py \
-            --input data/competitor_lookup_cases.json \
-            --output analysis/competitor_lookup_real.json
-          cat analysis/competitor_lookup_real.json
