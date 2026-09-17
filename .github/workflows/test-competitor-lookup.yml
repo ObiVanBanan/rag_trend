@@ -55,13 +55,8 @@ jobs:
       - name: Install project and tests
         run: python -m pip install --disable-pip-version-check -e '.[test]'
 
-      - name: Run focused tests
-        run: |
-          python -m pytest \
-            tests/test_competitor_lookup.py \
-            tests/test_query_interpreter_runtime.py \
-            tests/test_query_interpreter_hardening.py \
-            -q
+      - name: Run full regression suite
+        run: python -m pytest -q
 
       - name: Inspect real competitor lookup cases
         run: |
