@@ -3,3 +3,9 @@ __pycache__/
 .pytest_cache/
 *.py[cod]
 
+# Generated run artifacts
+mcp_783_run.log
+mcp_web_search_only.json
+mcp_web_search_test.json
+data/kontur_all_783_match_results_mcp.json
+
