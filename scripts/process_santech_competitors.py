@@ -63,7 +63,8 @@ def main() -> int:
 
     con = duckdb.connect(database=":memory:")
     con.execute(f"SET threads TO {max(1, args.threads)}")
-    con.execute(f"SET temp_directory='{str(temp_dir).replace("'", "''")}'")
+    temp_sql = str(temp_dir).replace("'", "''")
+    con.execute(f"SET temp_directory='{temp_sql}'")
     con.execute("SET preserve_insertion_order=false")
 
     source_sql = str(source).replace("'", "''")
@@ -133,7 +134,6 @@ def main() -> int:
     normalized_projection = []
     for column in kept_columns:
         ident = _quote_ident(column)
-        # Normalize leading/trailing and repeated whitespace, but otherwise preserve source values.
         normalized_projection.append(
             f"NULLIF(regexp_replace(trim({ident}), '\\s+', ' ', 'g'), '') AS {ident}"
         )
@@ -267,7 +267,13 @@ def main() -> int:
     except OSError:
         pass
 
-    print(json.dumps({k: _json_safe(v) for k, v in profile.items() if k != "columns"}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {k: _json_safe(v) for k, v in profile.items() if k != "columns"},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 
