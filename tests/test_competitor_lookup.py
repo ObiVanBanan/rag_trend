@@ -371,5 +371,6 @@ def test_matcher_passes_accepted_lookup_context_and_keeps_debug():
 
     result = matcher.match_one_hybrid_with_rerank('Кран VALTEC VT.214 1"')
 
-    assert interpreter.contexts[0]["identity_confidence"] == 0.95
+    assert interpreter.contexts[0] is None
+    assert interpreter.contexts[1]["identity_confidence"] == 0.95
     assert result.query_interpretation["competitor_lookup"]["accepted"] is True
