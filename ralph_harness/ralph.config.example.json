@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "max_cycles": 5,
+  "max_agent_calls": 24,
+  "goal_file": "RALPH_GOAL.md",
+  "allow_main_branch": false,
+  "protected_paths": [
+    "ralph_harness",
+    ".github/workflows"
+  ],
+  "agents": {
+    "defaults": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "low",
+      "network": false
+    },
+    "researcher": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "network": false
+    },
+    "planner": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "network": false
+    },
+    "implementer": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "low",
+      "network": true
+    },
+    "reviewer": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "low",
+      "network": false
+    }
+  },
+  "test_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "evaluators": [
+    {
+      "name": "gold",
+      "kind": "gate",
+      "command": [
+        "python",
+        "scripts/evaluate_gold.py",
+        "--output",
+        "{output}"
+      ],
+      "review_keys": [
+        "metrics",
+        "failures"
+      ],
+      "policy": {
+        "primary": {
+          "metric": "quality_score",
+          "direction": "maximize",
+          "min_delta": 0.0
+        },
+        "guardrails": [
+          {
+            "metric": "error_rate",
+            "direction": "minimize",
+            "max_regression": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "current_corpus",
+      "kind": "evidence",
+      "command": [
+        "python",
+        "scripts/evaluate_current_corpus.py",
+        "--output",
+        "{output}"
+      ],
+      "review_keys": [
+        "metrics",
+        "summary",
+        "changed_examples"
+      ]
+    }
+  ]
+}
