@@ -27,7 +27,7 @@
   "research_gold_labels": "data/tender_queries_kontur_5files_labels_gold_v1.json.gz",
   "research_review_pool": "data/tender_queries_kontur_5files_review_pool.json.gz",
   "research_provisional_not_found": "data/tender_queries_kontur_5files_provisional_not_found.json.gz",
-  "test_command": ["python", "-m", "pytest", "-q"],
+  "test_command": ["uv", "run", "--extra", "test", "python", "-m", "pytest", "-q"],
   "index_command": ["python", "scripts/build_index.py", "--csv", "ld_products_full_nomenclature.csv"],
   "notes": {
     "pipeline": "Each attempt is research-first, then planning, implementation, deterministic tests, public/hidden guardrails, current-783 candidate evaluation, and one cheap ACCEPT/REJECT validator.",
