@@ -80,39 +80,108 @@ def main() -> int:
         ), enriched AS (
             SELECT
                 *,
-                NULLIF(trim(json_extract_string(props, '$."Бренд"')), '') AS brand,
-                NULLIF(trim(json_extract_string(props, '$."Название"')), '') AS product_name,
-                NULLIF(trim(json_extract_string(props, '$."Тип"')), '') AS product_type,
-                NULLIF(trim(json_extract_string(props, '$."Вид"')), '') AS product_variant,
-                NULLIF(trim(json_extract_string(props, '$."Серия"')), '') AS series,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Бренд"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Производитель"')), '')
+                ) AS brand,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Название"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Наименование"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Тип изделия"')), '')
+                ) AS product_name,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Тип"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Тип изделия"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Тип шарового крана"')), '')
+                ) AS product_type,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Вид"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Исполнение"')), '')
+                ) AS product_variant,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Серия"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Серия бренда"')), '')
+                ) AS series,
                 NULLIF(trim(json_extract_string(props, '$."Модель"')), '') AS model,
-                NULLIF(trim(json_extract_string(props, '$."Артикул"')), '') AS vendor_article,
-                NULLIF(trim(json_extract_string(props, '$."Тип присоединения"')), '') AS joining_type,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Артикул"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Артикул производителя"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Код производителя"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Код товара"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Номенклатурный номер"')), '')
+                ) AS vendor_article,
+                NULLIF(trim(json_extract_string(props, '$."Код производителя"')), '') AS manufacturer_code,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Тип присоединения"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Тип соединения"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Присоединение"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Соединение"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Тип подключения"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Подключение"')), '')
+                ) AS joining_type,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Вид резьбы"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Резьба"')), '')
+                ) AS thread_type,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Присоединение, дюйм"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Стандарт подключения, дюйм"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Подключение, дюйм"')), '')
+                ) AS connection_size,
                 COALESCE(
                     NULLIF(trim(json_extract_string(props, '$."Материал корпуса"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Материал корпуса крана"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Материал корпуса клапана"')), ''),
-                    NULLIF(trim(json_extract_string(props, '$."Материал корпуса затвора"')), '')
+                    NULLIF(trim(json_extract_string(props, '$."Материал корпуса затвора"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Материал изделия"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Основной материал"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Материал"')), '')
                 ) AS body_material,
-                NULLIF(trim(json_extract_string(props, '$."Управление"')), '') AS control,
-                NULLIF(trim(json_extract_string(props, '$."Инженерная система"')), '') AS engineering_system,
+                NULLIF(trim(json_extract_string(props, '$."Материал уплотнения"')), '') AS seal_material,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Тип управления"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Управление"')), '')
+                ) AS control,
+                NULLIF(trim(json_extract_string(props, '$."Вид рукоятки"')), '') AS handle_type,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Тип рабочей среды"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Рабочая среда"')), '')
+                ) AS working_medium,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Инженерная система"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Область применения"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Назначение"')), '')
+                ) AS engineering_system,
+                COALESCE(
+                    NULLIF(trim(json_extract_string(props, '$."Страна-производитель"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Страна происхождения"')), '')
+                ) AS country,
                 NULLIF(trim(json_extract_string(props, '$."Описание"')), '') AS description_text,
                 COALESCE(
                     NULLIF(trim(dn_source), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Условный проход, мм"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Ду, мм"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Ду"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."ДУ"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Номинальный диаметр, DN"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Номинальный диаметр"')), ''),
-                    NULLIF(trim(json_extract_string(props, '$."Присоединение к трубопроводу"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Диаметр условного прохода"')), '')
                 ) AS dn_text,
                 COALESCE(
                     NULLIF(trim(pn_source), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Ру"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."РУ"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Номинальное давление, PN"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Номинальное давление"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Макс. рабочее давление, бар"')), ''),
+                    NULLIF(trim(json_extract_string(props, '$."Рабочее давление, бар"')), ''),
                     NULLIF(trim(json_extract_string(props, '$."Максимальное рабочее давление, бар"')), '')
                 ) AS pn_text,
                 lower(
                     coalesce(name, '') || ' ' ||
                     coalesce(json_extract_string(props, '$."Название"'), '') || ' ' ||
+                    coalesce(json_extract_string(props, '$."Наименование"'), '') || ' ' ||
+                    coalesce(json_extract_string(props, '$."Тип изделия"'), '') || ' ' ||
                     coalesce(json_extract_string(props, '$."Тип"'), '') || ' ' ||
                     coalesce(json_extract_string(props, '$."Вид"'), '')
                 ) AS scope_text
@@ -134,6 +203,7 @@ def main() -> int:
             name,
             article,
             vendor_article,
+            manufacturer_code,
             brand,
             model,
             series,
@@ -143,9 +213,15 @@ def main() -> int:
             dn_text,
             pn_text,
             joining_type,
+            thread_type,
+            connection_size,
             body_material,
+            seal_material,
             control,
+            handle_type,
+            working_medium,
             engineering_system,
+            country,
             description_text,
             category_id,
             brand_id,
@@ -192,7 +268,6 @@ def main() -> int:
         """
     )
 
-    # Key frequency shows which source properties are worth promoting into typed columns later.
     key_rows = con.execute(
         """
         SELECT key, count(*) AS occurrences
@@ -204,11 +279,40 @@ def main() -> int:
         """
     ).fetchall()
 
+    completeness_columns = [
+        "brand",
+        "model",
+        "vendor_article",
+        "dn_text",
+        "pn_text",
+        "joining_type",
+        "thread_type",
+        "connection_size",
+        "body_material",
+        "control",
+        "working_medium",
+    ]
+    completeness_expr = ", ".join(
+        f"sum(CASE WHEN {column} IS NOT NULL THEN 1 ELSE 0 END) AS {column}"
+        for column in completeness_columns
+    )
+    completeness_values = con.execute(
+        f"SELECT {completeness_expr} FROM structured WHERE {where_scope}"
+    ).fetchone()
+    completeness = {
+        column: {
+            "filled": int(value or 0),
+            "ratio": round(int(value or 0) / total_scope, 6) if total_scope else 0.0,
+        }
+        for column, value in zip(completeness_columns, completeness_values)
+    }
+
     profile = {
         "rows_in_ld_scope": total_scope,
         "family_counts": {str(family): int(count) for family, count in counts},
         "parquet_size_bytes": parquet.stat().st_size,
         "structured_columns": [row[0] for row in con.execute("DESCRIBE SELECT * FROM structured").fetchall()],
+        "field_completeness": completeness,
         "top_json_keys": [
             {"key": str(key), "occurrences": int(occurrences)}
             for key, occurrences in key_rows
@@ -229,6 +333,9 @@ def main() -> int:
     ]
     for family, count in counts:
         md.append(f"| {family} | {int(count):,} |")
+    md.extend(["", "## Structured field completeness", "", "| Field | Filled | Coverage |", "|---|---:|---:|"])
+    for column, stats in completeness.items():
+        md.append(f"| {column} | {stats['filled']:,} | {stats['ratio']:.1%} |")
     md.extend(
         [
             "",
