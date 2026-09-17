@@ -10,7 +10,7 @@
     "filter": 6586,
     "gearbox": 751
   },
-  "parquet_size_bytes": 13325754,
+  "parquet_size_bytes": 13327679,
   "structured_columns": [
     "family",
     "product_id",
