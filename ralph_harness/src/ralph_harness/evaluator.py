@@ -9,8 +9,14 @@ from .runtime import HarnessError, run
 
 
 def _render_command(command: list[str], *, output: Path, project_root: Path) -> list[str]:
-    mapping = {"output": str(output), "project_root": str(project_root)}
-    return [str(part).format(**mapping) for part in command]
+    # Replace only the harness placeholders. Using str.format() here would also
+    # interpret unrelated braces in inline Python/JSON/shell snippets.
+    return [
+        str(part)
+        .replace("{output}", str(output))
+        .replace("{project_root}", str(project_root))
+        for part in command
+    ]
 
 
 def run_evaluator(
