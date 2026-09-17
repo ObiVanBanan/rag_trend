@@ -149,8 +149,9 @@ class DeepSeekQueryInterpreter:
         if constraints.get("product_type") != "ball_valve":
             constraints["valve_type"] = None
 
-        # Control is a hard constraint only when it is explicit in the source query.
-        # Do not let the LLM silently turn an ordinary product into `manual`.
+        # Control remains a hard constraint only when explicit in the tender query.
+        # Local catalog context can explain the source item to the LLM, but it must not
+        # silently turn an inferred/default manual drive into a hard LD constraint.
         constraints["control"] = self._explicit_control(query)
 
         # Explicit ВР/НР notation is deterministic and should override an occasional
@@ -197,7 +198,23 @@ class DeepSeekQueryInterpreter:
 
         return payload
 
-    def _request(self, query: str, *, retry: bool = False) -> str:
+    @staticmethod
+    def _user_message(query: str, competitor_context: dict | None, suffix: str = "") -> str:
+        text = f"QUERY:\n{query}"
+        if competitor_context:
+            text += (
+                "\n\nLOCAL_COMPETITOR_CONTEXT:\n"
+                + json.dumps(competitor_context, ensure_ascii=False, indent=2)
+            )
+        return text + suffix
+
+    def _request(
+        self,
+        query: str,
+        *,
+        competitor_context: dict | None = None,
+        retry: bool = False,
+    ) -> str:
         suffix = ""
         if retry:
             suffix = (
@@ -211,15 +228,26 @@ class DeepSeekQueryInterpreter:
             extra_body={"thinking": {"type": "disabled"}},
             messages=[
                 {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": f"QUERY:\n{query}{suffix}"},
+                {
+                    "role": "user",
+                    "content": self._user_message(query, competitor_context, suffix),
+                },
             ],
         )
         return response.choices[0].message.content or "{}"
 
-    def interpret(self, query: str) -> QueryInterpretation:
+    def interpret(
+        self,
+        query: str,
+        competitor_context: dict | None = None,
+    ) -> QueryInterpretation:
         last_error: Exception | None = None
         for attempt in range(2):
-            content = self._request(query, retry=attempt > 0)
+            content = self._request(
+                query,
+                competitor_context=competitor_context,
+                retry=attempt > 0,
+            )
             try:
                 payload = json.loads(content)
                 if not isinstance(payload, dict):
