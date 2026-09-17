@@ -69,4 +69,6 @@ jobs:
             exit 0
           fi
           git commit -m 'Process competitor product catalog'
+          git fetch origin codex/deepseek-query-interpreter
+          git rebase origin/codex/deepseek-query-interpreter
           git push origin HEAD:codex/deepseek-query-interpreter
