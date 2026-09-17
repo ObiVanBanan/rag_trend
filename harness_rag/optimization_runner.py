@@ -8,6 +8,12 @@ from .provenance_runner import install_campaign_provenance
 from .research_first_runner import install_research_first
 
 
+# Harness/CI-only files may change without invalidating a saved product champion.
+# This lets an existing external state safely adopt the upgraded runner instead of
+# requiring --fresh just because the harness workflow itself changed.
+core.HARNESS_ONLY_EXACT.add(".github/workflows/test-competitor-lookup.yml")
+
+
 def main() -> int:
     # Preserve the existing research-first/provenance/metric guardrail stack and
     # add the current 783-row corpus as the primary optimization evidence.
