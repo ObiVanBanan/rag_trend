@@ -1,8 +1,9 @@
+import json
 from types import SimpleNamespace
 
 from nomenclature_matcher.matcher import NomenclatureMatcher
 from nomenclature_matcher.models import SearchCandidate
-from nomenclature_matcher.query_interpreter import QueryInterpretation
+from nomenclature_matcher.query_interpreter import DeepSeekQueryInterpreter, QueryInterpretation
 from nomenclature_matcher.query_signals import explicit_dn_from_query, has_product_identity
 
 
@@ -10,6 +11,10 @@ def settings():
     return SimpleNamespace(
         hybrid_rerank_limit=20,
         query_interpreter_enabled=False,
+        deepseek_api_key="x",
+        deepseek_base_url="https://api.deepseek.com/v1",
+        deepseek_model="deepseek-v4-flash",
+        deepseek_timeout_seconds=20,
     )
 
 
@@ -40,9 +45,39 @@ def interpretation(*, searchable=True, scope="in_scope", product_type="ball_valv
     )
 
 
+class FakeCompletions:
+    def __init__(self, payload):
+        self.payload = payload
+
+    def create(self, **kwargs):
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps(self.payload, ensure_ascii=False)))]
+        )
+
+
+class FakeClient:
+    def __init__(self, payload):
+        self.chat = SimpleNamespace(completions=FakeCompletions(payload))
+
+
 def test_shared_identity_supports_long_numeric_article_and_explicit_inch_dn():
     assert has_product_identity("Кран шаровый Ду 150 ANSI 1500 № 2378929") is True
     assert explicit_dn_from_query('Кран шаровый со сгоном 1" ВР/НР IVR 60') == 25
+
+
+def test_interpreter_overrides_wrong_llm_inch_dn_and_rescues_numeric_article():
+    wrong_dn = interpretation(dn=15).model_dump()
+    result = DeepSeekQueryInterpreter(settings(), client=FakeClient(wrong_dn)).interpret(
+        'Кран шаровый со сгоном 1" ВР/НР IVR 60'
+    )
+    assert result.constraints.dn == 25
+
+    numeric_article = interpretation(searchable=False, dn=150, joining=None, thread=None).model_dump()
+    numeric_article["constraints"]["catalog_scope"] = "in_scope"
+    result = DeepSeekQueryInterpreter(settings(), client=FakeClient(numeric_article)).interpret(
+        "Кран шаровый Ду 150 ANSI 1500 № 2378929"
+    )
+    assert result.searchable is True
 
 
 def test_out_of_scope_first_pass_never_calls_enrichment():
