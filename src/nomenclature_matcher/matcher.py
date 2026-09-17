@@ -25,7 +25,11 @@ class NomenclatureMatcher:
             query_interpreter = DeepSeekQueryInterpreter(settings)
         self.query_interpreter = query_interpreter
 
-        if competitor_lookup is None and getattr(settings, "competitor_lookup_enabled", False):
+        if competitor_lookup is None and getattr(settings, "web_search_enabled", False):
+            from .web_search_mcp import MCPWebSearchLookup
+
+            competitor_lookup = MCPWebSearchLookup(settings)
+        elif competitor_lookup is None and getattr(settings, "competitor_lookup_enabled", False):
             from .competitor_lookup import LocalCompetitorLookup
 
             competitor_lookup = LocalCompetitorLookup(settings)
@@ -199,13 +203,13 @@ class NomenclatureMatcher:
         try:
             result = self.competitor_lookup.lookup(query)
             return result, result.prompt_context(), result.debug_payload()
-        except Exception as exc:  # lookup is enrichment; it must never break matching
+        except Exception as exc:  # enrichment must never break matching
             debug = {
                 "attempted": True,
                 "accepted": False,
                 "reason": f"lookup_error:{type(exc).__name__}:{exc}",
-                "identity_terms": [],
-                "candidates": [],
+                "search_results": "",
+                "pages": [],
             }
             return None, None, debug
 
