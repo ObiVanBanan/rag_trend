@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 3,
   "max_cycles": 5,
   "max_agent_calls": 28,
   "max_research_calls": 7,
