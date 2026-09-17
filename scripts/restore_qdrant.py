@@ -55,7 +55,6 @@ def main() -> int:
     args = parser.parse_args()
 
     if not args.snapshot.is_file():
-        # Snapshot may not be materialized yet when using Git LFS.
         print(f"Snapshot file not found: {args.snapshot}")
         print("Run `git lfs pull` first, then retry.")
         return 1

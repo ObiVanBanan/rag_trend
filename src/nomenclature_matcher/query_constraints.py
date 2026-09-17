@@ -293,10 +293,10 @@ def canonical_bore_type(text: Any) -> str | None:
     value = _norm(text)
     if not value:
         return None
-    if "полнопроход" in value:
-        return "full"
-    if "редуц" in value or "неполнопроход" in value:
+    if any(token in value for token in ("неполный проход", "неполнопроход", "редуц", "стандартнопроход")):
         return "reduced"
+    if "полный проход" in value or "полнопроход" in value:
+        return "full"
     return None
 
 

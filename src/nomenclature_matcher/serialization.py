@@ -74,7 +74,7 @@ def match_result_payload(result: MatchResult, *, include_debug: bool = True) -> 
     if include_debug:
         payload["debug"] = {
             "reason": result.reason,
-            "query_analysis": result.query_analysis,
+            "query_interpretation": result.query_interpretation,
             "candidates": [
                 candidate_debug_payload(candidate, index)
                 for index, candidate in enumerate(result.candidates, 1)

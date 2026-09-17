@@ -18,7 +18,7 @@ from nomenclature_matcher.settings import Settings
 
 
 def _read_queries(path: str | None) -> list[str]:
-    raw = Path(path).read_text(encoding="utf-8") if path else sys.stdin.read()
+    raw = Path(path).read_text(encoding="utf-8-sig") if path else sys.stdin.read().lstrip("\ufeff")
     payload = json.loads(raw)
     if not isinstance(payload, list) or not all(isinstance(item, str) for item in payload):
         raise ValueError("Input must be a JSON array of strings")
@@ -28,14 +28,9 @@ def _read_queries(path: str | None) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", help="Path to JSON array of nomenclature strings. Reads stdin when omitted.")
-    parser.add_argument("--output", help="Optional UTF-8 JSON output path. Prints to stdout when omitted.")
     parser.add_argument("--csv", default=str(Path(__file__).resolve().parents[1] / "ld_products_full_nomenclature.csv"))
+    parser.add_argument("--output", help="Write JSON directly as UTF-8 to this path instead of stdout.")
     parser.add_argument("--no-debug", action="store_true", help="Omit debug candidates and LLM details from JSON output.")
-    parser.add_argument(
-        "--legacy-query-path",
-        action="store_true",
-        help="Disable the DeepSeek query interpreter and use the previous retrieval path.",
-    )
     args = parser.parse_args()
 
     settings = Settings()
@@ -48,10 +43,10 @@ def main() -> None:
         settings,
         reranker=DeepSeekReranker(settings),
         hybrid_retriever=HybridRetriever(embedder, qdrant_store, BM25Store(products), settings),
-        query_interpreter=None if args.legacy_query_path else DeepSeekQueryInterpreter(settings),
+        query_interpreter=DeepSeekQueryInterpreter(settings),
     )
     results = matcher.match_many_hybrid_with_rerank(_read_queries(args.input))
-    text = json.dumps(
+    payload = json.dumps(
         match_results_payload(results, include_debug=not args.no_debug),
         ensure_ascii=False,
         indent=2,
@@ -59,10 +54,9 @@ def main() -> None:
     if args.output:
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(text + "\n", encoding="utf-8")
-        print(f"Saved: {output_path}", file=sys.stderr)
+        output_path.write_text(payload + "\n", encoding="utf-8")
     else:
-        print(text)
+        print(payload)
 
 
 if __name__ == "__main__":
