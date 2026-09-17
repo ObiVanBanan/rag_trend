@@ -39,7 +39,8 @@ jobs:
         shell: bash
         run: |
           git lfs install --local
-          git lfs pull --include="data/competitors/santech_ld_scope.parquet" --exclude="*"
+          git lfs fetch origin "$GITHUB_SHA" --include="data/competitors/santech_ld_scope.parquet"
+          git lfs checkout data/competitors/santech_ld_scope.parquet
           ls -lh data/competitors/santech_ld_scope.parquet
           if head -n 1 data/competitors/santech_ld_scope.parquet | grep -q 'git-lfs.github.com/spec'; then
             echo 'Parquet is still an LFS pointer'
