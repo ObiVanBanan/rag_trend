@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 from . import v2 as core
 from . import v2_runner
 from .current_dataset_runner import install_current_dataset_optimization
@@ -14,6 +16,64 @@ from .research_first_runner import install_research_first
 core.HARNESS_ONLY_EXACT.add(".github/workflows/test-competitor-lookup.yml")
 
 
+_CANDIDATE_STAGES = {
+    "TESTS",
+    "TESTS_AFTER_FIX",
+    "PUBLIC",
+    "PUBLIC_AFTER_FIX",
+    "HIDDEN",
+    "HIDDEN_AFTER_FIX",
+    "REVIEWER",
+    "FIXER",
+}
+
+
+def _recover_already_rolled_back_resume() -> bool:
+    """Close an interrupted candidate if rollback already removed its worktree.
+
+    A previous process can die after ``git reset --hard`` but before state.json is
+    updated (for example when ``git clean`` hits a locked Windows pytest temp
+    directory). Resuming such a TESTS/PUBLIC/etc. stage would evaluate the
+    champion as if it were still the candidate. Detect that impossible state,
+    record the attempt as a non-scientific implementation failure, and continue
+    with a fresh attempt while preserving the established baselines.
+    """
+    if "--resume" not in sys.argv:
+        return False
+
+    args = core._parser().parse_args()
+    state_dir = core._state_dir(args, core.branch())
+    state_path = state_dir / "state.json"
+    if not state_path.exists():
+        return False
+
+    state = core._read_json(state_path)
+    active = dict(state.get("active") or {})
+    stage = str(active.get("stage") or "")
+    if stage not in _CANDIDATE_STAGES:
+        return False
+    if core.changed_paths():
+        return False
+
+    print(
+        f"Recovered rolled-back active attempt {active.get('attempt_id', active.get('cycle'))} "
+        f"from stage={stage}; candidate worktree is already gone.",
+        flush=True,
+    )
+    row = core._result_row(
+        state=state,
+        active=active,
+        decision="IMPLEMENTATION_FAILED",
+        reason="candidate had already been rolled back before state persistence completed",
+        scientifically_evaluated=False,
+        error_code="ROLLED_BACK_BEFORE_STATE_COMMIT",
+        lesson="Infrastructure rollback failed after reset; candidate code was not scientifically evaluated.",
+    )
+    v2_runner._record_cycle_scientific(state_dir=state_dir, state=state, row=row)
+    sys.argv = [arg for arg in sys.argv if arg != "--resume"]
+    return True
+
+
 def main() -> int:
     # Preserve the existing research-first/provenance/metric guardrail stack and
     # add the current 783-row corpus as the primary optimization evidence.
@@ -23,4 +83,5 @@ def main() -> int:
     core._public_precheck = _public_precheck
     core.accept_candidate = _accept_candidate
     core._rollback_and_record = _rollback_and_record_diagnostic
+    _recover_already_rolled_back_resume()
     return v2_runner.main()
