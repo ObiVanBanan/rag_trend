@@ -309,7 +309,8 @@ def test_interpreter_receives_local_catalog_context():
 
     assert result.constraints.dn == 25
     user_message = client.completions.calls[0]["messages"][1]["content"]
-    assert "LOCAL_COMPETITOR_CONTEXT:" in user_message
+    assert "COMPETITOR_CONTEXT:" in user_message
+    assert "LOCAL_COMPETITOR_CONTEXT:" not in user_message
     assert "VT.214.N.06" in user_message
 
 
