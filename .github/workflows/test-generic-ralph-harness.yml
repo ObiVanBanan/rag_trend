@@ -1,0 +1,24 @@
+name: Test generic Ralph harness
+
+on:
+  push:
+    paths:
+      - "ralph_harness/**"
+      - ".github/workflows/test-generic-ralph-harness.yml"
+  pull_request:
+    paths:
+      - "ralph_harness/**"
+      - ".github/workflows/test-generic-ralph-harness.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install harness
+        run: python -m pip install -e './ralph_harness[test]'
+      - name: Run harness tests
+        run: python -m pytest -q ralph_harness/tests
