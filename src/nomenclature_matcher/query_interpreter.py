@@ -150,7 +150,7 @@ class DeepSeekQueryInterpreter:
             constraints["valve_type"] = None
 
         # Control remains a hard constraint only when explicit in the tender query.
-        # Local catalog context can explain the source item to the LLM, but it must not
+        # Enrichment context can explain the source item to the LLM, but it must not
         # silently turn an inferred/default manual drive into a hard LD constraint.
         constraints["control"] = self._explicit_control(query)
 
@@ -203,7 +203,7 @@ class DeepSeekQueryInterpreter:
         text = f"QUERY:\n{query}"
         if competitor_context:
             text += (
-                "\n\nLOCAL_COMPETITOR_CONTEXT:\n"
+                "\n\nCOMPETITOR_CONTEXT:\n"
                 + json.dumps(competitor_context, ensure_ascii=False, indent=2)
             )
         return text + suffix
