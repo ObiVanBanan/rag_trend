@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     deepseek_timeout_seconds: float = 20
     query_interpreter_enabled: bool = True
     query_interpreter_system_prompt_path: str = "src/nomenclature_matcher/prompts/query_interpreter_system.md"
+    competitor_lookup_enabled: bool = True
+    competitor_catalog_path: str = "data/competitors/santech_ld_scope.parquet"
+    competitor_lookup_limit: int = 3
+    competitor_lookup_prelimit: int = 200
+    competitor_lookup_min_confidence: float = 0.84
+    competitor_lookup_min_score_margin: float = 8.0
     reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
     hybrid_dense_limit: int = 50
     hybrid_bm25_limit: int = 50
