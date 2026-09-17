@@ -14,6 +14,7 @@ from .research_first_runner import install_research_first
 # This lets an existing external state safely adopt the upgraded runner instead of
 # requiring --fresh just because the harness workflow itself changed.
 core.HARNESS_ONLY_EXACT.add(".github/workflows/test-competitor-lookup.yml")
+core.HARNESS_ONLY_EXACT.add(".gitignore")
 
 
 _CANDIDATE_STAGES = {
