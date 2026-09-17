@@ -7,12 +7,15 @@ on:
     paths:
       - src/nomenclature_matcher/web_search_mcp.py
       - src/nomenclature_matcher/query_interpreter.py
+      - src/nomenclature_matcher/query_signals.py
       - src/nomenclature_matcher/matcher.py
       - src/nomenclature_matcher/settings.py
       - src/nomenclature_matcher/prompts/query_interpreter_system.md
       - scripts/test_mcp_web_search.py
       - tests/test_web_search_mcp.py
       - tests/test_competitor_lookup.py
+      - tests/test_enrichment_pipeline.py
+      - tests/test_query_interpreter_hardening.py
       - pyproject.toml
       - .github/workflows/test-competitor-lookup.yml
   workflow_dispatch:
