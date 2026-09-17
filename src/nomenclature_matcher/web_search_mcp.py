@@ -12,7 +12,7 @@ _TECH_NOTATION = re.compile(
     r"\b[мm]\s*\d+\s*[xх]\s*\d+(?:[.,]\d+)?\b",
     re.IGNORECASE,
 )
-_MIXED_MODEL = re.compile(r"(?i)(?<![a-zа-я0-9])[a-zа-я0-9][a-zа-я0-9._/-]{2,}(?![a-zа-я0-9])")
+_MIXED_MODEL = re.compile(r"(?i)(?<![a-zа-я0-9])[a-zа-я0-9][a-zа-я0-9._/-]{3,}(?![a-zа-я0-9])")
 _BRAND_NUMBER = re.compile(r"(?i)\b([a-z]{2,20})\s+([0-9]{2,4})\b")
 _LONG_NUMBER = re.compile(r"(?<!\d)\d{5,}(?!\d)")
 _TARGET = re.compile(r"(?:https?://[^\s<>\"')\]]+|ref://[A-Za-z0-9._~-]+)")
@@ -79,7 +79,12 @@ def has_product_identity(query: str) -> bool:
     if _BRAND_NUMBER.search(cleaned):
         return True
     for token in _MIXED_MODEL.findall(cleaned):
-        if re.search(r"[a-zа-я]", token, re.IGNORECASE) and re.search(r"\d", token):
+        compact = re.sub(r"[^a-zа-я0-9]+", "", token, flags=re.IGNORECASE)
+        if (
+            len(compact) >= 4
+            and re.search(r"[a-zа-я]", token, re.IGNORECASE)
+            and re.search(r"\d", token)
+        ):
             return True
     return False
 
