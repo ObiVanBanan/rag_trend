@@ -82,6 +82,6 @@
     }
   ],
   "output_parquet": "santech_products_compact.parquet",
-  "output_parquet_size_bytes": 91742972,
-  "compression_ratio_vs_csv": 0.108193
+  "output_parquet_size_bytes": 91790934,
+  "compression_ratio_vs_csv": 0.10825
 }

@@ -1,22 +1,23 @@
 {
-  "rows_in_ld_scope": 172924,
+  "rows_in_ld_scope": 173609,
   "family_counts": {
-    "ball_valve": 60333,
-    "butterfly_valve": 60204,
-    "flange": 15011,
-    "actuator": 11640,
-    "gate_valve": 10004,
-    "check_valve": 8376,
-    "filter": 6469,
-    "gearbox": 887
+    "butterfly_valve": 60513,
+    "ball_valve": 60488,
+    "flange": 15029,
+    "actuator": 11816,
+    "gate_valve": 10005,
+    "check_valve": 8421,
+    "filter": 6586,
+    "gearbox": 751
   },
-  "parquet_size_bytes": 12399166,
+  "parquet_size_bytes": 13325754,
   "structured_columns": [
     "family",
     "product_id",
     "name",
     "article",
     "vendor_article",
+    "manufacturer_code",
     "brand",
     "model",
     "series",
@@ -26,9 +27,15 @@
     "dn_text",
     "pn_text",
     "joining_type",
+    "thread_type",
+    "connection_size",
     "body_material",
+    "seal_material",
     "control",
+    "handle_type",
+    "working_medium",
     "engineering_system",
+    "country",
     "description_text",
     "category_id",
     "brand_id",
@@ -36,6 +43,52 @@
     "url",
     "properties_json"
   ],
+  "field_completeness": {
+    "brand": {
+      "filled": 14492,
+      "ratio": 0.083475
+    },
+    "model": {
+      "filled": 9058,
+      "ratio": 0.052175
+    },
+    "vendor_article": {
+      "filled": 131143,
+      "ratio": 0.755393
+    },
+    "dn_text": {
+      "filled": 154329,
+      "ratio": 0.888946
+    },
+    "pn_text": {
+      "filled": 158710,
+      "ratio": 0.914181
+    },
+    "joining_type": {
+      "filled": 139697,
+      "ratio": 0.804665
+    },
+    "thread_type": {
+      "filled": 46375,
+      "ratio": 0.267123
+    },
+    "connection_size": {
+      "filled": 1881,
+      "ratio": 0.010835
+    },
+    "body_material": {
+      "filled": 153559,
+      "ratio": 0.884511
+    },
+    "control": {
+      "filled": 103209,
+      "ratio": 0.594491
+    },
+    "working_medium": {
+      "filled": 124645,
+      "ratio": 0.717964
+    }
+  },
   "top_json_keys": [
     {
       "key": "categories",
