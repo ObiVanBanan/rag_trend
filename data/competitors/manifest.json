@@ -1,0 +1,22 @@
+{
+  "source": {
+    "path": "santech_products_full.csv",
+    "size_bytes": 847954158,
+    "sha256": "f115e0c0ad85fa11720ca20e3a856bd800cf1ee24b00847a155d2e9bcf69b387"
+  },
+  "output": {
+    "path": "santech_products_compact.parquet",
+    "size_bytes": 91889318,
+    "sha256": "758df5144e57f6303f0227fef8688180910db35179e18e36c986f2dd3184bf7f",
+    "rows": 756986,
+    "format": "parquet",
+    "compression": "zstd"
+  },
+  "transformations": [
+    "drop columns that are 100% null/empty",
+    "trim leading/trailing whitespace",
+    "collapse repeated whitespace",
+    "convert empty strings to null",
+    "remove exact duplicate rows after normalization"
+  ]
+}

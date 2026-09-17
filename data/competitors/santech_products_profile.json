@@ -1,0 +1,87 @@
+{
+  "source": "santech_products_full.csv",
+  "source_size_bytes": 847954158,
+  "source_sha256": "f115e0c0ad85fa11720ca20e3a856bd800cf1ee24b00847a155d2e9bcf69b387",
+  "rows": 756986,
+  "deduplicated_rows": 756986,
+  "duplicates_removed": 0,
+  "duplicate_ratio": 0.0,
+  "column_count": 10,
+  "kept_column_count": 10,
+  "empty_columns_dropped": [],
+  "columns": [
+    {
+      "name": "product_id",
+      "null_or_empty_count": 0,
+      "null_or_empty_ratio": 0.0,
+      "approx_distinct": 887694,
+      "max_length": 7
+    },
+    {
+      "name": "name",
+      "null_or_empty_count": 2,
+      "null_or_empty_ratio": 3e-06,
+      "approx_distinct": 973041,
+      "max_length": 293
+    },
+    {
+      "name": "article",
+      "null_or_empty_count": 13244,
+      "null_or_empty_ratio": 0.017496,
+      "approx_distinct": 650328,
+      "max_length": 51
+    },
+    {
+      "name": "description",
+      "null_or_empty_count": 0,
+      "null_or_empty_ratio": 0.0,
+      "approx_distinct": 819620,
+      "max_length": 3430
+    },
+    {
+      "name": "pn",
+      "null_or_empty_count": 483745,
+      "null_or_empty_ratio": 0.639041,
+      "approx_distinct": 351,
+      "max_length": 64
+    },
+    {
+      "name": "dn",
+      "null_or_empty_count": 567732,
+      "null_or_empty_ratio": 0.74999,
+      "approx_distinct": 3917,
+      "max_length": 97
+    },
+    {
+      "name": "category_id",
+      "null_or_empty_count": 194,
+      "null_or_empty_ratio": 0.000256,
+      "approx_distinct": 29,
+      "max_length": 2
+    },
+    {
+      "name": "brand_id",
+      "null_or_empty_count": 14674,
+      "null_or_empty_ratio": 0.019385,
+      "approx_distinct": 1070,
+      "max_length": 3
+    },
+    {
+      "name": "unit_id",
+      "null_or_empty_count": 5104,
+      "null_or_empty_ratio": 0.006743,
+      "approx_distinct": 48,
+      "max_length": 2
+    },
+    {
+      "name": "url",
+      "null_or_empty_count": 68845,
+      "null_or_empty_ratio": 0.090946,
+      "approx_distinct": 676123,
+      "max_length": 266
+    }
+  ],
+  "output_parquet": "santech_products_compact.parquet",
+  "output_parquet_size_bytes": 91889318,
+  "compression_ratio_vs_csv": 0.108366
+}
