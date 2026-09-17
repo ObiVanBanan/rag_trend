@@ -14,6 +14,7 @@ class NomenclatureMatcher:
         reranker=None,
         hybrid_retriever=None,
         query_interpreter=None,
+        competitor_lookup=None,
     ):
         self.embedder, self.store, self.settings = embedder, store, settings
         self.reranker = reranker
@@ -23,6 +24,12 @@ class NomenclatureMatcher:
 
             query_interpreter = DeepSeekQueryInterpreter(settings)
         self.query_interpreter = query_interpreter
+
+        if competitor_lookup is None and getattr(settings, "competitor_lookup_enabled", False):
+            from .competitor_lookup import LocalCompetitorLookup
+
+            competitor_lookup = LocalCompetitorLookup(settings)
+        self.competitor_lookup = competitor_lookup
 
     def _normalize_query(self, query: str) -> str:
         return " ".join(query.split())
@@ -186,6 +193,22 @@ class NomenclatureMatcher:
         candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
         return self.rerank_candidates(query, candidates)
 
+    def _lookup_competitor(self, query: str):
+        if self.competitor_lookup is None:
+            return None, None, None
+        try:
+            result = self.competitor_lookup.lookup(query)
+            return result, result.prompt_context(), result.debug_payload()
+        except Exception as exc:  # lookup is enrichment; it must never break matching
+            debug = {
+                "attempted": True,
+                "accepted": False,
+                "reason": f"lookup_error:{type(exc).__name__}:{exc}",
+                "identity_terms": [],
+                "candidates": [],
+            }
+            return None, None, debug
+
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
         query = self._normalize_query(query)
         if not query:
@@ -194,16 +217,29 @@ class NomenclatureMatcher:
             raise ValueError("Hybrid retriever is not configured")
 
         if self.query_interpreter is not None:
+            lookup_result, competitor_context, lookup_debug = self._lookup_competitor(query)
             try:
-                interpretation = self.query_interpreter.interpret(query)
+                if competitor_context is None:
+                    interpretation = self.query_interpreter.interpret(query)
+                else:
+                    interpretation = self.query_interpreter.interpret(
+                        query,
+                        competitor_context=competitor_context,
+                    )
             except Exception as exc:
+                debug_payload = None
+                if lookup_debug is not None:
+                    debug_payload = {"competitor_lookup": lookup_debug}
                 return MatchResult(
                     query=query,
                     status="RERANK_FAILED",
                     reason=f"QUERY_INTERPRET_FAILED: {type(exc).__name__}: {exc}",
+                    query_interpretation=debug_payload,
                 )
 
             interpretation_payload = interpretation.model_dump()
+            if lookup_debug is not None:
+                interpretation_payload["competitor_lookup"] = lookup_debug
             if not interpretation.searchable:
                 return MatchResult(
                     query=query,
