@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "max_cycles": 5,
   "max_agent_calls": 28,
   "max_research_calls": 7,
@@ -19,6 +19,9 @@
   "fixer_reasoning_effort": "low",
   "worker_network": true,
   "public_dataset": "data/harness_gold_combined.json",
+  "optimization_eval_enabled": true,
+  "optimization_dataset": "data/kontur_all_783_queries.json",
+  "optimization_max_examples_per_bucket": 6,
   "taxonomy": "data/tender_queries_v1_unresolved_taxonomy.json",
   "research_queries": "data/tender_queries_kontur_5files.json.gz",
   "research_gold_labels": "data/tender_queries_kontur_5files_labels_gold_v1.json.gz",
@@ -27,12 +30,13 @@
   "test_command": ["python", "-m", "pytest", "-q"],
   "index_command": ["python", "scripts/build_index.py", "--csv", "ld_products_full_nomenclature.csv"],
   "notes": {
-    "pipeline": "Each attempt is research first, then planning, cheap implementation, deterministic/public/hidden checks, and a cheap ACCEPT/REJECT validator.",
+    "pipeline": "Each attempt is research-first, then planning, implementation, deterministic tests, public/hidden guardrails, current-783 candidate evaluation, and one cheap ACCEPT/REJECT validator.",
     "models": "Research and planning use the strongest configured model. Implementation and final mechanism/value validation use gpt-5.5 with low reasoning by default.",
-    "campaign": "Default campaign is five scientific iterations to reduce model spend. --max-cycles may override it up to seven. Infrastructure pauses do not consume a scientific iteration.",
-    "benchmark": "Public GOLD and hidden validation are regression guardrails, not the primary source of hypotheses. Safe flat benchmark results may reach the cheap validator; regressions are still rejected.",
-    "real_tender": "Research should primarily learn from the 130 review cases and 33 provisional-NOT_FOUND cases; the 90 first-pass labels are supporting evidence, not exhaustive final truth.",
-    "review": "The previous strong Reviewer/Fixer loop is simplified to one cheap gpt-5.5-low ACCEPT/REJECT validator after metric gates. No Fixer pass is budgeted.",
+    "campaign": "Default campaign is five scientific iterations. --max-cycles may override it up to seven. Infrastructure pauses do not consume a scientific iteration.",
+    "benchmark": "Public GOLD and hidden validation are correctness/safety guardrails. Regressions are rejected before the expensive current-dataset candidate evaluation.",
+    "optimization": "The 783-row current tender dataset is the primary optimization/research corpus. It is mostly unlabeled, so MATCHED count is diagnostic only; candidate value is judged from defensible stage/product transitions while labeled guardrails remain flat-or-better.",
+    "supporting_corpus": "The older 253-row real-tender corpus and its first-pass labels remain supporting evidence for causal research, not the primary optimization target.",
+    "review": "Candidates that survive public/hidden guardrails receive a full 783-row candidate comparison before the cheap gpt-5.5-low ACCEPT/REJECT validator. No Fixer pass is budgeted.",
     "indexing": "Agents may request a rebuild but must not run a full rebuild themselves. The supervisor owns the global budget of five rebuilds."
   }
 }
