@@ -106,7 +106,18 @@ def planner_changes_are_scoped() -> bool:
 def rollback(commit: str) -> None:
     print(f"Rolling back to champion {commit[:12]}", flush=True)
     git("reset", "--hard", commit)
-    git("clean", "-fd")
+    # Windows can keep pytest temp directories open briefly. They are runtime
+    # scratch space, not candidate code, so exclude them from destructive clean.
+    clean_result = git("clean", "-fd", "-e", ".tmp/", "-e", ".pytest_cache/", check=False)
+    remaining = changed_paths()
+    if remaining:
+        raise HarnessError(f"rollback left candidate changes behind: {sorted(remaining)}")
+    if clean_result.returncode != 0:
+        print(
+            "WARNING: git clean returned non-zero after rollback, but no candidate changes remain; "
+            "ignored runtime temp files may still be locked.",
+            flush=True,
+        )
 
 
 def ensure_outside_repo(path: Path, label: str) -> None:
