@@ -1,0 +1,130 @@
+DuckDuckGo MCP Server initialized:
+  SafeSearch: MODERATE (kp=-1)
+  Default Region: wt-wt
+  Search backend: auto
+  Rate limit: strategy=sliding search=30/min fetch=20/min host=0/min
+  Content cache: ttl=300s max_entries=64
+  Parse mode: text
+  Long URL shortening: >120 chars -> ref:// tokens
+  Fetch backend: auto
+  Allow private URLs: False
+  Rate limit: strategy=sliding search=30/min fetch=20/min host=0/min
+  Content cache: ttl=300s max_entries=64
+  Parse mode: text
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:483: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(f"Searching DuckDuckGo for: {query} (SafeSearch: {self.safe_search.name}, Region: {effective_region or 'default'}, backend={self.backend})")
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/mcp/server/mcpserver/context.py:374: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await self.log("info", data, logger_name=logger_name)  # pyright: ignore[reportDeprecated]
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/mcp/server/mcpserver/context.py:274: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await self.request_context.session.send_log_message(  # pyright: ignore[reportDeprecated]
+[09/17/26 11:34:39] INFO     HTTP Request: POST                  _client.py:1740
+                             https://html.duckduckgo.com/html                   
+                             "HTTP/1.1 200 OK"                                  
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:534: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(f"Successfully found {len(results)} results")
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1093: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(
+[09/17/26 11:34:42] INFO     HTTP Request: GET                   _client.py:1740
+                             https://ridan.ru/product/082X4424R                 
+                             "HTTP/1.1 200 OK"                                  
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1136: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(
+[09/17/26 11:34:43] INFO     HTTP Request: GET                   _client.py:1740
+                             https://ridan.tesrussia.ru/product/                
+                             ts-082x4424r/ "HTTP/1.1 200 OK"                    
+[09/17/26 11:34:44] INFO     HTTP Request: GET                   _client.py:1740
+                             https://rosarmatorg.ru/zatvor-disko                
+                             vyj-povorotnyj-ridan-zdm-0516100-pn                
+                             16-dn100-korpus-gg25-disk-nerzhavey                
+                             uschaya-stal-aisi316-uplotnenie-epd                
+                             m-upravleni-082x4424r "HTTP/1.1 200                
+                             OK"                                                
+[09/17/26 11:34:54] INFO     HTTP Request: POST                  _client.py:1740
+                             https://html.duckduckgo.com/html                   
+                             "HTTP/1.1 200 OK"                                  
+                    INFO     HTTP Request: GET                   _client.py:1740
+                             https://valtec.ru/catalog/truboprov                
+                             odnaya_armatura/sharovye_krany_dlya                
+                             _vody_base/kran_sharovoj_valtec_bas                
+                             e_vt214n.html "HTTP/1.1 200 OK"                    
+                    INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.vseinstrumenti.ru/produ                
+                             ct/sharovoj-kran-stalnaya-rukoyatka                
+                             -1-1-2-vn-vn-valtec-base-vt-214-n-0                
+                             8-827820/ "HTTP/1.1 403 Forbidden"                 
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1024: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(f"httpx got 403 for {url}; retrying with curl backend")
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1164: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.error(f"curl fetch error for {url}: {err_type}: {str(e)}")
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/mcp/server/mcpserver/context.py:384: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await self.log("error", data, logger_name=logger_name)  # pyright: ignore[reportDeprecated]
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/mcp/server/mcpserver/context.py:274: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await self.request_context.session.send_log_message(  # pyright: ignore[reportDeprecated]
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1093: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/mcp/server/mcpserver/context.py:374: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await self.log("info", data, logger_name=logger_name)  # pyright: ignore[reportDeprecated]
+[09/17/26 11:34:55] INFO     HTTP Request: GET                   _client.py:1740
+                             https://valtec.in.ua/vt.214/                       
+                             "HTTP/1.1 200 OK"                                  
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1136: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:483: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(f"Searching DuckDuckGo for: {query} (SafeSearch: {self.safe_search.name}, Region: {effective_region or 'default'}, backend={self.backend})")
+[09/17/26 11:35:01] INFO     HTTP Request: POST                  _client.py:1740
+                             https://html.duckduckgo.com/html                   
+                             "HTTP/1.1 200 OK"                                  
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:534: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(f"Successfully found {len(results)} results")
+[09/17/26 11:35:02] INFO     HTTP Request: GET                   _client.py:1740
+                             https://teksneva.ru/catalog/krany_s                
+                             harovye/kran_sharovoy_so_sgonom_vr_                
+                             nr_1_ld_pride_chernaya_ruchka_baboc                
+                             hka/ "HTTP/1.1 200 OK"                             
+[09/17/26 11:35:03] INFO     HTTP Request: GET                   _client.py:1740
+                             https://pls99.ru/product/kran-sharo                
+                             vyj-bugatti-vr-nr-1-rychag-so-sgono                
+                             m/ "HTTP/1.1 200 OK"                               
+[09/17/26 11:35:05] INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.mtk65.ru/kran-sharovyj-                
+                             pryamoj-so-sgonom-vr-nr-1-babochka-                
+                             ll1569-1.html "HTTP/1.1 200 OK"                    
+[09/17/26 11:35:10] INFO     HTTP Request: POST                  _client.py:1740
+                             https://html.duckduckgo.com/html                   
+                             "HTTP/1.1 200 OK"                                  
+[09/17/26 11:35:14] INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.italgaz.com.ua/ball-val                
+                             ves/water-ball-valves/water-ball-va                
+                             lve-ivr-954-956.html "HTTP/1.1 200                 
+                             OK"                                                
+[09/17/26 11:35:15] INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.rokraft.ru/santech/shar                
+                             ovye_krany_santekhnicheskie/3850/                  
+                             "HTTP/1.1 200 OK"                                  
+[09/17/26 11:35:16] INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.ter-en.com/ru/khm/52                   
+                             "HTTP/1.1 200 OK"                                  
+[09/17/26 11:35:23] INFO     HTTP Request: POST                  _client.py:1740
+                             https://html.duckduckgo.com/html                   
+                             "HTTP/1.1 200 OK"                                  
+[09/17/26 11:35:24] INFO     HTTP Request: GET                   _client.py:1740
+                             https://slemz.com.ua/zaporka/krani/                
+                             kran-du-150 "HTTP/1.1 429 Too Many                 
+                             Requests"                                          
+[09/17/26 11:35:26] INFO     HTTP Request: GET                   _client.py:1740
+                             https://slemz.com.ua/zaporka/krani/                
+                             kran-du-150 "HTTP/1.1 429 Too Many                 
+                             Requests"                                          
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1152: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.error(f"HTTP error occurred while fetching {url}: {str(e)}")
+                    INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.tpsystem.ru/catalog/val                
+                             ves/eea4cbf6850b5a8c639b9b7ac5fd007                
+                             cd89898bf/ "HTTP/1.1 200 OK"                       
+[09/17/26 11:35:27] INFO     HTTP Request: GET                   _client.py:1740
+                             https://www.kinvalve.com/ru/%D1%88%                
+                             D0%B0%D1%80%D0%BE%D0%B2%D0%BE%D0%B9                
+                             -%D0%BA%D1%80%D0%B0%D0%BD-ansi/                    
+                             "HTTP/1.1 403 Forbidden"                           
+/home/thesonikpk/.cache/uv/archive-v0/v2Cfq71VHMojKVxt/lib/python3.12/site-packages/duckduckgo_mcp_server/server.py:1024: MCPDeprecationWarning: The logging capability is deprecated as of 2026-07-28 (SEP-2577).
+  await ctx.info(f"httpx got 403 for {url}; retrying with curl backend")
