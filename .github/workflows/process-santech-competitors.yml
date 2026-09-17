@@ -7,6 +7,7 @@ on:
     paths:
       - santech_products_full.csv
       - scripts/process_santech_competitors.py
+      - scripts/build_santech_ld_scope.py
       - .github/workflows/process-santech-competitors.yml
       - .gitattributes
   workflow_dispatch:
@@ -51,10 +52,15 @@ jobs:
             --input santech_products_full.csv \
             --output-dir data/competitors \
             --threads 4
+          python scripts/build_santech_ld_scope.py \
+            --input santech_products_full.csv \
+            --output-dir data/competitors \
+            --threads 4
 
       - name: Show generated profile
         run: |
           cat data/competitors/README.md
+          cat data/competitors/LD_SCOPE.md
           ls -lh data/competitors
 
       - name: Commit processed artifacts
