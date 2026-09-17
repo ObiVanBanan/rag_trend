@@ -1,56 +1,71 @@
 # Goal
 
-Improve the usefulness, accuracy and reliability of the LD nomenclature-matching service on real incoming tender nomenclature.
+Improve the usefulness, accuracy and reliability of the LD nomenclature-matching service on the current real tender workload.
 
 The product task is simple: a user supplies a tender nomenclature line, the service should find the most appropriate LD catalog product or useful set of candidates. If the available evidence is insufficient or no suitable LD product exists, an honest `NOT_FOUND`/uncertain outcome is better than confidently returning an unrelated product.
 
-The current matcher architecture is not sacred. Research and implementation may change query understanding, parsing, aliases, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, catalog/index representation, confidence logic, external enrichment, model choice, or the larger matching pipeline when evidence supports it.
+The current matcher architecture is not sacred. Research and implementation may change query understanding, parsing, aliases, candidate generation, BM25/dense retrieval, fusion, reranking, DeepSeek usage, prompts, catalog/index representation, confidence logic, MCP/web enrichment, model choice, or the larger matching pipeline when evidence supports it.
 
-## Research-first cycle
+## Primary optimization target
 
-Every new attempt follows one simple sequence:
+The primary working corpus is now `data/kontur_all_783_queries.json`: 783 current tender nomenclature rows processed by the real end-to-end pipeline.
 
-1. **Research** — inspect the current champion, durable experiment memory and the real-tender working corpus. Use external sources only when useful. Identify recurring failure classes and promising solution directions before a hypothesis is selected.
-2. **Planner** — use the fresh research and the product goal to choose one bounded falsifiable implementation hypothesis, or stop with `DONE` when no credible direction remains.
-3. **Implementer** — implement only that hypothesis. The default worker is the cheaper `gpt-5.5` with low reasoning.
-4. **Test + evaluation** — run deterministic tests and the existing public/hidden regression gates. Rebuild the index only when required.
-5. **Cheap validator** — only candidates that survive the metric guardrails receive one `gpt-5.5` low read-only ACCEPT/REJECT mechanism/value check.
-6. **Promote or rollback** — an accepted candidate becomes the new champion. A rejected candidate rolls back to the current champion, not the original baseline.
+This corpus is mostly unlabeled. Therefore the harness MUST NOT optimize raw `MATCHED` count as if it were accuracy. Instead it uses the 783 rows to expose recurring bottlenecks and compare the current champion with each viable candidate on exactly the same inputs:
 
-There is no mandatory second research pass, no strong Reviewer pass and no Fixer loop in the default pipeline.
+- `QUERY_REJECTED`;
+- `HARD_CONSTRAINT_FILTER` and the concrete constraint that rejects candidates (`dn`, `pn`, `joining_type`, `thread_type`, `body_material`, `bore_type`, `control`, etc.);
+- `RERANK_NOT_FOUND`;
+- `RERANK_FAILED`;
+- `MATCHED`;
+- web/MCP lookup attempts and accepted enrichment;
+- per-row stage transitions and changed returned products.
 
-## Real-tender working corpus
+A `NOT_FOUND -> MATCHED` transition is useful evidence only when the new LD result is technically defensible from the query and trusted evidence. A reduction in rejection/filter counts is diagnostic progress, not proof of correctness. The harness must reject mechanisms that create apparent coverage by weakening hard constraints, inventing missing facts, or returning unrelated products.
 
-The primary material for discovering what to improve is the new Kontur tender corpus:
+## Correctness guardrails
+
+The existing manually verified public GOLD and adaptive hidden validation remain correctness and safety guardrails. They are intentionally smaller than the current workload and must not dominate hypothesis generation, but a candidate may not trade their correctness for broader apparent coverage.
+
+Candidates that regress public/hidden coverage or safety are rejected before the expensive 783-row candidate evaluation. A candidate whose labeled guardrails remain flat-or-better may proceed to the current-dataset comparison and final mechanism/value validator.
+
+The optional sealed final holdout remains separate and is evaluated only at campaign end under the existing supervisor rules.
+
+## Supporting research corpus
+
+The older Kontur research corpus remains useful supporting evidence:
 
 - 253 unique real tender nomenclature rows;
 - 90 high-confidence first-pass labels: 72 `MATCHED`, 18 `NOT_FOUND`;
 - 130 unresolved/review cases;
 - 33 probable `NOT_FOUND` cases that still require stronger catalog evidence.
 
-The 90 first-pass labels are useful supporting evidence but are not claimed to be exhaustive final truth. The 130 + 33 unresolved cases are especially valuable for discovering missing capabilities. Research should reason about recurring classes of inputs rather than memorize individual rows.
+These rows may be used to understand recurring failure classes and causal mechanisms, but they are no longer the primary optimization target.
 
-Runtime lookup of a manufacturer/model/designation on the public internet, followed by query enrichment before local LD retrieval, is an allowed hypothesis family when the data supports it. It is not a prescribed solution and should compete with simpler alternatives.
+Runtime lookup of a manufacturer/model/designation on the public internet through the MCP search path, followed by query enrichment before local LD retrieval, is an allowed hypothesis family. It is not a prescribed solution and should compete with simpler alternatives.
 
-## Benchmark role
+## Research-first cycle
 
-The existing manually verified public GOLD and adaptive hidden validation are **regression guardrails**, not the main research target. They are intentionally small and should not dominate hypothesis generation.
+Every new attempt follows this sequence:
 
-Agents must not mine benchmark answer ids or one-off benchmark strings to choose fixes. The Planner receives aggregate benchmark metrics but not the public case-level failure list under the research-first runner.
+1. **Research** — inspect the current champion, durable experiment memory, the deterministic summary of the 783 current corpus, and supporting real-tender evidence. Identify the highest-value recurring bottleneck before selecting a hypothesis.
+2. **Planner** — choose one bounded falsifiable implementation hypothesis, or stop with `DONE` when no credible direction remains.
+3. **Implementer** — implement only that hypothesis. The default worker is the cheaper `gpt-5.5` with low reasoning.
+4. **Cheap gates** — run deterministic tests and public/hidden correctness guardrails. Rebuild the index only when required.
+5. **Current-dataset evaluation** — only surviving candidates are run across the full 783-row workload and compared row-for-row with the current champion.
+6. **Cheap validator** — one `gpt-5.5` low read-only ACCEPT/REJECT mechanism/value check sees the 783 delta plus labeled guardrails.
+7. **Promote or rollback** — an accepted candidate becomes the new champion. A rejected candidate rolls back to the current champion, not the original baseline.
 
-A candidate is rejected if it materially violates the existing public/hidden coverage or safety gates. A candidate whose old benchmark stays safely flat may continue to the cheap validator, because its main value may be on broader real-tender inputs not represented by the small benchmark.
-
-The optional sealed final holdout remains separate and is evaluated only at campaign end under the existing supervisor rules.
+There is no mandatory second research pass, no strong Reviewer pass and no Fixer loop in the default pipeline.
 
 ## Evolution semantics
 
 The project evolves cumulatively:
 
-`champion -> hypothesis -> evaluate -> ACCEPT -> new champion -> next hypothesis`
+`champion -> hypothesis -> cheap gates -> 783 comparison -> ACCEPT -> new champion -> next hypothesis`
 
 or
 
-`champion -> hypothesis -> evaluate -> REJECT -> rollback to champion -> next hypothesis`.
+`champion -> hypothesis -> gate/validator REJECT -> rollback to champion -> next hypothesis`.
 
 Every new accepted experiment therefore builds on previously accepted improvements. The original baseline is historical reference, not the reset point for each cycle.
 
@@ -58,7 +73,9 @@ Every new accepted experiment therefore builds on previously accepted improvemen
 
 - Preserve uncertainty: missing catalog evidence is not a negative fact and must not silently become a default.
 - Do not hardcode benchmark ids, GOLD answers, known LD ids or one-off tender strings.
-- Prefer mechanisms that plausibly improve a class of real tender inputs.
+- Do not optimize unlabeled `MATCHED` count directly.
+- Prefer mechanisms that plausibly improve a recurring class of current 783-row inputs.
 - Do not return a product merely to avoid `NOT_FOUND`; low-value or technically incompatible matches are product failures.
+- Treat changed-product and `MATCHED -> NOT_FOUND` transitions as regressions requiring explicit review.
 - Infrastructure/provider failures do not count as scientific evidence and must preserve the active stage for resume.
 - Respect agent-call, research-call and index-build budgets.
