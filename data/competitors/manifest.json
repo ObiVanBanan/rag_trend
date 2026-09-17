@@ -6,8 +6,8 @@
   },
   "output": {
     "path": "santech_products_compact.parquet",
-    "size_bytes": 91889318,
-    "sha256": "758df5144e57f6303f0227fef8688180910db35179e18e36c986f2dd3184bf7f",
+    "size_bytes": 91742972,
+    "sha256": "12eaf77bec70106a838c9bbf4e100f0200c08cbdae8a775258d01396599aa332",
     "rows": 756986,
     "format": "parquet",
     "compression": "zstd"

@@ -7,8 +7,8 @@
 - Duplicates removed: 0 (0.00%)
 - Columns: 10
 - 100% empty columns dropped: 0
-- Parquet size: 87.6 MiB
-- Parquet / CSV size ratio: 10.84%
+- Parquet size: 87.5 MiB
+- Parquet / CSV size ratio: 10.82%
 
 ## Most complete columns
 
