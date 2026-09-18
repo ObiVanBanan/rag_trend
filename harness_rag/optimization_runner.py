@@ -4,7 +4,7 @@ import sys
 
 from . import v2 as core
 from . import v2_runner
-from .current_dataset_runner import install_current_dataset_optimization
+from .current_dataset_runner import install_current_dataset_optimization, restore_candidate_current_dataset_evidence
 from .diagnostic_runner import _accept_candidate, _public_precheck, _rollback_and_record_diagnostic
 from .provenance_runner import install_campaign_provenance
 from .research_first_runner import install_research_first
@@ -26,6 +26,7 @@ _CANDIDATE_STAGES = {
     "HIDDEN",
     "HIDDEN_AFTER_FIX",
     "REVIEWER",
+    "APPLY_REVIEW",
     "FIXER",
 }
 
@@ -44,6 +45,14 @@ def _adopt_harness_only_head_with_current_dataset(state: dict, state_path) -> No
         promoted_record = dict(current_record)
         promoted_record["commit"] = current_commit
         state["champion_current_dataset"] = promoted_record
+        repeatability = state.get("champion_repeatability")
+        if (
+            isinstance(repeatability, dict)
+            and repeatability.get("commit") == previous_commit
+        ):
+            repeatability = dict(repeatability)
+            repeatability["commit"] = current_commit
+            state["champion_repeatability"] = repeatability
         core.write_json(state_path, state)
         print(
             f"Retained 783 champion baseline across harness-only HEAD adoption "
@@ -74,6 +83,26 @@ def _recover_already_rolled_back_resume() -> bool:
     state = core._read_json(state_path)
     active = dict(state.get("active") or {})
     stage = str(active.get("stage") or "")
+
+    # A persisted reviewer verdict is already a completed scientific stage.
+    # Let core resume at APPLY_REVIEW instead of classifying a clean worktree as
+    # an implementation failure or spending another reviewer/783 evaluation.
+    review = active.get("review")
+    if (
+        stage in {"REVIEWER", "APPLY_REVIEW"}
+        and isinstance(review, dict)
+        and review.get("decision")
+    ):
+        active = restore_candidate_current_dataset_evidence(
+            state=state,
+            state_path=state_path,
+            state_dir=state_dir,
+            active=active,
+        )
+        state["active"] = active
+        core.write_json(state_path, state)
+        return False
+
     if stage not in _CANDIDATE_STAGES:
         return False
     if core.changed_paths():
