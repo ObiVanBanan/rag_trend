@@ -74,3 +74,30 @@ def test_resume_preserves_live_candidate_with_changes(monkeypatch, tmp_path: Pat
 
     assert optimization_runner._recover_already_rolled_back_resume() is False
     assert "--resume" in sys.argv
+
+
+
+def test_resume_does_not_discard_persisted_reviewer_verdict(monkeypatch, tmp_path: Path) -> None:
+    state = {
+        "active": {
+            "cycle": 6,
+            "attempt_id": 6,
+            "stage": "REVIEWER",
+            "review": {"decision": "REJECT", "summary": "unsafe regression"},
+        },
+    }
+    (tmp_path / "state.json").write_text(json.dumps(state), encoding="utf-8")
+    holdout = tmp_path / "hidden.json"
+    holdout.write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["run_rag_harness.py", "--holdout", str(holdout), "--resume"],
+    )
+    monkeypatch.setattr(optimization_runner.core, "branch", lambda: "codex/test")
+    monkeypatch.setattr(optimization_runner.core, "_state_dir", lambda args, current_branch: tmp_path)
+    monkeypatch.setattr(optimization_runner.core, "changed_paths", lambda: set())
+
+    assert optimization_runner._recover_already_rolled_back_resume() is False
+    assert "--resume" in sys.argv
