@@ -103,6 +103,33 @@ def _recover_already_rolled_back_resume() -> bool:
         core.write_json(state_path, state)
         return False
 
+    # Planner output is persisted before its OpenSpec scope is validated. If the
+    # planner violated scope and rollback already reset the worktree, an older
+    # process may die before recording BLOCKED. Close that attempt instead of
+    # spending another planner call on resume.
+    if stage == "PLANNER" and isinstance(active.get("plan"), dict) and not core.changed_paths():
+        plan = dict(active.get("plan") or {})
+        print(
+            f"Recovered rolled-back planner attempt {active.get('attempt_id', active.get('cycle'))}; "
+            "recording prior scope/contract failure without another planner call.",
+            flush=True,
+        )
+        row = core._result_row(
+            state=state,
+            active=active,
+            decision="BLOCKED",
+            reason="planner output had already been rolled back before BLOCKED state persistence completed",
+            scientifically_evaluated=False,
+            error_code="PLANNER_SCOPE",
+            lesson=(
+                "Planner must keep planning writes inside one fresh openspec/changes cycle directory; "
+                "product-layer edits belong to the implementer."
+            ),
+        )
+        v2_runner._record_cycle_scientific(state_dir=state_dir, state=state, row=row)
+        sys.argv = [arg for arg in sys.argv if arg != "--resume"]
+        return True
+
     if stage not in _CANDIDATE_STAGES:
         return False
     if core.changed_paths():
