@@ -27,8 +27,22 @@
   "research_gold_labels": "data/tender_queries_kontur_5files_labels_gold_v1.json.gz",
   "research_review_pool": "data/tender_queries_kontur_5files_review_pool.json.gz",
   "research_provisional_not_found": "data/tender_queries_kontur_5files_provisional_not_found.json.gz",
-  "test_command": ["uv", "run", "--extra", "test", "python", "-m", "pytest", "-q"],
-  "index_command": ["python", "scripts/build_index.py", "--csv", "ld_products_full_nomenclature.csv"],
+  "test_command": [
+    "uv",
+    "run",
+    "--extra",
+    "test",
+    "python",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "index_command": [
+    "python",
+    "scripts/build_index.py",
+    "--csv",
+    "ld_products_full_nomenclature.csv"
+  ],
   "notes": {
     "pipeline": "Each attempt is research-first, then planning, implementation, deterministic tests, public/hidden guardrails, current-783 candidate evaluation, and one cheap ACCEPT/REJECT validator.",
     "models": "Research and planning use the strongest configured model. Implementation and final mechanism/value validation use gpt-5.5 with low reasoning by default.",
@@ -37,6 +51,10 @@
     "optimization": "The 783-row current tender dataset is the primary optimization/research corpus. It is mostly unlabeled, so MATCHED count is diagnostic only; candidate value is judged from defensible stage/product transitions while labeled guardrails remain flat-or-better.",
     "supporting_corpus": "The older 253-row real-tender corpus and its first-pass labels remain supporting evidence for causal research, not the primary optimization target.",
     "review": "Candidates that survive public/hidden guardrails receive a full 783-row candidate comparison before the cheap gpt-5.5-low ACCEPT/REJECT validator. No Fixer pass is budgeted.",
-    "indexing": "Agents may request a rebuild but must not run a full rebuild themselves. The supervisor owns the global budget of five rebuilds."
-  }
+    "indexing": "Agents may request a rebuild but must not run a full rebuild themselves. The supervisor owns the global budget of five rebuilds.",
+    "blocker_suppression": "After two non-scientific implementation/protected-scope blockers in the same causal mechanism family, suppress that family for the rest of the campaign unless the blocker is explicitly resolved.",
+    "repeatability": "Run and cache one champion-vs-champion A/A pass on the current 783 corpus so reviewer decisions can distinguish candidate effects from stochastic interpreter/web/reranker variance."
+  },
+  "blocked_mechanism_suppression_threshold": 2,
+  "optimization_repeatability_eval_enabled": true
 }
