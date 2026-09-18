@@ -84,10 +84,23 @@ def clean() -> bool:
     return not git("status", "--porcelain").stdout.strip()
 
 
+def _git_path_lines(output: str) -> list[str]:
+    """Return path records while ignoring Git diagnostics merged into stdout."""
+    diagnostics = ("warning:", "fatal:", "error:")
+    return [
+        line.strip()
+        for line in output.splitlines()
+        if line.strip() and not line.lstrip().lower().startswith(diagnostics)
+    ]
+
+
 def changed_paths() -> set[str]:
-    tracked = git("diff", "--name-only", "HEAD", "--").stdout.splitlines()
-    untracked = git("ls-files", "--others", "--exclude-standard").stdout.splitlines()
-    return {p.strip().replace("\\", "/") for p in [*tracked, *untracked] if p.strip()}
+    # stderr is intentionally merged into stdout by run(); on Windows Git may
+    # emit warnings for locked pytest temp directories. They are diagnostics,
+    # not candidate paths, so exclude them before dirty-worktree decisions.
+    tracked = _git_path_lines(git("diff", "--name-only", "HEAD", "--").stdout)
+    untracked = _git_path_lines(git("ls-files", "--others", "--exclude-standard").stdout)
+    return {p.replace("\\", "/") for p in [*tracked, *untracked]}
 
 
 def protected_changes() -> list[str]:
@@ -108,7 +121,7 @@ def rollback(commit: str) -> None:
     git("reset", "--hard", commit)
     # Windows can keep pytest temp directories open briefly. They are runtime
     # scratch space, not candidate code, so exclude them from destructive clean.
-    clean_result = git("clean", "-fd", "-e", ".tmp/", "-e", ".pytest_cache/", check=False)
+    clean_result = git(\n        "clean",\n        "-fd",\n        "-e",\n        ".tmp/",\n        "-e",\n        ".pytest_cache/",\n        "-e",\n        ".pytest_tmp/",\n        "-e",\n        ".tmp_pytest/",\n        check=False,\n    )
     remaining = changed_paths()
     if remaining:
         raise HarnessError(f"rollback left candidate changes behind: {sorted(remaining)}")
