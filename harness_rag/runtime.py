@@ -121,7 +121,19 @@ def rollback(commit: str) -> None:
     git("reset", "--hard", commit)
     # Windows can keep pytest temp directories open briefly. They are runtime
     # scratch space, not candidate code, so exclude them from destructive clean.
-    clean_result = git(\n        "clean",\n        "-fd",\n        "-e",\n        ".tmp/",\n        "-e",\n        ".pytest_cache/",\n        "-e",\n        ".pytest_tmp/",\n        "-e",\n        ".tmp_pytest/",\n        check=False,\n    )
+    clean_result = git(
+        "clean",
+        "-fd",
+        "-e",
+        ".tmp/",
+        "-e",
+        ".pytest_cache/",
+        "-e",
+        ".pytest_tmp/",
+        "-e",
+        ".tmp_pytest/",
+        check=False,
+    )
     remaining = changed_paths()
     if remaining:
         raise HarnessError(f"rollback left candidate changes behind: {sorted(remaining)}")
