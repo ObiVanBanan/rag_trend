@@ -312,7 +312,7 @@ RESEARCH-FIRST / EVIDENCE-DRIVEN OVERRIDE
 - Treat public/hidden benchmark metrics as regression guardrails, not as the source of the next hypothesis.
 - Base the next hypothesis primarily on fresh research, the real-tender working corpus, durable experiment evidence, and the hypothesis/mechanism ledger.
 - Compare candidate hypotheses against prior scientifically evaluated experiments before choosing.
-- Distinguish a genuinely new causal mechanism from a new implementation of an old mechanism. Reuse the existing mechanism_family identifier when the causal intervention is materially the same.
+- Distinguish a genuinely new causal mechanism from a new implementation of an old mechanism. Reuse the existing `mechanism_family` identifier when the causal intervention is materially the same.
 - Treat repeated similar outcome signatures across related experiments as evidence that another nearby variation may have low information value.
 - A refinement of a rejected mechanism is allowed only when new evidence changes the causal premise, directly addresses the previously observed failure mechanism, or tests a clearly different explanation.
 - Do not change mechanisms merely for novelty. Prefer the experiment that best discriminates between plausible explanations of the current bottleneck.
