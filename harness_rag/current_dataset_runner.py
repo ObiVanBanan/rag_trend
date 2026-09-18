@@ -439,8 +439,147 @@ def _evaluate_candidate(
     return candidate, delta
 
 
+def restore_candidate_current_dataset_evidence(
+    *,
+    state: dict[str, Any],
+    state_path: Path,
+    state_dir: Any,
+    active: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Rehydrate candidate 783 evidence after an older runner lost it from state.
+
+    The expensive candidate run artifacts are durable. If a process persisted the
+    reviewer verdict with an older local active copy, reconstruct the same
+    deterministic comparison from champion/candidate compact files instead of
+    re-running 783 model calls.
+    """
+    current = dict(active or state.get("active") or {})
+    if isinstance(current.get("current_dataset_delta"), dict):
+        return current
+
+    cycle = int(current.get("cycle") or current.get("attempt_id") or 0)
+    if cycle <= 0:
+        return current
+
+    root = Path(os.fspath(state_dir))
+    campaign_rel = str(state.get("campaign_artifact_root") or "").strip()
+    campaign_root = root / campaign_rel if campaign_rel else root
+    candidate_root = campaign_root / "runs" / f"{cycle:03d}" / "current_dataset"
+    candidate_summary_path = candidate_root / "candidate.summary.json"
+    candidate_compact_path = candidate_root / "candidate.compact.json"
+    if not candidate_summary_path.exists() or not candidate_compact_path.exists():
+        return current
+
+    champion = state.get("champion_current_dataset")
+    if not isinstance(champion, dict):
+        return current
+    stored_champion_path = str(champion.get("compact_output") or "")
+    champion_compact_path = Path(stored_champion_path) if stored_champion_path else Path()
+    if not champion_compact_path.exists() and stored_champion_path:
+        portable_name = Path(stored_champion_path.replace("\\", "/")).name
+        fallback = campaign_root / "current_dataset" / portable_name
+        if fallback.exists():
+            champion_compact_path = fallback
+    if not champion_compact_path.exists():
+        return current
+
+    try:
+        candidate = json.loads(candidate_summary_path.read_text(encoding="utf-8"))
+        if not isinstance(candidate, dict):
+            return current
+        candidate["compact_output"] = str(candidate_compact_path)
+        champion_rows = _load_json_list(champion_compact_path)
+        candidate_rows = _load_json_list(candidate_compact_path)
+        delta = _summary_delta(champion, candidate)
+        delta.update(compare_compact_rows(champion_rows, candidate_rows))
+    except (OSError, json.JSONDecodeError, core.HarnessError):
+        return current
+
+    current["champion_current_dataset_before"] = dict(champion)
+    current["candidate_current_dataset"] = candidate
+    current["current_dataset_delta"] = delta
+    state["active"] = current
+    core.write_json(state_path, state)
+    print(
+        f"Recovered persisted 783 candidate evidence for attempt {cycle} without re-running evaluation.",
+        flush=True,
+    )
+    return current
+
+
+def _ensure_champion_repeatability(
+    *,
+    state: dict[str, Any],
+    state_path: Path,
+    config: dict[str, Any],
+    run_dir: Path,
+    qdrant_alias: str | None,
+    champion: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Run one cached champion-vs-champion A/A comparison to quantify eval noise."""
+    if not bool(config.get("optimization_repeatability_eval_enabled", True)):
+        return None
+
+    commit = str(state.get("champion_commit") or core.head())
+    dataset_sha = str(champion.get("dataset_sha256") or "")
+    existing = state.get("champion_repeatability")
+    if isinstance(existing, dict):
+        repeat = existing.get("repeat")
+        repeat_path = (
+            Path(str((repeat or {}).get("compact_output") or ""))
+            if isinstance(repeat, dict)
+            else Path()
+        )
+        if (
+            existing.get("commit") == commit
+            and existing.get("dataset_sha256") == dataset_sha
+            and repeat_path.exists()
+        ):
+            return existing
+
+    print("\n=== CURRENT 783 A/A REPEATABILITY ===", flush=True)
+    root = run_dir.parent.parent / "current_dataset"
+    repeat = _run_dataset(
+        config=config,
+        output_root=root,
+        label=f"champion-repeat-{commit[:12]}",
+        qdrant_alias=qdrant_alias,
+    )
+    champion_rows = _load_json_list(Path(str(champion["compact_output"])))
+    repeat_rows = _load_json_list(Path(str(repeat["compact_output"])))
+    delta = _summary_delta(champion, repeat)
+    delta.update(compare_compact_rows(champion_rows, repeat_rows))
+    record = {
+        "version": 1,
+        "commit": commit,
+        "dataset_sha256": dataset_sha,
+        "repeat": repeat,
+        "delta": delta,
+    }
+    state["champion_repeatability"] = record
+    core.write_json(state_path, state)
+    print(
+        "783 A/A noise:",
+        json.dumps(
+            {
+                "matched_delta": delta.get("matched_delta"),
+                "rerank_failed_delta": delta.get("rerank_failed_delta"),
+                "changed_rows": delta.get("changed_rows"),
+                "transition_counts": delta.get("transition_counts"),
+            },
+            ensure_ascii=False,
+        ),
+        flush=True,
+    )
+    return record
+
+
 def _current_prompt_block(
-    *, champion: dict[str, Any], candidate: dict[str, Any] | None = None, delta: dict[str, Any] | None = None
+    *,
+    champion: dict[str, Any],
+    repeatability: dict[str, Any] | None = None,
+    candidate: dict[str, Any] | None = None,
+    delta: dict[str, Any] | None = None,
 ) -> str:
     text = f"""
 
@@ -453,6 +592,19 @@ PRIMARY CURRENT-DATASET OPTIMIZATION EVIDENCE
 
 CURRENT CHAMPION 783 SUMMARY
 {_champion_evidence_text(champion)}
+"""
+    if repeatability is not None:
+        repeat_delta = dict(repeatability.get("delta") or {})
+        text += f"""
+
+CHAMPION A/A REPEATABILITY — EVALUATION NOISE FLOOR
+{json.dumps(repeat_delta, ensure_ascii=False, indent=2)}
+
+INTERPRETATION OF A/A
+- These transitions happened with identical product code and the same 783 inputs.
+- Treat them as empirical stochastic variance from interpreter/web/reranker execution, not as candidate causality.
+- Candidate regressions still matter, but do not attribute a transition to the patch merely because it differs from one champion run.
+- Prefer changes whose signal exceeds the A/A noise floor or whose changed rows are causally tied to the planned mechanism.
 """
     if candidate is not None and delta is not None:
         candidate_visible = {
@@ -515,6 +667,14 @@ def install_current_dataset_optimization() -> None:
                 run_dir=run_dir,
                 qdrant_alias=state.get("champion_collection_alias") or None,
             )
+            repeatability = _ensure_champion_repeatability(
+                state=state,
+                state_path=state_path,
+                config=config,
+                run_dir=run_dir,
+                qdrant_alias=state.get("champion_collection_alias") or None,
+                champion=champion,
+            )
             if role == "reviewer":
                 candidate, delta = _evaluate_candidate(
                     state=state,
@@ -525,11 +685,15 @@ def install_current_dataset_optimization() -> None:
                 )
                 kwargs["prompt"] = str(kwargs.get("prompt") or "") + _current_prompt_block(
                     champion=champion,
+                    repeatability=repeatability,
                     candidate=candidate,
                     delta=delta,
                 )
             else:
-                kwargs["prompt"] = str(kwargs.get("prompt") or "") + _current_prompt_block(champion=champion)
+                kwargs["prompt"] = str(kwargs.get("prompt") or "") + _current_prompt_block(
+                    champion=champion,
+                    repeatability=repeatability,
+                )
         return original_agent_call(**kwargs)
 
     def promote_with_current_dataset(**kwargs: Any) -> None:
