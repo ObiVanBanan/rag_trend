@@ -276,7 +276,32 @@ def _planner_after_research_prompt(**kwargs: Any) -> str:
     clean_kwargs = dict(kwargs)
     clean_kwargs["scored_failures"] = []
     clean_kwargs["research_memory"] = list(clean_kwargs.get("research_memory") or [])[-6:]
+
+    blocked_counts: dict[str, int] = {}
+    for row in clean_kwargs.get("memory") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("error_code") or "") not in {"IMPLEMENTER_BLOCKED", "PROTECTED_FILE_CHANGE"}:
+            continue
+        mechanism = str(row.get("mechanism_family") or row.get("family") or "").strip()
+        if mechanism:
+            blocked_counts[mechanism] = blocked_counts.get(mechanism, 0) + 1
+    suppressed = {
+        mechanism: count
+        for mechanism, count in blocked_counts.items()
+        if count >= 2
+    }
+
     prompt = _ORIGINAL_PLANNER_PROMPT(**clean_kwargs)
+    suppression_block = ""
+    if suppressed:
+        suppression_block = (
+            "\n\nSUPERVISOR BLOCKER SUPPRESSION\n"
+            f"- Unavailable mechanism families for this campaign: {suppressed}\n"
+            "- These families already hit the same implementation/protected-scope class at least twice.\n"
+            "- Do NOT choose them again unless the plan explicitly resolves that blocker through an allowed product/code layer.\n"
+            "- Prefer another causal layer/mechanism rather than spending another implementer call on the same impossible scope.\n"
+        )
     return (
         prompt
         + """
@@ -287,7 +312,7 @@ RESEARCH-FIRST / EVIDENCE-DRIVEN OVERRIDE
 - Treat public/hidden benchmark metrics as regression guardrails, not as the source of the next hypothesis.
 - Base the next hypothesis primarily on fresh research, the real-tender working corpus, durable experiment evidence, and the hypothesis/mechanism ledger.
 - Compare candidate hypotheses against prior scientifically evaluated experiments before choosing.
-- Distinguish a genuinely new causal mechanism from a new implementation of an old mechanism. Reuse the existing `mechanism_family` identifier when the causal intervention is materially the same.
+- Distinguish a genuinely new causal mechanism from a new implementation of an old mechanism. Reuse the existing mechanism_family identifier when the causal intervention is materially the same.
 - Treat repeated similar outcome signatures across related experiments as evidence that another nearby variation may have low information value.
 - A refinement of a rejected mechanism is allowed only when new evidence changes the causal premise, directly addresses the previously observed failure mechanism, or tests a clearly different explanation.
 - Do not change mechanisms merely for novelty. Prefer the experiment that best discriminates between plausible explanations of the current bottleneck.
@@ -295,13 +320,14 @@ RESEARCH-FIRST / EVIDENCE-DRIVEN OVERRIDE
 - It is acceptable to propose a change whose main expected value is on unresolved real-tender cases even if the old benchmark is expected to stay flat. The supervisor will still reject benchmark regressions.
 
 IMPLEMENT METADATA
-- `mechanism_family`: short stable identifier for the causal intervention. Reuse an existing identifier when appropriate.
-- `history_relation`: NEW_MECHANISM, NEW_LAYER, REFINEMENT, or REPEAT.
-- `information_gain`: what uncertainty this experiment can resolve and why that evidence is worth the cost.
-- `why_now`: what accumulated evidence makes this experiment more valuable than the alternatives.
-- `success_signal`: an end-to-end or mechanism-discriminating observation, not merely an implementation event.
-- For DONE set `mechanism_family` to `stopping`, `history_relation` to `NONE`, and explain why credible information/value is exhausted.
+- mechanism_family: short stable identifier for the causal intervention. Reuse an existing identifier when appropriate.
+- history_relation: NEW_MECHANISM, NEW_LAYER, REFINEMENT, or REPEAT.
+- information_gain: what uncertainty this experiment can resolve and why that evidence is worth the cost.
+- why_now: what accumulated evidence makes this experiment more valuable than the alternatives.
+- success_signal: an end-to-end or mechanism-discriminating observation, not merely an implementation event.
+- For DONE set mechanism_family to stopping, history_relation to NONE, and explain why credible information/value is exhausted.
 """
+        + suppression_block
     )
 
 
