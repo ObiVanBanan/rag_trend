@@ -81,7 +81,7 @@ def branch() -> str:
 
 
 def clean() -> bool:
-    return not git("status", "--porcelain").stdout.strip()
+    return not _git_path_lines(git("status", "--porcelain").stdout)
 
 
 def _git_path_lines(output: str) -> list[str]:
