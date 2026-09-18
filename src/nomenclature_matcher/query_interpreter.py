@@ -14,6 +14,10 @@ from .query_signals import explicit_dn_from_query, has_product_identity
 DEFAULT_QUERY_INTERPRETER_PROMPT = (
     Path(__file__).resolve().parent / "prompts" / "query_interpreter_system.md"
 )
+_ALNUM_RU = "0-9a-zа-я"
+_NATIVE_DESIGNATION_FAMILIES = ("КШЦФ", "КШЦП")
+_NATIVE_CONFIG_SUFFIX = r"\d{2,4}(?:[\s.\-]+\d{1,4}){1,4}"
+_DESIGNATION_PROVENANCE_MARKER = "designation_family_provenance:compact_native_config"
 
 
 class QueryInterpretation(BaseModel):
@@ -117,6 +121,42 @@ class DeepSeekQueryInterpreter:
             score += 1
         return score
 
+    @staticmethod
+    def _compact_designation(value: str | None) -> str:
+        if value in (None, ""):
+            return ""
+        text = str(value).lower().replace("ё", "е")
+        return re.sub(rf"[^{_ALNUM_RU}]+", "", text)
+
+    @classmethod
+    def _native_family_from_composite_designation(
+        cls,
+        query: str,
+        designation: str | None,
+    ) -> str | None:
+        emitted = cls._compact_designation(designation)
+        if not emitted:
+            return None
+
+        for family in _NATIVE_DESIGNATION_FAMILIES:
+            pattern = re.compile(
+                rf"(?<![{_ALNUM_RU}])(?P<family>{re.escape(family)})"
+                rf"[\s.\-]*(?P<suffix>{_NATIVE_CONFIG_SUFFIX})(?![{_ALNUM_RU}])",
+                re.IGNORECASE,
+            )
+            for match in pattern.finditer(query):
+                source_composite = f"{match.group('family')}{match.group('suffix')}"
+                if emitted == cls._compact_designation(source_composite):
+                    return family
+        return None
+
+    @staticmethod
+    def _append_comment_marker(constraints: dict, marker: str) -> None:
+        comment = str(constraints.get("comment") or "").strip()
+        if marker in comment:
+            return
+        constraints["comment"] = f"{comment}; {marker}" if comment else marker
+
     @classmethod
     def _has_specific_anchor(cls, query: str, constraints: dict) -> bool:
         return bool(
@@ -135,6 +175,14 @@ class DeepSeekQueryInterpreter:
 
         if constraints.get("product_type") != "ball_valve":
             constraints["valve_type"] = None
+
+        family_designation = self._native_family_from_composite_designation(
+            query,
+            constraints.get("valve_designation"),
+        )
+        if family_designation is not None:
+            constraints["valve_designation"] = family_designation
+            self._append_comment_marker(constraints, _DESIGNATION_PROVENANCE_MARKER)
 
         # Control is hard only when it is explicit in the tender query.
         constraints["control"] = self._explicit_control(query)
