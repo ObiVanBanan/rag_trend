@@ -669,6 +669,30 @@ def _planner_scope_ok(cycle: int) -> tuple[bool, list[str]]:
     return not tracked, paths
 
 
+def _blocked_mechanism_counts(state: dict[str, Any]) -> dict[str, int]:
+    """Count repeated non-scientific implementation blockers by causal mechanism."""
+    counts: dict[str, int] = {}
+    for row in state.get("history") or []:
+        if not isinstance(row, dict) or bool(row.get("scientifically_evaluated")):
+            continue
+        if str(row.get("error_code") or "") not in {"IMPLEMENTER_BLOCKED", "PROTECTED_FILE_CHANGE"}:
+            continue
+        mechanism = str(row.get("mechanism_family") or row.get("family") or "").strip()
+        if not mechanism:
+            continue
+        counts[mechanism] = counts.get(mechanism, 0) + 1
+    return counts
+
+
+def _suppressed_mechanisms(state: dict[str, Any], *, threshold: int = 2) -> dict[str, int]:
+    threshold = max(1, int(threshold))
+    return {
+        mechanism: count
+        for mechanism, count in _blocked_mechanism_counts(state).items()
+        if count >= threshold
+    }
+
+
 def _new_state_from_legacy(old: dict[str, Any]) -> dict[str, Any]:
     legacy = [_legacy_compact_row(row) for row in list(old.get("history") or []) if isinstance(row, dict)]
     research_memory: list[dict[str, Any]] = []
@@ -927,6 +951,33 @@ def _execute_active(
             action = str(plan.get("action") or "")
             active["action"] = action
             _persist_active(state, state_path, active)
+
+            if action == "IMPLEMENT":
+                mechanism_family = str(
+                    plan.get("mechanism_family") or plan.get("hypothesis_family") or ""
+                ).strip()
+                suppressed = _suppressed_mechanisms(
+                    state,
+                    threshold=int(config.get("blocked_mechanism_suppression_threshold", 2)),
+                )
+                if mechanism_family and mechanism_family in suppressed:
+                    _rollback_and_record(
+                        state_dir=state_dir,
+                        state=state,
+                        active=active,
+                        decision="BLOCKED",
+                        reason=(
+                            f"mechanism {mechanism_family!r} is suppressed for this campaign after "
+                            f"{suppressed[mechanism_family]} repeated implementation blockers"
+                        ),
+                        scientifically_evaluated=False,
+                        error_code="REPEATED_BLOCKER_SUPPRESSED",
+                        lesson=(
+                            "Choose a different causal mechanism/layer, or explicitly resolve the prior "
+                            "scope/protection blocker before revisiting this family."
+                        ),
+                    )
+                    return None
 
             if action == "DONE":
                 if changed_paths():
@@ -1234,6 +1285,13 @@ def _execute_active(
             continue
 
         if stage == "REVIEWER":
+            # A persisted review is a completed expensive stage. On resume, never
+            # call the reviewer (or its 783-row evidence wrapper) a second time.
+            if isinstance(active.get("review"), dict) and active["review"].get("decision"):
+                active["stage"] = "APPLY_REVIEW"
+                _persist_active(state, state_path, active)
+                continue
+
             if _remaining_budgets(config, state)["reviewer_calls_remaining"] <= 0:
                 _rollback_and_record(
                     state_dir=state_dir,
@@ -1271,9 +1329,31 @@ def _execute_active(
                 qdrant_alias=active.get("candidate_alias") or None,
             )
             write_json(run_dir / "review.json", review)
+
+            # Agent-call wrappers may persist expensive evidence (for example the
+            # current 783-row candidate comparison) into state["active"]. Merge
+            # that newer state before persisting the review so it cannot be lost
+            # to this function's older local copy of active.
+            persisted_active = dict(state.get("active") or {})
+            for key in (
+                "champion_current_dataset_before",
+                "candidate_current_dataset",
+                "current_dataset_delta",
+            ):
+                if key in persisted_active:
+                    active[key] = persisted_active[key]
             active["review"] = review
+            active["stage"] = "APPLY_REVIEW"
             _persist_active(state, state_path, active)
-            if review.get("decision") == "REJECT":
+            continue
+
+        if stage == "APPLY_REVIEW":
+            review = dict(active.get("review") or {})
+            decision = str(review.get("decision") or "")
+            if not decision:
+                raise HarnessError("APPLY_REVIEW stage is missing a persisted reviewer decision")
+
+            if decision == "REJECT":
                 _rollback_and_record(
                     state_dir=state_dir,
                     state=state,
@@ -1285,7 +1365,7 @@ def _execute_active(
                     lesson=review.get("next_direction") or "",
                 )
                 return None
-            if review.get("decision") == "ACCEPT":
+            if decision == "ACCEPT":
                 _promote(state_dir=state_dir, state=state, active=active, args=args, review=review)
                 return None
             if _remaining_budgets(config, state)["fixer_calls_remaining"] <= 0:
