@@ -12,6 +12,7 @@ class FakeMatcher:
 
 
 def test_match_queries_parallel_preserves_order(monkeypatch):
+    monkeypatch.setattr(gold, "BM25Store", lambda products: object())
     monkeypatch.setattr(gold, "_build_matcher", lambda products, settings, **kwargs: FakeMatcher())
 
     results = gold._match_queries(
@@ -40,6 +41,7 @@ def test_match_queries_single_worker_uses_existing_batch_path(monkeypatch):
 
 def test_match_queries_parallel_deduplicates_normalized_queries(monkeypatch):
     calls: list[str] = []
+    monkeypatch.setattr(gold, "BM25Store", lambda products: object())
 
     class CountingMatcher:
         def match_one_hybrid_with_rerank(self, query: str):
