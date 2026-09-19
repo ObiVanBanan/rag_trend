@@ -8,10 +8,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from harness_rag.hook import run_eval, run_hidden_eval
-
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
+
+from harness_rag.hook import run_eval, run_hidden_eval
 
 
 def _parser() -> argparse.ArgumentParser:
