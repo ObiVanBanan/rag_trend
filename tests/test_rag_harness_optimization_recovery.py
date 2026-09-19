@@ -101,3 +101,54 @@ def test_resume_does_not_discard_persisted_reviewer_verdict(monkeypatch, tmp_pat
 
     assert optimization_runner._recover_already_rolled_back_resume() is False
     assert "--resume" in sys.argv
+
+
+def test_resume_closes_rolled_back_planner_scope_without_second_planner_call(
+    monkeypatch, tmp_path: Path
+) -> None:
+    state = {
+        "champion_commit": "champion",
+        "champion_public": {"hard_pass_rate": 0.7, "hard_gate_cases": 30},
+        "champion_hidden": {"hard_pass_rate": 0.7, "hard_gate_cases": 30},
+        "attempts_started": 7,
+        "scientific_iterations": 1,
+        "history": [],
+        "active": {
+            "cycle": 7,
+            "attempt_id": 7,
+            "stage": "PLANNER",
+            "action": "IMPLEMENT",
+            "plan": {
+                "action": "IMPLEMENT",
+                "hypothesis_family": "designation_sanitization",
+                "mechanism_family": "designation_sanitization",
+                "hypothesis": "sanitize designation codes",
+            },
+        },
+    }
+    (tmp_path / "state.json").write_text(json.dumps(state), encoding="utf-8")
+    holdout = tmp_path / "hidden.json"
+    holdout.write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["run_rag_harness.py", "--holdout", str(holdout), "--resume"],
+    )
+    monkeypatch.setattr(optimization_runner.core, "branch", lambda: "codex/test")
+    monkeypatch.setattr(optimization_runner.core, "_state_dir", lambda args, current_branch: tmp_path)
+    monkeypatch.setattr(optimization_runner.core, "changed_paths", lambda: set())
+
+    recorded: dict[str, object] = {}
+
+    def fake_record(*, state_dir: Path, state: dict, row: dict) -> None:
+        recorded.update(row)
+        state["active"] = None
+
+    monkeypatch.setattr(v2_runner, "_record_cycle_scientific", fake_record)
+
+    assert optimization_runner._recover_already_rolled_back_resume() is True
+    assert recorded["decision"] == "BLOCKED"
+    assert recorded["scientifically_evaluated"] is False
+    assert recorded["error_code"] == "PLANNER_SCOPE"
+    assert "--resume" not in sys.argv
