@@ -29,6 +29,8 @@ def _parser() -> argparse.ArgumentParser:
         default=str(ROOT / ".bananloop_eval"),
     )
     parser.add_argument("--skip-tests", action="store_true")
+    parser.add_argument("--mode", choices=["fast", "full"], default="full")
+    parser.add_argument("--workers", type=int, default=1)
     return parser
 
 
@@ -77,6 +79,31 @@ def _run_tests() -> tuple[bool, str]:
     return result.returncode == 0, result.stdout or ""
 
 
+def _fast_evaluation_result(
+    public: dict[str, Any],
+    *,
+    tests_passed: bool,
+    artifacts: list[str],
+) -> dict[str, Any]:
+    public_hard = _rate(public, "hard_pass_rate")
+    public_hard_n = int(public.get("hard_gate_cases") or 0) or None
+    metrics = {
+        "quality_floor": _metric(public_hard, public_hard_n),
+        "public_hard_pass_rate": _metric(public_hard, public_hard_n),
+        "public_false_match_rate": _metric(_rate(public, "false_match_rate")),
+        "public_human_reject_rate": _metric(_rate(public, "human_reject_rate")),
+        "public_wrong_not_found_rate": _metric(_rate(public, "wrong_not_found_rate")),
+        "public_unknown_answer_rate": _metric(_rate(public, "unknown_answer_rate")),
+    }
+    return {
+        "schema_version": 1,
+        "status": "ok",
+        "metrics": metrics,
+        "checks": {"tests": {"passed": tests_passed}},
+        "artifacts": artifacts,
+    }
+
+
 def _evaluation_result(
     public: dict[str, Any],
     hidden: dict[str, Any],
@@ -118,6 +145,8 @@ def _evaluation_result(
 
 def main() -> int:
     args = _parser().parse_args()
+    if args.workers <= 0:
+        raise SystemExit("--workers must be > 0")
     output_root = Path(args.output_dir)
     if not output_root.is_absolute():
         output_root = ROOT / output_root
@@ -164,25 +193,39 @@ def main() -> int:
         dataset=Path(args.public_dataset).resolve(),
         output_dir=output_dir,
         tag="public",
+        include_extended=args.mode == "full",
+        workers=args.workers,
     )
-    hidden_result = run_hidden_eval(
-        dataset=holdout,
-        output_dir=output_dir,
-        tag="hidden",
-    )
-
     public_summary = dict(public_result["summary"])
-    hidden_summary = dict(hidden_result["summary"])
-    result = _evaluation_result(
-        public_summary,
-        hidden_summary,
-        tests_passed=tests_passed,
-        artifacts=[
-            str(public_result["raw_output"]),
-            str(hidden_result["summary_output"]),
-            str(output_dir / "pytest.txt"),
-        ],
-    )
+
+    if args.mode == "fast":
+        result = _fast_evaluation_result(
+            public_summary,
+            tests_passed=tests_passed,
+            artifacts=[
+                str(public_result["raw_output"]),
+                str(output_dir / "pytest.txt"),
+            ],
+        )
+    else:
+        hidden_result = run_hidden_eval(
+            dataset=holdout,
+            output_dir=output_dir,
+            tag="hidden",
+            include_extended=True,
+            workers=args.workers,
+        )
+        hidden_summary = dict(hidden_result["summary"])
+        result = _evaluation_result(
+            public_summary,
+            hidden_summary,
+            tests_passed=tests_passed,
+            artifacts=[
+                str(public_result["raw_output"]),
+                str(hidden_result["summary_output"]),
+                str(output_dir / "pytest.txt"),
+            ],
+        )
     print(json.dumps(result, ensure_ascii=False))
     return 0
 
