@@ -11,20 +11,6 @@ _TECH_NOTATION = re.compile(
 _MIXED_MODEL = re.compile(r"(?i)(?<![a-zа-я0-9])[a-zа-я0-9][a-zа-я0-9._/-]{3,}(?![a-zа-я0-9])")
 _BRAND_NUMBER = re.compile(r"(?i)\b([a-z]{2,20})\s+([0-9]{2,4})\b")
 _LONG_NUMBER = re.compile(r"(?<!\d)\d{5,}(?!\d)")
-_FALLBACK_UPPER_ALPHA_IDENTITY = re.compile(
-    r"(?<![A-Za-zА-Яа-яЁё0-9])([A-ZА-ЯЁ]{3,8})(?![A-Za-zА-Яа-яЁё0-9])"
-)
-_FALLBACK_LATIN_ALPHA_IDENTITY = re.compile(
-    r"(?i)(?<![a-z0-9])([a-z]{3,8})(?![a-z0-9])"
-)
-_FALLBACK_GENERIC_IDENTITY_TOKENS = {
-    "dn", "pn", "du", "dy", "ld", "ansi", "api", "gost", "din", "iso",
-    "кран", "клапан", "затвор", "задвижка", "фильтр", "фланец", "муфта",
-    "шаровой", "шаровая", "стальной", "стальная", "ручной", "ручная",
-    "резьбовой", "фланцевый", "межфланцевый", "приварной", "вода", "газ", "пар",
-    "ball", "valve", "gate", "check", "filter", "flange", "thread", "threaded",
-    "welded", "steel", "water", "steam", "gas", "manual",
-}
 _INCH_TO_DN = {
     "1/4": 8,
     "3/8": 10,
@@ -68,65 +54,6 @@ def has_product_identity(query: str) -> bool:
         ):
             return True
     return False
-
-
-def _identity_compact(value: str) -> str:
-    return re.sub(r"[^0-9a-zа-я]+", "", normalize_query_text(value))
-
-
-def fallback_identity_tokens(query: str) -> tuple[str, ...]:
-    """Return strong source-identity anchors used only by recall fallback.
-
-    This deliberately does not change has_product_identity because fallback
-    safety must not alter query eligibility or web-enrichment behavior.
-    """
-
-    raw = " ".join(str(query or "").replace("ё", "е").split())
-    cleaned = _TECH_NOTATION.sub(" ", raw)
-
-    mixed: list[str] = []
-    for token in _MIXED_MODEL.findall(cleaned):
-        compact = _identity_compact(token)
-        if (
-            len(compact) >= 4
-            and re.search(r"[a-zа-я]", compact, re.IGNORECASE)
-            and re.search(r"\d", compact)
-        ):
-            mixed.append(compact)
-
-    # A concrete alphanumeric model/article is more specific than an acronym
-    # embedded inside the same token, so do not weaken it to the family prefix.
-    if mixed:
-        return tuple(dict.fromkeys(mixed))
-
-    identities: list[str] = []
-    identities.extend(
-        _identity_compact(match.group(0))
-        for match in _LONG_NUMBER.finditer(cleaned)
-    )
-
-    alpha_tokens = [
-        *_FALLBACK_UPPER_ALPHA_IDENTITY.findall(cleaned),
-        *_FALLBACK_LATIN_ALPHA_IDENTITY.findall(cleaned),
-    ]
-    for token in alpha_tokens:
-        compact = _identity_compact(token)
-        if compact and compact not in _FALLBACK_GENERIC_IDENTITY_TOKENS:
-            identities.append(compact)
-
-    return tuple(dict.fromkeys(token for token in identities if token))
-
-
-def identity_token_matches_text(identity: str, text: str) -> bool:
-    """Match one compact identity exactly while allowing punctuation inside it."""
-    expected = _identity_compact(identity)
-    if not expected:
-        return False
-    alnum = "0-9a-zа-я"
-    separator = rf"[^{alnum}]*"
-    body = separator.join(re.escape(char) for char in expected)
-    pattern = rf"(?<![{alnum}]){body}(?![{alnum}])"
-    return re.search(pattern, normalize_query_text(text), re.IGNORECASE) is not None
 
 
 def explicit_dn_from_query(query: str) -> int | None:

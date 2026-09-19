@@ -3,12 +3,7 @@ from dataclasses import replace
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import canonicalize_retrieval_query
 from .query_constraints import QueryConstraints, evaluate_product
-from .query_signals import (
-    explicit_technical_signal_count,
-    fallback_identity_tokens,
-    has_product_identity,
-    identity_token_matches_text,
-)
+from .query_signals import explicit_technical_signal_count, has_product_identity
 
 
 class NomenclatureMatcher:
@@ -91,66 +86,6 @@ class NomenclatureMatcher:
             for index, candidate in enumerate(candidates, 1)
             if evaluate_product(self._candidate_as_product(candidate), parsed).matches
         ]
-
-    @staticmethod
-    def _candidate_identity_text(candidate: SearchCandidate) -> str:
-        return "\n".join(
-            str(value)
-            for value in (candidate.name, candidate.article, candidate.search_text)
-            if value not in (None, "")
-        )
-
-    def _constraint_fallback_candidates(
-        self,
-        query: str,
-        canonical_query: str | None,
-        constraints: dict,
-    ) -> list[SearchCandidate]:
-        """Recover hard-compatible candidates missed by the normal retrieval pool."""
-        fallback_search = getattr(
-            self.hybrid_retriever,
-            "search_bm25_full_catalog",
-            None,
-        )
-        if not callable(fallback_search):
-            return []
-
-        try:
-            lexical_candidates = fallback_search(
-                query,
-                canonical_query=canonical_query,
-            )
-        except Exception:
-            # Recall fallback is optional; a failure must preserve the existing
-            # hard-filter result instead of changing runtime failure semantics.
-            return []
-
-        parsed = QueryConstraints.model_validate(constraints)
-        identities = fallback_identity_tokens(query)
-        limit = int(getattr(self.settings, "hybrid_rerank_limit", 20))
-        if limit <= 0:
-            return []
-
-        recovered: list[SearchCandidate] = []
-        for candidate in lexical_candidates:
-            if not evaluate_product(
-                self._candidate_as_product(candidate),
-                parsed,
-            ).matches:
-                continue
-            if identities:
-                identity_text = self._candidate_identity_text(candidate)
-                if not any(
-                    identity_token_matches_text(identity, identity_text)
-                    for identity in identities
-                ):
-                    continue
-            recovered.append(
-                replace(candidate, retrieval_sources=["constraint_fallback"])
-            )
-            if len(recovered) >= limit:
-                break
-        return recovered
 
     def _build_selected_match(
         self,
@@ -389,14 +324,6 @@ class NomenclatureMatcher:
                 self.settings.hybrid_rerank_limit,
                 canonical_query=canonical_query,
             )
-            if not self._eligible_candidates(candidates, hard_constraints):
-                fallback_candidates = self._constraint_fallback_candidates(
-                    query,
-                    canonical_query,
-                    hard_constraints,
-                )
-                if fallback_candidates:
-                    candidates = [*candidates, *fallback_candidates]
             return self.rerank_candidates(
                 query,
                 candidates,

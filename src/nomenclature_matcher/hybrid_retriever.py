@@ -65,32 +65,6 @@ class HybridRetriever:
         self._apply_rrf(merged)
         return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
 
-    def search_bm25_full_catalog(
-        self,
-        query: str,
-        canonical_query: str | None = None,
-    ) -> list[SearchCandidate]:
-        """Return lexical candidates over the full in-memory catalog.
-
-        This path is intentionally separate from normal hybrid retrieval and is
-        expected to be called only after the regular pool has zero hard-eligible
-        candidates.
-        """
-        limit = len(getattr(self.bm25_store, "products", []) or [])
-        if limit <= 0:
-            return []
-        candidates = self._search_modality_variants(
-            self.search_bm25,
-            query,
-            canonical_query,
-            limit,
-        )
-        return sorted(
-            candidates,
-            key=lambda candidate: candidate.bm25_score or 0.0,
-            reverse=True,
-        )
-
     def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
         candidates = search_fn(query, limit)
         if not canonical_query or canonical_query == query:
