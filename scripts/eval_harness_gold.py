@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import threading
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -41,6 +43,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", default=str(ROOT / "data" / "harness_gold_eval.json"))
     parser.add_argument("--include-extended", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="parallel query workers (default: 1)",
+    )
     parser.add_argument("--min-hard-pass-rate", type=float, default=None)
     parser.add_argument("--max-wrong-not-found-rate", type=float, default=None)
     parser.add_argument("--max-false-match-rate", type=float, default=None)
@@ -70,10 +78,20 @@ def _portable_path(path: Path) -> str:
         return str(path)
 
 
-def _build_matcher(products, settings: Settings) -> NomenclatureMatcher:
+def _build_matcher(
+    products,
+    settings: Settings,
+    *,
+    bm25_store: BM25Store | None = None,
+) -> NomenclatureMatcher:
     embedder = OpenAIEmbedder(settings)
     qdrant_store = QdrantStore(settings)
-    hybrid = HybridRetriever(embedder, qdrant_store, BM25Store(products), settings)
+    hybrid = HybridRetriever(
+        embedder,
+        qdrant_store,
+        bm25_store or BM25Store(products),
+        settings,
+    )
     return NomenclatureMatcher(
         embedder,
         qdrant_store,
@@ -81,6 +99,33 @@ def _build_matcher(products, settings: Settings) -> NomenclatureMatcher:
         reranker=DeepSeekReranker(settings),
         hybrid_retriever=hybrid,
     )
+
+
+def _match_queries(products, settings: Settings, queries: list[str], workers: int):
+    if workers <= 1:
+        matcher = _build_matcher(products, settings)
+        return matcher.match_many_hybrid_with_rerank(queries)
+
+    # BM25 is immutable during evaluation. Build it once and share it across
+    # query workers instead of rebuilding the full lexical index per thread.
+    shared_bm25 = BM25Store(products)
+    state = threading.local()
+
+    def match_one(query: str):
+        matcher = getattr(state, "matcher", None)
+        if matcher is None:
+            matcher = _build_matcher(products, settings, bm25_store=shared_bm25)
+            state.matcher = matcher
+        return matcher.match_one_hybrid_with_rerank(query)
+
+    # Preserve the serial match_many behavior: repeated normalized queries are
+    # evaluated once, then their result is reused for every corresponding case.
+    normalized_queries = [" ".join(query.split()) for query in queries]
+    unique_queries = list(dict.fromkeys(normalized_queries))
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="gold-eval") as pool:
+        unique_results = list(pool.map(match_one, unique_queries))
+    by_query = dict(zip(unique_queries, unique_results, strict=True))
+    return [by_query[query] for query in normalized_queries]
 
 
 def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
@@ -254,6 +299,8 @@ def main() -> int:
     args = _parser().parse_args()
     if args.limit is not None and args.limit <= 0:
         raise SystemExit("--limit must be > 0")
+    if args.workers <= 0:
+        raise SystemExit("--workers must be > 0")
 
     dataset_path = Path(args.dataset)
     dataset = _read_json(dataset_path)
@@ -266,8 +313,12 @@ def main() -> int:
     products = load_products_from_csv(args.csv)
     products_by_id = {int(product.id): product for product in products}
     settings = Settings()
-    matcher = _build_matcher(products, settings)
-    results = matcher.match_many_hybrid_with_rerank([case["query"] for case in cases])
+    results = _match_queries(
+        products,
+        settings,
+        [case["query"] for case in cases],
+        args.workers,
+    )
 
     rows: list[dict[str, Any]] = []
     for case, result in zip(cases, results, strict=True):

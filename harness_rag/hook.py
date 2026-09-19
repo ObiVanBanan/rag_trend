@@ -68,6 +68,9 @@ def run_eval(
     output_dir: Path,
     tag: str,
     env_overrides: dict[str, str] | None = None,
+    include_extended: bool = True,
+    limit: int | None = None,
+    workers: int = 1,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / f"{tag}.json"
@@ -78,8 +81,13 @@ def run_eval(
         str(dataset),
         "--output",
         str(output),
-        "--include-extended",
     ]
+    if include_extended:
+        cmd.append("--include-extended")
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    if workers != 1:
+        cmd.extend(["--workers", str(workers)])
     env = os.environ.copy()
     if env_overrides:
         env.update(env_overrides)
@@ -131,6 +139,9 @@ def run_hidden_eval(
     output_dir: Path,
     tag: str,
     env_overrides: dict[str, str] | None = None,
+    include_extended: bool = True,
+    limit: int | None = None,
+    workers: int = 1,
 ) -> dict[str, Any]:
     """Run hidden validation, delete rows, and persist only a safe aggregate."""
     result = run_eval(
@@ -138,6 +149,9 @@ def run_hidden_eval(
         output_dir=output_dir,
         tag=tag,
         env_overrides=env_overrides,
+        include_extended=include_extended,
+        limit=limit,
+        workers=workers,
     )
     raw_output = Path(result["raw_output"])
     summary = dict(result["summary"])

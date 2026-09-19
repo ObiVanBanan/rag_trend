@@ -10,3 +10,6 @@ __pycache__/
 mcp_web_search_only.json
 mcp_web_search_test.json
 
+
+# BananLoop evaluator evidence (kept across git clean -fd)
+.bananloop_eval/
