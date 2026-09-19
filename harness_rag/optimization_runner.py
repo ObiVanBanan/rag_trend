@@ -8,6 +8,7 @@ from .current_dataset_runner import install_current_dataset_optimization, restor
 from .diagnostic_runner import _accept_candidate, _public_precheck, _rollback_and_record_diagnostic
 from .provenance_runner import install_campaign_provenance
 from .research_first_runner import install_research_first
+from .runtime import harness_process_lock
 
 
 # Harness/CI-only files may change without invalidating a saved product champion.
@@ -164,5 +165,24 @@ def main() -> int:
     core.accept_candidate = _accept_candidate
     core._rollback_and_record = _rollback_and_record_diagnostic
     core._adopt_harness_only_head = _adopt_harness_only_head_with_current_dataset
-    _recover_already_rolled_back_resume()
-    return v2_runner.main()
+
+    args = core._parser().parse_args()
+    current_branch = core.branch()
+    state_dir = core._state_dir(args, current_branch)
+    core.ensure_outside_repo(state_dir, "Harness state directory")
+    try:
+        with harness_process_lock(state_dir):
+            # Recovery mutates state/worktree and therefore must happen under the
+            # same repository lock as the main runner.
+            _recover_already_rolled_back_resume()
+            return v2_runner.main()
+    except core.HarnessError as exc:
+        if str(exc).startswith("HARNESS_ALREADY_RUNNING:"):
+            print("\n=== HARNESS_ALREADY_RUNNING ===", flush=True)
+            print(str(exc), flush=True)
+            print(
+                "Stop the other harness process (or let it finish) before starting/resuming this worktree.",
+                flush=True,
+            )
+            return 73
+        raise
