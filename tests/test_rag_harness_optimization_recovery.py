@@ -152,3 +152,7 @@ def test_resume_closes_rolled_back_planner_scope_without_second_planner_call(
     assert recorded["scientifically_evaluated"] is False
     assert recorded["error_code"] == "PLANNER_SCOPE"
     assert "--resume" not in sys.argv
+
+
+def test_pyproject_is_harness_only_for_runner_upgrades() -> None:
+    assert optimization_runner.core._harness_only_path("pyproject.toml")
