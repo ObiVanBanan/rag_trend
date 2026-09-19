@@ -16,6 +16,7 @@ from .runtime import harness_process_lock
 # requiring --fresh just because the harness workflow itself changed.
 core.HARNESS_ONLY_EXACT.add(".github/workflows/test-competitor-lookup.yml")
 core.HARNESS_ONLY_EXACT.add(".gitignore")
+core.HARNESS_ONLY_EXACT.add("pyproject.toml")
 
 _ORIGINAL_ADOPT_HARNESS_ONLY_HEAD = core._adopt_harness_only_head
 
