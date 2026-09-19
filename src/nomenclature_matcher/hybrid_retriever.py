@@ -11,9 +11,8 @@ class HybridRetriever:
         self.bm25_store = bm25_store
         self.settings = settings
 
-    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
-        limit = limit or self.settings.hybrid_dense_limit
-        hits = self.qdrant_store.search(self.embedder.embed_query(query), limit)
+    def _dense_candidates(self, vector, limit: int) -> list[SearchCandidate]:
+        hits = self.qdrant_store.search(vector, limit)
         return [
             SearchCandidate(
                 ld_id=int(hit.payload["ld_id"]),
@@ -33,6 +32,49 @@ class HybridRetriever:
             )
             for index, hit in enumerate(hits, 1)
         ]
+
+    def search_dense(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_dense_limit
+        return self._dense_candidates(self.embedder.embed_query(query), limit)
+
+    def _search_dense_variants(
+        self,
+        query: str,
+        canonical_query: str | None,
+        limit: int,
+    ) -> list[SearchCandidate]:
+        if not canonical_query or canonical_query == query:
+            return self.search_dense(query, limit)
+
+        embed_documents = getattr(self.embedder, "embed_documents", None)
+        if not callable(embed_documents):
+            return self._search_modality_variants(
+                self.search_dense,
+                query,
+                canonical_query,
+                limit,
+            )
+
+        try:
+            vectors = embed_documents([query, canonical_query])
+            if len(vectors) != 2:
+                raise ValueError("expected two batched query embeddings")
+        except Exception:
+            # Preserve the previous fail-open behavior if the provider does not
+            # support batching or a batched embedding request fails.
+            return self._search_modality_variants(
+                self.search_dense,
+                query,
+                canonical_query,
+                limit,
+            )
+
+        original = self._dense_candidates(vectors[0], limit)
+        try:
+            alternate = self._dense_candidates(vectors[1], limit)
+        except Exception:
+            return original
+        return list(self._merge_modality_candidates([*original, *alternate]).values())
 
     def search_bm25(self, query: str, limit: int | None = None) -> list[SearchCandidate]:
         limit = limit or self.settings.hybrid_bm25_limit
@@ -59,7 +101,11 @@ class HybridRetriever:
 
     def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
         limit = limit or self.settings.hybrid_rerank_limit
-        dense_candidates = self._search_modality_variants(self.search_dense, query, canonical_query, self.settings.hybrid_dense_limit)
+        dense_candidates = self._search_dense_variants(
+            query,
+            canonical_query,
+            self.settings.hybrid_dense_limit,
+        )
         bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
         merged = self._merge_candidates(dense_candidates, bm25_candidates)
         self._apply_rrf(merged)
