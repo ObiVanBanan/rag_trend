@@ -54,7 +54,7 @@ RESEARCH_PATH = HERE / "RESEARCH_CONTEXT.md"
 STATE_VERSION = 3
 TEMP_FAILURE_EXIT = 75
 
-HARNESS_ONLY_PREFIXES = ("harness_rag/", "tests/test_rag_harness_")
+HARNESS_ONLY_PREFIXES = ("harness_rag/", "tests/test_rag_harness_", "openspec/changes/")
 HARNESS_ONLY_EXACT = {"scripts/run_rag_harness.py"}
 
 INFRA_MARKERS = (
