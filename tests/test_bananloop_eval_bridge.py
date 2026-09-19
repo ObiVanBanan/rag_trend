@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.bananloop_eval import _evaluation_result
+from scripts.bananloop_eval import _evaluation_result, _fast_evaluation_result
 
 
 def test_bananloop_bridge_uses_worst_public_hidden_hard_pass_as_primary():
@@ -65,3 +65,27 @@ def test_bananloop_bridge_runs_as_standalone_script_before_expensive_eval(tmp_pa
     payload = json.loads(result.stdout)
     assert payload["status"] == "invalid"
     assert payload["metrics"] == {}
+
+
+
+def test_fast_bananloop_bridge_uses_public_hard_gate_only():
+    public = {
+        "hard_pass_rate": 0.9,
+        "hard_gate_cases": 30,
+        "false_match_rate": 0.0,
+        "human_reject_rate": 0.0,
+        "wrong_not_found_rate": 0.1,
+        "unknown_answer_rate": 0.0,
+    }
+
+    result = _fast_evaluation_result(
+        public,
+        tests_passed=True,
+        artifacts=["public.json"],
+    )
+
+    assert result["status"] == "ok"
+    assert result["metrics"]["quality_floor"]["value"] == 0.9
+    assert result["metrics"]["quality_floor"]["n"] == 30
+    assert result["metrics"]["public_hard_pass_rate"]["value"] == 0.9
+    assert "hidden_hard_pass_rate" not in result["metrics"]
