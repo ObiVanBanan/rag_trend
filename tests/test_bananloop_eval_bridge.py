@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
+from pathlib import Path
+
 from scripts.bananloop_eval import _evaluation_result
 
 
@@ -34,3 +39,29 @@ def test_bananloop_bridge_uses_worst_public_hidden_hard_pass_as_primary():
     assert result["metrics"]["hidden_hard_pass_rate"]["n"] == 30
     assert result["metrics"]["public_false_match_rate"]["value"] == 0.0
     assert result["checks"]["tests"]["passed"] is True
+
+
+
+def test_bananloop_bridge_runs_as_standalone_script_before_expensive_eval(tmp_path: Path):
+    holdout = tmp_path / "hidden.json"
+    holdout.write_text('{"cases": []}\n', encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/bananloop_eval.py",
+            "--holdout",
+            str(holdout),
+            "--holdout-sha256",
+            "deadbeef",
+            "--skip-tests",
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "invalid"
+    assert payload["metrics"] == {}
