@@ -9,4 +9,4 @@ test = ["pytest>=8"]
 review = ["streamlit>=1.40"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
