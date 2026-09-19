@@ -6,8 +6,9 @@ import shlex
 import shutil
 import subprocess
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,6 +72,98 @@ def git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
         return result
     return run(["git", *args], check=check)
 
+
+
+def _repo_process_lock_path() -> Path:
+    result = subprocess.run(
+        ["git", "rev-parse", "--path-format=absolute", "--git-dir"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode != 0:
+        raise HarnessError(
+            "cannot resolve repository git directory for harness process lock: "
+            + (result.stderr or result.stdout or "").strip()
+        )
+    return Path(result.stdout.strip()) / "rag-harness.process.lock"
+
+
+@contextmanager
+def harness_process_lock(state_dir: Path) -> Iterator[None]:
+    """Hold one OS-level lock for every harness process mutating this worktree.
+
+    The lock lives inside .git so git reset/clean cannot remove it. OS file locks
+    are released automatically if the process crashes. The adjacent owner JSON is
+    diagnostic only; a stale owner file never blocks a new process by itself.
+    """
+
+    lock_path = _repo_process_lock_path()
+    owner_path = lock_path.with_suffix(lock_path.suffix + ".owner.json")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = lock_path.open("a+b")
+    acquired = False
+    try:
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"0")
+            handle.flush()
+        handle.seek(0)
+        try:
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            owner = ""
+            try:
+                owner = owner_path.read_text(encoding="utf-8").strip()
+            except OSError:
+                pass
+            suffix = f" owner={owner}" if owner else ""
+            raise HarnessError(
+                "HARNESS_ALREADY_RUNNING: another harness process holds the repository lock."
+                f"{suffix}"
+            ) from exc
+
+        acquired = True
+        owner_path.write_text(
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "repo": str(ROOT),
+                    "state_dir": str(state_dir),
+                },
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        yield
+    finally:
+        if acquired:
+            try:
+                owner_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+            handle.seek(0)
+            try:
+                if os.name == "nt":
+                    import msvcrt
+
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
+        handle.close()
 
 def head() -> str:
     return git("rev-parse", "HEAD").stdout.strip()
