@@ -78,10 +78,20 @@ def _portable_path(path: Path) -> str:
         return str(path)
 
 
-def _build_matcher(products, settings: Settings) -> NomenclatureMatcher:
+def _build_matcher(
+    products,
+    settings: Settings,
+    *,
+    bm25_store: BM25Store | None = None,
+) -> NomenclatureMatcher:
     embedder = OpenAIEmbedder(settings)
     qdrant_store = QdrantStore(settings)
-    hybrid = HybridRetriever(embedder, qdrant_store, BM25Store(products), settings)
+    hybrid = HybridRetriever(
+        embedder,
+        qdrant_store,
+        bm25_store or BM25Store(products),
+        settings,
+    )
     return NomenclatureMatcher(
         embedder,
         qdrant_store,
@@ -96,17 +106,26 @@ def _match_queries(products, settings: Settings, queries: list[str], workers: in
         matcher = _build_matcher(products, settings)
         return matcher.match_many_hybrid_with_rerank(queries)
 
+    # BM25 is immutable during evaluation. Build it once and share it across
+    # query workers instead of rebuilding the full lexical index per thread.
+    shared_bm25 = BM25Store(products)
     state = threading.local()
 
     def match_one(query: str):
         matcher = getattr(state, "matcher", None)
         if matcher is None:
-            matcher = _build_matcher(products, settings)
+            matcher = _build_matcher(products, settings, bm25_store=shared_bm25)
             state.matcher = matcher
         return matcher.match_one_hybrid_with_rerank(query)
 
+    # Preserve the serial match_many behavior: repeated normalized queries are
+    # evaluated once, then their result is reused for every corresponding case.
+    normalized_queries = [" ".join(query.split()) for query in queries]
+    unique_queries = list(dict.fromkeys(normalized_queries))
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="gold-eval") as pool:
-        return list(pool.map(match_one, queries))
+        unique_results = list(pool.map(match_one, unique_queries))
+    by_query = dict(zip(unique_queries, unique_results, strict=True))
+    return [by_query[query] for query in normalized_queries]
 
 
 def _requirements_model(case: dict[str, Any]) -> GoldenQueryConstraints:
