@@ -43,6 +43,34 @@ These rows may be used to understand recurring failure classes and causal mechan
 
 Runtime lookup of a manufacturer/model/designation on the public internet through the MCP search path, followed by query enrichment before local LD retrieval, is an allowed hypothesis family. It is not a prescribed solution and should compete with simpler alternatives.
 
+## Immediate campaign focus: constraint-aware recall with explicit identity safety
+
+The next campaign should prioritize a clean, isolated reproduction of the strongest signal from the previous campaign: normal hybrid retrieval can miss LD products that already satisfy the deterministic hard-constraint evaluator.
+
+The primary implementation hypothesis to test is:
+
+1. run the existing hybrid retrieval path unchanged;
+2. only when that pool contains zero candidates that pass the unchanged deterministic hard constraints, run a bounded lexical/full-catalog fallback;
+3. apply the same existing hard-constraint evaluator to fallback candidates;
+4. preserve strong explicit product identity from the original tender query before allowing a fallback candidate;
+5. send the surviving bounded pool through the existing reranker.
+
+Strong identity includes explicit article/model/designation/family tokens such as native LD designations or competitor model families. The implementation must be general and evidence-driven: do not special-case benchmark ids, returned LD ids, or one-off tender strings.
+
+This experiment is intentionally narrow. Do not modify the query interpreter, web enrichment policy, reranker prompt/model, hard-constraint semantics, or index representation in the same candidate unless research proves the fallback experiment cannot be isolated without that change. A multi-mechanism patch is not acceptable evidence for this campaign focus.
+
+The previous campaign produced a strong but concurrency-contaminated signal: many `HARD_CONSTRAINT_FILTER -> MATCHED` recoveries kept identical hard constraints, while one labeled regression (`tender_v1_033`) showed that fallback can be unsafe when an explicit designation such as `11с67п` is not preserved as identity. Treat this as a hypothesis and regression target, not as accepted causal truth.
+
+Success evidence should include all of the following:
+
+- labeled correctness/safety remains flat-or-better;
+- prior recovered positive cases remain recoverable without hardcoding them;
+- an identity-heavy query analogous to the `11с67п` regression cannot fall back to a different designation family merely because type/DN are compatible;
+- the full 783-row comparison shows a mechanism-consistent excess of `HARD_CONSTRAINT_FILTER -> MATCHED` transitions above the champion A/A noise floor;
+- recovered rows should usually retain the same hard constraints, demonstrating candidate-recall improvement rather than constraint weakening.
+
+If this isolated mechanism fails these conditions, reject it and record whether the failure came from retrieval coverage, identity extraction/preservation, or insufficient catalog evidence.
+
 ## Research-first cycle
 
 Every new attempt follows this sequence:
