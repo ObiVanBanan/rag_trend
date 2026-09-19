@@ -12,7 +12,7 @@ class FakeMatcher:
 
 
 def test_match_queries_parallel_preserves_order(monkeypatch):
-    monkeypatch.setattr(gold, "_build_matcher", lambda products, settings: FakeMatcher())
+    monkeypatch.setattr(gold, "_build_matcher", lambda products, settings, **kwargs: FakeMatcher())
 
     results = gold._match_queries(
         products=[],
@@ -25,7 +25,7 @@ def test_match_queries_parallel_preserves_order(monkeypatch):
 
 
 def test_match_queries_single_worker_uses_existing_batch_path(monkeypatch):
-    monkeypatch.setattr(gold, "_build_matcher", lambda products, settings: FakeMatcher())
+    monkeypatch.setattr(gold, "_build_matcher", lambda products, settings, **kwargs: FakeMatcher())
 
     results = gold._match_queries(
         products=[],
@@ -35,3 +35,29 @@ def test_match_queries_single_worker_uses_existing_batch_path(monkeypatch):
     )
 
     assert results == ["result:q1", "result:q2"]
+
+
+
+def test_match_queries_parallel_deduplicates_normalized_queries(monkeypatch):
+    calls: list[str] = []
+
+    class CountingMatcher:
+        def match_one_hybrid_with_rerank(self, query: str):
+            calls.append(query)
+            return f"result:{query}"
+
+    monkeypatch.setattr(
+        gold,
+        "_build_matcher",
+        lambda products, settings, **kwargs: CountingMatcher(),
+    )
+
+    results = gold._match_queries(
+        products=[],
+        settings=object(),
+        queries=["q1", " q1 ", "q2", "q1"],
+        workers=4,
+    )
+
+    assert results == ["result:q1", "result:q1", "result:q2", "result:q1"]
+    assert sorted(calls) == ["q1", "q2"]
