@@ -828,6 +828,42 @@ def _state_dir(args: argparse.Namespace, current_branch: str) -> Path:
     return Path.home() / ".rag-trend-harness" / current_branch.replace("/", "__")
 
 
+def _is_noncausal_candidate_path(path: str, *, change_name: str) -> bool:
+    normalized = path.replace("\\", "/")
+    change_root = f"openspec/changes/{change_name}/" if change_name else ""
+    if change_root and normalized.startswith(change_root):
+        return True
+    if normalized.startswith("tests/"):
+        return True
+    return _harness_only_path(normalized)
+
+
+def _candidate_path_snapshot(active: dict[str, Any]) -> tuple[list[str], list[str]]:
+    plan = dict(active.get("plan") or {})
+    change_name = str(plan.get("change_name") or "")
+    paths = sorted(changed_paths())
+    causal = [
+        path
+        for path in paths
+        if not _is_noncausal_candidate_path(path, change_name=change_name)
+    ]
+    return paths, causal
+
+
+def _promotion_paths(active: dict[str, Any]) -> list[str]:
+    saved = [str(path).replace("\\", "/") for path in active.get("candidate_paths") or []]
+    if not saved:
+        raise HarnessError("candidate path allowlist is missing; refusing unsafe promotion")
+    current = sorted(changed_paths())
+    unexpected = sorted(set(current) - set(saved))
+    missing = sorted(set(saved) - set(current))
+    if unexpected:
+        raise HarnessError(f"unexpected files appeared after candidate snapshot: {unexpected}")
+    if missing:
+        raise HarnessError(f"candidate files disappeared after snapshot: {missing}")
+    return sorted(set(saved))
+
+
 def _complete_research_cycle(
     *, state_dir: Path, state: dict[str, Any], active: dict[str, Any], result: dict[str, Any]
 ) -> None:
@@ -860,7 +896,18 @@ def _promote(
     review: dict[str, Any] | None,
 ) -> None:
     plan = dict(active["plan"])
-    git("add", "-A")
+    promotion_paths = _promotion_paths(active)
+    git("add", "--", *promotion_paths)
+    staged = {
+        line.strip().replace("\\", "/")
+        for line in git("diff", "--cached", "--name-only").stdout.splitlines()
+        if line.strip()
+    }
+    if staged != set(promotion_paths):
+        raise HarnessError(
+            f"staged promotion paths differ from candidate allowlist: "
+            f"staged={sorted(staged)}, expected={promotion_paths}"
+        )
     git("commit", "-m", f"harness-v2: cycle {int(active['cycle']):02d} {plan.get('change_name', '')}")
     new_champion = head()
     if args.push:
@@ -1043,6 +1090,7 @@ def _execute_active(
                 )
                 return None
             change_name = str(plan.get("change_name") or "")
+            change_root = f"openspec/changes/{change_name}/" if change_name else ""
             if not change_name or not (ROOT / "openspec" / "changes" / change_name).exists():
                 _rollback_and_record(
                     state_dir=state_dir,
@@ -1054,6 +1102,22 @@ def _execute_active(
                     error_code="PLANNER_CONTRACT",
                 )
                 return None
+            planner_paths = sorted(changed_paths())
+            if not planner_paths or any(not path.startswith(change_root) for path in planner_paths):
+                _rollback_and_record(
+                    state_dir=state_dir,
+                    state=state,
+                    active=active,
+                    decision="BLOCKED",
+                    reason=(
+                        "planner files do not match declared OpenSpec change "
+                        f"{change_name!r}: {planner_paths}"
+                    ),
+                    scientifically_evaluated=False,
+                    error_code="PLANNER_SCOPE",
+                )
+                return None
+            active["planner_paths"] = planner_paths
             active["stage"] = "IMPLEMENTER"
             _persist_active(state, state_path, active)
             continue
@@ -1132,6 +1196,30 @@ def _execute_active(
                     error_code="PROTECTED_FILE_CHANGE",
                 )
                 return None
+
+            candidate_paths, causal_paths = _candidate_path_snapshot(active)
+            active["candidate_paths"] = candidate_paths
+            active["candidate_causal_paths"] = causal_paths
+            _persist_active(state, state_path, active)
+            if not causal_paths:
+                _rollback_and_record(
+                    state_dir=state_dir,
+                    state=state,
+                    active=active,
+                    decision="IMPLEMENTATION_FAILED",
+                    reason=(
+                        "implementer produced no causal product/runtime change; "
+                        f"candidate paths were {candidate_paths}"
+                    ),
+                    scientifically_evaluated=False,
+                    error_code="NO_CAUSAL_DIFF",
+                    lesson=(
+                        "Do not spend tests, labeled evaluation, 783 evaluation, reviewer calls, "
+                        "or scientific-iteration budget on a no-op/test-only implementation."
+                    ),
+                )
+                return None
+
             active["stage"] = "TESTS"
             _persist_active(state, state_path, active)
             continue
