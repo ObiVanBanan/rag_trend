@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BananLoop evaluator bridge for rag_tender.")
     parser.add_argument("--holdout", required=True, help="Absolute/relative path to the hidden validation dataset.")
+    parser.add_argument("--holdout-sha256", help="Expected SHA-256 for the external hidden dataset.")
     parser.add_argument(
         "--public-dataset",
         default=str(ROOT / "data" / "harness_gold_combined.json"),
@@ -40,6 +42,26 @@ def _metric(value: float, n: int | None = None) -> dict[str, Any]:
     if n and n > 0:
         item["n"] = n
     return item
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_head() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return result.stdout.strip()
 
 
 def _run_tests() -> tuple[bool, str]:
@@ -94,10 +116,28 @@ def _evaluation_result(
 
 def main() -> int:
     args = _parser().parse_args()
-    output_dir = Path(args.output_dir)
-    if not output_dir.is_absolute():
-        output_dir = ROOT / output_dir
+    output_root = Path(args.output_dir)
+    if not output_root.is_absolute():
+        output_root = ROOT / output_root
+    output_dir = output_root / _git_head()[:12]
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    holdout = Path(args.holdout).expanduser().resolve()
+    if args.holdout_sha256:
+        actual_holdout_sha = _sha256(holdout)
+        if actual_holdout_sha.lower() != args.holdout_sha256.lower():
+            print(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "status": "invalid",
+                        "metrics": {},
+                        "checks": {},
+                        "artifacts": [],
+                    }
+                )
+            )
+            return 0
 
     tests_passed = True
     tests_output = ""
@@ -124,7 +164,7 @@ def main() -> int:
         tag="public",
     )
     hidden_result = run_hidden_eval(
-        dataset=Path(args.holdout).expanduser().resolve(),
+        dataset=holdout,
         output_dir=output_dir,
         tag="hidden",
     )
