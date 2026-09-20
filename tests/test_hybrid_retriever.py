@@ -77,10 +77,15 @@ class VariantBM25Store:
 class EchoEmbedder:
     def __init__(self):
         self.calls = []
+        self.batch_calls = []
 
     def embed_query(self, text):
         self.calls.append(text)
         return [text]
+
+    def embed_documents(self, texts):
+        self.batch_calls.append(list(texts))
+        return [[text] for text in texts]
 
 
 def test_hybrid_merge_dedupes_and_uses_rrf():
@@ -108,13 +113,15 @@ def test_hybrid_search_retrieves_alternate_only_when_distinct():
     bm25 = VariantBM25Store()
     retriever = HybridRetriever(embedder, VariantQdrantStore(), bm25, settings)
     retriever.search("original", canonical_query="canonical")
-    assert embedder.calls == ["original", "canonical"]
+    assert embedder.calls == []
+    assert embedder.batch_calls == [["original", "canonical"]]
     assert bm25.calls == [("original", 8), ("canonical", 8)]
 
     embedder = EchoEmbedder()
     bm25 = VariantBM25Store()
     HybridRetriever(embedder, VariantQdrantStore(), bm25, settings).search("original", canonical_query="original")
     assert embedder.calls == ["original"]
+    assert embedder.batch_calls == []
     assert bm25.calls == [("original", 8)]
 
 
@@ -128,7 +135,8 @@ def test_hybrid_search_uses_ww_expanded_alternate_and_dedupes_by_ld_id():
 
     results = retriever.search(original, canonical_query=canonical)
 
-    assert embedder.calls == [original, canonical]
+    assert embedder.calls == []
+    assert embedder.batch_calls == [[original, canonical]]
     assert bm25.calls == [(original, 50), (canonical, 50)]
     assert len({candidate.ld_id for candidate in results}) == len(results)
 
@@ -167,3 +175,26 @@ def test_hybrid_search_keeps_original_ww_candidates_when_alternate_fails():
     assert {1, 2, 4}.issubset(by_id)
     assert by_id[1].name == "Original"
     assert by_id[4].name == "Bm25 original"
+
+
+
+def test_hybrid_search_falls_back_to_sequential_embeddings_when_batch_fails():
+    class FailingBatchEmbedder(EchoEmbedder):
+        def embed_documents(self, texts):
+            self.batch_calls.append(list(texts))
+            raise RuntimeError("batch unavailable")
+
+    settings = SimpleNamespace(
+        hybrid_dense_limit=7,
+        hybrid_bm25_limit=8,
+        hybrid_rerank_limit=20,
+        rrf_k=60,
+    )
+    embedder = FailingBatchEmbedder()
+    retriever = HybridRetriever(embedder, VariantQdrantStore(), VariantBM25Store(), settings)
+
+    results = retriever.search("original", canonical_query="canonical")
+
+    assert embedder.batch_calls == [["original", "canonical"]]
+    assert embedder.calls == ["original", "canonical"]
+    assert len({candidate.ld_id for candidate in results}) == len(results)

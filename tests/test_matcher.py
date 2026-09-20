@@ -19,7 +19,7 @@ class Reranker:
         self.error = error
         self.calls = []
 
-    def rerank(self, query, candidates):
+    def rerank(self, query, candidates, **kwargs):
         self.calls.append((query, candidates))
         if self.error:
             raise self.error
@@ -186,3 +186,61 @@ def test_match_one_hybrid_ww_expansion_preserves_original_query_for_output_and_r
         )
     ]
     assert reranker.calls[0][0] == "Кран шаровой WW DN100 PN25"
+
+
+
+def test_second_chance_uses_reranked_candidate_pool_for_result_provenance():
+    settings = SimpleNamespace(
+        match_top_k=5,
+        match_score_threshold=0.8,
+        rerank_candidate_limit=20,
+        hybrid_rerank_limit=20,
+    )
+    first_pass = [
+        SearchCandidate(
+            ld_id=1,
+            name="Фильтр Ду25",
+            article="F1",
+            score=0.1,
+            dn=25,
+        )
+    ]
+    recovered = SearchCandidate(
+        ld_id=2,
+        name="Кран шаровый резьбовой Ду25",
+        article="V2",
+        score=0.2,
+        dn=25,
+        joining_type="Резьбовое",
+    )
+    rerank_result = SimpleNamespace(
+        status="MATCHED",
+        selected=[SimpleNamespace(candidate_id=1, confidence=0.95, reason="recovered")],
+        reason=None,
+    )
+    hybrid = HybridRetriever([recovered])
+    matcher = NomenclatureMatcher(
+        Embedder(),
+        Store([]),
+        settings,
+        reranker=Reranker(result=rerank_result),
+        hybrid_retriever=hybrid,
+    )
+
+    result = matcher.rerank_candidates(
+        "Кран шаровой муфтовый Ду25",
+        first_pass,
+        constraints={
+            "product_type": "ball_valve",
+            "dn": 25,
+            "joining_type": "threaded",
+        },
+    )
+
+    assert result.status == "MATCHED"
+    assert result.ld_product is not None
+    assert result.ld_product.ld_id == 2
+    assert result.candidates[0].ld_id == 2
+    assert result.selected[0].candidate_id == 1
+    assert result.selected[0].ld_id == 2
+    assert hybrid.calls == [("кран шаровый Резьбовое Ду25", 20, None)]

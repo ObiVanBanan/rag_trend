@@ -1,4 +1,5 @@
-from nomenclature_matcher.query_canonicalization import canonicalize_retrieval_query
+from nomenclature_matcher.query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
+from nomenclature_matcher.query_constraints import QueryConstraints
 
 
 def test_blank_and_unchanged_queries_have_no_canonical_alternate():
@@ -52,3 +53,18 @@ def test_embedded_or_unknown_connection_codes_do_not_add_welded_vocabulary():
 def test_ww_without_supported_product_anchor_does_not_add_welded_vocabulary():
     assert canonicalize_retrieval_query("Поставка WW DN100 PN25").canonical_query == "Поставка WW DN 100 PN 25"
     assert canonicalize_retrieval_query("Насос WW DN100 PN25").canonical_query is None
+
+
+
+def test_constraint_rendered_query_uses_catalog_vocabulary():
+    query = build_constraint_rendered_query(
+        QueryConstraints(
+            product_type="ball_valve",
+            dn=25,
+            pn_min_mpa=4.0,
+            joining_type="threaded",
+            body_material="steel",
+            body_material_grade="09Г2С",
+        )
+    )
+    assert query == "кран шаровый Резьбовое Ду25 Ру4,0МПа сталь 09Г2С"

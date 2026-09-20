@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from .query_constraints import QueryConstraints
+
 
 _DESIGNATION_CONFUSABLES = str.maketrans(
     {
@@ -160,3 +162,121 @@ def _has_safe_alternate(source: str, canonical: str, has_supported_anchor: bool)
     if has_supported_anchor:
         return True
     return bool(re.search(r"\b(?:DN|PN)\s+\d+", canonical))
+
+
+# Catalog surface vocabulary for hard constraint facets. Tender lines and the
+# LD catalog describe the same products with different words ('муфтовый' vs the
+# 'Резьбовое' joining value, 'Ру40' vs the name form 'Ру4,0МПа'), so the
+# original-query retrieval can miss the whole eligible family even when
+# catalog-wide eligible products exist. The maps below spell constraints out
+# in the catalog's own wording for a second-chance retrieval.
+_PRODUCT_TYPE_RENDERED_TERMS = {
+    "ball_valve": "кран шаровый",
+    "butterfly_valve": "затвор поворотный дисковый",
+    "gate_valve": "задвижка",
+    "check_valve": "клапан обратный",
+    "filter": "фильтр",
+    "flange": "фланец",
+    "repair_kit": "ремкомплект",
+    "accessory": "комплект",
+    "gearbox": "редуктор",
+    "actuator": "электропривод",
+}
+_JOINING_TYPE_RENDERED_TERMS = {
+    "threaded": "Резьбовое",
+    "flanged": "Фланцевое",
+    "welded": "Приварное",
+    "wafer": "Межфланцевое",
+    "compression": "Компрессионное",
+}
+_BODY_MATERIAL_RENDERED_TERMS = {
+    "steel": "сталь",
+    "stainless_steel": "нержавеющий",
+    "brass": "латунь",
+    "cast_iron": "чугун",
+    "polyethylene": "полиэтилен",
+}
+_BORE_TYPE_RENDERED_TERMS = {
+    "full": "полнопроходной",
+    "reduced": "неполный проход",
+}
+_THREAD_TYPE_RENDERED_TERMS = {
+    "female_female": "внутренняя резьба",
+    "male_male": "наружная резьба",
+    "male_female": "наружная внутренняя резьба",
+}
+_CONTROL_RENDERED_TERMS = {
+    "electric": "электропривод",
+    "electric_ready": "под электропривод",
+    "pneumatic": "пневмопривод",
+    "gearbox": "редуктор",
+}
+_VALVE_TYPE_RENDERED_TERMS = {
+    "underground": "подземный",
+    "gas": "газ",
+    "cryogenic": "криогенный",
+    "regulating": "регулирующий",
+}
+
+
+def _render_pn_mpa(value: float) -> str:
+    return f"Ру{str(value).replace('.', ',')}МПа"
+
+
+def build_constraint_rendered_query(constraints: QueryConstraints) -> str | None:
+    """Render hard constraints as a deterministic catalog-vocabulary query.
+
+    Used only as a second-chance retrieval variant when the hard constraint
+    filter has already eliminated every retrieved candidate: the rendered query
+    re-expresses the same constraints in the catalog's own surface vocabulary
+    ('кран шаровый', 'Резьбовое', 'Ду25', 'Ру4,0МПа') so the eligible family
+    that the original tender wording missed can still be retrieved. Eligibility
+    semantics are untouched - the unchanged hard filter re-applies to whatever
+    this query retrieves.
+
+    Returns None when the constraints carry no informative facet beyond
+    product_type (e.g. an unrecognized product type with no facets), so the
+    second-chance gate cannot fire on an empty signal.
+    """
+    if isinstance(constraints, dict):
+        constraints = QueryConstraints.model_validate(constraints)
+
+    parts: list[str] = []
+    type_words = _PRODUCT_TYPE_RENDERED_TERMS.get(constraints.product_type)
+    if type_words:
+        parts.append(type_words)
+
+    facet_parts: list[str] = []
+    joining_words = _JOINING_TYPE_RENDERED_TERMS.get(constraints.joining_type)
+    if joining_words:
+        facet_parts.append(joining_words)
+    if constraints.dn is not None:
+        facet_parts.append(f"Ду{constraints.dn}")
+    if constraints.pn_min_mpa is not None:
+        facet_parts.append(_render_pn_mpa(constraints.pn_min_mpa))
+    material_words = _BODY_MATERIAL_RENDERED_TERMS.get(constraints.body_material)
+    if material_words:
+        facet_parts.append(material_words)
+    if constraints.body_material_grade:
+        grade = str(constraints.body_material_grade).strip()
+        if grade:
+            facet_parts.append(grade)
+    bore_words = _BORE_TYPE_RENDERED_TERMS.get(constraints.bore_type)
+    if bore_words:
+        facet_parts.append(bore_words)
+    thread_words = _THREAD_TYPE_RENDERED_TERMS.get(constraints.thread_type)
+    if thread_words:
+        facet_parts.append(thread_words)
+    control_words = _CONTROL_RENDERED_TERMS.get(constraints.control)
+    if control_words:
+        facet_parts.append(control_words)
+    valve_type_words = _VALVE_TYPE_RENDERED_TERMS.get(constraints.valve_type)
+    if valve_type_words:
+        facet_parts.append(valve_type_words)
+    medium = str(constraints.working_medium or "").strip()
+    if medium:
+        facet_parts.append(medium)
+
+    if not facet_parts:
+        return None
+    return " ".join([*parts, *facet_parts])
