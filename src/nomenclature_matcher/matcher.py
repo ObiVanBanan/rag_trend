@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
-from .query_canonicalization import canonicalize_retrieval_query
+from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
 from .query_constraints import QueryConstraints, evaluate_product
 from .query_signals import explicit_technical_signal_count, has_product_identity
 
@@ -87,6 +87,33 @@ class NomenclatureMatcher:
             if evaluate_product(self._candidate_as_product(candidate), parsed).matches
         ]
 
+    def _second_chance_candidates(
+        self,
+        constraints: dict,
+    ) -> tuple[list[SearchCandidate], list[tuple[int, SearchCandidate]]] | None:
+        """Retrieve again in catalog vocabulary without relaxing hard constraints."""
+        if self.hybrid_retriever is None:
+            return None
+        try:
+            parsed_constraints = QueryConstraints.model_validate(constraints)
+            rendered_query = build_constraint_rendered_query(parsed_constraints)
+            if rendered_query is None:
+                return None
+            fresh_candidates = self.hybrid_retriever.search(
+                rendered_query,
+                self.settings.hybrid_rerank_limit,
+            )
+            if not fresh_candidates:
+                return None
+            indexed_candidates = self._eligible_candidates(fresh_candidates, constraints)
+            if not indexed_candidates:
+                return None
+            return fresh_candidates, indexed_candidates
+        except Exception:
+            # Strictly additive fallback: any failure preserves the original
+            # HARD_CONSTRAINT_FILTER NOT_FOUND behavior.
+            return None
+
     def _build_selected_match(
         self,
         candidate: SearchCandidate,
@@ -128,17 +155,21 @@ class NomenclatureMatcher:
         if self.reranker is None:
             raise ValueError("Reranker is not configured")
 
-        indexed_candidates = list(enumerate(candidates, 1))
+        candidate_pool = candidates
+        indexed_candidates = list(enumerate(candidate_pool, 1))
         if constraints is not None:
-            indexed_candidates = self._eligible_candidates(candidates, constraints)
+            indexed_candidates = self._eligible_candidates(candidate_pool, constraints)
             if not indexed_candidates:
-                return MatchResult(
-                    query=query,
-                    status="NOT_FOUND",
-                    candidates=candidates,
-                    reason="HARD_CONSTRAINT_FILTER: no retrieved candidate satisfies all QUERY_CONSTRAINTS",
-                    query_interpretation=query_interpretation,
-                )
+                second_chance = self._second_chance_candidates(constraints)
+                if second_chance is None:
+                    return MatchResult(
+                        query=query,
+                        status="NOT_FOUND",
+                        candidates=candidate_pool,
+                        reason="HARD_CONSTRAINT_FILTER: no retrieved candidate satisfies all QUERY_CONSTRAINTS",
+                        query_interpretation=query_interpretation,
+                    )
+                candidate_pool, indexed_candidates = second_chance
 
         rerank_input = [candidate for _, candidate in indexed_candidates]
         try:
@@ -152,7 +183,7 @@ class NomenclatureMatcher:
                 status="RERANK_FAILED",
                 score=candidates[0].score,
                 ld_product=None,
-                candidates=candidates,
+                candidates=candidate_pool,
                 reason=str(exc),
                 query_interpretation=query_interpretation,
             )
@@ -176,7 +207,7 @@ class NomenclatureMatcher:
             status=rerank_result.status,
             score=best.score if best else None,
             ld_product=best if rerank_result.status == "MATCHED" else None,
-            candidates=candidates,
+            candidates=candidate_pool,
             selected=selected,
             reason=rerank_result.reason,
             query_interpretation=query_interpretation,
