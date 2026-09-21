@@ -13,6 +13,8 @@ This branch wraps the validated rag-tender champion in a production-oriented HTT
 
 The API runs with one Uvicorn worker by default because the product catalog and BM25 index are kept in memory. Increasing workers duplicates that memory.
 
+Qdrant and PostgreSQL are bound to `127.0.0.1` on the host by default; only the API port is exposed on all interfaces.
+
 ## First start
 
 The Qdrant snapshot is stored through Git LFS. Make sure it is materialized before Docker starts:
@@ -105,11 +107,13 @@ Response contract:
 
 For `NOT_FOUND`, `matched_name`, `matched_article`, `score`, and `confidence` are null. One product failure does not fail the rest of the batch; that item gets `status=ERROR`.
 
+`score` is the existing retrieval score used by the champion and `confidence` is the reranker's reported confidence; neither should be treated as a calibrated probability without separate calibration.
+
 The maximum batch size is controlled by `API_MAX_BATCH_SIZE`.
 
 ## Request history
 
-Every completed API call is written to PostgreSQL table `rag_match_requests`, including:
+Every completed matching API call is written to PostgreSQL table `rag_match_requests`, including:
 
 - request ID and timestamps;
 - full request JSON;
@@ -127,13 +131,16 @@ docker compose exec postgres psql -U rag_tender -d rag_tender -c "SELECT created
 
 ## Tests
 
+The repository's full test suite also needs the existing review extra:
+
 ```powershell
-uv sync --extra test
+uv sync --extra test --extra review
 uv run python -m pytest -q
 ```
 
 Quick production-contract test:
 
 ```powershell
+uv sync --extra test
 uv run python -m pytest -q tests/test_production_api.py
 ```
