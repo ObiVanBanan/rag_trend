@@ -1,14 +1,103 @@
 services:
   qdrant:
     image: qdrant/qdrant:v1.19.1
-    container_name: qdrant
+    container_name: rag-tender-qdrant
     ports:
       - "6333:6333"
       - "6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
-      - ./qdrant:/qdrant/snapshots
+      - ./qdrant:/qdrant/snapshots:ro
+    restart: unless-stopped
+
+  qdrant-init:
+    image: curlimages/curl:8.12.1
+    container_name: rag-tender-qdrant-init
+    depends_on:
+      qdrant:
+        condition: service_started
+    environment:
+      QDRANT_COLLECTION_ALIAS: ${QDRANT_COLLECTION_ALIAS:-steel_products_active}
+    volumes:
+      - ./qdrant:/snapshots:ro
+    entrypoint: ["/bin/sh", "-ec"]
+    command: |
+      until curl -fsS http://qdrant:6333/collections >/dev/null; do
+        sleep 2
+      done
+      if curl -fsS "http://qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS" >/dev/null 2>&1; then
+        echo "Qdrant collection $$QDRANT_COLLECTION_ALIAS already exists; snapshot restore skipped."
+        exit 0
+      fi
+      SNAPSHOT="/snapshots/$$QDRANT_COLLECTION_ALIAS.snapshot"
+      if [ ! -f "$$SNAPSHOT" ]; then
+        echo "Snapshot not found: $$SNAPSHOT"
+        exit 1
+      fi
+      if grep -q "git-lfs.github.com/spec" "$$SNAPSHOT"; then
+        echo "Snapshot is only a Git LFS pointer. Run: git lfs pull"
+        exit 1
+      fi
+      curl -fsS -X PUT         "http://qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS/snapshots/recover?wait=true"         -H "Content-Type: application/json"         -d "{\"location\":\"file:///qdrant/snapshots/$$QDRANT_COLLECTION_ALIAS.snapshot\"}"
+      echo "Qdrant snapshot restored."
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: rag-tender-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rag_tender}
+      POSTGRES_USER: ${POSTGRES_USER:-rag_tender}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rag_tender}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-tender-api
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      QDRANT_URL: http://qdrant:6333
+      PRODUCT_CSV_PATH: /data/ld_products_full_nomenclature.csv
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./ld_products_full_nomenclature.csv:/data/ld_products_full_nomenclature.csv:ro
+    depends_on:
+      qdrant-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready', timeout=3)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 
 volumes:
   qdrant_storage:
+  postgres_data:

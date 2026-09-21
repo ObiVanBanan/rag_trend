@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+__pycache__
+.pytest_cache
+*.pyc
+*.log
+.env
+data
+harness_rag
+openspec
+scripts
+tests
+qdrant
+ld_products_full_nomenclature.csv

@@ -17,6 +17,16 @@ except ImportError:  # pragma: no cover - only for a not-yet-installed environme
 class Settings(BaseSettings):
     app_env: str = "development"
     log_level: str = "INFO"
+
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+    api_max_batch_size: int = 100
+    product_csv_path: str = "ld_products_full_nomenclature.csv"
+    database_url: str = "postgresql://rag_tender:rag_tender@localhost:5432/rag_tender"
+    db_pool_min_size: int = 1
+    db_pool_max_size: int = 5
+    db_connect_timeout_seconds: float = 10
+
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_alias: str = "steel_products_active"
     qdrant_dense_vector_name: str = "dense"
