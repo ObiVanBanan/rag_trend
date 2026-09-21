@@ -119,3 +119,15 @@ def test_reranker_uses_versioned_system_prompt_file(tmp_path):
     reranker.rerank("query", candidates())
     messages = client.completions.calls[0]["messages"]
     assert messages[0] == {"role": "system", "content": "custom system prompt"}
+
+
+def test_reranker_can_disable_deepseek_thinking_extension_for_lm_studio():
+    custom_settings = settings()
+    custom_settings.deepseek_send_thinking_control = False
+    client = FakeClient(content=json.dumps({"status": "NOT_FOUND", "selected": []}))
+    reranker = DeepSeekReranker(custom_settings, client=client)
+
+    reranker.rerank("query", candidates())
+
+    request = client.completions.calls[0]
+    assert "extra_body" not in request
