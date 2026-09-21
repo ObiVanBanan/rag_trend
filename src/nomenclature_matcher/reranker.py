@@ -45,12 +45,13 @@ class DeepSeekReranker:
         request_kwargs = {
             "model": self.settings.deepseek_model,
             "temperature": 0,
-            "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": self._build_prompt(query, candidates, constraints)},
             ],
         }
+        if getattr(self.settings, "deepseek_response_format_enabled", True):
+            request_kwargs["response_format"] = {"type": "json_object"}
         if getattr(self.settings, "deepseek_send_thinking_control", True):
             request_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
         response = self.client.chat.completions.create(**request_kwargs)

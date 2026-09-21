@@ -66,7 +66,7 @@ class OllamaEmbedder:
     def __init__(self, settings, opener=None):
         self.settings = settings
         self._urlopen = opener or urlopen
-        self.endpoint = settings.ollama_base_url.rstrip("/") + "/api/embed"
+        self.endpoint = settings.ollama_base_url.rstrip("/") + "/api/embeddings"
 
     def _validate(self, vector):
         vector = [float(value) for value in vector]
@@ -82,7 +82,7 @@ class OllamaEmbedder:
         body = json.dumps(
             {
                 "model": self.settings.embedding_model,
-                "input": input_value,
+                "prompt": input_value,
             },
             ensure_ascii=False,
         ).encode("utf-8")
@@ -101,13 +101,25 @@ class OllamaEmbedder:
                     request,
                     timeout=self.settings.ollama_timeout_seconds,
                 ) as response:
-                    payload = json.loads(response.read().decode("utf-8"))
-                embeddings = payload.get("embeddings")
-                if not isinstance(embeddings, list) or not embeddings:
+                    raw_data = response.read().decode("utf-8").strip()
+                    if raw_data.startswith("[") or raw_data.startswith("{"):
+                        payload = json.loads(raw_data)
+                    else:
+                        # Handle raw CSV output
+                        payload = {"embedding": [float(x) for x in raw_data.split(",")]}
+                
+                # Remove DEBUG line as requested
+                embeddings = payload.get("embeddings") or payload.get("embedding")
+                if not embeddings:
                     raise RuntimeError(
-                        "Ollama /api/embed returned no embeddings. "
+                        "Ollama embeddings API returned no embeddings. "
                         f"Response keys: {sorted(payload) if isinstance(payload, dict) else type(payload).__name__}"
                     )
+                if not isinstance(embeddings, list):
+                    embeddings = [embeddings]
+                elif len(embeddings) > 0 and isinstance(embeddings[0], float):
+                    # It's a single vector
+                    embeddings = [embeddings]
                 return [self._validate(vector) for vector in embeddings]
             except HTTPError as exc:
                 last_error = exc

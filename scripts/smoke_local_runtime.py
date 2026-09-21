@@ -54,7 +54,6 @@ def main() -> int:
     response = llm.chat.completions.create(
         model=settings.deepseek_model,
         temperature=0,
-        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": "Return only valid JSON."},
             {"role": "user", "content": 'Return {"ok": true}.'},

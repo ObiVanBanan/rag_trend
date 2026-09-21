@@ -91,10 +91,10 @@ def test_ollama_embed_query_uses_native_api_and_validates_dimension():
     embedder = OllamaEmbedder(custom, opener=opener)
 
     assert embedder.embed_query("кран Ду50") == [1.0, 2.0, 3.0]
-    assert captured["url"] == "http://localhost:11434/api/embed"
+    assert captured["url"] == "http://localhost:11434/api/embeddings"
     assert captured["payload"] == {
         "model": "qwen3-embedding:0.6b",
-        "input": "кран Ду50",
+        "prompt": "кран Ду50",
     }
 
 
@@ -103,8 +103,8 @@ def test_ollama_embed_documents_batches_inputs():
 
     def opener(request, timeout):
         payload = json.loads(request.data.decode("utf-8"))
-        calls.append(payload["input"])
-        vectors = [[float(i), 0.0, 0.0] for i, _ in enumerate(payload["input"], 1)]
+        calls.append(payload["prompt"])
+        vectors = [[float(i), 0.0, 0.0] for i, _ in enumerate(payload["prompt"], 1)]
         return FakeHTTPResponse({"embeddings": vectors})
 
     custom = settings()
