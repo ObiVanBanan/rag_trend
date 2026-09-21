@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from nomenclature_matcher.bm25_store import BM25Store
 from nomenclature_matcher.documents import load_products_from_csv
-from nomenclature_matcher.embeddings import OpenAIEmbedder
+from nomenclature_matcher.embeddings import create_embedder
 from nomenclature_matcher.golden_rules import GoldenQueryConstraints, golden_product_snapshot
 from nomenclature_matcher.harness_gold import (
     evaluate_harness_product,
@@ -84,7 +84,7 @@ def _build_matcher(
     *,
     bm25_store: BM25Store | None = None,
 ) -> NomenclatureMatcher:
-    embedder = OpenAIEmbedder(settings)
+    embedder = create_embedder(settings)
     qdrant_store = QdrantStore(settings)
     hybrid = HybridRetriever(
         embedder,
