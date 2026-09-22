@@ -2,9 +2,6 @@ services:
   qdrant:
     image: qdrant/qdrant:v1.19.1
     container_name: rag-tender-qdrant
-    ports:
-      - "127.0.0.1:6333:6333"
-      - "127.0.0.1:6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
       - ./qdrant:/qdrant/snapshots:ro
@@ -25,10 +22,10 @@ services:
       - ./qdrant:/snapshots:ro
     entrypoint: ["/bin/sh", "-ec"]
     command: |
-      until curl -fsS http://qdrant:6333/collections >/dev/null; do
+      until curl -fsS http://rag-tender-qdrant:6333/collections >/dev/null; do
         sleep 2
       done
-      if curl -fsS "http://qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS" >/dev/null 2>&1; then
+      if curl -fsS "http://rag-tender-qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS" >/dev/null 2>&1; then
         echo "Qdrant collection $$QDRANT_COLLECTION_ALIAS already exists; snapshot restore skipped."
         exit 0
       fi
@@ -41,7 +38,7 @@ services:
         echo "Snapshot is only a Git LFS pointer. Run: git lfs pull"
         exit 1
       fi
-      curl -fsS -X PUT "http://qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS/snapshots/recover?wait=true" -H "Content-Type: application/json" -d "{\"location\":\"file:///qdrant/snapshots/$$QDRANT_COLLECTION_ALIAS.snapshot\"}"
+      curl -fsS -X PUT "http://rag-tender-qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS/snapshots/recover?wait=true" -H "Content-Type: application/json" -d "{\"location\":\"file:///qdrant/snapshots/$$QDRANT_COLLECTION_ALIAS.snapshot\"}"
       echo "Qdrant snapshot restored."
     networks:
       - backend
@@ -53,8 +50,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-rag_tender}
       POSTGRES_USER: ${POSTGRES_USER:-rag_tender}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rag_tender}
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -80,7 +75,7 @@ services:
       - .env
     environment:
       APP_ENV: production
-      QDRANT_URL: http://qdrant:6333
+      QDRANT_URL: http://rag-tender-qdrant:6333
       PRODUCT_CSV_PATH: /data/ld_products_full_nomenclature.csv
       DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
     ports:
