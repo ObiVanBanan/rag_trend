@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     db_pool_min_size: int = 1
     db_pool_max_size: int = 5
     db_connect_timeout_seconds: float = 10
+    match_trace_enabled: bool = True
 
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_alias: str = "steel_products_active"
@@ -46,8 +47,6 @@ class Settings(BaseSettings):
     query_interpreter_enabled: bool = True
     query_interpreter_system_prompt_path: str = "src/nomenclature_matcher/prompts/query_interpreter_system.md"
 
-    # Local Santech lookup is retained as an optional experiment but is off in the
-    # runtime path. Web enrichment is performed through a free DuckDuckGo MCP server.
     competitor_lookup_enabled: bool = False
     competitor_catalog_path: str = "data/competitors/santech_ld_scope.parquet"
     competitor_lookup_limit: int = 3

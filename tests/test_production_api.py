@@ -8,6 +8,8 @@ from nomenclature_matcher.production import match_products
 
 
 class FakeMatcher:
+    settings = SimpleNamespace(match_trace_enabled=False)
+
     def match_one_hybrid_with_rerank(self, query):
         if query == "boom":
             raise RuntimeError("provider unavailable")
@@ -55,6 +57,7 @@ class FakeRuntime:
         self.settings = SimpleNamespace(
             api_max_batch_size=3,
             qdrant_collection_alias="steel_products_active",
+            match_trace_enabled=False,
         )
         self.matcher = FakeMatcher()
         self.history = FakeHistory()
@@ -81,7 +84,7 @@ def test_match_products_keeps_batch_items_independent():
     assert results[2]["error_code"] == "RuntimeError"
 
 
-def test_api_contract_and_history():
+def test_api_contract_history_request_id_and_metrics():
     runtime = FakeRuntime()
     app = create_app(runtime_factory=lambda: runtime)
 
@@ -91,12 +94,15 @@ def test_api_contract_and_history():
 
         response = client.post(
             "/v1/match",
+            headers={"X-Request-ID": "e2e-request-123"},
             json={"products": ["ok", "missing", "boom"]},
         )
+        metrics = client.get("/metrics")
 
     assert response.status_code == 200
     payload = response.json()
-    assert len(payload["request_id"]) > 10
+    assert payload["request_id"] == "e2e-request-123"
+    assert response.headers["X-Request-ID"] == "e2e-request-123"
     assert [item["status"] for item in payload["results"]] == [
         "MATCHED",
         "NOT_FOUND",
@@ -106,9 +112,13 @@ def test_api_contract_and_history():
     assert payload["results"][0]["matched_article"] == "LD-007"
     assert payload["results"][0]["score"] == 0.031
     assert payload["results"][0]["confidence"] == 0.97
+    assert runtime.history.records[0]["request_id"] == "e2e-request-123"
     assert runtime.history.records[0]["status"] == "PARTIAL_ERROR"
     assert runtime.history.records[0]["product_count"] == 3
     assert runtime.history.records[0]["matched_count"] == 1
+    assert metrics.status_code == 200
+    assert "rag_tender_http_requests_total" in metrics.text
+    assert "rag_tender_match_items_total" in metrics.text
     assert runtime.closed is True
 
 

@@ -9,6 +9,9 @@ services:
       - qdrant_storage:/qdrant/storage
       - ./qdrant:/qdrant/snapshots:ro
     restart: unless-stopped
+    networks:
+      - backend
+      - observability
 
   qdrant-init:
     image: curlimages/curl:8.12.1
@@ -40,6 +43,8 @@ services:
       fi
       curl -fsS -X PUT "http://qdrant:6333/collections/$$QDRANT_COLLECTION_ALIAS/snapshots/recover?wait=true" -H "Content-Type: application/json" -d "{\"location\":\"file:///qdrant/snapshots/$$QDRANT_COLLECTION_ALIAS.snapshot\"}"
       echo "Qdrant snapshot restored."
+    networks:
+      - backend
 
   postgres:
     image: postgres:16-alpine
@@ -62,6 +67,9 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    networks:
+      - backend
+      - observability
 
   api:
     build:
@@ -97,7 +105,17 @@ services:
       retries: 10
       start_period: 60s
     restart: unless-stopped
+    networks:
+      - backend
+      - observability
 
 volumes:
   qdrant_storage:
   postgres_data:
+
+networks:
+  backend:
+    driver: bridge
+  observability:
+    external: true
+    name: ${OBSERVABILITY_NETWORK:-rag-observability-net}

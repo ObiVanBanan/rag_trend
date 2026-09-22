@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 from psycopg.types.json import Jsonb
@@ -14,6 +15,16 @@ from .documents import load_products_from_csv
 from .embeddings import OpenAIEmbedder
 from .hybrid_retriever import HybridRetriever
 from .matcher import NomenclatureMatcher
+from .observability import (
+    ObservedEmbedder,
+    ObservedQdrantStore,
+    ObservedQueryInterpreter,
+    ObservedReranker,
+    log_match_trace,
+    record_match_item,
+    reset_item_index,
+    set_item_index,
+)
 from .qdrant_store import QdrantStore
 from .query_interpreter import DeepSeekQueryInterpreter
 from .reranker import DeepSeekReranker
@@ -127,7 +138,7 @@ class PostgresRequestHistory:
 class ProductionRuntime:
     settings: Settings
     matcher: NomenclatureMatcher
-    qdrant_store: QdrantStore
+    qdrant_store: Any
     history: PostgresRequestHistory
 
     def ready(self) -> bool:
@@ -173,8 +184,12 @@ def build_production_runtime(settings: Settings | None = None) -> ProductionRunt
     _validate_runtime_settings(settings)
 
     products = load_products_from_csv(settings.product_csv_path)
-    embedder = OpenAIEmbedder(settings)
-    qdrant_store = QdrantStore(settings)
+
+    base_embedder = OpenAIEmbedder(settings)
+    embedder = ObservedEmbedder(base_embedder, settings)
+
+    base_qdrant_store = QdrantStore(settings)
+    qdrant_store = ObservedQdrantStore(base_qdrant_store, settings)
 
     if not qdrant_store.client.collection_exists(settings.qdrant_collection_alias):
         raise RuntimeError(
@@ -183,18 +198,23 @@ def build_production_runtime(settings: Settings | None = None) -> ProductionRunt
             "Restore the champion snapshot or rebuild the index before starting the API."
         )
 
+    query_interpreter = ObservedQueryInterpreter(
+        DeepSeekQueryInterpreter(settings), settings
+    )
+    reranker = ObservedReranker(DeepSeekReranker(settings), settings)
+
     matcher = NomenclatureMatcher(
         embedder,
         qdrant_store,
         settings,
-        reranker=DeepSeekReranker(settings),
+        reranker=reranker,
         hybrid_retriever=HybridRetriever(
             embedder,
             qdrant_store,
             BM25Store(products),
             settings,
         ),
-        query_interpreter=DeepSeekQueryInterpreter(settings),
+        query_interpreter=query_interpreter,
     )
 
     history = PostgresRequestHistory(settings)
@@ -222,13 +242,18 @@ def build_production_runtime(settings: Settings | None = None) -> ProductionRunt
 
 def match_products(matcher: NomenclatureMatcher, products: list[str]) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
-    for product in products:
+    trace_enabled = bool(getattr(getattr(matcher, "settings", None), "match_trace_enabled", True))
+
+    for index, product in enumerate(products, 1):
+        token = set_item_index(index)
+        started = perf_counter()
+        log_match_trace("item_started", enabled=trace_enabled)
         try:
-            match = matcher.match_one_hybrid_with_rerank(product)
-        except Exception as exc:
-            logger.exception("Product matching failed for one batch item")
-            results.append(
-                {
+            try:
+                match = matcher.match_one_hybrid_with_rerank(product)
+            except Exception as exc:
+                logger.exception("Product matching failed for one batch item")
+                item = {
                     "input": product,
                     "status": "ERROR",
                     "matched_name": None,
@@ -237,48 +262,54 @@ def match_products(matcher: NomenclatureMatcher, products: list[str]) -> list[di
                     "confidence": None,
                     "error_code": type(exc).__name__,
                 }
-            )
-            continue
+            else:
+                if match.status == "MATCHED" and match.ld_product is not None:
+                    confidence = (
+                        match.selected[0].llm_confidence
+                        if match.selected
+                        else None
+                    )
+                    item = {
+                        "input": product,
+                        "status": "MATCHED",
+                        "matched_name": match.ld_product.name,
+                        "matched_article": match.ld_product.article,
+                        "score": match.score,
+                        "confidence": confidence,
+                        "error_code": None,
+                    }
+                elif match.status == "RERANK_FAILED":
+                    item = {
+                        "input": product,
+                        "status": "ERROR",
+                        "matched_name": None,
+                        "matched_article": None,
+                        "score": None,
+                        "confidence": None,
+                        "error_code": "RERANK_FAILED",
+                    }
+                else:
+                    item = {
+                        "input": product,
+                        "status": "NOT_FOUND",
+                        "matched_name": None,
+                        "matched_article": None,
+                        "score": None,
+                        "confidence": None,
+                        "error_code": None,
+                    }
 
-        if match.status == "MATCHED" and match.ld_product is not None:
-            confidence = (
-                match.selected[0].llm_confidence
-                if match.selected
-                else None
+            duration = perf_counter() - started
+            results.append(item)
+            record_match_item(item["status"], duration)
+            log_match_trace(
+                "item_completed",
+                enabled=trace_enabled,
+                status=item["status"],
+                duration_ms=round(duration * 1000, 3),
+                error_type=item["error_code"],
             )
-            results.append(
-                {
-                    "input": product,
-                    "status": "MATCHED",
-                    "matched_name": match.ld_product.name,
-                    "matched_article": match.ld_product.article,
-                    "score": match.score,
-                    "confidence": confidence,
-                    "error_code": None,
-                }
-            )
-        elif match.status == "RERANK_FAILED":
-            results.append(
-                {
-                    "input": product,
-                    "status": "ERROR",
-                    "matched_name": None,
-                    "matched_article": None,
-                    "score": None,
-                    "confidence": None,
-                    "error_code": "RERANK_FAILED",
-                }
-            )
-        else:
-            results.append(
-                {
-                    "input": product,
-                    "status": "NOT_FOUND",
-                    "matched_name": None,
-                    "matched_article": None,
-                    "score": None,
-                    "confidence": None,
-                    "error_code": None,
-                }
-            )
+        finally:
+            reset_item_index(token)
+
     return results
