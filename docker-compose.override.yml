@@ -1,0 +1,52 @@
+# Host port 6333 is occupied by the rag-steel stack, so the local Qdrant
+# for this project is exposed on 127.0.0.1:6335. Container-to-container
+# traffic (qdrant-init, api) still uses the internal network and port 6333.
+services:
+  qdrant:
+    ports: !override
+      - "127.0.0.1:6335:6333"
+    volumes: !override
+      # Must be writable: Qdrant uses /qdrant/snapshots as its snapshots
+      # directory and needs to create ./snapshots/tmp at startup.
+      - ./qdrant:/qdrant/snapshots:rw
+
+  qdrant-init:
+    # Docker Compose v5 shlex-splits `command: |` strings into argv tokens,
+    # which breaks the shell script. Pass the whole script as a single arg.
+    entrypoint: !override ["/bin/sh", "-ec"]
+    command: !override
+      - |
+        until curl -fsS http://qdrant:6333/collections >/dev/null; do sleep 2; done
+        if curl -fsS "http://qdrant:6333/collections/${QDRANT_COLLECTION_ALIAS:-steel_products_active}" >/dev/null 2>&1; then
+          echo "Qdrant collection already exists; snapshot restore skipped."
+          exit 0
+        fi
+        SNAPSHOT="/snapshots/${QDRANT_COLLECTION_ALIAS:-steel_products_active}.snapshot"
+        if [ ! -f "$SNAPSHOT" ]; then
+          echo "Snapshot not found: $SNAPSHOT"
+          exit 1
+        fi
+        curl -fsS -X PUT "http://qdrant:6333/collections/${QDRANT_COLLECTION_ALIAS:-steel_products_active}/snapshots/recover?wait=true" -H "Content-Type: application/json" -d "{\"location\":\"file:///qdrant/snapshots/${QDRANT_COLLECTION_ALIAS:-steel_products_active}.snapshot\"}"
+        echo "Qdrant snapshot restored."
+
+  api:
+    # OpenAI blocks requests from this server region (403
+    # unsupported_country_region_territory), so outbound LLM/embedding traffic
+    # goes through the same SOCKS5 proxy the rag-steel stack uses.
+    environment: !override
+      APP_ENV: production
+      QDRANT_URL: http://qdrant:6333
+      PRODUCT_CSV_PATH: /data/ld_products_full_nomenclature.csv
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
+      HTTP_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      HTTPS_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      ALL_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      NO_PROXY: localhost,127.0.0.1,qdrant,postgres,.local,172.16.0.0/12,10.0.0.0/8
+    networks: !override
+      - default
+      - observability
+
+networks:
+  observability:
+    external: true
+    name: rag-observability-net

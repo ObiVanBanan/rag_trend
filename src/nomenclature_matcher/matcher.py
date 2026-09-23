@@ -1,9 +1,13 @@
+import json
+import logging
 from dataclasses import replace
 
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
 from .query_constraints import QueryConstraints, evaluate_product
 from .query_signals import explicit_technical_signal_count, has_product_identity
+
+logger = logging.getLogger(__name__)
 
 
 class NomenclatureMatcher:
@@ -245,6 +249,25 @@ class NomenclatureMatcher:
             }
             return None, None, debug
 
+    def _log_lookup_debug(self, query: str, debug: dict) -> None:
+        """Log the web-enrichment evidence so it is visible in Loki/Grafana."""
+        try:
+            payload = dict(debug)
+            payload["input_query"] = query
+            pages = payload.get("pages") or []
+            trimmed = []
+            for page in pages:
+                entry = dict(page)
+                text = entry.get("text") or ""
+                entry["text_chars_total"] = len(text)
+                entry["text"] = text[:1200]
+                trimmed.append(entry)
+            payload["pages"] = trimmed
+            payload["search_results"] = (payload.get("search_results") or "")[:1200]
+            logger.info("web_enrichment_debug %s", json.dumps(payload, ensure_ascii=False))
+        except Exception:
+            logger.debug("failed to log enrichment debug", exc_info=True)
+
     def _enrichment_gate(self, query: str, interpretation) -> tuple[bool, str]:
         if self.competitor_lookup is None:
             return False, "enrichment_disabled"
@@ -326,6 +349,8 @@ class NomenclatureMatcher:
                     "accepted": False,
                     "reason": gate_reason,
                 }
+            if lookup_debug is not None:
+                self._log_lookup_debug(query, lookup_debug)
 
             hard_constraints = self._hard_constraints(
                 pre_interpretation,
