@@ -48,12 +48,6 @@ class Settings(BaseSettings):
 
     # Local Santech lookup is retained as an optional experiment but is off in the
     # runtime path. Web enrichment is performed through a free DuckDuckGo MCP server.
-    competitor_lookup_enabled: bool = False
-    competitor_catalog_path: str = "data/competitors/santech_ld_scope.parquet"
-    competitor_lookup_limit: int = 3
-    competitor_lookup_prelimit: int = 200
-    competitor_lookup_min_confidence: float = 0.84
-    competitor_lookup_min_score_margin: float = 8.0
 
     web_search_enabled: bool = True
     web_search_mcp_command: str = "uvx"
