@@ -1,4 +1,4 @@
-from harness_rag.failure_feedback import build_public_failure_signals
+from harness_rag.failure_feedback import build_public_failure_signals, build_public_teacher_examples
 
 
 def test_stale_enrichment_conflict_becomes_identity_free_failure_signal():
@@ -73,3 +73,50 @@ def test_failure_signals_deduplicate_by_structural_signature():
     signals = build_public_failure_signals({"results": [row, dict(row)]})
     assert len(signals) == 1
     assert signals[0]["failure_type"] == "FAIL_WRONG_NOT_FOUND"
+
+
+
+def test_teacher_example_contains_public_gold_and_pipeline_trace():
+    evaluation = {
+        "results": [
+            {
+                "id": "public_case_17",
+                "query": "Кран шаровый VT.217.N.05",
+                "verdict": "FAIL_WRONG_NOT_FOUND",
+                "actual_status": "NOT_FOUND",
+                "returned_ld_id": None,
+                "reason": "catalog evidence exists",
+                "pipeline_trace": {
+                    "attributes_before_web": {"dn": 15},
+                    "attributes": {"dn": 20},
+                    "hard_constraints": {"dn": 15},
+                },
+            }
+        ]
+    }
+    dataset = {
+        "cases": [
+            {
+                "id": "public_case_17",
+                "query": "Кран шаровый VT.217.N.05",
+                "expected_status": "MATCHED",
+                "requirements": {"product_type": "ball_valve", "dn": 20},
+                "known_positive_ids": [4242],
+                "known_rejected_ids": [],
+                "known_unsure_ids": [],
+            }
+        ]
+    }
+
+    examples = build_public_teacher_examples(evaluation, dataset)
+
+    assert len(examples) == 1
+    example = examples[0]
+    assert example["query"] == "Кран шаровый VT.217.N.05"
+    assert example["expected"]["status"] == "MATCHED"
+    assert example["expected"]["requirements"]["dn"] == 20
+    assert example["expected"]["known_positive_ids"] == [4242]
+    assert example["actual"]["status"] == "NOT_FOUND"
+    assert example["pipeline_trace"]["attributes_before_web"]["dn"] == 15
+    assert example["pipeline_trace"]["attributes"]["dn"] == 20
+    assert example["pipeline_trace"]["hard_constraints"]["dn"] == 15
