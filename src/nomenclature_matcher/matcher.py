@@ -268,6 +268,24 @@ class NomenclatureMatcher:
         except Exception:
             logger.debug("failed to log enrichment debug", exc_info=True)
 
+    def _log_attributes(self, query: str, interpretation_payload: dict) -> None:
+        """Log the attributes extracted from the query (and web evidence)."""
+        try:
+            payload = {
+                "input_query": query,
+                "attributes": interpretation_payload.get("constraints", {}),
+                "hard_constraints": interpretation_payload.get("hard_constraints", {}),
+            }
+            if "pre_enrichment_interpretation" in interpretation_payload:
+                payload["attributes_before_web"] = interpretation_payload[
+                    "pre_enrichment_interpretation"
+                ].get("constraints", {})
+            logger.info(
+                "web_enrichment_attributes %s", json.dumps(payload, ensure_ascii=False)
+            )
+        except Exception:
+            logger.debug("failed to log extracted attributes", exc_info=True)
+
     def _enrichment_gate(self, query: str, interpretation) -> tuple[bool, str]:
         if self.competitor_lookup is None:
             return False, "enrichment_disabled"
@@ -364,6 +382,8 @@ class NomenclatureMatcher:
                 )
             if lookup_debug is not None:
                 interpretation_payload["competitor_lookup"] = lookup_debug
+
+            self._log_attributes(query, interpretation_payload)
 
             if not interpretation.searchable:
                 return MatchResult(
