@@ -25,6 +25,31 @@ _item_index_context: ContextVar[int | None] = ContextVar(
 )
 _logger = logging.getLogger("nomenclature_matcher.observability")
 
+_DIAGNOSTIC_CONSTRAINT_FIELDS = (
+    "product_type",
+    "dn",
+    "pn_min_mpa",
+    "joining_type",
+    "thread_type",
+    "working_medium",
+    "valve_type",
+    "valve_designation",
+    "body_material",
+    "body_material_grade",
+    "bore_type",
+    "control",
+)
+_MATCH_REASON_CODES = (
+    "MATCHED",
+    "HARD_CONSTRAINT_FILTER",
+    "QUERY_REJECTED",
+    "QUERY_INTERPRET_FAILED",
+    "RERANK_FAILED",
+    "RERANK_NOT_FOUND",
+    "UNSPECIFIED",
+    "OTHER",
+)
+
 
 def get_request_id() -> str | None:
     return _request_id_context.get()
@@ -53,16 +78,90 @@ def resolve_request_id(header_value: str | None) -> str:
     return value[:128] if value else uuid4().hex
 
 
-def _json_log(event: str, **payload: Any) -> None:
+def _json_log(event: str, *, severity: str = "INFO", **payload: Any) -> None:
     request_id = payload.pop("request_id", None) or get_request_id()
     item_index = payload.pop("item_index", None)
     if item_index is None:
         item_index = _item_index_context.get()
-    record = {"event": event, "request_id": request_id}
+    severity = str(severity or "INFO").upper()
+    record = {"event": event, "severity": severity, "request_id": request_id}
     if item_index is not None:
         record["item_index"] = item_index
     record.update({key: value for key, value in payload.items() if value is not None})
-    _logger.info(json.dumps(record, ensure_ascii=False, separators=(",", ":")))
+    log_method = getattr(_logger, severity.lower(), _logger.info)
+    log_method(json.dumps(record, ensure_ascii=False, separators=(",", ":")))
+
+
+def log_operational_event(
+    event: str,
+    summary: str,
+    *,
+    severity: str = "INFO",
+    **payload: Any,
+) -> None:
+    """Emit one human-oriented JSON event suitable for Loki/Grafana tables."""
+    _json_log(
+        event,
+        severity=severity,
+        summary=" ".join(str(summary or "").split())[:600],
+        **payload,
+    )
+
+
+def trim_text(value: Any, limit: int = 600) -> str:
+    return " ".join(str(value or "").split())[:limit]
+
+
+def classify_match_reason(status: str, reason: str | None) -> str:
+    if status == "MATCHED":
+        return "MATCHED"
+    text = str(reason or "").strip()
+    upper = text.upper()
+    if "HARD_CONSTRAINT_FILTER" in upper:
+        return "HARD_CONSTRAINT_FILTER"
+    if upper.startswith("QUERY_REJECTED"):
+        return "QUERY_REJECTED"
+    if upper.startswith("QUERY_INTERPRET_FAILED"):
+        return "QUERY_INTERPRET_FAILED"
+    if status in {"ERROR", "RERANK_FAILED"} or "RERANK_FAILED" in upper:
+        return "RERANK_FAILED"
+    if "NO EXACT MATCH" in upper or "NOT_FOUND" in upper:
+        return "RERANK_NOT_FOUND"
+    if not text:
+        return "UNSPECIFIED"
+    return "OTHER"
+
+
+def build_attribute_diagnostic(
+    before: dict[str, Any] | None,
+    after: dict[str, Any] | None,
+    hard: dict[str, Any] | None,
+) -> dict[str, Any]:
+    before = before or {}
+    after = after or {}
+    hard = hard or {}
+    changed_fields: list[str] = []
+    hard_conflicts: dict[str, dict[str, Any]] = {}
+    for field in _DIAGNOSTIC_CONSTRAINT_FIELDS:
+        before_value = before.get(field)
+        after_value = after.get(field)
+        hard_value = hard.get(field)
+        if before_value != after_value:
+            changed_fields.append(field)
+        if (
+            hard_value not in (None, "")
+            and after_value not in (None, "")
+            and hard_value != after_value
+        ):
+            hard_conflicts[field] = {
+                "hard": hard_value,
+                "enriched": after_value,
+            }
+    return {
+        "changed_fields": changed_fields,
+        "hard_conflict_fields": sorted(hard_conflicts),
+        "hard_conflicts": hard_conflicts,
+    }
 
 
 def log_match_trace(stage: str, *, enabled: bool = True, **payload: Any) -> None:
@@ -297,6 +396,31 @@ HISTORY_WRITES_TOTAL = CounterMetric(
 HISTORY_DURATION = HistogramMetric(
     "rag_tender_history_duration_seconds", "PostgreSQL history write duration."
 )
+WEB_ENRICHMENT_TOTAL = CounterMetric(
+    "rag_tender_web_enrichment_total",
+    "Web enrichment attempts by bounded outcome.",
+    ("status",),
+)
+WEB_ENRICHMENT_DURATION = HistogramMetric(
+    "rag_tender_web_enrichment_duration_seconds",
+    "Web enrichment duration in seconds.",
+    ("status",),
+)
+ENRICHMENT_GATE_TOTAL = CounterMetric(
+    "rag_tender_enrichment_gate_total",
+    "Enrichment gate decisions by bounded reason.",
+    ("reason",),
+)
+ATTRIBUTE_CONFLICTS_TOTAL = CounterMetric(
+    "rag_tender_attribute_conflicts_total",
+    "Conflicts between hard constraints and enriched attributes.",
+    ("field",),
+)
+MATCH_DECISIONS_TOTAL = CounterMetric(
+    "rag_tender_match_decisions_total",
+    "Final item decisions by status and bounded reason.",
+    ("status", "reason"),
+)
 
 _METRICS = (
     HTTP_REQUESTS_TOTAL,
@@ -320,6 +444,11 @@ _METRICS = (
     QDRANT_DURATION,
     HISTORY_WRITES_TOTAL,
     HISTORY_DURATION,
+    WEB_ENRICHMENT_TOTAL,
+    WEB_ENRICHMENT_DURATION,
+    ENRICHMENT_GATE_TOTAL,
+    ATTRIBUTE_CONFLICTS_TOTAL,
+    MATCH_DECISIONS_TOTAL,
 )
 
 
@@ -354,6 +483,39 @@ def record_api_error(code: str) -> None:
 def record_history_write(status: str, duration_seconds: float) -> None:
     HISTORY_WRITES_TOTAL.inc(status=status)
     HISTORY_DURATION.observe(duration_seconds)
+
+
+def record_web_enrichment(status: str, duration_seconds: float) -> None:
+    bounded = status if status in {"accepted", "rejected", "error"} else "error"
+    WEB_ENRICHMENT_TOTAL.inc(status=bounded)
+    WEB_ENRICHMENT_DURATION.observe(duration_seconds, status=bounded)
+
+
+def record_enrichment_gate(reason: str) -> None:
+    mapping = {
+        "pre_enrichment_eligible": "eligible",
+        "pre_enrichment_out_of_scope": "out_of_scope",
+        "pre_enrichment_ambiguous": "ambiguous",
+        "pre_enrichment_not_searchable": "not_searchable",
+        "pre_enrichment_no_product_identity": "no_identity",
+        "pre_enrichment_enough_explicit_detail": "enough_detail",
+        "enrichment_disabled": "disabled",
+    }
+    ENRICHMENT_GATE_TOTAL.inc(reason=mapping.get(reason, "other"))
+
+
+def record_attribute_conflicts(fields: list[str]) -> None:
+    allowed = set(_DIAGNOSTIC_CONSTRAINT_FIELDS)
+    for field in fields:
+        ATTRIBUTE_CONFLICTS_TOTAL.inc(field=field if field in allowed else "other")
+
+
+def record_match_decision(status: str, reason: str | None) -> str:
+    code = classify_match_reason(status, reason)
+    if code not in _MATCH_REASON_CODES:
+        code = "OTHER"
+    MATCH_DECISIONS_TOTAL.inc(status=status, reason=code)
+    return code
 
 
 def render_metrics() -> str:
