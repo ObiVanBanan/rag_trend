@@ -17,6 +17,7 @@ from .observability import (
     inc_in_flight,
     log_http_request_completed,
     log_match_trace,
+    log_operational_event,
     record_api_error,
     record_batch_size,
     record_history_write,
@@ -188,16 +189,34 @@ def create_app(runtime_factory: RuntimeFactory | None = None) -> FastAPI:
                 response_payload=response_payload,
                 trace_enabled=trace_enabled,
             )
+            not_found_count = sum(
+                item.status == "NOT_FOUND" for item in response.results
+            )
+            error_count = sum(item.status == "ERROR" for item in response.results)
             log_match_trace(
                 "request_completed",
                 enabled=trace_enabled,
                 duration_ms=latency_ms,
                 batch_size=len(payload.products),
                 matched_count=matched_count,
-                not_found_count=sum(
-                    item.status == "NOT_FOUND" for item in response.results
+                not_found_count=not_found_count,
+                error_count=error_count,
+            )
+            severity = "ERROR" if error_count else ("WARNING" if not_found_count else "INFO")
+            log_operational_event(
+                "request_diagnostic",
+                (
+                    f"REQUEST {history_status}: {matched_count} matched, "
+                    f"{not_found_count} not found, {error_count} errors "
+                    f"of {len(payload.products)} items ({latency_ms:.0f} ms)"
                 ),
-                error_count=sum(item.status == "ERROR" for item in response.results),
+                severity=severity,
+                batch_size=len(payload.products),
+                matched_count=matched_count,
+                not_found_count=not_found_count,
+                error_count=error_count,
+                duration_ms=latency_ms,
+                slow_request=latency_ms >= 10000,
             )
             return response
         except Exception as exc:
@@ -229,6 +248,18 @@ def create_app(runtime_factory: RuntimeFactory | None = None) -> FastAPI:
                 enabled=trace_enabled,
                 duration_ms=latency_ms,
                 error_type=type(exc).__name__,
+            )
+            log_operational_event(
+                "request_diagnostic",
+                f"REQUEST ERROR — {type(exc).__name__} ({latency_ms:.0f} ms)",
+                severity="ERROR",
+                batch_size=len(payload.products),
+                matched_count=0,
+                not_found_count=0,
+                error_count=len(payload.products),
+                duration_ms=latency_ms,
+                error_type=type(exc).__name__,
+                slow_request=latency_ms >= 10000,
             )
             return JSONResponse(status_code=500, content=response_payload)
 
