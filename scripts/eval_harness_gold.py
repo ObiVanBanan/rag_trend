@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from nomenclature_matcher.bm25_store import BM25Store
 from nomenclature_matcher.documents import load_products_from_csv
-from nomenclature_matcher.embeddings import OpenAIEmbedder
+from nomenclature_matcher.embeddings import create_embedder
 from nomenclature_matcher.golden_rules import GoldenQueryConstraints, golden_product_snapshot
 from nomenclature_matcher.harness_gold import (
     evaluate_harness_product,
@@ -84,7 +84,7 @@ def _build_matcher(
     *,
     bm25_store: BM25Store | None = None,
 ) -> NomenclatureMatcher:
-    embedder = OpenAIEmbedder(settings)
+    embedder = create_embedder(settings)
     qdrant_store = QdrantStore(settings)
     hybrid = HybridRetriever(
         embedder,
@@ -164,6 +164,19 @@ def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any])
         "verdict": "UNSCORED",
         "reason": "",
     }
+
+    interpretation = getattr(result, "query_interpretation", None)
+    if isinstance(interpretation, dict):
+        pre = interpretation.get("pre_enrichment_interpretation") or {}
+        row["pipeline_trace"] = {
+            "attributes": dict(interpretation.get("constraints") or {}),
+            "hard_constraints": dict(interpretation.get("hard_constraints") or {}),
+            "attributes_before_web": (
+                dict(pre.get("constraints") or {})
+                if isinstance(pre, dict)
+                else {}
+            ),
+        }
 
     product = None
     if returned_ld_id is not None:

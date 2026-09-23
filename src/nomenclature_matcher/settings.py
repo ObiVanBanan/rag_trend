@@ -17,22 +17,38 @@ except ImportError:  # pragma: no cover - only for a not-yet-installed environme
 class Settings(BaseSettings):
     app_env: str = "development"
     log_level: str = "INFO"
+
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_alias: str = "steel_products_active"
     qdrant_dense_vector_name: str = "dense"
     qdrant_timeout_seconds: float = 5
-    openai_api_key: str = ""
-    openai_base_url: str = "https://api.openai.com/v1"
-    openai_timeout_seconds: float = 10
+
+    # Dense embeddings. "openai" preserves the production/cloud path; "ollama"
+    # uses Ollama's native /api/embed endpoint and requires an index built with
+    # the same EMBEDDING_MODEL / EMBEDDING_DIMENSION pair.
+    embedding_provider: str = "openai"
     embedding_model: str = "text-embedding-3-small"
     embedding_dimension: int = 1536
     dense_batch_size: int = 32
     embedding_max_retries: int = 3
     embedding_retry_sleep_seconds: float = 0.25
+
+    openai_api_key: str = ""
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_timeout_seconds: float = 10
+
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_timeout_seconds: float = 120
+
+    # The query interpreter and reranker use an OpenAI-compatible chat API.
+    # Existing DEEPSEEK_* names are kept for backwards compatibility; pointing
+    # DEEPSEEK_BASE_URL at LM Studio makes the same runtime fully local.
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com/v1"
     deepseek_model: str = "deepseek-v4-flash"
     deepseek_timeout_seconds: float = 20
+    deepseek_send_thinking_control: bool = True
+
     query_interpreter_enabled: bool = True
     query_interpreter_system_prompt_path: str = "src/nomenclature_matcher/prompts/query_interpreter_system.md"
 
@@ -63,4 +79,5 @@ class Settings(BaseSettings):
     rerank_result_limit: int = 3
     match_top_k: int = 20
     match_score_threshold: float = 0.0
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)

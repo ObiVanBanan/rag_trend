@@ -42,16 +42,19 @@ class DeepSeekReranker:
         candidates: list[SearchCandidate],
         constraints: dict[str, Any] | None = None,
     ) -> RerankResult:
-        response = self.client.chat.completions.create(
-            model=self.settings.deepseek_model,
-            temperature=0,
-            response_format={"type": "json_object"},
-            extra_body={"thinking": {"type": "disabled"}},
-            messages=[
+        request_kwargs = {
+            "model": self.settings.deepseek_model,
+            "temperature": 0,
+            "messages": [
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": self._build_prompt(query, candidates, constraints)},
             ],
-        )
+        }
+        if getattr(self.settings, "deepseek_response_format_enabled", True):
+            request_kwargs["response_format"] = {"type": "json_object"}
+        if getattr(self.settings, "deepseek_send_thinking_control", True):
+            request_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
+        response = self.client.chat.completions.create(**request_kwargs)
         content = response.choices[0].message.content or "{}"
         return self._parse_result(content, len(candidates))
 

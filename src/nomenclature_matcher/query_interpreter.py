@@ -252,19 +252,22 @@ class DeepSeekQueryInterpreter:
                 "\n\nПредыдущий ответ не прошёл JSON/schema validation. "
                 "Верни заново только один строго валидный JSON-объект по указанной схеме."
             )
-        response = self.client.chat.completions.create(
-            model=self.settings.deepseek_model,
-            temperature=0,
-            response_format={"type": "json_object"},
-            extra_body={"thinking": {"type": "disabled"}},
-            messages=[
+        request_kwargs = {
+            "model": self.settings.deepseek_model,
+            "temperature": 0,
+            "messages": [
                 {"role": "system", "content": self.system_prompt},
                 {
                     "role": "user",
                     "content": self._user_message(query, competitor_context, suffix),
                 },
             ],
-        )
+        }
+        if getattr(self.settings, "deepseek_response_format_enabled", True):
+            request_kwargs["response_format"] = {"type": "json_object"}
+        if getattr(self.settings, "deepseek_send_thinking_control", True):
+            request_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
+        response = self.client.chat.completions.create(**request_kwargs)
         return response.choices[0].message.content or "{}"
 
     def interpret(
