@@ -267,9 +267,11 @@ class NomenclatureMatcher:
             return None, None, debug
 
         duration = perf_counter() - started
-        status = "accepted" if result.accepted else "rejected"
-        record_web_enrichment(status, duration)
         debug = result.debug_payload()
+        accepted = bool(debug.get("accepted", getattr(result, "accepted", False)))
+        status = "accepted" if accepted else "rejected"
+        record_web_enrichment(status, duration)
+        debug["accepted"] = accepted
         debug["duration_ms"] = round(duration * 1000, 3)
         log_match_trace(
             "web_enrichment_completed",
