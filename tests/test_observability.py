@@ -54,3 +54,40 @@ def test_observed_embedder_preserves_result_and_records_metrics():
     rendered = obs.render_metrics()
     assert "rag_tender_embedding_requests_total 1" in rendered
     assert "rag_tender_embedding_duration_seconds_count 1" in rendered
+
+
+
+def test_attribute_diagnostic_surfaces_hard_conflict():
+    diagnostic = obs.build_attribute_diagnostic(
+        {"product_type": "ball_valve", "dn": 15},
+        {"product_type": "ball_valve", "dn": 20, "body_material": "brass"},
+        {"product_type": "ball_valve", "dn": 15},
+    )
+
+    assert diagnostic["changed_fields"] == ["dn", "body_material"]
+    assert diagnostic["hard_conflict_fields"] == ["dn"]
+    assert diagnostic["hard_conflicts"]["dn"] == {"hard": 15, "enriched": 20}
+
+
+def test_web_enrichment_and_decision_metrics_are_bounded():
+    _reset_metrics()
+    obs.record_web_enrichment("accepted", 0.8)
+    obs.record_web_enrichment("unexpected-value", 1.2)
+    obs.record_enrichment_gate("pre_enrichment_no_product_identity")
+    obs.record_attribute_conflicts(["dn", "unknown-field"])
+    code = obs.record_match_decision(
+        "NOT_FOUND",
+        "HARD_CONSTRAINT_FILTER: no retrieved candidate satisfies all QUERY_CONSTRAINTS",
+    )
+
+    rendered = obs.render_metrics()
+    assert code == "HARD_CONSTRAINT_FILTER"
+    assert 'rag_tender_web_enrichment_total{status="accepted"} 1' in rendered
+    assert 'rag_tender_web_enrichment_total{status="error"} 1' in rendered
+    assert 'rag_tender_enrichment_gate_total{reason="no_identity"} 1' in rendered
+    assert 'rag_tender_attribute_conflicts_total{field="dn"} 1' in rendered
+    assert 'rag_tender_attribute_conflicts_total{field="other"} 1' in rendered
+    assert (
+        'rag_tender_match_decisions_total{status="NOT_FOUND",reason="HARD_CONSTRAINT_FILTER"} 1'
+        in rendered
+    )
