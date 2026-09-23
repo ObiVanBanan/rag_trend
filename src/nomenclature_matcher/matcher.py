@@ -1,9 +1,19 @@
 from dataclasses import replace
+from time import perf_counter
 
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
 from .query_constraints import QueryConstraints, evaluate_product
 from .query_signals import explicit_technical_signal_count, has_product_identity
+from .observability import (
+    build_attribute_diagnostic,
+    log_match_trace,
+    log_operational_event,
+    record_attribute_conflicts,
+    record_enrichment_gate,
+    record_web_enrichment,
+    trim_text,
+)
 
 
 class NomenclatureMatcher:
@@ -232,18 +242,131 @@ class NomenclatureMatcher:
     def _lookup_competitor(self, query: str):
         if self.competitor_lookup is None:
             return None, None, None
+        started = perf_counter()
+        trace_enabled = bool(getattr(self.settings, "match_trace_enabled", True))
+        log_match_trace("web_enrichment_started", enabled=trace_enabled)
         try:
             result = self.competitor_lookup.lookup(query)
-            return result, result.prompt_context(), result.debug_payload()
         except Exception as exc:  # enrichment must never break matching
+            duration = perf_counter() - started
+            record_web_enrichment("error", duration)
             debug = {
                 "attempted": True,
                 "accepted": False,
                 "reason": f"lookup_error:{type(exc).__name__}:{exc}",
                 "search_results": "",
                 "pages": [],
+                "duration_ms": round(duration * 1000, 3),
             }
+            log_match_trace(
+                "web_enrichment_failed",
+                enabled=trace_enabled,
+                duration_ms=debug["duration_ms"],
+                error_type=type(exc).__name__,
+            )
             return None, None, debug
+
+        duration = perf_counter() - started
+        status = "accepted" if result.accepted else "rejected"
+        record_web_enrichment(status, duration)
+        debug = result.debug_payload()
+        debug["duration_ms"] = round(duration * 1000, 3)
+        log_match_trace(
+            "web_enrichment_completed",
+            enabled=trace_enabled,
+            duration_ms=debug["duration_ms"],
+            status=status,
+            reason=trim_text(debug.get("reason"), 120),
+            page_count=len(debug.get("pages") or []),
+        )
+        return result, result.prompt_context(), debug
+
+    def _log_enrichment_diagnostic(self, query: str, debug: dict) -> None:
+        pages = debug.get("pages") or []
+        reason = trim_text(debug.get("reason"), 220)
+        accepted = bool(debug.get("accepted"))
+        attempted = bool(debug.get("attempted"))
+        duration_ms = debug.get("duration_ms")
+        if not attempted:
+            status = "SKIPPED"
+            severity = "INFO"
+        elif accepted:
+            status = "ACCEPTED"
+            severity = "INFO"
+        elif str(reason).startswith("lookup_error") or "error" in str(reason).lower():
+            status = "ERROR"
+            severity = "ERROR"
+        else:
+            status = "REJECTED"
+            severity = "WARNING"
+
+        summary = f"WEB {status}"
+        if reason:
+            summary += f" — {reason}"
+        if duration_ms is not None:
+            summary += f" ({duration_ms:.0f} ms)"
+
+        evidence_preview = []
+        for page in pages[:2]:
+            if not isinstance(page, dict):
+                continue
+            evidence_preview.append(
+                {
+                    "target": trim_text(page.get("target"), 300),
+                    "text": trim_text(page.get("text"), 500),
+                }
+            )
+
+        log_operational_event(
+            "web_enrichment_diagnostic",
+            summary,
+            severity=severity,
+            input_query=trim_text(query, 500),
+            attempted=attempted,
+            accepted=accepted,
+            reason=reason,
+            duration_ms=duration_ms,
+            search_query=trim_text(debug.get("search_query"), 500),
+            page_count=len(pages),
+            search_results_preview=trim_text(debug.get("search_results"), 700),
+            evidence_preview=evidence_preview,
+        )
+
+    def _log_attribute_diagnostic(
+        self,
+        query: str,
+        *,
+        pre_interpretation,
+        interpretation,
+        hard_constraints: dict,
+    ) -> None:
+        before = pre_interpretation.constraints.model_dump()
+        after = interpretation.constraints.model_dump()
+        diagnostic = build_attribute_diagnostic(before, after, hard_constraints)
+        conflicts = diagnostic["hard_conflict_fields"]
+        record_attribute_conflicts(conflicts)
+
+        changed = diagnostic["changed_fields"]
+        summary_parts = []
+        if changed:
+            summary_parts.append("changed: " + ", ".join(changed))
+        else:
+            summary_parts.append("attributes unchanged")
+        if conflicts:
+            summary_parts.append("HARD CONFLICT: " + ", ".join(conflicts))
+
+        log_operational_event(
+            "attribute_diagnostic",
+            " | ".join(summary_parts),
+            severity="WARNING" if conflicts else "INFO",
+            input_query=trim_text(query, 500),
+            changed_fields=changed,
+            hard_conflict_fields=conflicts,
+            hard_conflicts=diagnostic["hard_conflicts"],
+            attributes_before_web=before,
+            attributes_after_web=after,
+            hard_constraints=hard_constraints,
+        )
 
     def _enrichment_gate(self, query: str, interpretation) -> tuple[bool, str]:
         if self.competitor_lookup is None:
@@ -296,6 +419,7 @@ class NomenclatureMatcher:
             lookup_debug = None
             enriched_interpretation = None
             should_enrich, gate_reason = self._enrichment_gate(query, pre_interpretation)
+            record_enrichment_gate(gate_reason)
 
             if should_enrich:
                 _, competitor_context, lookup_debug = self._lookup_competitor(query)
@@ -339,6 +463,14 @@ class NomenclatureMatcher:
                 )
             if lookup_debug is not None:
                 interpretation_payload["competitor_lookup"] = lookup_debug
+                self._log_enrichment_diagnostic(query, lookup_debug)
+
+            self._log_attribute_diagnostic(
+                query,
+                pre_interpretation=pre_interpretation,
+                interpretation=interpretation,
+                hard_constraints=hard_constraints,
+            )
 
             if not interpretation.searchable:
                 return MatchResult(
