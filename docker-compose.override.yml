@@ -1,0 +1,52 @@
+# Overrides for the observability stack, so it can run side by side with the
+# rag_tender stack on the same host:
+#   - unique container names (rag-observability-*) instead of rag-tender-*
+#   - API published on 0.0.0.0:8002 (8000 is used by rag-tender-api)
+#   - PostgreSQL published on 127.0.0.1:5436 (5432 is used by rag-tender-postgres)
+#   - Qdrant snapshots dir mounted rw (Qdrant needs to write snapshot temp files)
+#   - qdrant-init script passed as a single argv entry (Compose v5 shlex-split
+#     breaks multi-line `command: |` scripts)
+#   - internal hostnames updated to the renamed containers
+services:
+  qdrant:
+    container_name: !override rag-observability-qdrant
+    volumes: !override
+      - qdrant_storage:/qdrant/storage
+      - ./qdrant:/qdrant/snapshots:rw
+
+  qdrant-init:
+    container_name: !override rag-observability-qdrant-init
+    entrypoint: !override ["/bin/sh", "-ec"]
+    command: !override
+      - |
+        until curl -fsS http://rag-observability-qdrant:6333/collections >/dev/null; do sleep 2; done
+        if curl -fsS "http://rag-observability-qdrant:6333/collections/${QDRANT_COLLECTION_ALIAS:-steel_products_active}" >/dev/null 2>&1; then
+          echo "Qdrant collection already exists; snapshot restore skipped."
+          exit 0
+        fi
+        SNAPSHOT="/snapshots/${QDRANT_COLLECTION_ALIAS:-steel_products_active}.snapshot"
+        if [ ! -f "$$SNAPSHOT" ]; then
+          echo "Snapshot not found: $$SNAPSHOT"
+          exit 1
+        fi
+        curl -fsS -X PUT "http://rag-observability-qdrant:6333/collections/${QDRANT_COLLECTION_ALIAS:-steel_products_active}/snapshots/recover?wait=true" -H "Content-Type: application/json" -d "{\"location\":\"file:///qdrant/snapshots/${QDRANT_COLLECTION_ALIAS:-steel_products_active}.snapshot\"}"
+        echo "Qdrant snapshot restored."
+
+  postgres:
+    container_name: !override rag-observability-postgres
+    ports: !override
+      - "127.0.0.1:5436:5432"
+
+  api:
+    container_name: !override rag-observability-api
+    ports: !override
+      - "${API_PORT:-8002}:8000"
+    environment: !override
+      APP_ENV: production
+      QDRANT_URL: http://rag-observability-qdrant:6333
+      PRODUCT_CSV_PATH: /data/ld_products_full_nomenclature.csv
+      DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
+      HTTP_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      HTTPS_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      ALL_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      NO_PROXY: localhost,127.0.0.1,rag-observability-qdrant,rag-observability-postgres,postgres,qdrant,.local,172.16.0.0/12,10.0.0.0/8
