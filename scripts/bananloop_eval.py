@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from harness_rag.failure_feedback import build_public_failure_signals
+from harness_rag.failure_feedback import build_public_failure_signals, build_public_teacher_examples
 from harness_rag.hook import run_eval, run_hidden_eval
 
 
@@ -86,6 +86,7 @@ def _fast_evaluation_result(
     tests_passed: bool,
     artifacts: list[str],
     failure_signals: list[dict[str, Any]],
+    failure_examples: list[dict[str, Any]],
 ) -> dict[str, Any]:
     public_hard = _rate(public, "hard_pass_rate")
     public_hard_n = int(public.get("hard_gate_cases") or 0) or None
@@ -103,6 +104,7 @@ def _fast_evaluation_result(
         "metrics": metrics,
         "checks": {"tests": {"passed": tests_passed}},
         "failure_signals": failure_signals,
+        "failure_examples": failure_examples,
         "artifacts": artifacts,
     }
 
@@ -114,6 +116,7 @@ def _evaluation_result(
     tests_passed: bool,
     artifacts: list[str],
     failure_signals: list[dict[str, Any]],
+    failure_examples: list[dict[str, Any]],
 ) -> dict[str, Any]:
     public_hard = _rate(public, "hard_pass_rate")
     hidden_hard = _rate(hidden, "hard_pass_rate")
@@ -144,6 +147,7 @@ def _evaluation_result(
             }
         },
         "failure_signals": failure_signals,
+        "failure_examples": failure_examples,
         "artifacts": artifacts,
     }
 
@@ -205,7 +209,14 @@ def main() -> int:
     public_payload = json.loads(
         Path(public_result["raw_output"]).read_text(encoding="utf-8")
     )
+    public_dataset_payload = json.loads(
+        Path(args.public_dataset).resolve().read_text(encoding="utf-8")
+    )
     failure_signals = build_public_failure_signals(public_payload)
+    failure_examples = build_public_teacher_examples(
+        public_payload,
+        public_dataset_payload,
+    )
 
     if args.mode == "fast":
         result = _fast_evaluation_result(
@@ -216,6 +227,7 @@ def main() -> int:
                 str(output_dir / "pytest.txt"),
             ],
             failure_signals=failure_signals,
+            failure_examples=failure_examples,
         )
     else:
         hidden_result = run_hidden_eval(
@@ -236,6 +248,7 @@ def main() -> int:
                 str(output_dir / "pytest.txt"),
             ],
             failure_signals=failure_signals,
+            failure_examples=failure_examples,
         )
     print(json.dumps(result, ensure_ascii=False))
     return 0
