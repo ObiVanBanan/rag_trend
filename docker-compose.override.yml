@@ -46,7 +46,7 @@ services:
       QDRANT_URL: http://rag-observability-qdrant:6333
       PRODUCT_CSV_PATH: /data/ld_products_full_nomenclature.csv
       DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
-      HTTP_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
-      HTTPS_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
-      ALL_PROXY: socks5://proxyuser:0jPB9fM8LfekazHkltB1bqu0@155.212.141.143:1080
+      HTTP_PROXY: ${OUTBOUND_PROXY_URL:-}
+      HTTPS_PROXY: ${OUTBOUND_PROXY_URL:-}
+      ALL_PROXY: ${OUTBOUND_PROXY_URL:-}
       NO_PROXY: localhost,127.0.0.1,rag-observability-qdrant,rag-observability-postgres,postgres,qdrant,.local,172.16.0.0/12,10.0.0.0/8
