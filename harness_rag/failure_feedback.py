@@ -151,3 +151,77 @@ def build_public_failure_signals(
             break
 
     return signals
+
+
+
+def build_public_teacher_examples(
+    evaluation_payload: dict[str, Any],
+    dataset_payload: dict[str, Any],
+    *,
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    """Build raw public-DEV teacher examples for the dedicated analyzer only.
+
+    These examples intentionally contain the exact public query and GOLD
+    expectation so the analyzer can diagnose root causes. They must never be
+    forwarded to proposer/implementer context or validation/holdout memory.
+    """
+
+    cases_by_id = {
+        str(case.get("id")): case
+        for case in dataset_payload.get("cases", [])
+        if isinstance(case, dict) and case.get("id") is not None
+    }
+    failed_rows = [
+        row
+        for row in evaluation_payload.get("results", [])
+        if isinstance(row, dict) and row.get("verdict") in _FAILED_VERDICTS
+    ]
+
+    def priority(row: dict[str, Any]) -> tuple[int, str]:
+        trace = row.get("pipeline_trace") or {}
+        stale = bool(
+            _stale_constraint_fields(trace)
+            if isinstance(trace, dict)
+            else []
+        )
+        return (0 if stale else 1, str(row.get("verdict") or ""))
+
+    examples: list[dict[str, Any]] = []
+    seen_queries: set[str] = set()
+    for row in sorted(failed_rows, key=priority):
+        case = cases_by_id.get(str(row.get("id")))
+        if not case:
+            continue
+        query = str(case.get("query") or row.get("query") or "").strip()
+        if not query or query in seen_queries:
+            continue
+        seen_queries.add(query)
+
+        expected = {
+            "status": case.get("expected_status"),
+            "requirements": dict(case.get("requirements") or {}),
+            "known_positive_ids": list(case.get("known_positive_ids") or []),
+            "known_rejected_ids": list(case.get("known_rejected_ids") or []),
+            "known_unsure_ids": list(case.get("known_unsure_ids") or []),
+        }
+        actual = {
+            "status": row.get("actual_status"),
+            "returned_ld_id": row.get("returned_ld_id"),
+            "returned_product": row.get("returned_product"),
+            "decision_source": row.get("decision_source"),
+            "requirement_decision": row.get("requirement_decision"),
+            "reason": row.get("reason"),
+        }
+        examples.append(
+            {
+                "query": query,
+                "verdict": str(row.get("verdict") or ""),
+                "expected": expected,
+                "actual": actual,
+                "pipeline_trace": dict(row.get("pipeline_trace") or {}),
+            }
+        )
+        if len(examples) >= limit:
+            break
+    return examples
