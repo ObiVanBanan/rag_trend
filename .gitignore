@@ -13,3 +13,10 @@ mcp_web_search_test.json
 
 # BananLoop evaluator evidence (kept across git clean -fd)
 .bananloop_eval/
+
+# Local secrets, exports and generated artifacts
+*.env.backup
+*.log
+*_smoke.json
+ld_products_full_nomenclature.csv
+*.egg-info/
