@@ -83,7 +83,7 @@ services:
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:
-      - ./ld_products_full_nomenclature.csv:/data/ld_products_full_nomenclature.csv:ro
+      - ${PRODUCT_CSV_HOST_PATH:-./ld_products_full_nomenclature.csv}:/data/ld_products_full_nomenclature.csv:ro
     depends_on:
       qdrant-init:
         condition: service_completed_successfully
