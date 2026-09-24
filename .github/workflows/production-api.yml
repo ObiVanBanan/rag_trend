@@ -9,14 +9,18 @@ on:
     paths:
       - "src/nomenclature_matcher/api.py"
       - "src/nomenclature_matcher/production.py"
+      - "src/nomenclature_matcher/settings.py"
+      - "src/nomenclature_matcher/query_signals.py"
       - "src/nomenclature_matcher/observability.py"
       - "src/nomenclature_matcher/matcher.py"
       - "src/nomenclature_matcher/web_search_mcp.py"
       - "tests/test_production_api.py"
+      - "tests/test_web_search_mcp.py"
       - "tests/test_observability.py"
       - "tests/test_enrichment_pipeline.py"
       - "Dockerfile"
       - "docker-compose.yml"
+      - "docker-compose.override.yml"
       - "pyproject.toml"
       - ".github/workflows/production-api.yml"
 
@@ -42,6 +46,7 @@ jobs:
           tests/test_production_api.py
           tests/test_observability.py
           tests/test_enrichment_pipeline.py
+          tests/test_web_search_mcp.py
 
       - name: Validate Docker Compose
         run: |
