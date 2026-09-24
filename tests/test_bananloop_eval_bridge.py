@@ -31,6 +31,8 @@ def test_bananloop_bridge_uses_worst_public_hidden_hard_pass_as_primary():
         hidden,
         tests_passed=True,
         artifacts=["public.json", "hidden_summary.json"],
+        failure_signals=[],
+        failure_examples=[],
     )
 
     assert result["status"] == "ok"
@@ -82,6 +84,8 @@ def test_fast_bananloop_bridge_uses_public_hard_gate_only():
         public,
         tests_passed=True,
         artifacts=["public.json"],
+        failure_signals=[],
+        failure_examples=[],
     )
 
     assert result["status"] == "ok"
