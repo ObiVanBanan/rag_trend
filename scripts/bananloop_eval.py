@@ -91,6 +91,12 @@ def _fast_evaluation_result(
     public_hard = _rate(public, "hard_pass_rate")
     public_hard_n = int(public.get("hard_gate_cases") or 0) or None
     metrics = {
+        # Tier-aligned campaign metrics: DEV uses public evidence under these
+        # stable names; blind validation uses hidden evidence under the same names.
+        "campaign_quality": _metric(public_hard, public_hard_n),
+        "campaign_false_match_rate": _metric(_rate(public, "false_match_rate")),
+        "campaign_human_reject_rate": _metric(_rate(public, "human_reject_rate")),
+        "campaign_wrong_not_found_rate": _metric(_rate(public, "wrong_not_found_rate")),
         "quality_floor": _metric(public_hard, public_hard_n),
         "public_hard_pass_rate": _metric(public_hard, public_hard_n),
         "public_false_match_rate": _metric(_rate(public, "false_match_rate")),
@@ -124,6 +130,13 @@ def _evaluation_result(
     hidden_hard_n = int(hidden.get("hard_gate_cases") or 0) or None
 
     metrics = {
+        # On the blind tier, campaign_* is deliberately sourced only from the
+        # hidden dataset. This lets one immutable CampaignSpec compare DEV on
+        # public data and gate promotion on hidden data without leaking labels.
+        "campaign_quality": _metric(hidden_hard, hidden_hard_n),
+        "campaign_false_match_rate": _metric(_rate(hidden, "false_match_rate")),
+        "campaign_human_reject_rate": _metric(_rate(hidden, "human_reject_rate")),
+        "campaign_wrong_not_found_rate": _metric(_rate(hidden, "wrong_not_found_rate")),
         "quality_floor": _metric(min(public_hard, hidden_hard)),
         "public_hard_pass_rate": _metric(public_hard, public_hard_n),
         "hidden_hard_pass_rate": _metric(hidden_hard, hidden_hard_n),
