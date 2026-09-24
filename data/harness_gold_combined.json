@@ -396,7 +396,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 80,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "valve_type": "standard",
         "valve_designation": "КШЦФ",
         "body_material": "steel",
@@ -587,7 +587,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 15,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "female_female",
         "valve_type": "standard",
@@ -625,7 +625,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 20,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "female_female",
         "valve_type": "standard",
@@ -659,11 +659,11 @@
       "query": "Кран шаровый латунь 11б27п1 Ду25 вр/нр Ру40 бабочка",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 25,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "male_female",
         "valve_type": "standard",
@@ -671,11 +671,13 @@
         "body_material": "brass",
         "control": "manual"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        200
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "medium",
@@ -736,7 +738,7 @@
       "query": "Кран шаровый латунный 1/2 ВР-НР",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "joining_type": "threaded",
@@ -744,11 +746,13 @@
         "valve_type": "standard",
         "body_material": "brass"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        141
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
@@ -865,7 +869,7 @@
       "query": "Кран шаровой газовый латунный DN20 ВР/НР желтая ручка",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 20,
@@ -875,11 +879,13 @@
         "body_material": "brass",
         "control": "manual"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        3259
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "medium",
@@ -944,7 +950,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 25,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "valve_type": "standard",
         "body_material": "steel"
@@ -993,7 +999,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "welded",
         "valve_type": "standard",
         "body_material": "steel",
@@ -1089,18 +1095,20 @@
       "query": "Кран шаровый для подземной установки Ду80 Ру16 Н=1500",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 80,
         "pn_min_mpa": 1.6,
         "valve_type": "underground"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        9484
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "medium",
@@ -1135,7 +1143,7 @@
       "query": "КШЦП Ду100 Ру16 П/П подземный, шток 1200 мм",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 100,
@@ -1144,11 +1152,13 @@
         "valve_designation": "КШЦП",
         "bore_type": "full"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        9537
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
@@ -1247,18 +1257,20 @@
       "query": "Кран регулирующий шаровой Regula Ду50 Ру16",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
         "pn_min_mpa": 1.6,
         "valve_type": "regulating"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        15418
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
@@ -1287,18 +1299,20 @@
       "query": "Кран шаровый Ду80/70 Ру16 регулирующий под привод",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "pn_min_mpa": 1.6,
         "valve_type": "regulating",
         "control": "electric_ready"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        16770
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
@@ -1334,7 +1348,7 @@
       "query": "кран шар 50 16 фл ст20",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -1342,11 +1356,13 @@
         "joining_type": "flanged",
         "valve_type": "standard"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        15905
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
@@ -1702,7 +1718,7 @@
       "requirements": {
         "product_type": "butterfly_valve",
         "dn": 150,
-        "pn_min_mpa": 1.0,
+        "pn_min_mpa": 1,
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
@@ -2086,7 +2102,7 @@
       "requirements": {
         "product_type": "gate_valve",
         "dn": 100,
-        "pn_min_mpa": 1.0,
+        "pn_min_mpa": 1,
         "joining_type": "flanged",
         "body_material": "cast_iron"
       },
@@ -2128,7 +2144,7 @@
       "requirements": {
         "product_type": "gate_valve",
         "dn": 50,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "valve_designation": "30с15нж"
       },
       "known_positive_ids": [],
@@ -2233,7 +2249,7 @@
       "requirements": {
         "product_type": "gate_valve",
         "dn": 150,
-        "pn_min_mpa": 1.0
+        "pn_min_mpa": 1
       },
       "known_positive_ids": [],
       "known_rejected_ids": [],
@@ -2365,18 +2381,20 @@
       "query": "Клапан обратный пружинный латунный Ду25 резьбовой",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "check_valve",
         "dn": 25,
         "joining_type": "threaded",
         "body_material": "brass"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        17513
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "check_valve",
         "difficulty": "easy",
@@ -2445,7 +2463,7 @@
       "requirements": {
         "product_type": "check_valve",
         "dn": 80,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "body_material": "steel"
       },
       "known_positive_ids": [],
@@ -2478,7 +2496,7 @@
       "requirements": {
         "product_type": "check_valve",
         "dn": 100,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "valve_designation": "19с53нж"
       },
       "known_positive_ids": [],
@@ -2640,7 +2658,7 @@
       "requirements": {
         "product_type": "filter",
         "dn": 50,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "body_material": "steel"
       },
       "known_positive_ids": [],
@@ -2751,7 +2769,7 @@
       "query": "Фланец плоский DN100 PN16 ст.20 ГОСТ 33259",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 100,
@@ -2759,11 +2777,13 @@
         "body_material": "steel",
         "body_material_grade": "20"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        171
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "flange",
         "difficulty": "medium",
@@ -2957,7 +2977,7 @@
       "requirements": {
         "product_type": "flange",
         "dn": 50,
-        "pn_min_mpa": 4.0
+        "pn_min_mpa": 4
       },
       "known_positive_ids": [],
       "known_rejected_ids": [],
@@ -3054,7 +3074,7 @@
       "query": "Фланец 1-100-16 ст.20 ГОСТ 33259",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 100,
@@ -3062,11 +3082,13 @@
         "body_material": "steel",
         "body_material_grade": "20"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        171
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "flange",
         "difficulty": "hard",
@@ -3146,18 +3168,20 @@
       "query": "Фланец Ду150 Ру10 плоский стальной",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 150,
-        "pn_min_mpa": 1.0,
+        "pn_min_mpa": 1,
         "body_material": "steel"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        145
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "flange",
         "difficulty": "easy",
@@ -3191,18 +3215,20 @@
       "query": "фл 80 16 ст20 плоский",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 80,
         "pn_min_mpa": 1.6,
         "joining_type": "flanged"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        154
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "flange",
         "difficulty": "hard",
@@ -3274,18 +3300,20 @@
       "query": "Фланец стальной Ду100 Ру16",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 100,
         "pn_min_mpa": 1.6,
         "body_material": "steel"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        252
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_REVIEW_CHATGPT_2026_09_24",
       "metadata": {
         "category": "flange",
         "difficulty": "ambiguous",
@@ -3592,7 +3620,7 @@
       "requirements": {
         "product_type": "accessory",
         "dn": 50,
-        "pn_min_mpa": 4.0
+        "pn_min_mpa": 4
       },
       "known_positive_ids": [],
       "known_rejected_ids": [],
@@ -3813,7 +3841,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 25,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "male_male",
         "valve_type": "standard"
@@ -4175,7 +4203,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 20,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "male_female",
         "body_material": "brass"
