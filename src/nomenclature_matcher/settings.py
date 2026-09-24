@@ -53,8 +53,11 @@ class Settings(BaseSettings):
     web_search_max_results: int = 6
     web_search_fetch_pages: int = 3
     web_search_fetch_chars: int = 5000
-    web_search_timeout_seconds: float = 45
+    web_search_timeout_seconds: float = 8
     web_search_region: str = "wt-wt"
+    web_search_proxy_url: str = ""
+    web_search_circuit_breaker_failures: int = 3
+    web_search_circuit_breaker_cooldown_seconds: float = 300
 
     reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
     hybrid_dense_limit: int = 50
