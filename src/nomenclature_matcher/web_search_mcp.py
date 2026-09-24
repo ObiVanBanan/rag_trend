@@ -86,6 +86,21 @@ def _result_text(result: Any) -> str:
     return str(structured or "").strip()
 
 
+def _search_failure_reason(text: str) -> str | None:
+    normalized = " ".join(str(text or "").lower().split())
+    if not normalized:
+        return "no_web_evidence"
+    if "socksio" in normalized or "using socks proxy" in normalized:
+        return "mcp_proxy_error"
+    if "bot detection" in normalized:
+        return "mcp_bot_detection"
+    if "http error occurred" in normalized or "curl fetch error" in normalized:
+        return "mcp_search_error"
+    if "no results were found for your search query" in normalized:
+        return "no_web_evidence"
+    return None
+
+
 class MCPWebSearchLookup:
     """Competitor enrichment through a persistent DuckDuckGo MCP subprocess."""
 
@@ -141,6 +156,17 @@ class MCPWebSearchLookup:
                 return value
         return ""
 
+    def _server_args(self) -> list[str]:
+        return [
+            "--with",
+            self.package,
+            "--with",
+            "socksio>=1,<2",
+            "duckduckgo-mcp-server",
+            "--fetch-backend",
+            "auto",
+        ]
+
     def _server_environment(self) -> dict[str, str]:
         env = {
             "DDG_REGION": self.region,
@@ -185,7 +211,12 @@ class MCPWebSearchLookup:
     @staticmethod
     def _is_infrastructure_failure(result: WebSearchLookupResult) -> bool:
         reason = str(result.reason or "").lower()
-        return reason.startswith("mcp_search_error") or reason.startswith("lookup_error")
+        return (
+            reason.startswith("mcp_search_error")
+            or reason.startswith("mcp_proxy_error")
+            or reason.startswith("mcp_bot_detection")
+            or reason.startswith("lookup_error")
+        )
 
     def _ensure_worker(self):
         if self._portal is not None:
@@ -211,13 +242,7 @@ class MCPWebSearchLookup:
         self._queue = asyncio.Queue()
         server = StdioServerParameters(
             command=self.command,
-            args=[
-                "--with",
-                self.package,
-                "duckduckgo-mcp-server",
-                "--fetch-backend",
-                "auto",
-            ],
+            args=self._server_args(),
             env=self._server_environment(),
         )
         try:
@@ -264,12 +289,27 @@ class MCPWebSearchLookup:
                 search_results=search_text[:8000],
             )
 
-        if not search_text.strip():
+        failure_reason = _search_failure_reason(search_text)
+        if failure_reason is not None:
             retry_result = await client.call_tool(
                 "search",
                 {"query": query[:400], "max_results": self.max_results, "region": self.region},
             )
-            search_text = _result_text(retry_result)
+            retry_text = _result_text(retry_result)
+            retry_reason = _search_failure_reason(retry_text)
+            if getattr(retry_result, "is_error", False):
+                retry_reason = "mcp_search_error"
+            if retry_reason is not None:
+                combined = retry_text or search_text
+                return WebSearchLookupResult(
+                    attempted=True,
+                    accepted=False,
+                    reason=retry_reason,
+                    query=query,
+                    search_query=search_query,
+                    search_results=combined[:8000],
+                )
+            search_text = retry_text
 
         targets = extract_fetch_targets(search_text, self.fetch_pages)
         pages: list[WebPageEvidence] = []
@@ -290,7 +330,7 @@ class MCPWebSearchLookup:
             if page_text:
                 pages.append(WebPageEvidence(target=target, text=page_text[: self.fetch_chars]))
 
-        accepted = bool(search_text.strip() or pages)
+        accepted = _search_failure_reason(search_text) is None and bool(search_text.strip() or pages)
         return WebSearchLookupResult(
             attempted=True,
             accepted=accepted,
