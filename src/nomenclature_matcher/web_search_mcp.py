@@ -110,6 +110,10 @@ class MCPWebSearchLookup:
         self.fetch_pages = max(0, int(getattr(settings, "web_search_fetch_pages", 3)))
         self.fetch_chars = max(500, int(getattr(settings, "web_search_fetch_chars", 5000)))
         self.timeout_seconds = max(3.0, float(getattr(settings, "web_search_timeout_seconds", 8)))
+        self.startup_timeout_seconds = max(
+            self.timeout_seconds,
+            float(getattr(settings, "web_search_startup_timeout_seconds", 30)),
+        )
         self.circuit_breaker_failures = max(
             1, int(getattr(settings, "web_search_circuit_breaker_failures", 3))
         )
@@ -218,20 +222,34 @@ class MCPWebSearchLookup:
             or reason.startswith("lookup_error")
         )
 
-    def _ensure_worker(self):
-        if self._portal is not None:
-            return
-        from anyio.from_thread import start_blocking_portal
+    def _ensure_worker(self, *, startup_timeout_seconds: float | None = None):
+        wait_timeout = (
+            self.timeout_seconds
+            if startup_timeout_seconds is None
+            else max(self.timeout_seconds, float(startup_timeout_seconds))
+        )
+        if self._portal is None:
+            from anyio.from_thread import start_blocking_portal
 
-        self._portal_cm = start_blocking_portal()
-        self._portal = self._portal_cm.__enter__()
-        self._portal.start_task_soon(self._worker_main_async)
-        if not self._ready.wait(timeout=self.timeout_seconds):
+            self._portal_cm = start_blocking_portal()
+            self._portal = self._portal_cm.__enter__()
+            self._portal.start_task_soon(self._worker_main_async)
+
+        if not self._ready.wait(timeout=wait_timeout):
             if self._start_error is not None:
                 raise self._start_error
-            raise RuntimeError("MCP web search worker did not start in time")
+            raise RuntimeError(
+                f"MCP web search worker did not start in time ({wait_timeout * 1000:.0f} ms)"
+            )
         if self._start_error is not None:
             raise self._start_error
+
+    def warmup(self) -> None:
+        """Start the persistent MCP worker before the API accepts user traffic."""
+        if self._closed:
+            raise RuntimeError("MCP web search lookup is already closed")
+        with self._lock:
+            self._ensure_worker(startup_timeout_seconds=self.startup_timeout_seconds)
 
     async def _worker_main_async(self):
         import asyncio
