@@ -103,3 +103,68 @@ def explicit_technical_signal_count(query: str) -> int:
     if re.search(r"\bвода\b|\bпар\b|\bгаз\b|нефт|масло|гликол", text):
         score += 1
     return score
+
+
+
+def explicit_pn_mpa_from_query(query: str) -> float | None:
+    """Return PN/Ru pressure in MPa only when explicitly stated in QUERY."""
+    text = normalize_query_text(query)
+    values = {
+        float(match.group(1).replace(",", ".")) / 10.0
+        for match in re.finditer(
+            r"(?:\bpn\b|\bру\b)\s*[-:]?\s*(\d+(?:[.,]\d+)?)",
+            text,
+        )
+    }
+    if len(values) == 1:
+        return next(iter(values))
+    return None
+
+
+def explicit_thread_type_from_query(query: str) -> str | None:
+    """Return thread orientation only when QUERY explicitly states both ends."""
+    text = normalize_query_text(query)
+    female = r"(?:вр|вн\.?|внутр\.?|внутренняя)"
+    male = r"(?:нр|нар\.?|наруж\.?|наружная)"
+    sep = r"\s*[/\-–—]\s*"
+    if re.search(rf"{female}{sep}{female}", text):
+        return "female_female"
+    if re.search(rf"{male}{sep}{male}", text):
+        return "male_male"
+    if re.search(rf"(?:{female}{sep}{male}|{male}{sep}{female})", text):
+        return "male_female"
+    return None
+
+
+def explicit_joining_type_from_query(query: str) -> str | None:
+    """Return joining type only from explicit connection wording in QUERY."""
+    text = normalize_query_text(query)
+    if explicit_thread_type_from_query(query) is not None:
+        return "threaded"
+    if re.search(r"межфланц", text):
+        return "wafer"
+    if re.search(r"компресс|обжим", text):
+        return "compression"
+    if re.search(r"привар|сварн", text):
+        return "welded"
+    if re.search(r"резьб|муфт", text):
+        return "threaded"
+    if re.search(r"фланц|\bф\s*/\s*ф\b", text):
+        return "flanged"
+    return None
+
+
+def explicit_working_medium_from_query(query: str) -> str | None:
+    """Return a working medium only for a small set of explicit source words."""
+    text = normalize_query_text(query)
+    matches: list[str] = []
+    for pattern, value in (
+        (r"\bвода\b", "вода"),
+        (r"\bпар\b", "пар"),
+        (r"\bгаз\b", "газ"),
+        (r"\bмасло\b", "масло"),
+        (r"\bгликол\b", "гликол"),
+    ):
+        if re.search(pattern, text):
+            matches.append(value)
+    return matches[0] if len(matches) == 1 else None
