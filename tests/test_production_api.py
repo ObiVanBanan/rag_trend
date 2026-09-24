@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from nomenclature_matcher.api import create_app
 from nomenclature_matcher.models import MatchResult, SearchCandidate, SelectedMatch
-from nomenclature_matcher.production import match_products
+from nomenclature_matcher.production import PostgresRequestHistory, match_products
 
 
 class FakeMatcher:
@@ -133,3 +133,45 @@ def test_api_rejects_oversized_batch():
         )
 
     assert response.status_code == 413
+
+
+
+def test_history_schema_accepts_external_request_ids():
+    class FakeConnection:
+        def __init__(self):
+            self.statements = []
+
+        def execute(self, statement, *args):
+            self.statements.append(str(statement))
+            return self
+
+    class ConnectionContext:
+        def __init__(self, connection):
+            self.connection = connection
+
+        def __enter__(self):
+            return self.connection
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    class FakePool:
+        def __init__(self):
+            self.connection_object = FakeConnection()
+            self.opened = False
+
+        def open(self, wait=True, timeout=None):
+            self.opened = True
+
+        def connection(self):
+            return ConnectionContext(self.connection_object)
+
+    history = object.__new__(PostgresRequestHistory)
+    history.open_timeout = 1
+    history.pool = FakePool()
+    history.open()
+
+    sql = "\n".join(history.pool.connection_object.statements)
+    assert "request_id TEXT PRIMARY KEY" in sql
+    assert "ALTER COLUMN request_id TYPE TEXT" in sql
+    assert "USING request_id::text" in sql
