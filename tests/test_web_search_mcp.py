@@ -91,3 +91,41 @@ def test_plain_no_results_is_not_web_evidence():
         _search_failure_reason("No results were found for your search query.")
         == "no_web_evidence"
     )
+
+
+
+def test_warmup_uses_startup_timeout(monkeypatch):
+    lookup = MCPWebSearchLookup(
+        settings(web_search_startup_timeout_seconds=30)
+    )
+    seen = {}
+
+    def fake_ensure_worker(*, startup_timeout_seconds=None):
+        seen["timeout"] = startup_timeout_seconds
+
+    monkeypatch.setattr(lookup, "_ensure_worker", fake_ensure_worker)
+
+    lookup.warmup()
+
+    assert seen["timeout"] == 30
+
+
+def test_failed_warmup_opens_circuit(monkeypatch):
+    lookup = MCPWebSearchLookup(
+        settings(
+            web_search_startup_timeout_seconds=30,
+            web_search_circuit_breaker_failures=3,
+            web_search_circuit_breaker_cooldown_seconds=300,
+        )
+    )
+
+    def fail(*, startup_timeout_seconds=None):
+        raise RuntimeError("startup failed")
+
+    monkeypatch.setattr(lookup, "_ensure_worker", fail)
+
+    import pytest
+    with pytest.raises(RuntimeError, match="startup failed"):
+        lookup.warmup()
+
+    assert lookup._circuit_is_open() is True
