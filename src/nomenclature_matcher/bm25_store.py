@@ -3,7 +3,11 @@ from __future__ import annotations
 import math
 from collections import Counter, defaultdict
 
-from .documents import build_lexical_text, build_search_text, tokenize
+from .documents import (
+    build_lexical_text,
+    build_search_text,
+    technical_lexical_tokens,
+)
 from .models import BM25Candidate, LDProduct
 
 try:  # pragma: no cover - exercised when dependency is installed
@@ -49,11 +53,11 @@ class BM25Store:
         self.products = list(products)
         self.lexical_texts = [build_lexical_text(product) for product in self.products]
         self.search_texts = [build_search_text(product) for product in self.products]
-        self.corpus = [tokenize(text) for text in self.lexical_texts]
+        self.corpus = [technical_lexical_tokens(text) for text in self.lexical_texts]
         self.model = BM25Okapi(self.corpus)
 
     def search(self, query: str, limit: int) -> list[BM25Candidate]:
-        query_tokens = tokenize(query)
+        query_tokens = technical_lexical_tokens(query)
         if not query_tokens or not self.products or limit <= 0:
             return []
         scores = self.model.get_scores(query_tokens)

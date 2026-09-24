@@ -1,9 +1,19 @@
+import re
 from dataclasses import replace
 
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
 from .query_constraints import QueryConstraints, evaluate_product
 from .query_signals import explicit_technical_signal_count, has_product_identity
+
+# Mirrors query_interpreter._looks_like_service_query byte-for-byte so the
+# matcher-side gate rescue below can never release service-like lines that the
+# interpreter's own sanitizer rejects. query_interpreter.py itself stays
+# byte-for-byte unchanged (its behavior is pinned by hardening contract tests).
+_SERVICE_QUERY_PREFIX = re.compile(
+    r"^(?:монтаж|установка|снятие|демонтаж|замена|смена|ремонт|"
+    r"обследование|устройство|техническое обслуживание|то\b)"
+)
 
 
 class NomenclatureMatcher:
@@ -229,6 +239,47 @@ class NomenclatureMatcher:
         candidates = self._search_candidates(query, self.settings.rerank_candidate_limit)
         return self.rerank_candidates(query, candidates)
 
+    @staticmethod
+    def _looks_like_service_query(query: str) -> bool:
+        text = " ".join(query.lower().replace("ё", "е").split())
+        return bool(_SERVICE_QUERY_PREFIX.match(text))
+
+    @staticmethod
+    def _gate_rescue_family_size(query: str, hard_constraints: dict) -> bool:
+        """Deterministic matcher-level release for the matchable family+size shape.
+
+        The interpreter's specificity gate deterministically marks in-scope,
+        unambiguous queries whose extracted hard constraints are exactly a
+        concrete product family plus one anchored diameter as not searchable,
+        so they die as pre-retrieval QUERY_REJECTED NOT_FOUND even though the
+        constraint-based gold treats that shape (a well-defined eligible family
+        with catalog evidence) as matchable. The interpreter-side gate is
+        pinned by protected hardening contract tests, so the release lives
+        here, at the retrieval-permission layer: for exactly that verified
+        shape the pipeline proceeds through the unchanged, fully constrained
+        searchable path (hybrid retrieval, evaluate_product eligibility,
+        zero-eligible second chance, zero-tolerance reranker, <=20 exposure).
+
+        Every other non-searchable class keeps the original QUERY_REJECTED
+        NOT_FOUND: service-like queries, out-of-scope/uncertain scope,
+        ambiguous queries, broad categories without a diameter, unknown
+        families (product_type='other'), and families without a size.
+        """
+        if not isinstance(hard_constraints, dict):
+            return False
+        product_type = hard_constraints.get("product_type")
+        if product_type in (None, "", "other"):
+            return False
+        if hard_constraints.get("dn") is None:
+            return False
+        if hard_constraints.get("catalog_scope") != "in_scope":
+            return False
+        if bool(hard_constraints.get("ambiguous")):
+            return False
+        if NomenclatureMatcher._looks_like_service_query(query):
+            return False
+        return True
+
     def _lookup_competitor(self, query: str):
         if self.competitor_lookup is None:
             return None, None, None
@@ -341,12 +392,22 @@ class NomenclatureMatcher:
                 interpretation_payload["competitor_lookup"] = lookup_debug
 
             if not interpretation.searchable:
-                return MatchResult(
-                    query=query,
-                    status="NOT_FOUND",
-                    reason=f"QUERY_REJECTED: {interpretation.reason}",
-                    query_interpretation=interpretation_payload,
-                )
+                if not self._gate_rescue_family_size(query, hard_constraints):
+                    return MatchResult(
+                        query=query,
+                        status="NOT_FOUND",
+                        reason=f"QUERY_REJECTED: {interpretation.reason}",
+                        query_interpretation=interpretation_payload,
+                    )
+                # Deterministic gate rescue for the verified matchable
+                # family+size shape: fall through to the unchanged fully
+                # constrained retrieval/rerank path and record the rescue for
+                # reason-bucketed diagnostics, so any downstream NOT_FOUND is
+                # attributed to its true cause instead of QUERY_REJECTED.
+                interpretation_payload["gate_rescue"] = {
+                    "applied": True,
+                    "interpreter_reason": interpretation.reason,
+                }
 
             normalized_query = self._normalize_query(interpretation.normalized_query) or query
             canonical_query = normalized_query if normalized_query != query else None
