@@ -248,8 +248,16 @@ class MCPWebSearchLookup:
         """Start the persistent MCP worker before the API accepts user traffic."""
         if self._closed:
             raise RuntimeError("MCP web search lookup is already closed")
-        with self._lock:
-            self._ensure_worker(startup_timeout_seconds=self.startup_timeout_seconds)
+        try:
+            with self._lock:
+                self._ensure_worker(startup_timeout_seconds=self.startup_timeout_seconds)
+        except Exception:
+            with self._state_lock:
+                self._consecutive_failures = self.circuit_breaker_failures
+                self._circuit_open_until = (
+                    monotonic() + self.circuit_breaker_cooldown_seconds
+                )
+            raise
 
     async def _worker_main_async(self):
         import asyncio
