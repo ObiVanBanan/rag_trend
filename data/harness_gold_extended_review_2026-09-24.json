@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "reviewed_at": "2026-09-24",
+  "policy": {
+    "principle": "Label only cases with a concrete LD catalog product that visibly satisfies the query; leave ambiguous equivalence, unsupported specs, or unproven absence UNSCORED.",
+    "promotion": "Reviews add trusted expected_status/known_positive_ids but intentionally keep split=EXTENDED and hard_gate=false.",
+    "non_labels": "No NOT_FOUND label was added from absence alone."
+  },
+  "summary": {
+    "newly_reviewed": 14,
+    "trusted_cases_after": 53,
+    "trusted_extended_after": 23,
+    "extended_unscored_remaining": 67
+  },
+  "reviews": [
+    {
+      "id": "gold_q013",
+      "query": "Кран шаровый латунь 11б27п1 Ду25 вр/нр Ру40 бабочка",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 200,
+      "article": "LD 47.302.25",
+      "product_name": "Кран шаровой латунный LD Pride 47.25.В-Н.Б Ду 25 Ру 40 бабочка",
+      "rationale": "Совпадают DN25, PN40, латунь, шаровой кран, ВР/НР и управление-бабочка; семейство 11б27п1 уже трактуется в наборе как запрос аналога LD.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q015",
+      "query": "Кран шаровый латунный 1/2 ВР-НР",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 141,
+      "article": "LD 47.302.15",
+      "product_name": "Кран шаровой латунный LD Pride 47.15.В-Н.Б Ду 15 Ру 40 бабочка",
+      "rationale": "1/2 дюйма соответствует DN15; совпадают латунь и ВР/НР. Тот же артикул присутствует в исходном review workbook для запросов 1/2 ВР/НР.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q018",
+      "query": "Кран шаровой газовый латунный DN20 ВР/НР желтая ручка",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 3259,
+      "article": "LD 47.353.20",
+      "product_name": "Кран шаровой латунный LD Pride 47.20.В-Н.Р GAS Ду 20 Ру 40 рычаг",
+      "rationale": "Прямое совпадение: газовое исполнение, латунь, DN20, ВР/НР, ручное управление.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q024",
+      "query": "Кран шаровый для подземной установки Ду80 Ру16 Н=1500",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 9484,
+      "article": "12200800162MULD150000000",
+      "product_name": "Кран шаровый LD для подземной установкиКШЦП из стали 20 Ду80 Ру1,6МПа полнопроходной Н=1500мм",
+      "rationale": "Прямое совпадение DN80, PN16, подземное исполнение и H=1500 мм.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q025",
+      "query": "КШЦП Ду100 Ру16 П/П подземный, шток 1200 мм",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 9537,
+      "article": "12201000162MULD120000000",
+      "product_name": "Кран шаровый LD для подземной установки КШЦП из стали 20 Ду100 Ру1,6МПа полнопроходной Н=1200мм",
+      "rationale": "Прямое совпадение КШЦП, DN100, PN16, полнопроходное подземное исполнение и H=1200 мм.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q028",
+      "query": "Кран регулирующий шаровой Regula Ду50 Ру16",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 15418,
+      "article": "11110509163MRLD000000000",
+      "product_name": "Кран шаровый LD КШЦФ Regula из стали 09Г2С Ду50 Ру1,6МПа",
+      "rationale": "Прямое совпадение линейки Regula, DN50, PN16 и регулирующего исполнения.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q029",
+      "query": "Кран шаровый Ду80/70 Ру16 регулирующий под привод",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 16770,
+      "article": "11110809163ERLD000000000",
+      "product_name": "Кран шаровый LD КШЦФЭ Regula из стали 09Г2С Ду80/70 Ру1,6МПа под электропривод",
+      "rationale": "Наименование LD буквально подтверждает Ду80/70, PN16, Regula и исполнение под электропривод.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q030",
+      "query": "кран шар 50 16 фл ст20",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 15905,
+      "article": "11110500162MULD000000000",
+      "product_name": "Кран шаровый LD КШЦФ из стали 20 Ду50 Ру1,6МПа полнопроходной",
+      "rationale": "Грязная запись 'кран шар 50 16 фл ст20' однозначно соответствует шаровому фланцевому DN50 PN16 из стали 20.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q059",
+      "query": "Клапан обратный пружинный латунный Ду25 резьбовой",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 17513,
+      "article": "LD 58.100.25",
+      "product_name": "Клапан обратный пружинный латунный шток LD Pride 58.25.В-В",
+      "rationale": "Прямое совпадение класса изделия, пружинного исполнения, латуни, DN25 и резьбового присоединения.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q070",
+      "query": "Фланец плоский DN100 PN16 ст.20 ГОСТ 33259",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 171,
+      "article": "01001620**",
+      "product_name": "Фланец LD 100-16-01-1-B-ст20-II ГОСТ 33259-2015",
+      "rationale": "Прямое совпадение DN100, PN16, сталь 20, плоский тип 01 и ГОСТ 33259.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q076",
+      "query": "Фланец 1-100-16 ст.20 ГОСТ 33259",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 171,
+      "article": "01001620**",
+      "product_name": "Фланец LD 100-16-01-1-B-ст20-II ГОСТ 33259-2015",
+      "rationale": "Обозначение 1-100-16 ст.20 ГОСТ 33259 напрямую совпадает с каталогом LD.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q078",
+      "query": "Фланец Ду150 Ру10 плоский стальной",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 145,
+      "article": "01501020**",
+      "product_name": "Фланец LD 150-10-01-1-B-ст20-II ГОСТ 33259-2015",
+      "rationale": "Прямое совпадение DN150, PN10, стального плоского фланца (тип 01).",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q079",
+      "query": "фл 80 16 ст20 плоский",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 154,
+      "article": "00801620**",
+      "product_name": "Фланец LD 80-16-01-1-B-ст20-II ГОСТ 33259-2015",
+      "rationale": "Грязная запись 'фл 80 16 ст20 плоский' однозначно совпадает с DN80 PN16 сталь 20, тип 01.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    },
+    {
+      "id": "gold_q081",
+      "query": "Фланец стальной Ду100 Ру16",
+      "decision": "MATCHED",
+      "known_positive_ld_id": 252,
+      "article": "F1100162S03742LD00000000",
+      "product_name": "Фланец 1-100х16 из стали 20 штампованный ТУ 3742 LD",
+      "rationale": "Запрос требует только стальной фланец DN100 PN16; каталог-позиция удовлетворяет этим явным требованиям.",
+      "source": "LD catalog-backed returned_product snapshot from campaign4-teacher artifact; cross-checked against kontur_783_review_latest.xlsx where a matching row/article was available",
+      "retained_split": "EXTENDED",
+      "retained_hard_gate": false
+    }
+  ]
+}
