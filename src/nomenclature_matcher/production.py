@@ -211,6 +211,22 @@ def _validate_runtime_settings(settings: Settings) -> None:
         raise RuntimeError(f"Product catalog CSV not found: {csv_path}")
 
 
+def _warm_web_search(matcher: NomenclatureMatcher) -> bool:
+    lookup = getattr(matcher, "competitor_lookup", None)
+    warmup = getattr(lookup, "warmup", None)
+    if not callable(warmup):
+        return True
+    try:
+        warmup()
+    except Exception:
+        logger.exception(
+            "Web search MCP warmup failed; starting API with web enrichment temporarily bypassed"
+        )
+        return False
+    logger.info("Web search MCP warmup completed")
+    return True
+
+
 def build_production_runtime(settings: Settings | None = None) -> ProductionRuntime:
     settings = settings or Settings()
     logging.basicConfig(
@@ -252,6 +268,8 @@ def build_production_runtime(settings: Settings | None = None) -> ProductionRunt
         ),
         query_interpreter=query_interpreter,
     )
+
+    _warm_web_search(matcher)
 
     history = PostgresRequestHistory(settings)
     try:
