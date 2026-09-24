@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     web_search_fetch_pages: int = 3
     web_search_fetch_chars: int = 5000
     web_search_timeout_seconds: float = 8
+    web_search_startup_timeout_seconds: float = 30
     web_search_region: str = "wt-wt"
     web_search_proxy_url: str = ""
     web_search_circuit_breaker_failures: int = 3
