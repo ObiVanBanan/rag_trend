@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from nomenclature_matcher.api import create_app
 from nomenclature_matcher.models import MatchResult, SearchCandidate, SelectedMatch
-from nomenclature_matcher.production import PostgresRequestHistory, match_products
+from nomenclature_matcher.production import PostgresRequestHistory, _warm_web_search, match_products
 
 
 class FakeMatcher:
@@ -165,3 +165,24 @@ def test_history_schema_accepts_external_request_ids():
     assert "request_id TEXT PRIMARY KEY" in sql
     assert "ALTER COLUMN request_id TYPE TEXT" in sql
     assert "USING request_id::text" in sql
+
+
+
+def test_runtime_warms_web_lookup_without_making_it_mandatory():
+    class Lookup:
+        def __init__(self, fail=False):
+            self.fail = fail
+            self.calls = 0
+
+        def warmup(self):
+            self.calls += 1
+            if self.fail:
+                raise RuntimeError("mcp unavailable")
+
+    good = Lookup()
+    assert _warm_web_search(SimpleNamespace(competitor_lookup=good)) is True
+    assert good.calls == 1
+
+    bad = Lookup(fail=True)
+    assert _warm_web_search(SimpleNamespace(competitor_lookup=bad)) is False
+    assert bad.calls == 1
