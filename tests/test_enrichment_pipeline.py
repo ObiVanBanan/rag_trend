@@ -204,3 +204,44 @@ def test_rich_explicit_query_skips_web_lookup():
 
     assert result.status == "NOT_FOUND"
     assert result.query_interpretation["competitor_lookup"]["reason"] == "pre_enrichment_enough_explicit_detail"
+
+
+
+def test_model_suffix_dn_never_becomes_hard_constraint():
+    pre = interpretation(dn=15, joining=None, thread=None)
+    enriched = interpretation(
+        dn=20,
+        joining="threaded",
+        thread="female_female",
+        material="brass",
+        bore="full",
+    )
+
+    hard = NomenclatureMatcher._hard_constraints(
+        "Кран шаровый VT.217.N.05",
+        pre,
+        enriched,
+    )
+
+    assert hard["product_type"] == "ball_valve"
+    assert hard["dn"] is None
+    assert hard["pn_min_mpa"] is None
+    assert hard["joining_type"] is None
+    assert hard["thread_type"] is None
+    assert hard["body_material"] is None
+    assert hard["bore_type"] is None
+    assert hard["valve_type"] is None
+
+
+def test_explicit_query_dn_pn_and_connection_remain_hard():
+    pre = interpretation(dn=20, joining="threaded", thread="female_female")
+
+    hard = NomenclatureMatcher._hard_constraints(
+        'Кран шаровый VT.217.N.05 Ду20 Ру20 резьбовой ВР/ВР 3/4"',
+        pre,
+    )
+
+    assert hard["dn"] == 20
+    assert hard["pn_min_mpa"] == 2.0
+    assert hard["joining_type"] == "threaded"
+    assert hard["thread_type"] == "female_female"
