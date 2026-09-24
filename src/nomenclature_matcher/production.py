@@ -40,7 +40,7 @@ class PostgresRequestHistory:
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS rag_match_requests (
-                    request_id UUID PRIMARY KEY,
+                    request_id TEXT PRIMARY KEY,
                     created_at TIMESTAMPTZ NOT NULL,
                     completed_at TIMESTAMPTZ NOT NULL,
                     status TEXT NOT NULL,
@@ -52,6 +52,14 @@ class PostgresRequestHistory:
                     response_json JSONB NOT NULL,
                     error TEXT
                 )
+                """
+            )
+            conn.execute("DROP VIEW IF EXISTS rag_match_items")
+            conn.execute(
+                """
+                ALTER TABLE rag_match_requests
+                ALTER COLUMN request_id TYPE TEXT
+                USING request_id::text
                 """
             )
             conn.execute(
