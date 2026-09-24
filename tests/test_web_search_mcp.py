@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from nomenclature_matcher.web_search_mcp import MCPWebSearchLookup
+from nomenclature_matcher.web_search_mcp import MCPWebSearchLookup, _search_failure_reason
 
 
 def settings(**overrides):
@@ -67,3 +67,27 @@ def test_circuit_breaker_skips_lookup_after_repeated_failures():
 def test_web_lookup_timeout_is_fail_fast():
     lookup = MCPWebSearchLookup(settings(web_search_timeout_seconds=8))
     assert lookup.timeout_seconds == 8
+
+
+
+def test_mcp_runtime_includes_socks_support():
+    lookup = MCPWebSearchLookup(settings())
+    args = lookup._server_args()
+
+    assert "socksio>=1,<2" in args
+    assert "duckduckgo-mcp-server" in args
+
+
+def test_bot_detection_text_is_not_accepted_as_web_evidence():
+    text = (
+        "No results were found for your search query. "
+        "This could be due to DuckDuckGo's bot detection."
+    )
+    assert _search_failure_reason(text) == "mcp_bot_detection"
+
+
+def test_plain_no_results_is_not_web_evidence():
+    assert (
+        _search_failure_reason("No results were found for your search query.")
+        == "no_web_evidence"
+    )
