@@ -165,6 +165,19 @@ def _evaluate_case(case: dict[str, Any], result, products_by_id: dict[int, Any])
         "reason": "",
     }
 
+    interpretation = getattr(result, "query_interpretation", None)
+    if isinstance(interpretation, dict):
+        pre = interpretation.get("pre_enrichment_interpretation") or {}
+        row["pipeline_trace"] = {
+            "attributes": dict(interpretation.get("constraints") or {}),
+            "hard_constraints": dict(interpretation.get("hard_constraints") or {}),
+            "attributes_before_web": (
+                dict(pre.get("constraints") or {})
+                if isinstance(pre, dict)
+                else {}
+            ),
+        }
+
     product = None
     if returned_ld_id is not None:
         product = products_by_id.get(int(returned_ld_id))
