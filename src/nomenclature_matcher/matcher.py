@@ -3,8 +3,23 @@ from time import perf_counter
 
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
-from .query_constraints import QueryConstraints, evaluate_product
-from .query_signals import explicit_technical_signal_count, has_product_identity
+from .query_constraints import (
+    QueryConstraints,
+    canonical_bore_type,
+    canonical_control,
+    canonical_material,
+    canonical_product_type,
+    evaluate_product,
+)
+from .query_signals import (
+    explicit_dn_from_query,
+    explicit_joining_type_from_query,
+    explicit_pn_mpa_from_query,
+    explicit_technical_signal_count,
+    explicit_thread_type_from_query,
+    explicit_working_medium_from_query,
+    has_product_identity,
+)
 from .observability import (
     build_attribute_diagnostic,
     log_match_trace,
@@ -389,16 +404,62 @@ class NomenclatureMatcher:
         return True, "pre_enrichment_eligible"
 
     @staticmethod
-    def _hard_constraints(pre_interpretation, enriched_interpretation=None) -> dict:
-        """Keep web-derived characteristics soft for retrieval, not hard filtering."""
-        hard = pre_interpretation.constraints.model_dump()
-        if enriched_interpretation is not None:
-            enriched = enriched_interpretation.constraints
-            # Product family is the only web-derived field allowed to become hard,
-            # and only when the first pass could not identify a supported family.
-            if hard.get("product_type") == "other" and enriched.product_type != "other":
-                hard["product_type"] = enriched.product_type
-        return hard
+    def _hard_constraints(query: str, pre_interpretation, enriched_interpretation=None) -> dict:
+        """Build hard filters from explicit QUERY facts; LLM/web deductions stay soft."""
+        pre = pre_interpretation.constraints
+        enriched = enriched_interpretation.constraints if enriched_interpretation is not None else None
+
+        explicit_product_type = canonical_product_type(query)
+        if explicit_product_type == "other":
+            if enriched is not None and enriched.product_type != "other":
+                product_type = enriched.product_type
+            else:
+                product_type = pre.product_type
+        else:
+            product_type = explicit_product_type
+
+        material = canonical_material(query)
+        if material == "other":
+            material = None
+        bore = canonical_bore_type(query)
+        control = canonical_control(query)
+        designation = None
+        if pre.valve_designation:
+            query_compact = "".join(ch for ch in query.lower() if ch.isalnum())
+            designation_compact = "".join(
+                ch for ch in str(pre.valve_designation).lower() if ch.isalnum()
+            )
+            if designation_compact and designation_compact in query_compact:
+                designation = pre.valve_designation
+
+        text = query.lower().replace("ё", "е")
+        valve_type = None
+        if "подзем" in text:
+            valve_type = "underground"
+        elif "регулиру" in text:
+            valve_type = "regulating"
+        elif "криоген" in text:
+            valve_type = "cryogenic"
+        elif "газов" in text:
+            valve_type = "gas"
+
+        return {
+            "product_type": product_type,
+            "dn": explicit_dn_from_query(query),
+            "pn_min_mpa": explicit_pn_mpa_from_query(query),
+            "joining_type": explicit_joining_type_from_query(query),
+            "thread_type": explicit_thread_type_from_query(query),
+            "working_medium": explicit_working_medium_from_query(query),
+            "valve_type": valve_type,
+            "valve_designation": designation,
+            "body_material": material,
+            "body_material_grade": None,
+            "bore_type": bore,
+            "control": control,
+            "catalog_scope": pre.catalog_scope,
+            "ambiguous": pre.ambiguous,
+            "comment": "hard constraints derived only from explicit QUERY facts",
+        }
 
     def match_one_hybrid_with_rerank(self, query: str) -> MatchResult:
         query = self._normalize_query(query)
@@ -454,6 +515,7 @@ class NomenclatureMatcher:
                 }
 
             hard_constraints = self._hard_constraints(
+                query,
                 pre_interpretation,
                 enriched_interpretation,
             )
