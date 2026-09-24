@@ -112,7 +112,7 @@ def explicit_pn_mpa_from_query(query: str) -> float | None:
     values = {
         float(match.group(1).replace(",", ".")) / 10.0
         for match in re.finditer(
-            r"(?:\bpn\b|\bру\b)\s*[-:]?\s*(\d+(?:[.,]\d+)?)",
+            r"(?<![a-zа-я])(?:pn|ру)\s*[-:]?\s*(\d+(?:[.,]\d+)?)",
             text,
         )
     }
