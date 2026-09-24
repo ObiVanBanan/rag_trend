@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import atexit
+import os
 import re
 import threading
+from time import monotonic
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -92,7 +94,13 @@ class MCPWebSearchLookup:
         self.max_results = max(1, int(getattr(settings, "web_search_max_results", 6)))
         self.fetch_pages = max(0, int(getattr(settings, "web_search_fetch_pages", 3)))
         self.fetch_chars = max(500, int(getattr(settings, "web_search_fetch_chars", 5000)))
-        self.timeout_seconds = max(5.0, float(getattr(settings, "web_search_timeout_seconds", 45)))
+        self.timeout_seconds = max(3.0, float(getattr(settings, "web_search_timeout_seconds", 8)))
+        self.circuit_breaker_failures = max(
+            1, int(getattr(settings, "web_search_circuit_breaker_failures", 3))
+        )
+        self.circuit_breaker_cooldown_seconds = max(
+            1.0, float(getattr(settings, "web_search_circuit_breaker_cooldown_seconds", 300))
+        )
         self.region = str(getattr(settings, "web_search_region", "wt-wt") or "")
         self.command = str(getattr(settings, "web_search_mcp_command", "uvx"))
         self.package = str(
@@ -106,12 +114,78 @@ class MCPWebSearchLookup:
         self._worker_done = threading.Event()
         self._start_error: BaseException | None = None
         self._lock = threading.Lock()
+        self._state_lock = threading.Lock()
+        self._consecutive_failures = 0
+        self._circuit_open_until = 0.0
         self._closed = False
         atexit.register(self.close)
 
     @staticmethod
     def should_lookup(query: str) -> bool:
         return has_product_identity(query)
+
+    def _proxy_url(self) -> str:
+        configured = str(getattr(self.settings, "web_search_proxy_url", "") or "").strip()
+        if configured:
+            return configured
+        for name in (
+            "ALL_PROXY",
+            "all_proxy",
+            "HTTPS_PROXY",
+            "https_proxy",
+            "HTTP_PROXY",
+            "http_proxy",
+        ):
+            value = str(os.environ.get(name) or "").strip()
+            if value:
+                return value
+        return ""
+
+    def _server_environment(self) -> dict[str, str]:
+        env = {
+            "DDG_REGION": self.region,
+            "DDG_SAFE_SEARCH": "MODERATE",
+            "DDG_SEARCH_BACKEND": "auto",
+        }
+        proxy = self._proxy_url()
+        if proxy:
+            env.update(
+                {
+                    "HTTP_PROXY": proxy,
+                    "HTTPS_PROXY": proxy,
+                    "ALL_PROXY": proxy,
+                    "http_proxy": proxy,
+                    "https_proxy": proxy,
+                    "all_proxy": proxy,
+                }
+            )
+        no_proxy = str(os.environ.get("NO_PROXY") or os.environ.get("no_proxy") or "").strip()
+        if no_proxy:
+            env["NO_PROXY"] = no_proxy
+            env["no_proxy"] = no_proxy
+        return env
+
+    def _circuit_is_open(self) -> bool:
+        with self._state_lock:
+            return monotonic() < self._circuit_open_until
+
+    def _register_success(self) -> None:
+        with self._state_lock:
+            self._consecutive_failures = 0
+            self._circuit_open_until = 0.0
+
+    def _register_failure(self) -> None:
+        with self._state_lock:
+            self._consecutive_failures += 1
+            if self._consecutive_failures >= self.circuit_breaker_failures:
+                self._circuit_open_until = (
+                    monotonic() + self.circuit_breaker_cooldown_seconds
+                )
+
+    @staticmethod
+    def _is_infrastructure_failure(result: WebSearchLookupResult) -> bool:
+        reason = str(result.reason or "").lower()
+        return reason.startswith("mcp_search_error") or reason.startswith("lookup_error")
 
     def _ensure_worker(self):
         if self._portal is not None:
@@ -144,11 +218,7 @@ class MCPWebSearchLookup:
                 "--fetch-backend",
                 "auto",
             ],
-            env={
-                "DDG_REGION": self.region,
-                "DDG_SAFE_SEARCH": "MODERATE",
-                "DDG_SEARCH_BACKEND": "auto",
-            },
+            env=self._server_environment(),
         )
         try:
             async with Client(server) as client:
@@ -239,6 +309,14 @@ class MCPWebSearchLookup:
             return WebSearchLookupResult(False, False, "no_product_identity_anchor", query)
         if self._closed:
             raise RuntimeError("MCP web search lookup is already closed")
+        if self._circuit_is_open():
+            return WebSearchLookupResult(
+                attempted=False,
+                accepted=False,
+                reason="circuit_open_after_web_failures",
+                query=query,
+                search_query=build_search_query(query),
+            )
 
         with self._lock:
             self._ensure_worker()
@@ -246,7 +324,17 @@ class MCPWebSearchLookup:
 
             future: concurrent.futures.Future = concurrent.futures.Future()
             self._loop.call_soon_threadsafe(self._queue.put_nowait, (query, future))
-            return future.result(timeout=self.timeout_seconds + 10)
+            try:
+                result = future.result(timeout=self.timeout_seconds + 2)
+            except Exception:
+                self._register_failure()
+                raise
+
+        if self._is_infrastructure_failure(result):
+            self._register_failure()
+        else:
+            self._register_success()
+        return result
 
     def close(self) -> None:
         if self._closed:
