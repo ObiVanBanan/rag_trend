@@ -31,9 +31,14 @@ def test_bananloop_bridge_uses_worst_public_hidden_hard_pass_as_primary():
         hidden,
         tests_passed=True,
         artifacts=["public.json", "hidden_summary.json"],
+        failure_signals=[],
+        failure_examples=[],
     )
 
     assert result["status"] == "ok"
+    assert result["metrics"]["campaign_quality"]["value"] == hidden["hard_pass_rate"]
+    assert result["metrics"]["campaign_false_match_rate"]["value"] == hidden["false_match_rate"]
+    assert result["metrics"]["campaign_human_reject_rate"]["value"] == hidden["human_reject_rate"]
     assert result["metrics"]["quality_floor"]["value"] == hidden["hard_pass_rate"]
     assert result["metrics"]["public_hard_pass_rate"]["n"] == 30
     assert result["metrics"]["hidden_hard_pass_rate"]["n"] == 30
@@ -82,9 +87,14 @@ def test_fast_bananloop_bridge_uses_public_hard_gate_only():
         public,
         tests_passed=True,
         artifacts=["public.json"],
+        failure_signals=[],
+        failure_examples=[],
     )
 
     assert result["status"] == "ok"
+    assert result["metrics"]["campaign_quality"]["value"] == 0.9
+    assert result["metrics"]["campaign_false_match_rate"]["value"] == 0.0
+    assert result["metrics"]["campaign_human_reject_rate"]["value"] == 0.0
     assert result["metrics"]["quality_floor"]["value"] == 0.9
     assert result["metrics"]["quality_floor"]["n"] == 30
     assert result["metrics"]["public_hard_pass_rate"]["value"] == 0.9

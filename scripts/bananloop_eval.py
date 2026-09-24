@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
+from harness_rag.failure_feedback import build_public_failure_signals, build_public_teacher_examples
 from harness_rag.hook import run_eval, run_hidden_eval
 
 
@@ -84,10 +85,18 @@ def _fast_evaluation_result(
     *,
     tests_passed: bool,
     artifacts: list[str],
+    failure_signals: list[dict[str, Any]],
+    failure_examples: list[dict[str, Any]],
 ) -> dict[str, Any]:
     public_hard = _rate(public, "hard_pass_rate")
     public_hard_n = int(public.get("hard_gate_cases") or 0) or None
     metrics = {
+        # Tier-aligned campaign metrics: DEV uses public evidence under these
+        # stable names; blind validation uses hidden evidence under the same names.
+        "campaign_quality": _metric(public_hard, public_hard_n),
+        "campaign_false_match_rate": _metric(_rate(public, "false_match_rate")),
+        "campaign_human_reject_rate": _metric(_rate(public, "human_reject_rate")),
+        "campaign_wrong_not_found_rate": _metric(_rate(public, "wrong_not_found_rate")),
         "quality_floor": _metric(public_hard, public_hard_n),
         "public_hard_pass_rate": _metric(public_hard, public_hard_n),
         "public_false_match_rate": _metric(_rate(public, "false_match_rate")),
@@ -100,6 +109,8 @@ def _fast_evaluation_result(
         "status": "ok",
         "metrics": metrics,
         "checks": {"tests": {"passed": tests_passed}},
+        "failure_signals": failure_signals,
+        "failure_examples": failure_examples,
         "artifacts": artifacts,
     }
 
@@ -110,6 +121,8 @@ def _evaluation_result(
     *,
     tests_passed: bool,
     artifacts: list[str],
+    failure_signals: list[dict[str, Any]],
+    failure_examples: list[dict[str, Any]],
 ) -> dict[str, Any]:
     public_hard = _rate(public, "hard_pass_rate")
     hidden_hard = _rate(hidden, "hard_pass_rate")
@@ -117,6 +130,13 @@ def _evaluation_result(
     hidden_hard_n = int(hidden.get("hard_gate_cases") or 0) or None
 
     metrics = {
+        # On the blind tier, campaign_* is deliberately sourced only from the
+        # hidden dataset. This lets one immutable CampaignSpec compare DEV on
+        # public data and gate promotion on hidden data without leaking labels.
+        "campaign_quality": _metric(hidden_hard, hidden_hard_n),
+        "campaign_false_match_rate": _metric(_rate(hidden, "false_match_rate")),
+        "campaign_human_reject_rate": _metric(_rate(hidden, "human_reject_rate")),
+        "campaign_wrong_not_found_rate": _metric(_rate(hidden, "wrong_not_found_rate")),
         "quality_floor": _metric(min(public_hard, hidden_hard)),
         "public_hard_pass_rate": _metric(public_hard, public_hard_n),
         "hidden_hard_pass_rate": _metric(hidden_hard, hidden_hard_n),
@@ -139,6 +159,8 @@ def _evaluation_result(
                 "passed": tests_passed,
             }
         },
+        "failure_signals": failure_signals,
+        "failure_examples": failure_examples,
         "artifacts": artifacts,
     }
 
@@ -197,6 +219,17 @@ def main() -> int:
         workers=args.workers,
     )
     public_summary = dict(public_result["summary"])
+    public_payload = json.loads(
+        Path(public_result["raw_output"]).read_text(encoding="utf-8")
+    )
+    public_dataset_payload = json.loads(
+        Path(args.public_dataset).resolve().read_text(encoding="utf-8")
+    )
+    failure_signals = build_public_failure_signals(public_payload)
+    failure_examples = build_public_teacher_examples(
+        public_payload,
+        public_dataset_payload,
+    )
 
     if args.mode == "fast":
         result = _fast_evaluation_result(
@@ -206,6 +239,8 @@ def main() -> int:
                 str(public_result["raw_output"]),
                 str(output_dir / "pytest.txt"),
             ],
+            failure_signals=failure_signals,
+            failure_examples=failure_examples,
         )
     else:
         hidden_result = run_hidden_eval(
@@ -225,6 +260,8 @@ def main() -> int:
                 str(hidden_result["summary_output"]),
                 str(output_dir / "pytest.txt"),
             ],
+            failure_signals=failure_signals,
+            failure_examples=failure_examples,
         )
     print(json.dumps(result, ensure_ascii=False))
     return 0
