@@ -8,6 +8,7 @@ import io
 import json
 import lzma
 import re
+import random
 import sys
 import threading
 from collections import Counter
@@ -274,13 +275,20 @@ def main() -> int:
         default=str(ROOT / "data" / "competitor_analog_hit_any_eval.json"),
     )
     parser.add_argument("--workers", type=int, default=1)
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--limit", type=int, default=None, help="Evaluate the first N grouped cases.")
+    parser.add_argument("--sample", type=int, default=None, help="Evaluate a deterministic random sample of N grouped cases.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed used with --sample (default: 42).")
+    parser.add_argument("--verify-only", action="store_true", help="Validate/load the benchmark and exit before RAG/API calls.")
     args = parser.parse_args()
 
     if args.workers <= 0:
         raise SystemExit("--workers must be > 0")
     if args.limit is not None and args.limit <= 0:
         raise SystemExit("--limit must be > 0")
+    if args.sample is not None and args.sample <= 0:
+        raise SystemExit("--sample must be > 0")
+    if args.limit is not None and args.sample is not None:
+        raise SystemExit("Use only one of --limit or --sample")
 
     if args.mapping:
         mapping_path = Path(args.mapping).expanduser().resolve()
@@ -293,6 +301,21 @@ def main() -> int:
     total_available = len(cases)
     if args.limit is not None:
         cases = cases[: args.limit]
+    elif args.sample is not None:
+        if args.sample > total_available:
+            raise SystemExit(f"--sample {args.sample} exceeds available cases {total_available}")
+        cases = random.Random(args.seed).sample(cases, args.sample)
+
+    if args.verify_only:
+        print(json.dumps({
+            "status": "ok",
+            "dataset_source": dataset_source,
+            "available_queries": total_available,
+            "selected_queries": len(cases),
+            "embedded_tsv_sha256": _EXPECTED_TSV_SHA256 if not args.mapping else None,
+            "embedded_xz_sha256": _EXPECTED_XZ_SHA256 if not args.mapping else None,
+        }, ensure_ascii=False, indent=2))
+        return 0
 
     products = load_products_from_csv(args.csv)
     settings = Settings()
