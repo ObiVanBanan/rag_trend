@@ -1,0 +1,10 @@
+{
+  "source_file": "mapping_results.csv",
+  "source_rows": 55539,
+  "unique_competitor_queries": 15885,
+  "unique_ld_ids_from_ld_urls": 3279,
+  "average_acceptable_ld_ids_per_query": 2.7624803273528484,
+  "max_acceptable_ld_ids_per_query": 23,
+  "score_policy": "All source rows satisfy match_score >= match_max.",
+  "evaluation": "PASS if top-1 RAG returned ld_id is in the grouped acceptable LD ids; completeness is not checked."
+}
