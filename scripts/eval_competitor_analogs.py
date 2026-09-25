@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import csv
+import hashlib
+import io
 import json
+import lzma
 import re
 import sys
 import threading
@@ -24,6 +28,11 @@ from nomenclature_matcher.settings import Settings
 
 
 _LD_ID_RE = re.compile(r"/products/(\d+)--")
+_EMBEDDED_PARTS_DIR = ROOT / "data" / "competitor_analog_hit_any_min_v1.parts"
+_EXPECTED_PARTS = 6
+_EXPECTED_CASES = 15885
+_EXPECTED_XZ_SHA256 = "36893196c5433a5e74631effd7e79cc8cc922cd2f8b14916cbad0eb311f4c958"
+_EXPECTED_TSV_SHA256 = "8fe751d3a0ab014198b4d466c4c698b85fa502bc7e0bc18c8f6a68b339a53faa"
 
 
 def _clean(value: str | None) -> str:
@@ -42,6 +51,7 @@ def _ld_id_from_url(url: str) -> int:
 
 
 def load_cases(mapping_path: Path) -> list[dict]:
+    """Group raw mapping_results.csv rows by competitor product name."""
     grouped: dict[str, dict] = {}
     with mapping_path.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -117,6 +127,81 @@ def load_cases(mapping_path: Path) -> list[dict]:
     return cases
 
 
+def load_embedded_cases(parts_dir: Path = _EMBEDDED_PARTS_DIR) -> list[dict]:
+    """Load the frozen grouped benchmark bundled with this branch."""
+    part_paths = sorted(parts_dir.glob("part*.b64"))
+    if len(part_paths) != _EXPECTED_PARTS:
+        raise ValueError(
+            f"Embedded benchmark expected {_EXPECTED_PARTS} parts, found {len(part_paths)} "
+            f"in {parts_dir}"
+        )
+
+    encoded = "".join(path.read_text(encoding="ascii").strip() for path in part_paths)
+    try:
+        compressed = base64.b64decode(encoded, validate=True)
+    except Exception as exc:
+        raise ValueError(f"Invalid embedded benchmark base64: {exc}") from exc
+
+    compressed_sha = hashlib.sha256(compressed).hexdigest()
+    if compressed_sha != _EXPECTED_XZ_SHA256:
+        raise ValueError(
+            "Embedded benchmark compressed SHA mismatch: "
+            f"{compressed_sha} != {_EXPECTED_XZ_SHA256}"
+        )
+
+    try:
+        raw = lzma.decompress(compressed)
+    except lzma.LZMAError as exc:
+        raise ValueError(f"Cannot decompress embedded benchmark: {exc}") from exc
+
+    raw_sha = hashlib.sha256(raw).hexdigest()
+    if raw_sha != _EXPECTED_TSV_SHA256:
+        raise ValueError(
+            f"Embedded benchmark TSV SHA mismatch: {raw_sha} != {_EXPECTED_TSV_SHA256}"
+        )
+
+    reader = csv.DictReader(io.StringIO(raw.decode("utf-8")), delimiter="\t")
+    required = {"query", "acceptable_ld_ids"}
+    missing = required - set(reader.fieldnames or [])
+    if missing:
+        raise ValueError(f"Embedded benchmark misses columns: {sorted(missing)}")
+
+    cases: list[dict] = []
+    seen_queries: set[str] = set()
+    for row_no, row in enumerate(reader, start=2):
+        query = _clean(row["query"])
+        if not query:
+            raise ValueError(f"Embedded benchmark row {row_no} has empty query")
+        normalized = _norm(query)
+        if normalized in seen_queries:
+            raise ValueError(f"Embedded benchmark has duplicate query at row {row_no}: {query!r}")
+        seen_queries.add(normalized)
+
+        acceptable_ids = sorted(
+            {
+                int(value)
+                for value in str(row["acceptable_ld_ids"] or "").split("|")
+                if value.strip()
+            }
+        )
+        if not acceptable_ids:
+            raise ValueError(f"Embedded benchmark row {row_no} has no acceptable LD ids")
+
+        cases.append(
+            {
+                "query": query,
+                "acceptable_ld_ids": acceptable_ids,
+                "acceptable_count": len(acceptable_ids),
+            }
+        )
+
+    if len(cases) != _EXPECTED_CASES:
+        raise ValueError(
+            f"Embedded benchmark expected {_EXPECTED_CASES} grouped cases, found {len(cases)}"
+        )
+    return cases
+
+
 def _build_matcher(products, settings: Settings, bm25_store: BM25Store | None = None):
     embedder = OpenAIEmbedder(settings)
     qdrant = QdrantStore(settings)
@@ -172,7 +257,13 @@ def main() -> int:
             "acceptable LD set. Completeness is intentionally not evaluated."
         )
     )
-    parser.add_argument("--mapping", required=True, help="Path to mapping_results.csv")
+    parser.add_argument(
+        "--mapping",
+        help=(
+            "Optional raw mapping_results.csv. When omitted, use the frozen "
+            "15,885-query benchmark bundled with this branch."
+        ),
+    )
     parser.add_argument(
         "--csv",
         default=str(ROOT / "ld_products_full_nomenclature.csv"),
@@ -191,7 +282,15 @@ def main() -> int:
     if args.limit is not None and args.limit <= 0:
         raise SystemExit("--limit must be > 0")
 
-    cases = load_cases(Path(args.mapping))
+    if args.mapping:
+        mapping_path = Path(args.mapping).expanduser().resolve()
+        cases = load_cases(mapping_path)
+        dataset_source = str(mapping_path)
+    else:
+        cases = load_embedded_cases()
+        dataset_source = "embedded:competitor_analog_hit_any_min_v1"
+
+    total_available = len(cases)
     if args.limit is not None:
         cases = cases[: args.limit]
 
@@ -236,6 +335,8 @@ def main() -> int:
     total = len(rows)
     passed = verdicts["PASS"]
     summary = {
+        "dataset_source": dataset_source,
+        "available_queries": total_available,
         "evaluated_queries": total,
         "hit_any_rate": passed / total if total else None,
         "pass": passed,
@@ -258,7 +359,7 @@ def main() -> int:
     }
 
     payload = {
-        "mapping": str(Path(args.mapping).resolve()),
+        "dataset_source": dataset_source,
         "summary": summary,
         "cases": rows,
     }
