@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "source_file": "mapping_results.csv",
+  "source_rows": 55539,
+  "grouped_queries": 15885,
+  "unique_ld_ids": 3279,
+  "average_acceptable_ld_ids_per_query": 2.7624803273528484,
+  "max_acceptable_ld_ids_per_query": 23,
+  "scoring": "PASS when top-1 returned LD id belongs to acceptable_ld_ids; completeness is not checked.",
+  "embedded_format": "xz-compressed UTF-8 TSV base64-split into six text parts",
+  "tsv_sha256": "8fe751d3a0ab014198b4d466c4c698b85fa502bc7e0bc18c8f6a68b339a53faa",
+  "xz_sha256": "36893196c5433a5e74631effd7e79cc8cc922cd2f8b14916cbad0eb311f4c958",
+  "parts": 6
+}
