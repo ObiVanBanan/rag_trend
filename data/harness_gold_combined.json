@@ -396,7 +396,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 80,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "valve_type": "standard",
         "valve_designation": "КШЦФ",
         "body_material": "steel",
@@ -465,7 +465,7 @@
       "query": "Кран шаровой Ридан JiP-R Standard FF Ду50 Ру16 или аналог",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -473,18 +473,27 @@
         "joining_type": "flanged",
         "valve_type": "standard"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        15905
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "medium",
         "tags": [
           "competitor",
           "flanged"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [
+          298,
+          301
+        ],
+        "gold_review_note": "Independent review workbook contains JIP/RJIP Standard FF DN50 PN16 requests mapped to LD KSHCF steel20 DN50 PN1.6 (rows 298 and 301)."
       },
       "unsupported_constraints": [
         {
@@ -587,7 +596,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 15,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "female_female",
         "valve_type": "standard",
@@ -625,7 +634,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 20,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "female_female",
         "valve_type": "standard",
@@ -663,7 +672,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 25,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "male_female",
         "valve_type": "standard",
@@ -736,7 +745,7 @@
       "query": "Кран шаровый латунный 1/2 ВР-НР",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "joining_type": "threaded",
@@ -744,18 +753,26 @@
         "valve_type": "standard",
         "body_material": "brass"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        141
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
         "tags": [
           "inch",
           "thread_type"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [
+          199
+        ],
+        "gold_review_note": "Independent review workbook contains 1/2 internal/external threaded ball-valve request mapped to LD Pride 47.15.V-N.B DN15 PN40 (row 199), confirming 1/2 -> DN15 and the execution."
       },
       "unsupported_constraints": [
         {
@@ -944,7 +961,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 25,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "valve_type": "standard",
         "body_material": "steel"
@@ -993,7 +1010,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "welded",
         "valve_type": "standard",
         "body_material": "steel",
@@ -1247,25 +1264,33 @@
       "query": "Кран регулирующий шаровой Regula Ду50 Ру16",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
         "pn_min_mpa": 1.6,
         "valve_type": "regulating"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        15418
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
         "tags": [
           "regulating",
           "series"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [
+          397
+        ],
+        "gold_review_note": "Independent review workbook exposes the LD KSHCF Regula DN50 PN1.6 candidate in the Regula DN50 review (row 397)."
       },
       "unsupported_constraints": [
         {
@@ -1334,7 +1359,7 @@
       "query": "кран шар 50 16 фл ст20",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "ball_valve",
         "dn": 50,
@@ -1342,18 +1367,26 @@
         "joining_type": "flanged",
         "valve_type": "standard"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        15905
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "ball_valve",
         "difficulty": "hard",
         "tags": [
           "dirty",
           "abbreviation"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [
+          654
+        ],
+        "gold_review_note": "Independent review workbook repeatedly maps flanged DN50 PN16 ball-valve requests to LD KSHCF steel20 DN50 PN1.6; direct example at row 654."
       },
       "unsupported_constraints": [],
       "parser_warnings": [
@@ -1702,7 +1735,7 @@
       "requirements": {
         "product_type": "butterfly_valve",
         "dn": 150,
-        "pn_min_mpa": 1.0,
+        "pn_min_mpa": 1,
         "joining_type": "wafer"
       },
       "known_positive_ids": [],
@@ -2086,7 +2119,7 @@
       "requirements": {
         "product_type": "gate_valve",
         "dn": 100,
-        "pn_min_mpa": 1.0,
+        "pn_min_mpa": 1,
         "joining_type": "flanged",
         "body_material": "cast_iron"
       },
@@ -2128,7 +2161,7 @@
       "requirements": {
         "product_type": "gate_valve",
         "dn": 50,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "valve_designation": "30с15нж"
       },
       "known_positive_ids": [],
@@ -2233,7 +2266,7 @@
       "requirements": {
         "product_type": "gate_valve",
         "dn": 150,
-        "pn_min_mpa": 1.0
+        "pn_min_mpa": 1
       },
       "known_positive_ids": [],
       "known_rejected_ids": [],
@@ -2365,18 +2398,20 @@
       "query": "Клапан обратный пружинный латунный Ду25 резьбовой",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "check_valve",
         "dn": 25,
         "joining_type": "threaded",
         "body_material": "brass"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        17513
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "check_valve",
         "difficulty": "easy",
@@ -2384,7 +2419,14 @@
           "brass",
           "spring",
           "threaded"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [
+          249,
+          251
+        ],
+        "gold_review_note": "Independent review workbook contains catalog evidence for LD Pride 58.25.V-V, explicitly named as a spring-loaded brass threaded check valve DN25 (rows 249/251 candidate evidence)."
       },
       "unsupported_constraints": [
         {
@@ -2445,7 +2487,7 @@
       "requirements": {
         "product_type": "check_valve",
         "dn": 80,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "body_material": "steel"
       },
       "known_positive_ids": [],
@@ -2478,7 +2520,7 @@
       "requirements": {
         "product_type": "check_valve",
         "dn": 100,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "valve_designation": "19с53нж"
       },
       "known_positive_ids": [],
@@ -2640,7 +2682,7 @@
       "requirements": {
         "product_type": "filter",
         "dn": 50,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "body_material": "steel"
       },
       "known_positive_ids": [],
@@ -2751,7 +2793,7 @@
       "query": "Фланец плоский DN100 PN16 ст.20 ГОСТ 33259",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 100,
@@ -2759,18 +2801,24 @@
         "body_material": "steel",
         "body_material_grade": "20"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        171
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "flange",
         "difficulty": "medium",
         "tags": [
           "flat",
           "gost"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [],
+        "gold_review_note": "Existing human-verified tender case tender_v1_002 already establishes LD 171 as a steel-20 flat DN100 PN16 flange; product identity explicitly includes GOST 33259."
       },
       "unsupported_constraints": [
         {
@@ -2957,7 +3005,7 @@
       "requirements": {
         "product_type": "flange",
         "dn": 50,
-        "pn_min_mpa": 4.0
+        "pn_min_mpa": 4
       },
       "known_positive_ids": [],
       "known_rejected_ids": [],
@@ -3054,7 +3102,7 @@
       "query": "Фланец 1-100-16 ст.20 ГОСТ 33259",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 100,
@@ -3062,17 +3110,23 @@
         "body_material": "steel",
         "body_material_grade": "20"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        171
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "flange",
         "difficulty": "hard",
         "tags": [
           "gost_designation"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [],
+        "gold_review_note": "Existing human-verified tender case tender_v1_002 plus the catalog product identity establish LD 171 as 1-100-16 steel20 GOST 33259."
       },
       "unsupported_constraints": [
         {
@@ -3150,7 +3204,7 @@
       "requirements": {
         "product_type": "flange",
         "dn": 150,
-        "pn_min_mpa": 1.0,
+        "pn_min_mpa": 1,
         "body_material": "steel"
       },
       "known_positive_ids": [],
@@ -3274,24 +3328,31 @@
       "query": "Фланец стальной Ду100 Ру16",
       "split": "EXTENDED",
       "hard_gate": false,
-      "expected_status": null,
+      "expected_status": "MATCHED",
       "requirements": {
         "product_type": "flange",
         "dn": 100,
         "pn_min_mpa": 1.6,
         "body_material": "steel"
       },
-      "known_positive_ids": [],
+      "known_positive_ids": [
+        171,
+        19254
+      ],
       "known_rejected_ids": [],
       "known_unsure_ids": [],
       "known_positive_ids_exhaustive": false,
-      "label_source": null,
+      "label_source": "HUMAN_VERIFIED_CHATGPT",
       "metadata": {
         "category": "flange",
         "difficulty": "ambiguous",
         "tags": [
           "ambiguous_type"
-        ]
+        ],
+        "gold_review_date": "2026-09-24",
+        "gold_review_source": "kontur_783_review_latest.xlsx + existing human-verified harness evidence",
+        "gold_review_rows": [],
+        "gold_review_note": "Existing human-verified tender case tender_v1_002 establishes LD 171 and 19254 as steel-20 DN100 PN16 flanges, which satisfies this less-specific request."
       },
       "unsupported_constraints": [],
       "parser_warnings": [],
@@ -3592,7 +3653,7 @@
       "requirements": {
         "product_type": "accessory",
         "dn": 50,
-        "pn_min_mpa": 4.0
+        "pn_min_mpa": 4
       },
       "known_positive_ids": [],
       "known_rejected_ids": [],
@@ -3813,7 +3874,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 25,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "male_male",
         "valve_type": "standard"
@@ -4175,7 +4236,7 @@
       "requirements": {
         "product_type": "ball_valve",
         "dn": 20,
-        "pn_min_mpa": 4.0,
+        "pn_min_mpa": 4,
         "joining_type": "threaded",
         "thread_type": "male_female",
         "body_material": "brass"
