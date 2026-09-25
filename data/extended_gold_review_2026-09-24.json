@@ -1,0 +1,89 @@
+{
+  "review_date": "2026-09-24",
+  "source_branch": "bananloop/teacher-feedback-v1",
+  "source_workbook": "kontur_783_review_latest.xlsx",
+  "policy": "Only add MATCHED labels where an LD product is independently corroborated by the review workbook or an already human-verified harness case. Keep unsupported/ambiguous cases EXTENDED and non-hard-gate.",
+  "changed_cases": [
+    {
+      "id": "gold_q008",
+      "ids": [
+        15905
+      ],
+      "note": "Independent review workbook contains JIP/RJIP Standard FF DN50 PN16 requests mapped to LD KSHCF steel20 DN50 PN1.6 (rows 298 and 301).",
+      "rows": [
+        298,
+        301
+      ]
+    },
+    {
+      "id": "gold_q015",
+      "ids": [
+        141
+      ],
+      "note": "Independent review workbook contains 1/2 internal/external threaded ball-valve request mapped to LD Pride 47.15.V-N.B DN15 PN40 (row 199), confirming 1/2 -> DN15 and the execution.",
+      "rows": [
+        199
+      ]
+    },
+    {
+      "id": "gold_q028",
+      "ids": [
+        15418
+      ],
+      "note": "Independent review workbook exposes the LD KSHCF Regula DN50 PN1.6 candidate in the Regula DN50 review (row 397).",
+      "rows": [
+        397
+      ]
+    },
+    {
+      "id": "gold_q030",
+      "ids": [
+        15905
+      ],
+      "note": "Independent review workbook repeatedly maps flanged DN50 PN16 ball-valve requests to LD KSHCF steel20 DN50 PN1.6; direct example at row 654.",
+      "rows": [
+        654
+      ]
+    },
+    {
+      "id": "gold_q059",
+      "ids": [
+        17513
+      ],
+      "note": "Independent review workbook contains catalog evidence for LD Pride 58.25.V-V, explicitly named as a spring-loaded brass threaded check valve DN25 (rows 249/251 candidate evidence).",
+      "rows": [
+        249,
+        251
+      ]
+    },
+    {
+      "id": "gold_q070",
+      "ids": [
+        171
+      ],
+      "note": "Existing human-verified tender case tender_v1_002 already establishes LD 171 as a steel-20 flat DN100 PN16 flange; product identity explicitly includes GOST 33259.",
+      "rows": []
+    },
+    {
+      "id": "gold_q076",
+      "ids": [
+        171
+      ],
+      "note": "Existing human-verified tender case tender_v1_002 plus the catalog product identity establish LD 171 as 1-100-16 steel20 GOST 33259.",
+      "rows": []
+    },
+    {
+      "id": "gold_q081",
+      "ids": [
+        171,
+        19254
+      ],
+      "note": "Existing human-verified tender case tender_v1_002 establishes LD 171 and 19254 as steel-20 DN100 PN16 flanges, which satisfies this less-specific request.",
+      "rows": []
+    }
+  ],
+  "changed_count": 8,
+  "trusted_extended_after": 17,
+  "unscored_extended_remaining": 73,
+  "deliberately_not_promoted_to_hard_gate": true
+}
