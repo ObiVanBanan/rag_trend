@@ -250,6 +250,57 @@ def _bucket(size: int) -> str:
     return "8+"
 
 
+def _diagnostics(case: dict, result, verdict: str) -> dict:
+    acceptable = set(case["acceptable_ld_ids"])
+    interpretation = result.query_interpretation or {}
+    retrieval = interpretation.get("retrieval_trace") or {}
+    web = interpretation.get("competitor_lookup") or {}
+
+    initial_ids = set(retrieval.get("initial_candidate_ids") or [])
+    rerank_ids = set(retrieval.get("rerank_candidate_ids") or [])
+    selected_ids = set(retrieval.get("selected_ld_ids") or [])
+
+    acceptable_in_initial = sorted(acceptable & initial_ids)
+    acceptable_in_rerank = sorted(acceptable & rerank_ids)
+    acceptable_selected = sorted(acceptable & selected_ids)
+
+    if verdict == "PASS":
+        failure_stage = "SUCCESS"
+    elif result.status not in {"MATCHED", "NOT_FOUND"}:
+        failure_stage = "PIPELINE"
+    elif not acceptable_in_initial:
+        failure_stage = "RETRIEVAL_MISS"
+    elif not acceptable_in_rerank:
+        failure_stage = "FILTER_DROP"
+    else:
+        failure_stage = "RERANK_SELECTION"
+
+    pre = interpretation.get("pre_enrichment_interpretation") or {}
+    return {
+        "failure_stage": failure_stage,
+        "web": {
+            "attempted": bool(web.get("attempted")),
+            "accepted": bool(web.get("accepted")),
+            "reason": web.get("reason"),
+            "search_query": web.get("search_query"),
+            "duration_ms": web.get("duration_ms"),
+            "page_count": len(web.get("pages") or []),
+        },
+        "extraction": {
+            "pre_constraints": pre.get("constraints"),
+            "enriched_constraints": interpretation.get("constraints"),
+            "hard_constraints": interpretation.get("hard_constraints"),
+            "technical_query": retrieval.get("retrieval_query"),
+            "strategy": retrieval.get("strategy"),
+            "web_enrichment_applied": retrieval.get("web_enrichment_applied"),
+        },
+        "retrieval": retrieval,
+        "acceptable_in_initial_retrieval": acceptable_in_initial,
+        "acceptable_in_rerank_candidates": acceptable_in_rerank,
+        "acceptable_selected": acceptable_selected,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -323,8 +374,13 @@ def main() -> int:
 
     rows = []
     verdicts = Counter()
+    failure_stages = Counter()
+    web_statuses = Counter()
+    retrieval_strategies = Counter()
     bucket_totals = Counter()
     bucket_pass = Counter()
+    acceptable_in_initial_count = 0
+    acceptable_in_rerank_count = 0
 
     for case, result in zip(cases, results, strict=True):
         returned_ld_id = result.ld_product.ld_id if result.ld_product is not None else None
@@ -345,6 +401,23 @@ def main() -> int:
         if verdict == "PASS":
             bucket_pass[bucket] += 1
 
+        diagnostics = _diagnostics(case, result, verdict)
+        failure_stages[diagnostics["failure_stage"]] += 1
+        web_key = (
+            "accepted"
+            if diagnostics["web"]["accepted"]
+            else "attempted_rejected"
+            if diagnostics["web"]["attempted"]
+            else "skipped"
+        )
+        web_statuses[web_key] += 1
+        strategy = diagnostics["extraction"].get("strategy") or "unknown"
+        retrieval_strategies[strategy] += 1
+        if diagnostics["acceptable_in_initial_retrieval"]:
+            acceptable_in_initial_count += 1
+        if diagnostics["acceptable_in_rerank_candidates"]:
+            acceptable_in_rerank_count += 1
+
         rows.append(
             {
                 **case,
@@ -352,6 +425,7 @@ def main() -> int:
                 "returned_ld_id": returned_ld_id,
                 "verdict": verdict,
                 "returned_is_acceptable": bool(returned_ld_id in acceptable if returned_ld_id else False),
+                "diagnostics": diagnostics,
             }
         )
 
@@ -366,6 +440,17 @@ def main() -> int:
         "fail_wrong_ld": verdicts["FAIL_WRONG_LD"],
         "fail_not_found": verdicts["FAIL_NOT_FOUND"],
         "fail_pipeline": verdicts["FAIL_PIPELINE"],
+        "failure_stages": dict(failure_stages),
+        "web_statuses": dict(web_statuses),
+        "retrieval_strategies": dict(retrieval_strategies),
+        "acceptable_in_initial_retrieval": acceptable_in_initial_count,
+        "acceptable_in_initial_retrieval_rate": (
+            acceptable_in_initial_count / total if total else None
+        ),
+        "acceptable_in_rerank_candidates": acceptable_in_rerank_count,
+        "acceptable_in_rerank_candidates_rate": (
+            acceptable_in_rerank_count / total if total else None
+        ),
         "scoring": "top1 returned LD id must be in acceptable_ld_ids; completeness is not evaluated",
         "acceptable_count_buckets": {
             bucket: {
