@@ -182,11 +182,45 @@ class NomenclatureMatcher:
 
         candidate_pool = candidates
         indexed_candidates = list(enumerate(candidate_pool, 1))
+        retrieval_trace = None
+        if isinstance(query_interpretation, dict):
+            maybe_trace = query_interpretation.get("retrieval_trace")
+            if isinstance(maybe_trace, dict):
+                retrieval_trace = maybe_trace
+                retrieval_trace["initial_candidate_count"] = len(candidate_pool)
+                retrieval_trace["initial_candidate_ids"] = [
+                    candidate.ld_id for candidate in candidate_pool
+                ]
+                retrieval_trace["initial_candidates"] = [
+                    {
+                        "ld_id": candidate.ld_id,
+                        "name": candidate.name,
+                        "article": candidate.article,
+                        "dense_rank": candidate.dense_rank,
+                        "bm25_rank": candidate.bm25_rank,
+                        "rrf_score": candidate.rrf_score,
+                        "retrieval_sources": candidate.retrieval_sources,
+                    }
+                    for candidate in candidate_pool
+                ]
+
         if constraints is not None:
             indexed_candidates = self._eligible_candidates(candidate_pool, constraints)
+            if retrieval_trace is not None:
+                retrieval_trace["eligible_candidate_count_before_second_chance"] = len(
+                    indexed_candidates
+                )
+                retrieval_trace["eligible_candidate_ids_before_second_chance"] = [
+                    candidate.ld_id for _, candidate in indexed_candidates
+                ]
             if not indexed_candidates:
                 second_chance = self._second_chance_candidates(constraints)
                 if second_chance is None:
+                    if retrieval_trace is not None:
+                        retrieval_trace["second_chance_used"] = False
+                        retrieval_trace["rerank_candidate_count"] = 0
+                        retrieval_trace["rerank_candidate_ids"] = []
+                        retrieval_trace["failure_stage"] = "hard_constraint_filter"
                     return MatchResult(
                         query=query,
                         status="NOT_FOUND",
@@ -195,8 +229,23 @@ class NomenclatureMatcher:
                         query_interpretation=query_interpretation,
                     )
                 candidate_pool, indexed_candidates = second_chance
+                if retrieval_trace is not None:
+                    retrieval_trace["second_chance_used"] = True
+                    retrieval_trace["second_chance_candidate_ids"] = [
+                        candidate.ld_id for candidate in candidate_pool
+                    ]
+                    retrieval_trace["eligible_candidate_ids_after_second_chance"] = [
+                        candidate.ld_id for _, candidate in indexed_candidates
+                    ]
+            elif retrieval_trace is not None:
+                retrieval_trace["second_chance_used"] = False
 
         rerank_input = [candidate for _, candidate in indexed_candidates]
+        if retrieval_trace is not None:
+            retrieval_trace["rerank_candidate_count"] = len(rerank_input)
+            retrieval_trace["rerank_candidate_ids"] = [
+                candidate.ld_id for candidate in rerank_input
+            ]
         try:
             if constraints is None:
                 rerank_result = self.reranker.rerank(query, rerank_input)
@@ -227,6 +276,15 @@ class NomenclatureMatcher:
             selected_candidates.append(candidate)
 
         best = selected_candidates[0] if selected_candidates else None
+        if retrieval_trace is not None:
+            retrieval_trace["reranker_status"] = rerank_result.status
+            retrieval_trace["selected_ld_ids"] = [
+                candidate.ld_id for candidate in selected_candidates
+            ]
+            if rerank_result.status == "MATCHED" and selected_candidates:
+                retrieval_trace["failure_stage"] = None
+            elif rerank_input:
+                retrieval_trace["failure_stage"] = "reranker"
         return MatchResult(
             query=query,
             status=rerank_result.status,
@@ -545,11 +603,52 @@ class NomenclatureMatcher:
                 )
 
             normalized_query = self._normalize_query(interpretation.normalized_query) or query
-            canonical_query = normalized_query if normalized_query != query else None
+
+            # Once web evidence has identified the competitor product, retrieval
+            # should search for the LD technical analogue rather than continue to
+            # rank by competitor brand/model identity. The original query is still
+            # used by the reranker and to derive explicit hard constraints.
+            if enriched_interpretation is not None and normalized_query != query:
+                retrieval_query = normalized_query
+                canonical_query = None
+                retrieval_strategy = "web_enriched_technical_primary"
+            else:
+                retrieval_query = query
+                canonical_query = normalized_query if normalized_query != query else None
+                retrieval_strategy = (
+                    "original_plus_canonical"
+                    if canonical_query is not None
+                    else "original_only"
+                )
+
+            interpretation_payload["retrieval_trace"] = {
+                "strategy": retrieval_strategy,
+                "source_query": query,
+                "retrieval_query": retrieval_query,
+                "alternate_query": canonical_query,
+                "pre_enrichment_normalized_query": self._normalize_query(
+                    pre_interpretation.normalized_query
+                ),
+                "enriched_normalized_query": (
+                    self._normalize_query(enriched_interpretation.normalized_query)
+                    if enriched_interpretation is not None
+                    else None
+                ),
+                "web_enrichment_applied": enriched_interpretation is not None,
+            }
+
             candidates = self.hybrid_retriever.search(
-                query,
+                retrieval_query,
                 self.settings.hybrid_rerank_limit,
                 canonical_query=canonical_query,
+            )
+            log_match_trace(
+                "retrieval_completed",
+                enabled=bool(getattr(self.settings, "match_trace_enabled", True)),
+                strategy=retrieval_strategy,
+                candidate_count=len(candidates),
+                retrieval_query=trim_text(retrieval_query, 500),
+                alternate_query=trim_text(canonical_query, 500),
             )
             return self.rerank_candidates(
                 query,
