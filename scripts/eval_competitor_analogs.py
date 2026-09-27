@@ -264,16 +264,30 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
     acceptable_in_rerank = sorted(acceptable & rerank_ids)
     acceptable_selected = sorted(acceptable & selected_ids)
 
+    reason = str(result.reason or "")
     if verdict == "PASS":
         failure_stage = "SUCCESS"
     elif result.status not in {"MATCHED", "NOT_FOUND"}:
         failure_stage = "PIPELINE"
+    elif reason.startswith("QUERY_REJECTED"):
+        failure_stage = "QUERY_REJECTED"
+    elif not retrieval:
+        failure_stage = "RETRIEVAL_NOT_RUN"
     elif not acceptable_in_initial:
         failure_stage = "RETRIEVAL_MISS"
     elif not acceptable_in_rerank:
         failure_stage = "FILTER_DROP"
     else:
         failure_stage = "RERANK_SELECTION"
+
+    if web.get("accepted") and retrieval.get("strategy") == "web_enriched_technical_primary":
+        extraction_status = "technical_query_built"
+    elif web.get("accepted"):
+        extraction_status = "web_context_no_technical_query"
+    elif web.get("attempted"):
+        extraction_status = "web_rejected"
+    else:
+        extraction_status = "web_skipped"
 
     pre = interpretation.get("pre_enrichment_interpretation") or {}
     return {
@@ -287,6 +301,7 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
             "page_count": len(web.get("pages") or []),
         },
         "extraction": {
+            "status": extraction_status,
             "pre_constraints": pre.get("constraints"),
             "enriched_constraints": interpretation.get("constraints"),
             "hard_constraints": interpretation.get("hard_constraints"),
@@ -376,6 +391,7 @@ def main() -> int:
     verdicts = Counter()
     failure_stages = Counter()
     web_statuses = Counter()
+    extraction_statuses = Counter()
     retrieval_strategies = Counter()
     bucket_totals = Counter()
     bucket_pass = Counter()
@@ -411,6 +427,7 @@ def main() -> int:
             else "skipped"
         )
         web_statuses[web_key] += 1
+        extraction_statuses[diagnostics["extraction"]["status"]] += 1
         strategy = diagnostics["extraction"].get("strategy") or "unknown"
         retrieval_strategies[strategy] += 1
         if diagnostics["acceptable_in_initial_retrieval"]:
@@ -442,6 +459,7 @@ def main() -> int:
         "fail_pipeline": verdicts["FAIL_PIPELINE"],
         "failure_stages": dict(failure_stages),
         "web_statuses": dict(web_statuses),
+        "extraction_statuses": dict(extraction_statuses),
         "retrieval_strategies": dict(retrieval_strategies),
         "acceptable_in_initial_retrieval": acceptable_in_initial_count,
         "acceptable_in_initial_retrieval_rate": (
