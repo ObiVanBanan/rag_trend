@@ -299,6 +299,15 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
             "search_query": web.get("search_query"),
             "duration_ms": web.get("duration_ms"),
             "page_count": len(web.get("pages") or []),
+            "search_results_preview": str(web.get("search_results") or "")[:1000],
+            "evidence_preview": [
+                {
+                    "target": str(page.get("target") or "")[:500],
+                    "text": str(page.get("text") or "")[:800],
+                }
+                for page in (web.get("pages") or [])[:2]
+                if isinstance(page, dict)
+            ],
         },
         "extraction": {
             "status": extraction_status,
