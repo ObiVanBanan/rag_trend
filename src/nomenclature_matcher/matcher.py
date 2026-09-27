@@ -260,6 +260,9 @@ class NomenclatureMatcher:
                     constraints=constraints,
                 )
         except Exception as exc:
+            if retrieval_trace is not None:
+                retrieval_trace["failure_stage"] = "reranker_exception"
+                retrieval_trace["reranker_error"] = f"{type(exc).__name__}: {exc}"
             return MatchResult(
                 query=query,
                 status="RERANK_FAILED",
