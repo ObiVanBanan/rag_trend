@@ -171,7 +171,13 @@ def test_web_constraints_stay_soft_while_enriched_query_drives_retrieval():
 
     assert result.status == "NOT_FOUND"
     assert lookup.calls == 1
-    assert hybrid.calls[0][1] == enriched.normalized_query
+    assert hybrid.calls == [(enriched.normalized_query, None)]
+    assert result.query_interpretation["retrieval_trace"]["strategy"] == "web_enriched_technical_primary"
+    assert result.query_interpretation["retrieval_trace"]["source_query"] == 'Кран VT.214 вн/вн 1 1/2"'
+    assert result.query_interpretation["retrieval_trace"]["retrieval_query"] == enriched.normalized_query
+    assert result.query_interpretation["retrieval_trace"]["alternate_query"] is None
+    assert result.query_interpretation["retrieval_trace"]["initial_candidate_ids"] == [1]
+    assert result.query_interpretation["retrieval_trace"]["rerank_candidate_ids"] == [1]
     assert reranker.constraints["dn"] == 40
     assert reranker.constraints["body_material"] is None
     assert reranker.constraints["bore_type"] is None
