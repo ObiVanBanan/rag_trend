@@ -169,6 +169,7 @@ class NomenclatureMatcher:
         *,
         constraints: dict | None = None,
         query_interpretation: dict | None = None,
+        rerank_query: str | None = None,
     ) -> MatchResult:
         if not candidates:
             return MatchResult(
@@ -246,11 +247,18 @@ class NomenclatureMatcher:
             retrieval_trace["rerank_candidate_ids"] = [
                 candidate.ld_id for candidate in rerank_input
             ]
+        effective_rerank_query = rerank_query or query
+        if retrieval_trace is not None:
+            retrieval_trace["rerank_query"] = effective_rerank_query
         try:
             if constraints is None:
-                rerank_result = self.reranker.rerank(query, rerank_input)
+                rerank_result = self.reranker.rerank(effective_rerank_query, rerank_input)
             else:
-                rerank_result = self.reranker.rerank(query, rerank_input, constraints=constraints)
+                rerank_result = self.reranker.rerank(
+                    effective_rerank_query,
+                    rerank_input,
+                    constraints=constraints,
+                )
         except Exception as exc:
             return MatchResult(
                 query=query,
@@ -655,6 +663,11 @@ class NomenclatureMatcher:
                 candidates,
                 constraints=hard_constraints,
                 query_interpretation=interpretation_payload,
+                rerank_query=(
+                    retrieval_query
+                    if retrieval_strategy == "web_enriched_technical_primary"
+                    else query
+                ),
             )
 
         canonicalization = canonicalize_retrieval_query(query)
