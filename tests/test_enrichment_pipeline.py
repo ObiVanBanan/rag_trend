@@ -157,8 +157,10 @@ def test_web_constraints_stay_soft_while_enriched_query_drives_retrieval():
     class Reranker:
         def __init__(self):
             self.constraints = None
+            self.query = None
 
         def rerank(self, query, candidates, constraints=None):
+            self.query = query
             self.constraints = constraints
             return SimpleNamespace(status="NOT_FOUND", selected=[], reason="no exact match")
 
@@ -176,6 +178,8 @@ def test_web_constraints_stay_soft_while_enriched_query_drives_retrieval():
     assert result.query_interpretation["retrieval_trace"]["source_query"] == 'Кран VT.214 вн/вн 1 1/2"'
     assert result.query_interpretation["retrieval_trace"]["retrieval_query"] == enriched.normalized_query
     assert result.query_interpretation["retrieval_trace"]["alternate_query"] is None
+    assert result.query_interpretation["retrieval_trace"]["rerank_query"] == enriched.normalized_query
+    assert reranker.query == enriched.normalized_query
     assert result.query_interpretation["retrieval_trace"]["initial_candidate_ids"] == [1]
     assert result.query_interpretation["retrieval_trace"]["rerank_candidate_ids"] == [1]
     assert reranker.constraints["dn"] == 40
