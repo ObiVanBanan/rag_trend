@@ -97,8 +97,11 @@ def test_prompt_context_exposes_only_verified_pages_not_raw_search_results():
         identity_verified=True,
     )
 
+    debug = result.debug_payload()
     context = result.prompt_context()
 
+    assert debug["search_results"] == "neighboring unverified result"
+    assert debug["identity_verified"] is True
     assert context["search_results"] == ""
     assert context["identity_verified"] is True
     assert context["pages"][0]["text"].startswith("ALSO КШ.К.050.25-01")
