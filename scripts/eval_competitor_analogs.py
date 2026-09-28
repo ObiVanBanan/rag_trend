@@ -280,7 +280,7 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
     else:
         failure_stage = "RERANK_SELECTION"
 
-    if web.get("accepted") and retrieval.get("strategy") == "web_enriched_technical_primary":
+    if web.get("accepted") and retrieval.get("web_enrichment_applied"):
         extraction_status = "technical_query_built"
     elif web.get("accepted"):
         extraction_status = "web_context_no_technical_query"
