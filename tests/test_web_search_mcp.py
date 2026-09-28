@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from nomenclature_matcher.web_search_mcp import MCPWebSearchLookup, _search_failure_reason
+from nomenclature_matcher.query_signals import product_identity_anchors
+from nomenclature_matcher.web_search_mcp import (
+    MCPWebSearchLookup,
+    WebPageEvidence,
+    WebSearchLookupResult,
+    _evidence_matches_identity,
+    _search_failure_reason,
+    extract_identity_fetch_targets,
+)
 
 
 def settings(**overrides):
@@ -20,6 +28,83 @@ def settings(**overrides):
     }
     values.update(overrides)
     return SimpleNamespace(**values)
+
+
+def test_product_identity_anchor_prefers_specific_model_code():
+    anchors = product_identity_anchors("Кран шаровой ALSO КШ.К.050.25-01")
+    assert anchors[0] == "кшк0502501"
+
+
+def test_neighboring_web_sku_does_not_verify_identity():
+    anchors = product_identity_anchors("Кран шаровой ALSO КШ.К.050.25-01")
+
+    assert _evidence_matches_identity(
+        "ALSO КШ.К.050.25-01 Ду50 Ру25",
+        anchors,
+    )
+    assert not _evidence_matches_identity(
+        "ALSO КШ.Ф.050.40-01 Ду50 Ру40",
+        anchors,
+    )
+
+
+def test_generic_family_page_does_not_verify_specific_marshal_variant():
+    anchors = product_identity_anchors(
+        "Кран шаровой MARSHAL 11с67п ЦФ.01.7.025.150"
+    )
+
+    assert not _evidence_matches_identity(
+        "11с67п — кран шаровой стальной фланцевый Маршал",
+        anchors,
+    )
+    assert _evidence_matches_identity(
+        "11с67п ЦФ.01.7.025.150 Ду150 Ру25",
+        anchors,
+    )
+
+
+def test_identity_targets_prefer_exact_result_block():
+    anchors = product_identity_anchors("Кран шаровой ALSO КШ.К.050.25-01")
+    search_text = """
+1. Neighbor
+   URL: https://example.test/neighbor
+   Summary: ALSO КШ.Ф.050.40-01 Ду50 Ру40
+
+2. Exact
+   URL: https://example.test/exact
+   Summary: ALSO КШ.К.050.25-01 Ду50 Ру25
+"""
+    assert extract_identity_fetch_targets(search_text, anchors, 3) == [
+        "https://example.test/exact"
+    ]
+
+
+def test_prompt_context_exposes_only_verified_pages_not_raw_search_results():
+    result = WebSearchLookupResult(
+        attempted=True,
+        accepted=True,
+        reason="web_identity_verified",
+        query="Кран шаровой ALSO КШ.К.050.25-01",
+        search_query="search",
+        search_results="neighboring unverified result",
+        pages=[
+            WebPageEvidence(
+                target="https://example.test/exact",
+                text="ALSO КШ.К.050.25-01 Ду50 Ру25",
+            )
+        ],
+        identity_anchors=["кшк0502501"],
+        identity_verified=True,
+    )
+
+    debug = result.debug_payload()
+    context = result.prompt_context()
+
+    assert debug["search_results"] == "neighboring unverified result"
+    assert debug["identity_verified"] is True
+    assert context["search_results"] == ""
+    assert context["identity_verified"] is True
+    assert context["pages"][0]["text"].startswith("ALSO КШ.К.050.25-01")
 
 
 def test_mcp_subprocess_receives_explicit_proxy(monkeypatch):

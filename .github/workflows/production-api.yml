@@ -13,6 +13,8 @@ on:
       - "src/nomenclature_matcher/query_signals.py"
       - "src/nomenclature_matcher/observability.py"
       - "src/nomenclature_matcher/matcher.py"
+      - "src/nomenclature_matcher/bm25_store.py"
+      - "src/nomenclature_matcher/documents.py"
       - "src/nomenclature_matcher/web_search_mcp.py"
       - "tests/test_production_api.py"
       - "tests/test_web_search_mcp.py"
@@ -47,6 +49,7 @@ jobs:
           tests/test_observability.py
           tests/test_enrichment_pipeline.py
           tests/test_web_search_mcp.py
+          tests/test_bm25_technical_normalization.py
 
       - name: Validate Docker Compose
         run: |

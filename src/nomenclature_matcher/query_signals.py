@@ -38,6 +38,32 @@ def normalize_query_text(value: str) -> str:
     return " ".join(str(value or "").lower().replace("ё", "е").split())
 
 
+def product_identity_anchors(query: str) -> list[str]:
+    """Return strong source-product identity anchors, compacted for exact evidence checks."""
+    cleaned = _TECH_NOTATION.sub(" ", normalize_query_text(query))
+    anchors: list[str] = []
+
+    def add(value: str) -> None:
+        compact = re.sub(r"[^a-zа-я0-9]+", "", value, flags=re.IGNORECASE)
+        if len(compact) >= 4 and compact not in anchors:
+            anchors.append(compact)
+
+    for token in _MIXED_MODEL.findall(cleaned):
+        if (
+            re.search(r"[a-zа-я]", token, re.IGNORECASE)
+            and re.search(r"\d", token)
+        ):
+            add(token)
+
+    for match in _BRAND_NUMBER.finditer(cleaned):
+        add(f"{match.group(1)}{match.group(2)}")
+
+    for match in _LONG_NUMBER.finditer(cleaned):
+        add(match.group(0))
+
+    return sorted(anchors, key=len, reverse=True)
+
+
 def has_product_identity(query: str) -> bool:
     """Detect a source product model/article anchor, excluding DN/PN/thread notation."""
     cleaned = _TECH_NOTATION.sub(" ", normalize_query_text(query))

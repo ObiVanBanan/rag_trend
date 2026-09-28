@@ -18,7 +18,7 @@ def settings():
     )
 
 
-def interpretation(*, searchable=True, scope="in_scope", product_type="ball_valve", dn=25, joining="threaded", thread="male_female", material=None, bore=None, control=None, normalized="normalized"):
+def interpretation(*, searchable=True, scope="in_scope", product_type="ball_valve", dn=25, joining="threaded", thread="male_female", material=None, bore=None, control=None, normalized="normalized", ambiguous=False):
     return QueryInterpretation.model_validate(
         {
             "searchable": searchable,
@@ -38,7 +38,7 @@ def interpretation(*, searchable=True, scope="in_scope", product_type="ball_valv
                 "bore_type": bore,
                 "control": control,
                 "catalog_scope": scope,
-                "ambiguous": False,
+                "ambiguous": ambiguous,
                 "comment": "",
             },
         }
@@ -157,8 +157,10 @@ def test_web_constraints_stay_soft_while_enriched_query_drives_retrieval():
     class Reranker:
         def __init__(self):
             self.constraints = None
+            self.query = None
 
         def rerank(self, query, candidates, constraints=None):
+            self.query = query
             self.constraints = constraints
             return SimpleNamespace(status="NOT_FOUND", selected=[], reason="no exact match")
 
@@ -171,12 +173,99 @@ def test_web_constraints_stay_soft_while_enriched_query_drives_retrieval():
 
     assert result.status == "NOT_FOUND"
     assert lookup.calls == 1
-    assert hybrid.calls[0][1] == enriched.normalized_query
+    assert hybrid.calls[0][0] == enriched.normalized_query
+    assert hybrid.calls[0][1] is not None
+    assert "Ду40" in hybrid.calls[0][1]
+    assert "латунь" in hybrid.calls[0][1]
+    assert result.query_interpretation["retrieval_trace"]["strategy"] == "web_enriched_technical_plus_catalog"
+    assert result.query_interpretation["retrieval_trace"]["source_query"] == 'Кран VT.214 вн/вн 1 1/2"'
+    assert result.query_interpretation["retrieval_trace"]["retrieval_query"] == enriched.normalized_query
+    assert result.query_interpretation["retrieval_trace"]["alternate_query"] is not None
+    assert result.query_interpretation["retrieval_trace"]["rerank_query"] == enriched.normalized_query
+    assert reranker.query == enriched.normalized_query
+    assert result.query_interpretation["retrieval_trace"]["initial_candidate_ids"] == [1]
+    assert result.query_interpretation["retrieval_trace"]["rerank_candidate_ids"] == [1]
     assert reranker.constraints["dn"] == 40
     assert reranker.constraints["body_material"] is None
     assert reranker.constraints["bore_type"] is None
     assert result.query_interpretation["constraints"]["body_material"] == "brass"
     assert result.query_interpretation["hard_constraints"]["body_material"] is None
+
+
+def test_ambiguous_model_identity_is_allowed_to_use_web_for_rescue():
+    pre = interpretation(
+        searchable=False,
+        scope="in_scope",
+        dn=None,
+        joining=None,
+        thread=None,
+        normalized="Кран шаровой TEMPER 39420032",
+        ambiguous=True,
+    )
+    enriched = interpretation(
+        searchable=True,
+        scope="in_scope",
+        dn=32,
+        joining="flanged",
+        thread=None,
+        normalized="кран шаровой DN32 PN16 фланцевый стальной",
+        ambiguous=False,
+    )
+
+    class Interpreter:
+        def interpret(self, query, competitor_context=None):
+            return pre if competitor_context is None else enriched
+
+    class LookupResult:
+        def prompt_context(self):
+            return {
+                "source": "duckduckgo_mcp_web_search",
+                "identity_verified": True,
+                "pages": [{"target": "https://example.test", "text": "TEMPER 39420032 DN32"}],
+            }
+
+        def debug_payload(self):
+            return {
+                "attempted": True,
+                "accepted": True,
+                "reason": "web_identity_verified",
+                "identity_verified": True,
+                "pages": [],
+            }
+
+    class Lookup:
+        def __init__(self):
+            self.calls = 0
+
+        def lookup(self, query):
+            self.calls += 1
+            return LookupResult()
+
+    class Hybrid:
+        def __init__(self):
+            self.calls = []
+
+        def search(self, query, limit, canonical_query=None):
+            self.calls.append((query, canonical_query))
+            return []
+
+    lookup = Lookup()
+    hybrid = Hybrid()
+    matcher = NomenclatureMatcher(
+        None,
+        None,
+        settings(),
+        hybrid_retriever=hybrid,
+        query_interpreter=Interpreter(),
+        competitor_lookup=lookup,
+    )
+
+    result = matcher.match_one_hybrid_with_rerank("Кран шаровой TEMPER 39420032")
+
+    assert lookup.calls == 1
+    assert hybrid.calls
+    assert hybrid.calls[0][0] == enriched.normalized_query
+    assert result.query_interpretation["competitor_lookup"]["accepted"] is True
 
 
 def test_rich_explicit_query_skips_web_lookup():
