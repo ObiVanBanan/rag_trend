@@ -296,6 +296,8 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
             "attempted": bool(web.get("attempted")),
             "accepted": bool(web.get("accepted")),
             "reason": web.get("reason"),
+            "identity_verified": bool(web.get("identity_verified")),
+            "identity_anchors": list(web.get("identity_anchors") or []),
             "search_query": web.get("search_query"),
             "duration_ms": web.get("duration_ms"),
             "page_count": len(web.get("pages") or []),
