@@ -460,16 +460,23 @@ class NomenclatureMatcher:
         constraints = interpretation.constraints
         if constraints.catalog_scope == "out_of_scope":
             return False, "pre_enrichment_out_of_scope"
-        if constraints.ambiguous:
-            return False, "pre_enrichment_ambiguous"
-        if not interpretation.searchable and constraints.catalog_scope != "uncertain":
-            return False, "pre_enrichment_not_searchable"
         if not has_product_identity(query):
             return False, "pre_enrichment_no_product_identity"
-        # Rich queries already contain enough explicit facts; web would mostly add
-        # redundant attributes and latency while increasing false hard constraints.
+        # Rich explicit queries already carry enough technical facts; web adds
+        # latency and can only introduce contradictions.
         if explicit_technical_signal_count(query) >= 4:
             return False, "pre_enrichment_enough_explicit_detail"
+        # Ambiguous/uncertain model-only queries are exactly the cases web should
+        # try to resolve. Keep rejecting non-searchable, non-ambiguous lines
+        # (for example service-like requests) before external lookup.
+        if (
+            not interpretation.searchable
+            and not constraints.ambiguous
+            and constraints.catalog_scope != "uncertain"
+        ):
+            return False, "pre_enrichment_not_searchable"
+        if constraints.ambiguous:
+            return True, "pre_enrichment_ambiguous_identity_rescue"
         return True, "pre_enrichment_eligible"
 
     @staticmethod
@@ -621,8 +628,16 @@ class NomenclatureMatcher:
             # used by the reranker and to derive explicit hard constraints.
             if enriched_interpretation is not None and normalized_query != query:
                 retrieval_query = normalized_query
-                canonical_query = None
-                retrieval_strategy = "web_enriched_technical_primary"
+                rendered_query = build_constraint_rendered_query(
+                    enriched_interpretation.constraints
+                )
+                canonical_query = (
+                    self._normalize_query(rendered_query)
+                    if rendered_query
+                    and self._normalize_query(rendered_query) != retrieval_query
+                    else None
+                )
+                retrieval_strategy = "web_enriched_technical_plus_catalog"
             else:
                 retrieval_query = query
                 canonical_query = normalized_query if normalized_query != query else None
@@ -668,7 +683,7 @@ class NomenclatureMatcher:
                 query_interpretation=interpretation_payload,
                 rerank_query=(
                     retrieval_query
-                    if retrieval_strategy == "web_enriched_technical_primary"
+                    if retrieval_strategy == "web_enriched_technical_plus_catalog"
                     else query
                 ),
             )
