@@ -152,20 +152,47 @@ def test_matcher_uses_resolver_before_web_and_searches_by_technical_profile(tmp_
     )
 
 
-def test_matcher_skips_resolver_when_competitor_decoder_covers_query(tmp_path):
+
+
+def test_matcher_uses_resolver_for_marshal_when_exact_profile_is_known(tmp_path):
     cfg = settings(tmp_path)
+    resolver = CompetitorResolver(cfg)
+    query = "Кран шаровой MARSHAL 11с67п GAS PRO 2ЦП.01.0.025.100"
+
+    learned = resolver.learn_from_web(
+        query,
+        {
+            "product_type": "ball_valve",
+            "dn": 100,
+            "pn_min_mpa": 2.5,
+            "joining_type": "welded",
+            "body_material": "steel",
+            "body_material_grade": "09Г2С",
+            "bore_type": "reduced",
+            "working_medium": "газ",
+            "valve_type": "gas",
+        },
+        {
+            "accepted": True,
+            "identity_verified": True,
+            "pages": [
+                {
+                    "target": "https://manufacturer.example/2cp-01-0-025-100",
+                    "text": "MARSHAL 11с67п GAS PRO 2ЦП.01.0.025.100 DN100 PN25",
+                }
+            ],
+        },
+    )
+    assert learned is not None
+
     interpreter = DeepSeekQueryInterpreter(
         cfg,
         client=FakeClient(llm_payload()),
     )
 
-    class ResolverSpy:
-        def __init__(self):
-            self.calls = 0
-
-        def resolve(self, query):
-            self.calls += 1
-            raise AssertionError("resolver must not run for decoder-covered query")
+    class Lookup:
+        def lookup(self, query):
+            raise AssertionError("web lookup must not run on exact resolver KB hit")
 
     class Hybrid:
         def __init__(self):
@@ -175,7 +202,6 @@ def test_matcher_skips_resolver_when_competitor_decoder_covers_query(tmp_path):
             self.calls.append((query, limit, canonical_query))
             return []
 
-    resolver = ResolverSpy()
     hybrid = Hybrid()
     matcher = NomenclatureMatcher(
         None,
@@ -183,18 +209,20 @@ def test_matcher_skips_resolver_when_competitor_decoder_covers_query(tmp_path):
         cfg,
         hybrid_retriever=hybrid,
         query_interpreter=interpreter,
+        competitor_lookup=Lookup(),
         competitor_resolver=resolver,
     )
 
-    result = matcher.match_one_hybrid_with_rerank(
-        "Кран шаровой MARSHAL 11с67п GAS PRO 2ЦП.01.0.025.100"
-    )
+    result = matcher.match_one_hybrid_with_rerank(query)
 
     assert result.status == "NOT_FOUND"
-    assert resolver.calls == 0
     assert hybrid.calls
+    retrieval_query, _, _ = hybrid.calls[0]
+    assert "MARSHAL" not in retrieval_query.upper()
+    assert "Ду100" in retrieval_query
+    assert result.query_interpretation["competitor_resolution"]["status"] == "KB_HIT"
+    assert "source_decode" not in result.query_interpretation
     assert (
         result.query_interpretation["retrieval_trace"]["strategy"]
-        == "competitor_decoded_technical_plus_catalog"
+        == "competitor_resolved_technical_plus_catalog"
     )
-    assert "competitor_resolution" not in result.query_interpretation
