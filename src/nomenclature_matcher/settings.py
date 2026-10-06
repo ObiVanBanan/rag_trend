@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     web_search_circuit_breaker_failures: int = 3
     web_search_circuit_breaker_cooldown_seconds: float = 300
 
+    competitor_resolver_enabled: bool = True
+    competitor_kb_path: str = ".rag_tender/competitor_kb.sqlite3"
+    competitor_catalog_registry_path: str = "data/competitor_catalogs/sources.json"
+
     reranker_system_prompt_path: str = "src/nomenclature_matcher/prompts/reranker_system.md"
     hybrid_dense_limit: int = 50
     hybrid_bm25_limit: int = 50
