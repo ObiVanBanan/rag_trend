@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "manufacturers": [
     {
       "name": "MARSHAL",
@@ -28,13 +28,13 @@
       "aliases": ["TEMPER", "ТЕМПЕР"],
       "sources": [
         {
-          "url": "https://temper.ru/catalog/2-gazovaa-seria?view=full",
-          "source_type": "official_product_catalog",
+          "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+          "source_type": "official_catalog_pdf",
           "trust": "official"
         },
         {
-          "url": "https://temper.ru/catalog/44-polnoprohodnye?view=full",
-          "source_type": "official_product_catalog",
+          "url": "https://temper.ru/catalog/1-stalnaa-armatura-stal-vodnaa-seria?view=full",
+          "source_type": "official_catalog",
           "trust": "official"
         }
       ]
@@ -51,69 +51,112 @@
       ]
     }
   ],
-  "products": [
+  "products": [],
+  "catalog_schemas": [
     {
-      "identity_key": "temper:38020020",
       "manufacturer": "TEMPER",
-      "article": "38020020",
-      "aliases": ["TEMPER 38020020", "38020020"],
-      "source": {
-        "url": "https://temper.ru/catalog/2-gazovaa-seria?view=full",
-        "source_type": "official_product_catalog",
-        "identity_level": "EXACT_PRODUCT",
-        "evidence_text": "TEMPER 38020020: DN 20, PN 40; standard-bore threaded/threaded ball valve for gas media."
+      "article_regex": "^(?P<series>282|284|287|292|294|299)(?P<material>20|45|66)(?P<dn>\\d{3})$",
+      "material_codes": {
+        "20": "20",
+        "45": "09Г2С",
+        "66": "12Х18Н10Т"
       },
-      "facts": {
-        "product_type": "ball_valve",
-        "dn": 20,
-        "pn_min_mpa": 4.0,
-        "joining_type": "threaded",
-        "working_medium": "газ",
-        "valve_type": "gas",
-        "body_material": "steel"
-      }
-    },
-    {
-      "identity_key": "temper:38020025",
-      "manufacturer": "TEMPER",
-      "article": "38020025",
-      "aliases": ["TEMPER 38020025", "38020025"],
-      "source": {
-        "url": "https://temper.ru/catalog/2-gazovaa-seria?view=full",
-        "source_type": "official_product_catalog",
-        "identity_level": "EXACT_PRODUCT",
-        "evidence_text": "TEMPER 38020025: DN 25, PN 40; standard-bore threaded/threaded ball valve for gas media."
-      },
-      "facts": {
-        "product_type": "ball_valve",
-        "dn": 25,
-        "pn_min_mpa": 4.0,
-        "joining_type": "threaded",
-        "working_medium": "газ",
-        "valve_type": "gas",
-        "body_material": "steel"
-      }
-    },
-    {
-      "identity_key": "temper:39320032",
-      "manufacturer": "TEMPER",
-      "article": "39320032",
-      "aliases": ["TEMPER 39320032", "39320032"],
-      "source": {
-        "url": "https://temper.ru/catalog/44-polnoprohodnye?view=full",
-        "source_type": "official_product_catalog",
-        "identity_level": "EXACT_PRODUCT",
-        "evidence_text": "TEMPER 39320032: DN 32, PN 40; full-bore flanged ball valve for gas media."
-      },
-      "facts": {
-        "product_type": "ball_valve",
-        "dn": 32,
-        "pn_min_mpa": 4.0,
-        "joining_type": "flanged",
-        "working_medium": "газ",
-        "valve_type": "gas",
-        "body_material": "steel",
-        "bore_type": "full"
+      "series_rules": {
+        "282": {
+          "product_type": "ball_valve",
+          "joining_type": "welded",
+          "bore_type": "reduced",
+          "body_material": "steel",
+          "pn_rules": [
+            {"max_dn": 250, "pn_min_mpa": 2.5},
+            {"min_dn": 300, "pn_min_mpa": 1.6}
+          ],
+          "source": {
+            "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+            "source_type": "official_catalog_pdf",
+            "identity_level": "FAMILY_LEVEL",
+            "evidence_scope": "nomenclature_schema",
+            "evidence_text": "TEMPER 282: standard-bore ball valve, welded connection; catalog product numbers encode series/material/DN and list PN by size."
+          }
+        },
+        "284": {
+          "product_type": "ball_valve",
+          "joining_type": "flanged",
+          "bore_type": "reduced",
+          "body_material": "steel",
+          "pn_min_mpa": 2.5,
+          "source": {
+            "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+            "source_type": "official_catalog_pdf",
+            "identity_level": "FAMILY_LEVEL",
+            "evidence_scope": "nomenclature_schema",
+            "evidence_text": "TEMPER 284: standard-bore ball valve, flanged PN25."
+          }
+        },
+        "287": {
+          "product_type": "ball_valve",
+          "joining_type": "flanged",
+          "bore_type": "reduced",
+          "body_material": "steel",
+          "pn_min_mpa": 2.5,
+          "source": {
+            "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+            "source_type": "official_catalog_pdf",
+            "identity_level": "FAMILY_LEVEL",
+            "evidence_scope": "nomenclature_schema",
+            "evidence_text": "TEMPER 287: short-length standard-bore flanged PN25 execution."
+          }
+        },
+        "292": {
+          "product_type": "ball_valve",
+          "joining_type": "welded",
+          "bore_type": "full",
+          "body_material": "steel",
+          "pn_rules": [
+            {"max_dn": 50, "pn_min_mpa": 4.0},
+            {"min_dn": 65, "max_dn": 200, "pn_min_mpa": 2.5},
+            {"min_dn": 250, "pn_min_mpa": 1.6}
+          ],
+          "source": {
+            "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+            "source_type": "official_catalog_pdf",
+            "identity_level": "FAMILY_LEVEL",
+            "evidence_scope": "nomenclature_schema",
+            "evidence_text": "TEMPER 292: full-bore ball valve, welded connection; PN depends on DN."
+          }
+        },
+        "294": {
+          "product_type": "ball_valve",
+          "joining_type": "flanged",
+          "bore_type": "full",
+          "body_material": "steel",
+          "pn_min_mpa": 2.5,
+          "source": {
+            "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+            "source_type": "official_catalog_pdf",
+            "identity_level": "FAMILY_LEVEL",
+            "evidence_scope": "nomenclature_schema",
+            "evidence_text": "TEMPER 294: full-bore ball valve, flanged PN25."
+          }
+        },
+        "299": {
+          "product_type": "ball_valve",
+          "joining_type": null,
+          "bore_type": "full",
+          "body_material": "steel",
+          "pn_rules": [
+            {"max_dn": 50, "pn_min_mpa": 4.0},
+            {"min_dn": 65, "max_dn": 200, "pn_min_mpa": 2.5},
+            {"min_dn": 250, "pn_min_mpa": 1.6}
+          ],
+          "source": {
+            "url": "https://temper.ru/docs/af4af09985ca8f3a1cd3ae88d0d5f3ae.pdf",
+            "source_type": "official_catalog_pdf",
+            "identity_level": "FAMILY_LEVEL",
+            "evidence_scope": "nomenclature_schema",
+            "evidence_text": "TEMPER 299: full-bore flanged/welded execution derived from the 292 family."
+          }
+        }
       }
     }
   ]
