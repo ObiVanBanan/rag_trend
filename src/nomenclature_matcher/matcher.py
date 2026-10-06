@@ -564,10 +564,17 @@ class NomenclatureMatcher:
             raise ValueError("Hybrid retriever is not configured")
 
         if self.query_interpreter is not None:
-            # Existing manufacturer decoders are the stronger source of truth
-            # for MARSHAL/ALSO nomenclature. Resolver v1 is strictly additive:
-            # it only runs when no deterministic decoder covers the query.
-            source_decode = decode_competitor_query(query)
+            # Legacy decoder is an opt-in benchmark control only. Production
+            # resolver-v2 runs without manufacturer-specific decoder logic.
+            source_decode = (
+                decode_competitor_query(query)
+                if getattr(
+                    self.settings,
+                    "competitor_decoder_baseline_enabled",
+                    False,
+                )
+                else None
+            )
             competitor_resolution = None
             resolver_context = None
             if self.competitor_resolver is not None and source_decode is None:
@@ -681,11 +688,8 @@ class NomenclatureMatcher:
 
             normalized_query = self._normalize_query(interpretation.normalized_query) or query
 
-            # A catalog-backed competitor decoder is stronger than free-text
-            # identity tokens. Search LD directly by canonical technical facts.
-            # Web may still enrich unknown fields, but cannot replace decoded
-            # DN/PN/connection/material/bore facts because the interpreter
-            # reapplies the source decoder after every LLM pass.
+            # Search LD by canonical technical facts once resolver (or the
+            # optional benchmark decoder) has resolved the source product.
             if (
                 competitor_resolution is not None
                 and competitor_resolution.resolved
