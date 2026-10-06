@@ -564,9 +564,13 @@ class NomenclatureMatcher:
             raise ValueError("Hybrid retriever is not configured")
 
         if self.query_interpreter is not None:
+            # Existing manufacturer decoders are the stronger source of truth
+            # for MARSHAL/ALSO nomenclature. Resolver v1 is strictly additive:
+            # it only runs when no deterministic decoder covers the query.
+            source_decode = decode_competitor_query(query)
             competitor_resolution = None
             resolver_context = None
-            if self.competitor_resolver is not None:
+            if self.competitor_resolver is not None and source_decode is None:
                 try:
                     competitor_resolution = self.competitor_resolver.resolve(query)
                     resolver_context = competitor_resolution.prompt_context()
@@ -607,7 +611,10 @@ class NomenclatureMatcher:
                             competitor_context=competitor_context,
                         )
                         interpretation = enriched_interpretation
-                        if self.competitor_resolver is not None:
+                        if (
+                            self.competitor_resolver is not None
+                            and source_decode is None
+                        ):
                             learned = self.competitor_resolver.learn_from_web(
                                 query,
                                 enriched_interpretation.constraints.model_dump(),
@@ -641,7 +648,6 @@ class NomenclatureMatcher:
                 pre_interpretation,
                 enriched_interpretation,
             )
-            source_decode = decode_competitor_query(query)
             interpretation_payload = interpretation.model_dump()
             interpretation_payload["hard_constraints"] = hard_constraints
             if competitor_resolution is not None:
