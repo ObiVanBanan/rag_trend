@@ -95,6 +95,9 @@ def exact_product_identity_anchors(query: str) -> list[str]:
     ):
         add(match.group(0))
 
+    for match in _LONG_NUMBER.finditer(text):
+        add(match.group(0))
+
     return sorted(anchors, key=len, reverse=True)
 
 
