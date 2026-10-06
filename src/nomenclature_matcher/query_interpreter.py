@@ -130,6 +130,29 @@ class DeepSeekQueryInterpreter:
         return score
 
     @staticmethod
+    def _resolver_attributes(competitor_context: dict | None) -> dict:
+        if not isinstance(competitor_context, dict):
+            return {}
+        if competitor_context.get("source") != "competitor_resolver":
+            return {}
+        profile = competitor_context.get("canonical_profile")
+        if not isinstance(profile, dict):
+            return {}
+        facts = profile.get("facts")
+        if not isinstance(facts, dict):
+            return {}
+        result = {}
+        for field, item in facts.items():
+            if not isinstance(item, dict):
+                continue
+            if item.get("status") not in {"VERIFIED", "SUPPORTED"}:
+                continue
+            value = item.get("value")
+            if value is not None:
+                result[field] = value
+        return result
+
+    @staticmethod
     def _compact_designation(value: str | None) -> str:
         if value in (None, ""):
             return ""
@@ -173,7 +196,12 @@ class DeepSeekQueryInterpreter:
             or has_product_identity(query)
         )
 
-    def _sanitize_payload(self, query: str, payload: dict) -> dict:
+    def _sanitize_payload(
+        self,
+        query: str,
+        payload: dict,
+        competitor_context: dict | None = None,
+    ) -> dict:
         constraints = payload.get("constraints")
         if not isinstance(constraints, dict):
             return payload
@@ -191,6 +219,19 @@ class DeepSeekQueryInterpreter:
         if family_designation is not None:
             constraints["valve_designation"] = family_designation
             self._append_comment_marker(constraints, _DESIGNATION_PROVENANCE_MARKER)
+
+        # Apply facts from the persistent competitor resolver before the legacy
+        # manufacturer decoder. VERIFIED/SUPPORTED facts are source-backed
+        # context; explicit QUERY facts still win below.
+        resolver_attributes = self._resolver_attributes(competitor_context)
+        for field, value in resolver_attributes.items():
+            if field in constraints and value is not None:
+                constraints[field] = value
+        if resolver_attributes:
+            self._append_comment_marker(
+                constraints,
+                "competitor_resolver:" + ",".join(sorted(resolver_attributes)),
+            )
 
         # Manufacturer nomenclature is source data, not model inference. Apply
         # catalog-backed MARSHAL/ALSO decoding after the LLM response so web/LLM
@@ -224,7 +265,7 @@ class DeepSeekQueryInterpreter:
         explicit_control = self._explicit_control(query)
         if explicit_control is not None:
             constraints["control"] = explicit_control
-        elif decoded is None:
+        elif decoded is None and not resolver_attributes:
             constraints["control"] = None
 
         explicit_thread = self._explicit_thread_type(query)
@@ -281,7 +322,10 @@ class DeepSeekQueryInterpreter:
         # retrieval text entirely. The matcher should search LD by canonical
         # technical attributes, while the original query remains available in
         # the trace for audit.
-        if decoded is not None and constraints.get("catalog_scope") != "out_of_scope":
+        if (
+            (decoded is not None or resolver_attributes)
+            and constraints.get("catalog_scope") != "out_of_scope"
+        ):
             try:
                 rendered = build_constraint_rendered_query(
                     QueryConstraints.model_validate(constraints)
@@ -347,7 +391,11 @@ class DeepSeekQueryInterpreter:
                 payload = json.loads(content)
                 if not isinstance(payload, dict):
                     raise TypeError("Query interpreter response must be a JSON object")
-                payload = self._sanitize_payload(query, payload)
+                payload = self._sanitize_payload(
+                    query,
+                    payload,
+                    competitor_context=competitor_context,
+                )
                 result = QueryInterpretation.model_validate(payload)
                 if result.searchable and not result.normalized_query:
                     result.normalized_query = " ".join(query.split())
