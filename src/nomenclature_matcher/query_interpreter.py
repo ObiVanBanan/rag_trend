@@ -228,6 +228,8 @@ class DeepSeekQueryInterpreter:
             if field in constraints and value is not None:
                 constraints[field] = value
         if resolver_attributes:
+            constraints["catalog_scope"] = "in_scope"
+            constraints["ambiguous"] = False
             self._append_comment_marker(
                 constraints,
                 "competitor_resolver:" + ",".join(sorted(resolver_attributes)),
