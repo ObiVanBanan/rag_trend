@@ -632,6 +632,9 @@ wheels = [
 http2 = [
     { name = "h2" },
 ]
+socks = [
+    { name = "socksio" },
+]
 
 [[package]]
 name = "httpx2"
@@ -975,6 +978,7 @@ source = { editable = "." }
 dependencies = [
     { name = "duckdb" },
     { name = "fastapi" },
+    { name = "httpx", extra = ["socks"] },
     { name = "mcp" },
     { name = "openai" },
     { name = "psycopg", extra = ["binary"] },
@@ -999,6 +1003,7 @@ test = [
 requires-dist = [
     { name = "duckdb", specifier = ">=1.1,<2" },
     { name = "fastapi", specifier = ">=0.116,<1" },
+    { name = "httpx", extras = ["socks"], specifier = ">=0.28" },
     { name = "httpx", marker = "extra == 'test'", specifier = ">=0.28" },
     { name = "mcp", specifier = ">=2.2,<3" },
     { name = "openai", specifier = ">=1.0" },
