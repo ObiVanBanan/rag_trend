@@ -454,6 +454,22 @@ class CompetitorResolver:
         )
         return bool(anchor and anchor in haystack)
 
+    def web_context_is_exact(
+        self,
+        query: str,
+        lookup_debug: dict[str, Any] | None,
+    ) -> bool:
+        debug = lookup_debug or {}
+        exact_anchors = exact_product_identity_anchors(query)
+        pages = [p for p in (debug.get("pages") or []) if isinstance(p, dict)]
+        if not exact_anchors or not pages:
+            return False
+        return any(
+            self._page_contains_exact_anchor(page, anchor)
+            for anchor in exact_anchors
+            for page in pages
+        )
+
     def learn_from_web(
         self,
         query: str,
