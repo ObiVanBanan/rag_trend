@@ -7,8 +7,16 @@ from pathlib import Path
 from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
+from .competitor_decoding import decode_competitor_query
+from .query_canonicalization import build_constraint_rendered_query
 from .query_constraints import QueryConstraints
-from .query_signals import explicit_dn_from_query, has_product_identity
+from .query_signals import (
+    explicit_dn_from_query,
+    explicit_joining_type_from_query,
+    explicit_pn_mpa_from_query,
+    explicit_working_medium_from_query,
+    has_product_identity,
+)
 
 
 DEFAULT_QUERY_INTERPRETER_PROMPT = (
@@ -184,18 +192,60 @@ class DeepSeekQueryInterpreter:
             constraints["valve_designation"] = family_designation
             self._append_comment_marker(constraints, _DESIGNATION_PROVENANCE_MARKER)
 
-        # Control is hard only when it is explicit in the tender query.
-        constraints["control"] = self._explicit_control(query)
+        # Manufacturer nomenclature is source data, not model inference. Apply
+        # catalog-backed MARSHAL/ALSO decoding after the LLM response so web/LLM
+        # guesses cannot overwrite deterministic DN/PN/connection facts.
+        decoded = decode_competitor_query(query)
+        if decoded is not None:
+            for field, value in decoded.attributes.items():
+                if value is not None:
+                    constraints[field] = value
+            constraints["catalog_scope"] = "in_scope"
+            if (
+                decoded.attributes.get("dn") is not None
+                and decoded.attributes.get("pn_min_mpa") is not None
+            ):
+                constraints["ambiguous"] = False
+            decoded_fields = ",".join(
+                sorted(
+                    field
+                    for field, value in decoded.attributes.items()
+                    if value is not None
+                )
+            )
+            self._append_comment_marker(
+                constraints,
+                f"source_decode:{decoded.manufacturer}:{decoded_fields}",
+            )
 
-        # Explicit thread orientation is deterministic and overrides LLM slips.
+        # Direct source wording is even stronger than a designation decoder.
+        # Preserve the historical rule for non-decoded queries: control inferred
+        # only by the LLM/web is not trusted unless the user stated it.
+        explicit_control = self._explicit_control(query)
+        if explicit_control is not None:
+            constraints["control"] = explicit_control
+        elif decoded is None:
+            constraints["control"] = None
+
         explicit_thread = self._explicit_thread_type(query)
         if explicit_thread is not None:
             constraints["thread_type"] = explicit_thread
 
-        # Explicit DN/inch notation is deterministic and must override model/web guesses.
         explicit_dn = explicit_dn_from_query(query)
         if explicit_dn is not None:
             constraints["dn"] = explicit_dn
+
+        explicit_pn = explicit_pn_mpa_from_query(query)
+        if explicit_pn is not None:
+            constraints["pn_min_mpa"] = explicit_pn
+
+        explicit_joining = explicit_joining_type_from_query(query)
+        if explicit_joining is not None:
+            constraints["joining_type"] = explicit_joining
+
+        explicit_medium = explicit_working_medium_from_query(query)
+        if explicit_medium is not None:
+            constraints["working_medium"] = explicit_medium
 
         service_query = self._looks_like_service_query(query)
         score = self._specificity_score(constraints)
@@ -226,6 +276,20 @@ class DeepSeekQueryInterpreter:
                 "Извлечено достаточно технических признаков для подбора LD-аналога; "
                 "поиск разрешён deterministic eligibility gate."
             )
+
+        # For decoded competitor models, remove competitor identity from the
+        # retrieval text entirely. The matcher should search LD by canonical
+        # technical attributes, while the original query remains available in
+        # the trace for audit.
+        if decoded is not None and constraints.get("catalog_scope") != "out_of_scope":
+            try:
+                rendered = build_constraint_rendered_query(
+                    QueryConstraints.model_validate(constraints)
+                )
+            except ValidationError:
+                rendered = None
+            if rendered:
+                payload["normalized_query"] = rendered
 
         return payload
 

@@ -163,7 +163,12 @@ def explicit_thread_type_from_query(query: str) -> str | None:
 
 
 def explicit_joining_type_from_query(query: str) -> str | None:
-    """Return joining type only from explicit connection wording in QUERY."""
+    """Return joining type only from explicit connection wording in QUERY.
+
+    Construction words such as "цельносварной" describe the body, not the pipe
+    connection. Prefer explicit flange/thread/wafer wording before weld terms so
+    "цельносварной фланцевый" remains flanged.
+    """
     text = normalize_query_text(query)
     if explicit_thread_type_from_query(query) is not None:
         return "threaded"
@@ -171,12 +176,16 @@ def explicit_joining_type_from_query(query: str) -> str | None:
         return "wafer"
     if re.search(r"компресс|обжим", text):
         return "compression"
-    if re.search(r"привар|сварн", text):
-        return "welded"
     if re.search(r"резьб|муфт", text):
         return "threaded"
     if re.search(r"фланц|\bф\s*/\s*ф\b", text):
         return "flanged"
+    if re.search(
+        r"под\s+привар|приварн|сварка\s*[/\-–—]\s*сварка|"
+        r"сварн(?:ой|ые)?\s+(?:конец|патруб)",
+        text,
+    ):
+        return "welded"
     return None
 
 
