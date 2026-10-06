@@ -20,3 +20,4 @@ mcp_web_search_test.json
 *_smoke.json
 ld_products_full_nomenclature.csv
 *.egg-info/
+.rag_tender/
