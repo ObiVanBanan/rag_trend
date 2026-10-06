@@ -150,3 +150,51 @@ def test_matcher_uses_resolver_before_web_and_searches_by_technical_profile(tmp_
         result.query_interpretation["retrieval_trace"]["strategy"]
         == "competitor_resolved_technical_plus_catalog"
     )
+
+
+def test_matcher_skips_resolver_when_competitor_decoder_covers_query(tmp_path):
+    cfg = settings(tmp_path)
+    interpreter = DeepSeekQueryInterpreter(
+        cfg,
+        client=FakeClient(llm_payload()),
+    )
+
+    class ResolverSpy:
+        def __init__(self):
+            self.calls = 0
+
+        def resolve(self, query):
+            self.calls += 1
+            raise AssertionError("resolver must not run for decoder-covered query")
+
+    class Hybrid:
+        def __init__(self):
+            self.calls = []
+
+        def search(self, query, limit, canonical_query=None):
+            self.calls.append((query, limit, canonical_query))
+            return []
+
+    resolver = ResolverSpy()
+    hybrid = Hybrid()
+    matcher = NomenclatureMatcher(
+        None,
+        None,
+        cfg,
+        hybrid_retriever=hybrid,
+        query_interpreter=interpreter,
+        competitor_resolver=resolver,
+    )
+
+    result = matcher.match_one_hybrid_with_rerank(
+        "Кран шаровой MARSHAL 11с67п GAS PRO 2ЦП.01.0.025.100"
+    )
+
+    assert result.status == "NOT_FOUND"
+    assert resolver.calls == 0
+    assert hybrid.calls
+    assert (
+        result.query_interpretation["retrieval_trace"]["strategy"]
+        == "competitor_decoded_technical_plus_catalog"
+    )
+    assert "competitor_resolution" not in result.query_interpretation
