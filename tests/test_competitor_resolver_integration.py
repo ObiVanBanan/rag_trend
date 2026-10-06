@@ -70,29 +70,29 @@ def llm_payload():
 def test_resolver_profile_overrides_llm_and_clears_unproven_fields(tmp_path):
     cfg = settings(tmp_path)
     resolver = CompetitorResolver(cfg)
-    resolution = resolver.resolve("Кран шаровой TEMPER 38020020")
+    resolution = resolver.resolve("Кран шаровой TEMPER 29420125")
     interpreter = DeepSeekQueryInterpreter(
         cfg,
         client=FakeClient(llm_payload()),
     )
 
     result = interpreter.interpret(
-        "Кран шаровой TEMPER 38020020",
+        "Кран шаровой TEMPER 29420125",
         competitor_context=resolution.prompt_context(),
     )
 
     assert result.searchable is True
     assert result.constraints.catalog_scope == "in_scope"
     assert result.constraints.ambiguous is False
-    assert result.constraints.dn == 20
-    assert result.constraints.pn_min_mpa == 4.0
-    assert result.constraints.joining_type == "threaded"
-    assert result.constraints.working_medium == "газ"
+    assert result.constraints.dn == 125
+    assert result.constraints.pn_min_mpa == 2.5
+    assert result.constraints.joining_type == "flanged"
+    assert result.constraints.working_medium is None
     assert result.constraints.body_material == "steel"
     assert result.constraints.thread_type is None
     assert result.constraints.control is None
     assert "TEMPER" not in result.normalized_query.upper()
-    assert "Ду20" in result.normalized_query
+    assert "Ду125" in result.normalized_query
 
 
 def test_matcher_uses_resolver_before_web_and_searches_by_technical_profile(tmp_path):
@@ -132,7 +132,7 @@ def test_matcher_uses_resolver_before_web_and_searches_by_technical_profile(tmp_
     )
 
     result = matcher.match_one_hybrid_with_rerank(
-        "Кран шаровой TEMPER 38020020"
+        "Кран шаровой TEMPER 29420125"
     )
 
     assert result.status == "NOT_FOUND"
@@ -141,9 +141,9 @@ def test_matcher_uses_resolver_before_web_and_searches_by_technical_profile(tmp_
     retrieval_query, limit, _ = hybrid.calls[0]
     assert limit == 20
     assert "TEMPER" not in retrieval_query.upper()
-    assert "Ду20" in retrieval_query
+    assert "Ду125" in retrieval_query
     assert result.query_interpretation["competitor_resolution"]["status"] in {
-        "CATALOG_RESOLVED",
+        "CATALOG_SCHEMA_RESOLVED",
         "KB_HIT",
     }
     assert (
