@@ -275,7 +275,10 @@ def build_constraint_rendered_query(constraints: QueryConstraints) -> str | None
         facet_parts.append(valve_type_words)
     medium = str(constraints.working_medium or "").strip()
     if medium:
-        facet_parts.append(medium)
+        existing = {" ".join(part.casefold().split()) for part in facet_parts}
+        normalized_medium = " ".join(medium.casefold().split())
+        if normalized_medium not in existing:
+            facet_parts.append(medium)
 
     if not facet_parts:
         return None
