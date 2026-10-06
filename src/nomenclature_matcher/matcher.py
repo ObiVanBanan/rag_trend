@@ -42,6 +42,7 @@ class NomenclatureMatcher:
         hybrid_retriever=None,
         query_interpreter=None,
         competitor_lookup=None,
+        competitor_resolver=None,
     ):
         self.embedder, self.store, self.settings = embedder, store, settings
         self.reranker = reranker
@@ -62,8 +63,25 @@ class NomenclatureMatcher:
             competitor_lookup = LocalCompetitorLookup(settings)
         self.competitor_lookup = competitor_lookup
 
+        if (
+            competitor_resolver is None
+            and getattr(settings, "competitor_resolver_enabled", False)
+        ):
+            from .competitor_resolver import CompetitorResolver
+
+            competitor_resolver = CompetitorResolver(settings)
+        self.competitor_resolver = competitor_resolver
+
     def _normalize_query(self, query: str) -> str:
         return " ".join(query.split())
+
+    def _interpret_query(self, query: str, competitor_context=None):
+        if competitor_context is None:
+            return self.query_interpreter.interpret(query)
+        return self.query_interpreter.interpret(
+            query,
+            competitor_context=competitor_context,
+        )
 
     def _search_candidates(self, query: str, limit: int) -> list[SearchCandidate]:
         hits = self.store.search(self.embedder.embed_query(query), limit)
@@ -546,8 +564,24 @@ class NomenclatureMatcher:
             raise ValueError("Hybrid retriever is not configured")
 
         if self.query_interpreter is not None:
+            competitor_resolution = None
+            resolver_context = None
+            if self.competitor_resolver is not None:
+                try:
+                    competitor_resolution = self.competitor_resolver.resolve(query)
+                    resolver_context = competitor_resolution.prompt_context()
+                except Exception as exc:
+                    log_match_trace(
+                        "competitor_resolver_failed",
+                        enabled=bool(getattr(self.settings, "match_trace_enabled", True)),
+                        error_type=type(exc).__name__,
+                    )
+
             try:
-                pre_interpretation = self.query_interpreter.interpret(query)
+                pre_interpretation = self._interpret_query(
+                    query,
+                    competitor_context=resolver_context,
+                )
             except Exception as exc:
                 return MatchResult(
                     query=query,
@@ -559,17 +593,28 @@ class NomenclatureMatcher:
             lookup_debug = None
             enriched_interpretation = None
             should_enrich, gate_reason = self._enrichment_gate(query, pre_interpretation)
+            if competitor_resolution is not None and competitor_resolution.resolved:
+                should_enrich = False
+                gate_reason = "competitor_resolver_resolved"
             record_enrichment_gate(gate_reason)
 
             if should_enrich:
                 _, competitor_context, lookup_debug = self._lookup_competitor(query)
                 if competitor_context is not None:
                     try:
-                        enriched_interpretation = self.query_interpreter.interpret(
+                        enriched_interpretation = self._interpret_query(
                             query,
                             competitor_context=competitor_context,
                         )
                         interpretation = enriched_interpretation
+                        if self.competitor_resolver is not None:
+                            learned = self.competitor_resolver.learn_from_web(
+                                query,
+                                enriched_interpretation.constraints.model_dump(),
+                                lookup_debug,
+                            )
+                            if learned is not None and lookup_debug is not None:
+                                lookup_debug["competitor_kb_write"] = learned.debug_payload()
                     except Exception as exc:
                         # Web enrichment is optional. If the second pass fails, retain
                         # the valid first-pass interpretation instead of failing matching.
@@ -599,6 +644,10 @@ class NomenclatureMatcher:
             source_decode = decode_competitor_query(query)
             interpretation_payload = interpretation.model_dump()
             interpretation_payload["hard_constraints"] = hard_constraints
+            if competitor_resolution is not None:
+                interpretation_payload["competitor_resolution"] = (
+                    competitor_resolution.debug_payload()
+                )
             if source_decode is not None:
                 interpretation_payload["source_decode"] = source_decode.debug_payload()
             if enriched_interpretation is not None:
@@ -631,7 +680,23 @@ class NomenclatureMatcher:
             # Web may still enrich unknown fields, but cannot replace decoded
             # DN/PN/connection/material/bore facts because the interpreter
             # reapplies the source decoder after every LLM pass.
-            if source_decode is not None and normalized_query != query:
+            if (
+                competitor_resolution is not None
+                and competitor_resolution.resolved
+                and normalized_query != query
+            ):
+                retrieval_query = normalized_query
+                rendered_query = build_constraint_rendered_query(
+                    interpretation.constraints
+                )
+                canonical_query = (
+                    self._normalize_query(rendered_query)
+                    if rendered_query
+                    and self._normalize_query(rendered_query) != retrieval_query
+                    else None
+                )
+                retrieval_strategy = "competitor_resolved_technical_plus_catalog"
+            elif source_decode is not None and normalized_query != query:
                 retrieval_query = normalized_query
                 rendered_query = build_constraint_rendered_query(
                     interpretation.constraints
@@ -704,6 +769,7 @@ class NomenclatureMatcher:
                     in {
                         "web_enriched_technical_plus_catalog",
                         "competitor_decoded_technical_plus_catalog",
+                        "competitor_resolved_technical_plus_catalog",
                     }
                     else query
                 ),
