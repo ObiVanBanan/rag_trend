@@ -80,10 +80,13 @@ services:
       QDRANT_URL: http://rag-tender-qdrant:6333
       PRODUCT_CSV_PATH: /data/ld_products_full_nomenclature.csv
       DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
+      COMPETITOR_KB_PATH: /app/.rag_tender/competitor_kb.sqlite3
+      COMPETITOR_CATALOG_REGISTRY_PATH: /app/data/competitor_catalogs/sources.json
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ${PRODUCT_CSV_HOST_PATH:-./ld_products_full_nomenclature.csv}:/data/ld_products_full_nomenclature.csv:ro
+      - competitor_kb:/app/.rag_tender
     depends_on:
       qdrant-init:
         condition: service_completed_successfully
@@ -109,6 +112,7 @@ services:
 volumes:
   qdrant_storage:
   postgres_data:
+  competitor_kb:
 
 networks:
   backend:

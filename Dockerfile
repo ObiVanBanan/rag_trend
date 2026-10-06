@@ -13,6 +13,7 @@ RUN apt-get update \
 
 COPY pyproject.toml ./
 COPY src ./src
+COPY data/competitor_catalogs ./data/competitor_catalogs
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install . \

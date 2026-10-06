@@ -68,3 +68,20 @@ def test_constraint_rendered_query_uses_catalog_vocabulary():
         )
     )
     assert query == "кран шаровый Резьбовое Ду25 Ру4,0МПа сталь 09Г2С"
+
+
+
+def test_constraint_rendered_query_deduplicates_gas_medium():
+    query = build_constraint_rendered_query(
+        QueryConstraints(
+            product_type="ball_valve",
+            dn=50,
+            pn_min_mpa=1.6,
+            joining_type="flanged",
+            valve_type="gas",
+            working_medium="газ",
+        )
+    )
+
+    assert query == "кран шаровый Фланцевое Ду50 Ру1,6МПа газ"
+    assert "газ газ" not in query

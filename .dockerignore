@@ -6,7 +6,9 @@ __pycache__
 *.pyc
 *.log
 .env
-data
+data/*
+!data/competitor_catalogs/
+!data/competitor_catalogs/**
 harness_rag
 openspec
 scripts

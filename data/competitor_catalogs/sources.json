@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "manufacturers": [
+    {
+      "name": "MARSHAL",
+      "aliases": ["MARSHAL", "МАРШАЛ"],
+      "sources": [
+        {
+          "url": "https://lztamarshal.ru/support/katalogi/",
+          "source_type": "official_catalog_index",
+          "trust": "official"
+        }
+      ]
+    },
+    {
+      "name": "ALSO",
+      "aliases": ["ALSO", "АЛСО"],
+      "sources": [
+        {
+          "url": "https://alsoarm.ru/catalog/dlya-gazoobraznykh-sred-seriya-gas/",
+          "source_type": "official_catalog",
+          "trust": "official"
+        }
+      ]
+    },
+    {
+      "name": "TEMPER",
+      "aliases": ["TEMPER", "ТЕМПЕР"],
+      "sources": [
+        {
+          "url": "https://temper.ru/catalog/2-gazovaa-seria?view=full",
+          "source_type": "official_product_catalog",
+          "trust": "official"
+        },
+        {
+          "url": "https://temper.ru/catalog/44-polnoprohodnye?view=full",
+          "source_type": "official_product_catalog",
+          "trust": "official"
+        }
+      ]
+    },
+    {
+      "name": "BROEN",
+      "aliases": ["BROEN", "БРОЕН", "BALLOMAX", "БАЛЛОМАКС"],
+      "sources": [
+        {
+          "url": "https://www.broen.com/documentation/district-energy/brochures-and-documentation/",
+          "source_type": "official_documentation",
+          "trust": "official"
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "identity_key": "temper:38020020",
+      "manufacturer": "TEMPER",
+      "article": "38020020",
+      "aliases": ["TEMPER 38020020", "38020020"],
+      "source": {
+        "url": "https://temper.ru/catalog/2-gazovaa-seria?view=full",
+        "source_type": "official_product_catalog",
+        "identity_level": "EXACT_PRODUCT",
+        "evidence_text": "TEMPER 38020020: DN 20, PN 40; standard-bore threaded/threaded ball valve for gas media."
+      },
+      "facts": {
+        "product_type": "ball_valve",
+        "dn": 20,
+        "pn_min_mpa": 4.0,
+        "joining_type": "threaded",
+        "working_medium": "газ",
+        "valve_type": "gas",
+        "body_material": "steel"
+      }
+    },
+    {
+      "identity_key": "temper:38020025",
+      "manufacturer": "TEMPER",
+      "article": "38020025",
+      "aliases": ["TEMPER 38020025", "38020025"],
+      "source": {
+        "url": "https://temper.ru/catalog/2-gazovaa-seria?view=full",
+        "source_type": "official_product_catalog",
+        "identity_level": "EXACT_PRODUCT",
+        "evidence_text": "TEMPER 38020025: DN 25, PN 40; standard-bore threaded/threaded ball valve for gas media."
+      },
+      "facts": {
+        "product_type": "ball_valve",
+        "dn": 25,
+        "pn_min_mpa": 4.0,
+        "joining_type": "threaded",
+        "working_medium": "газ",
+        "valve_type": "gas",
+        "body_material": "steel"
+      }
+    },
+    {
+      "identity_key": "temper:39320032",
+      "manufacturer": "TEMPER",
+      "article": "39320032",
+      "aliases": ["TEMPER 39320032", "39320032"],
+      "source": {
+        "url": "https://temper.ru/catalog/44-polnoprohodnye?view=full",
+        "source_type": "official_product_catalog",
+        "identity_level": "EXACT_PRODUCT",
+        "evidence_text": "TEMPER 39320032: DN 32, PN 40; full-bore flanged ball valve for gas media."
+      },
+      "facts": {
+        "product_type": "ball_valve",
+        "dn": 32,
+        "pn_min_mpa": 4.0,
+        "joining_type": "flanged",
+        "working_medium": "газ",
+        "valve_type": "gas",
+        "body_material": "steel",
+        "bore_type": "full"
+      }
+    }
+  ]
+}
