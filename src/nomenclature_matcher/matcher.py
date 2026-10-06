@@ -1,6 +1,7 @@
 from dataclasses import replace
 from time import perf_counter
 
+from .competitor_decoding import decode_competitor_query
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
 from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
 from .query_constraints import (
@@ -595,8 +596,11 @@ class NomenclatureMatcher:
                 pre_interpretation,
                 enriched_interpretation,
             )
+            source_decode = decode_competitor_query(query)
             interpretation_payload = interpretation.model_dump()
             interpretation_payload["hard_constraints"] = hard_constraints
+            if source_decode is not None:
+                interpretation_payload["source_decode"] = source_decode.debug_payload()
             if enriched_interpretation is not None:
                 interpretation_payload["pre_enrichment_interpretation"] = (
                     pre_interpretation.model_dump()
@@ -622,11 +626,24 @@ class NomenclatureMatcher:
 
             normalized_query = self._normalize_query(interpretation.normalized_query) or query
 
-            # Once web evidence has identified the competitor product, retrieval
-            # should search for the LD technical analogue rather than continue to
-            # rank by competitor brand/model identity. The original query is still
-            # used by the reranker and to derive explicit hard constraints.
-            if enriched_interpretation is not None and normalized_query != query:
+            # A catalog-backed competitor decoder is stronger than free-text
+            # identity tokens. Search LD directly by canonical technical facts.
+            # Web may still enrich unknown fields, but cannot replace decoded
+            # DN/PN/connection/material/bore facts because the interpreter
+            # reapplies the source decoder after every LLM pass.
+            if source_decode is not None and normalized_query != query:
+                retrieval_query = normalized_query
+                rendered_query = build_constraint_rendered_query(
+                    interpretation.constraints
+                )
+                canonical_query = (
+                    self._normalize_query(rendered_query)
+                    if rendered_query
+                    and self._normalize_query(rendered_query) != retrieval_query
+                    else None
+                )
+                retrieval_strategy = "competitor_decoded_technical_plus_catalog"
+            elif enriched_interpretation is not None and normalized_query != query:
                 retrieval_query = normalized_query
                 rendered_query = build_constraint_rendered_query(
                     enriched_interpretation.constraints
@@ -683,7 +700,11 @@ class NomenclatureMatcher:
                 query_interpretation=interpretation_payload,
                 rerank_query=(
                     retrieval_query
-                    if retrieval_strategy == "web_enriched_technical_plus_catalog"
+                    if retrieval_strategy
+                    in {
+                        "web_enriched_technical_plus_catalog",
+                        "competitor_decoded_technical_plus_catalog",
+                    }
                     else query
                 ),
             )
