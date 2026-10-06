@@ -83,6 +83,8 @@ def exact_product_identity_anchors(query: str) -> list[str]:
 
     def add(value: str) -> None:
         compact = re.sub(r"[^a-zа-я0-9]+", "", value, flags=re.IGNORECASE)
+        if re.match(r"^(?:dn|pn|du|dy|ру)\d", compact, re.IGNORECASE):
+            return
         if len(compact) >= 4 and compact not in anchors:
             anchors.append(compact)
 
