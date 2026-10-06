@@ -47,7 +47,7 @@ jobs:
         run: python -m pip install uv
 
       - name: Install test dependencies
-        run: uv sync --extra test
+        run: uv sync --locked --extra test
 
       - name: Run production API, enrichment and observability tests
         run: >-
@@ -58,6 +58,7 @@ jobs:
           tests/test_competitor_decoding.py
           tests/test_competitor_resolver.py
           tests/test_competitor_resolver_integration.py
+          tests/test_query_canonicalization.py
           tests/test_web_search_mcp.py
           tests/test_bm25_technical_normalization.py
 
