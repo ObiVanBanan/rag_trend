@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     web_search_circuit_breaker_cooldown_seconds: float = 300
 
     competitor_resolver_enabled: bool = True
+    competitor_decoder_baseline_enabled: bool = False
     competitor_kb_path: str = ".rag_tender/competitor_kb.sqlite3"
     competitor_catalog_registry_path: str = "data/competitor_catalogs/sources.json"
 
