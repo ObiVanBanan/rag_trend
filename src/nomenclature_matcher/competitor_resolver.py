@@ -11,9 +11,17 @@ from .query_signals import product_identity_anchors
 
 
 FACT_FIELDS = {
-    "product_type", "dn", "pn_min_mpa", "joining_type", "thread_type",
-    "working_medium", "valve_type", "body_material", "body_material_grade",
-    "bore_type", "control",
+    "product_type",
+    "dn",
+    "pn_min_mpa",
+    "joining_type",
+    "thread_type",
+    "working_medium",
+    "valve_type",
+    "body_material",
+    "body_material_grade",
+    "bore_type",
+    "control",
 }
 
 
@@ -33,7 +41,11 @@ class ResolvedFact:
     sources: list[dict[str, Any]]
 
     def as_dict(self) -> dict[str, Any]:
-        return {"value": self.value, "status": self.status, "sources": self.sources}
+        return {
+            "value": self.value,
+            "status": self.status,
+            "sources": list(self.sources),
+        }
 
 
 @dataclass(frozen=True)
@@ -88,6 +100,36 @@ class CompetitorResolution:
         }
 
 
+def _merge_fact(
+    existing: ResolvedFact | None,
+    incoming: ResolvedFact,
+) -> ResolvedFact:
+    if existing is None:
+        return incoming
+
+    sources = list(existing.sources)
+    for source in incoming.sources:
+        if source not in sources:
+            sources.append(source)
+
+    if existing.value == incoming.value:
+        status = (
+            "VERIFIED"
+            if "VERIFIED" in {existing.status, incoming.status}
+            else "SUPPORTED"
+        )
+        return ResolvedFact(existing.value, status, sources)
+
+    # An exact official/catalog fact cannot be silently overwritten by a weaker
+    # web interpretation. Keep the verified value, but preserve the new source
+    # in provenance for later audit/revalidation.
+    if existing.status == "VERIFIED":
+        return ResolvedFact(existing.value, "VERIFIED", sources)
+
+    # Two non-verified claims disagree: abstain instead of picking one.
+    return ResolvedFact(None, "CONFLICTED", sources)
+
+
 class CompetitorKnowledgeStore:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -106,22 +148,31 @@ class CompetitorKnowledgeStore:
             )
 
     def find(self, query: str) -> CompetitorResolution | None:
+        anchors = set(product_identity_anchors(query))
         compact_query = _compact(query)
         best_row = None
         best_len = -1
+
         with sqlite3.connect(self.path) as conn:
             rows = conn.execute(
                 "SELECT identity_key, manufacturer, article, aliases_json, facts_json "
                 "FROM competitor_products"
             ).fetchall()
+
         for row in rows:
             for alias in json.loads(row[3]):
                 token = _compact(alias)
-                if len(token) >= 4 and token in compact_query and len(token) > best_len:
+                if len(token) < 4:
+                    continue
+                exact_identity = token in anchors
+                exact_query = token == compact_query
+                if (exact_identity or exact_query) and len(token) > best_len:
                     best_row = row
                     best_len = len(token)
+
         if best_row is None:
             return None
+
         facts_payload = json.loads(best_row[4])
         facts = {
             field: ResolvedFact(
@@ -143,6 +194,7 @@ class CompetitorKnowledgeStore:
     def put(self, resolution: CompetitorResolution) -> None:
         if not resolution.resolved:
             return
+
         payload = {
             field: fact.as_dict()
             for field, fact in sorted((resolution.facts or {}).items())
@@ -181,30 +233,42 @@ class CatalogRegistry:
         for item in self.payload.get("manufacturers", []):
             for alias in item.get("aliases", []):
                 token = str(alias).lower().replace("ё", "е")
-                if re.search(rf"(?<![0-9a-zа-я]){re.escape(token)}(?![0-9a-zа-я])", text):
+                if re.search(
+                    rf"(?<![0-9a-zа-я]){re.escape(token)}(?![0-9a-zа-я])",
+                    text,
+                ):
                     return item.get("name")
         return None
 
     def resolve(self, query: str) -> CompetitorResolution | None:
+        anchors = set(product_identity_anchors(query))
         compact_query = _compact(query)
         matches: list[tuple[int, dict[str, Any]]] = []
+
         for product in self.payload.get("products", []):
             score = max(
                 [
                     len(_compact(alias))
                     for alias in product.get("aliases", [])
-                    if len(_compact(alias)) >= 4 and _compact(alias) in compact_query
+                    if len(_compact(alias)) >= 4
+                    and (
+                        _compact(alias) in anchors
+                        or _compact(alias) == compact_query
+                    )
                 ]
                 or [0]
             )
             if score:
                 matches.append((score, product))
+
         if not matches:
             return None
+
         best = max(score for score, _ in matches)
         winners = [item for score, item in matches if score == best]
         if len({item.get("identity_key") for item in winners}) != 1:
             return None
+
         product = winners[0]
         source = dict(product.get("source") or {})
         source.setdefault("identity_level", "EXACT_PRODUCT")
@@ -244,10 +308,12 @@ class CompetitorResolver:
         cached = self.store.find(query)
         if cached is not None:
             return cached
+
         catalog = self.registry.resolve(query)
         if catalog is not None:
             self.store.put(catalog)
             return catalog
+
         return CompetitorResolution(
             status="MISS",
             manufacturer=self.registry.manufacturer_for_query(query),
@@ -262,10 +328,12 @@ class CompetitorResolver:
         debug = lookup_debug or {}
         if not debug.get("accepted") or not debug.get("identity_verified"):
             return None
+
         anchors = product_identity_anchors(query)
         pages = [p for p in (debug.get("pages") or []) if isinstance(p, dict)]
         if not anchors or not pages:
             return None
+
         primary = anchors[0]
         manufacturer = self.registry.manufacturer_for_query(query)
         sources = [
@@ -280,19 +348,43 @@ class CompetitorResolver:
         ]
         if not sources:
             return None
-        facts = {
-            field: ResolvedFact(value, "SUPPORTED", sources)
-            for field, value in attributes.items()
-            if field in FACT_FIELDS and value is not None
-        }
+
+        existing = self.store.find(query)
+        facts = dict(existing.facts or {}) if existing is not None else {}
+        for field, value in attributes.items():
+            if field not in FACT_FIELDS or value is None:
+                continue
+            facts[field] = _merge_fact(
+                facts.get(field),
+                ResolvedFact(value, "SUPPORTED", sources),
+            )
+
         if not facts:
             return None
+
+        aliases = list(existing.aliases) if existing is not None else []
+        aliases.append(primary)
+        if manufacturer:
+            aliases.append(f"{manufacturer} {primary}")
+
         resolution = CompetitorResolution(
             status="WEB_LEARNED",
-            identity_key=f"{(manufacturer or 'unknown').lower()}:{primary}",
-            manufacturer=manufacturer,
-            article=primary,
-            aliases=tuple(dict.fromkeys([primary, *( [f"{manufacturer} {primary}"] if manufacturer else [] )])),
+            identity_key=(
+                existing.identity_key
+                if existing is not None and existing.identity_key
+                else f"{(manufacturer or 'unknown').lower()}:{primary}"
+            ),
+            manufacturer=(
+                existing.manufacturer
+                if existing is not None and existing.manufacturer
+                else manufacturer
+            ),
+            article=(
+                existing.article
+                if existing is not None and existing.article
+                else primary
+            ),
+            aliases=tuple(dict.fromkeys(alias for alias in aliases if alias)),
             facts=facts,
         )
         self.store.put(resolution)
