@@ -611,6 +611,20 @@ class NomenclatureMatcher:
 
             if should_enrich:
                 _, competitor_context, lookup_debug = self._lookup_competitor(query)
+                if (
+                    competitor_context is not None
+                    and self.competitor_resolver is not None
+                    and not self.competitor_resolver.web_context_is_exact(
+                        query,
+                        lookup_debug,
+                    )
+                ):
+                    competitor_context = None
+                    if lookup_debug is not None:
+                        lookup_debug["resolver_identity_gate"] = "rejected"
+                        lookup_debug["resolver_identity_reason"] = (
+                            "exact_product_anchor_not_found_in_fetched_pages"
+                        )
                 if competitor_context is not None:
                     try:
                         enriched_interpretation = self._interpret_query(
