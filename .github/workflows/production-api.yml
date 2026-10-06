@@ -26,6 +26,7 @@ on:
       - "tests/test_competitor_decoding.py"
       - "tests/test_competitor_resolver.py"
       - "tests/test_competitor_resolver_integration.py"
+      - "tests/test_query_signals_exact_identity.py"
       - "data/competitor_catalogs/**"
       - "Dockerfile"
       - "docker-compose.yml"
@@ -58,6 +59,7 @@ jobs:
           tests/test_competitor_decoding.py
           tests/test_competitor_resolver.py
           tests/test_competitor_resolver_integration.py
+          tests/test_query_signals_exact_identity.py
           tests/test_query_canonicalization.py
           tests/test_web_search_mcp.py
           tests/test_bm25_technical_normalization.py
