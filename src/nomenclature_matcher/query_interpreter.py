@@ -26,6 +26,19 @@ _ALNUM_RU = "0-9a-zа-я"
 _NATIVE_DESIGNATION_FAMILIES = ("КШЦФ", "КШЦП")
 _NATIVE_CONFIG_SUFFIX = r"\d{2,4}(?:[\s.\-]+\d{1,4}){1,4}"
 _DESIGNATION_PROVENANCE_MARKER = "designation_family_provenance:compact_native_config"
+_RESOLVER_FACT_FIELDS = {
+    "product_type",
+    "dn",
+    "pn_min_mpa",
+    "joining_type",
+    "thread_type",
+    "working_medium",
+    "valve_type",
+    "body_material",
+    "body_material_grade",
+    "bore_type",
+    "control",
+}
 
 
 class QueryInterpretation(BaseModel):
@@ -224,10 +237,12 @@ class DeepSeekQueryInterpreter:
         # manufacturer decoder. VERIFIED/SUPPORTED facts are source-backed
         # context; explicit QUERY facts still win below.
         resolver_attributes = self._resolver_attributes(competitor_context)
-        for field, value in resolver_attributes.items():
-            if field in constraints and value is not None:
-                constraints[field] = value
         if resolver_attributes:
+            # A resolved canonical profile is evidence-bounded. Do not keep
+            # unrelated LLM guesses for fields the profile did not establish.
+            for field in _RESOLVER_FACT_FIELDS:
+                if field in constraints:
+                    constraints[field] = resolver_attributes.get(field)
             constraints["catalog_scope"] = "in_scope"
             constraints["ambiguous"] = False
             self._append_comment_marker(
@@ -267,7 +282,7 @@ class DeepSeekQueryInterpreter:
         explicit_control = self._explicit_control(query)
         if explicit_control is not None:
             constraints["control"] = explicit_control
-        elif decoded is None and not resolver_attributes:
+        elif decoded is None and "control" not in resolver_attributes:
             constraints["control"] = None
 
         explicit_thread = self._explicit_thread_type(query)
