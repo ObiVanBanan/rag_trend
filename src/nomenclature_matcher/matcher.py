@@ -135,7 +135,11 @@ class NomenclatureMatcher:
     def _second_chance_candidates(
         self,
         constraints: dict,
-    ) -> tuple[list[SearchCandidate], list[tuple[int, SearchCandidate]]] | None:
+    ) -> tuple[
+        list[SearchCandidate],
+        list[tuple[int, SearchCandidate]],
+        dict | None,
+    ] | None:
         """Retrieve again in catalog vocabulary without relaxing hard constraints."""
         if self.hybrid_retriever is None:
             return None
@@ -144,16 +148,30 @@ class NomenclatureMatcher:
             rendered_query = build_constraint_rendered_query(parsed_constraints)
             if rendered_query is None:
                 return None
-            fresh_candidates = self.hybrid_retriever.search(
-                rendered_query,
-                self.settings.hybrid_rerank_limit,
-            )
+
+            retriever_debug = None
+            if (
+                getattr(self.settings, "match_trace_detailed_enabled", False)
+                and hasattr(self.hybrid_retriever, "search_with_trace")
+            ):
+                fresh_candidates, retriever_debug = (
+                    self.hybrid_retriever.search_with_trace(
+                        rendered_query,
+                        self.settings.hybrid_rerank_limit,
+                    )
+                )
+            else:
+                fresh_candidates = self.hybrid_retriever.search(
+                    rendered_query,
+                    self.settings.hybrid_rerank_limit,
+                )
+
             if not fresh_candidates:
                 return None
             indexed_candidates = self._eligible_candidates(fresh_candidates, constraints)
             if not indexed_candidates:
                 return None
-            return fresh_candidates, indexed_candidates
+            return fresh_candidates, indexed_candidates, retriever_debug
         except Exception:
             # Strictly additive fallback: any failure preserves the original
             # HARD_CONSTRAINT_FILTER NOT_FOUND behavior.
@@ -277,7 +295,7 @@ class NomenclatureMatcher:
                         reason="HARD_CONSTRAINT_FILTER: no retrieved candidate satisfies all QUERY_CONSTRAINTS",
                         query_interpretation=query_interpretation,
                     )
-                candidate_pool, indexed_candidates = second_chance
+                candidate_pool, indexed_candidates, second_chance_debug = second_chance
                 if retrieval_trace is not None:
                     retrieval_trace["second_chance_used"] = True
                     retrieval_trace["second_chance_candidate_ids"] = [
@@ -286,6 +304,10 @@ class NomenclatureMatcher:
                     retrieval_trace["eligible_candidate_ids_after_second_chance"] = [
                         candidate.ld_id for _, candidate in indexed_candidates
                     ]
+                    if second_chance_debug is not None:
+                        retrieval_trace["second_chance_retriever"] = (
+                            second_chance_debug
+                        )
             elif retrieval_trace is not None:
                 retrieval_trace["second_chance_used"] = False
 
