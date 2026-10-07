@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     query_interpreter_enabled: bool = True
     query_interpreter_system_prompt_path: str = "src/nomenclature_matcher/prompts/query_interpreter_system.md"
 
-    web_search_enabled: bool = True
+    web_search_enabled: bool = False
     web_search_mcp_command: str = "uvx"
     web_search_mcp_package: str = "duckduckgo-mcp-server[browser]"
     web_search_max_results: int = 6
