@@ -290,7 +290,7 @@
     },
     {
       "manufacturer": "ALSO",
-      "query_regex": "(?P<model>КШ[.\\s-]*(?P<body>[A-ZА-ЯЁ0-9.]+?)[.\\s-]+(?P<dn>\\d{2,3})[.\\s-]+(?P<pn>\\d{2})[-–—](?P<variant>\\d{2}))",
+      "query_regex": "(?P<model>КШ[.\\s-]*(?P<body>[A-ZА-ЯЁ0-9.]+?)[.\\s-]+(?P<dn>\\d{2,3})[.\\s-]+(?P<pn>\\d{2})[.\\-–—](?P<variant>\\d{2}))",
       "identity_group": "model",
       "fixed_facts": {
         "product_type": "ball_valve",
