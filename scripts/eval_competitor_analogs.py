@@ -10,6 +10,7 @@ import lzma
 import re
 import random
 import sys
+import subprocess
 import threading
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -250,6 +251,20 @@ def _bucket(size: int) -> str:
     return "8+"
 
 
+def _git_head() -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return completed.stdout.strip() or None
+    except Exception:
+        return None
+
+
 def _rank_of_any(ordered_ids: list[int], acceptable: set[int]) -> int | None:
     for rank, ld_id in enumerate(ordered_ids, 1):
         if ld_id in acceptable:
@@ -328,6 +343,7 @@ def _public_case_trace(case: dict, result, diagnostics: dict) -> dict:
             "second_chance_candidate_ids": retrieval.get(
                 "second_chance_candidate_ids"
             ),
+            "second_chance_retriever": retrieval.get("second_chance_retriever"),
             "rerank_candidate_ids": retrieval.get("rerank_candidate_ids"),
         },
         "reranker": {
@@ -707,6 +723,7 @@ def main() -> int:
                 "the final unseen holdout."
             ),
             "dataset_source": dataset_source,
+            "git_head": _git_head(),
             "sample": args.sample,
             "seed": args.seed,
             "workers": args.workers,
