@@ -82,6 +82,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-rag_tender}:${POSTGRES_PASSWORD:-rag_tender}@postgres:5432/${POSTGRES_DB:-rag_tender}
       COMPETITOR_KB_PATH: /app/.rag_tender/competitor_kb.sqlite3
       COMPETITOR_CATALOG_REGISTRY_PATH: /app/data/competitor_catalogs/sources.json
+      WEB_SEARCH_ENABLED: ${WEB_SEARCH_ENABLED:-false}
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:

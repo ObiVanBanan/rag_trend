@@ -10,6 +10,7 @@ import lzma
 import re
 import random
 import sys
+import subprocess
 import threading
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -250,35 +251,208 @@ def _bucket(size: int) -> str:
     return "8+"
 
 
+def _git_head() -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return completed.stdout.strip() or None
+    except Exception:
+        return None
+
+
+def _rank_of_any(ordered_ids: list[int], acceptable: set[int]) -> int | None:
+    for rank, ld_id in enumerate(ordered_ids, 1):
+        if ld_id in acceptable:
+            return rank
+    return None
+
+
+def _filter_failure_fields(
+    acceptable: set[int],
+    retrieval: dict,
+) -> list[str]:
+    fields: set[str] = set()
+    for snapshot in retrieval.get("initial_candidate_snapshots") or []:
+        product = snapshot.get("product") or {}
+        ld_id = product.get("ld_id")
+        if ld_id not in acceptable:
+            continue
+        if snapshot.get("matches_hard_constraints"):
+            continue
+        checks = product.get("checks") or {}
+        if checks:
+            fields.add(next(reversed(checks)))
+    return sorted(fields)
+
+
+def _public_case_trace(case: dict, result, diagnostics: dict) -> dict:
+    """Build a DEV-safe trace without acceptable/GOLD identifiers."""
+    interpretation = result.query_interpretation or {}
+    retrieval = interpretation.get("retrieval_trace") or {}
+    returned_ld_id = result.ld_product.ld_id if result.ld_product is not None else None
+    return {
+        "case_id": hashlib.sha256(case["query"].encode("utf-8")).hexdigest()[:16],
+        "query": case["query"],
+        "actual_status": result.status,
+        "returned_ld_id": returned_ld_id,
+        "benchmark_outcome": {
+            "verdict": diagnostics.get("verdict"),
+            "failure_stage": diagnostics.get("failure_stage"),
+            "failure_substage": diagnostics.get("failure_substage"),
+            "acceptable_in_pretruncate_pool": bool(
+                diagnostics.get("acceptable_in_pretruncate_pool")
+            ),
+            "acceptable_in_initial_retrieval": bool(
+                diagnostics.get("acceptable_in_initial_retrieval")
+            ),
+            "acceptable_in_rerank_candidates": bool(
+                diagnostics.get("acceptable_in_rerank_candidates")
+            ),
+            "acceptable_selected": bool(diagnostics.get("acceptable_selected")),
+            "best_acceptable_pretruncate_rank": diagnostics.get(
+                "best_acceptable_pretruncate_rank"
+            ),
+            "best_acceptable_initial_rank": diagnostics.get(
+                "best_acceptable_initial_rank"
+            ),
+            "best_acceptable_rerank_rank": diagnostics.get(
+                "best_acceptable_rerank_rank"
+            ),
+            "filter_failure_fields": diagnostics.get("filter_failure_fields") or [],
+        },
+        "source_understanding": {
+            "competitor_resolution": interpretation.get("competitor_resolution"),
+            "constraints": interpretation.get("constraints"),
+            "hard_constraints": interpretation.get("hard_constraints"),
+        },
+        "retrieval": {
+            "strategy": retrieval.get("strategy"),
+            "source_query": retrieval.get("source_query"),
+            "retrieval_query": retrieval.get("retrieval_query"),
+            "alternate_query": retrieval.get("alternate_query"),
+            "retriever": retrieval.get("retriever"),
+            "initial_candidate_snapshots": retrieval.get(
+                "initial_candidate_snapshots"
+            ),
+            "second_chance_used": retrieval.get("second_chance_used"),
+            "second_chance_candidate_ids": retrieval.get(
+                "second_chance_candidate_ids"
+            ),
+            "second_chance_retriever": retrieval.get("second_chance_retriever"),
+            "rerank_candidate_ids": retrieval.get("rerank_candidate_ids"),
+        },
+        "reranker": {
+            "query": retrieval.get("rerank_query"),
+            "status": retrieval.get("reranker_status"),
+            "reason": retrieval.get("reranker_reason"),
+            "selected": retrieval.get("reranker_selected") or [],
+        },
+    }
+
+
+def _assert_public_trace_has_no_gold(payload) -> None:
+    forbidden = {
+        "acceptable_ld_ids",
+        "acceptable_ld_articles",
+        "acceptable_ld_names",
+        "acceptable_in_pretruncate_ids",
+        "acceptable_in_initial_ids",
+        "acceptable_in_rerank_ids",
+        "acceptable_selected_ids",
+    }
+
+    def walk(value):
+        if isinstance(value, dict):
+            leaked = forbidden & set(value)
+            if leaked:
+                raise ValueError(
+                    "Public trace contains forbidden GOLD fields: "
+                    + ", ".join(sorted(leaked))
+                )
+            for item in value.values():
+                walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+
+    walk(payload)
+
+
 def _diagnostics(case: dict, result, verdict: str) -> dict:
     acceptable = set(case["acceptable_ld_ids"])
     interpretation = result.query_interpretation or {}
     retrieval = interpretation.get("retrieval_trace") or {}
     web = interpretation.get("competitor_lookup") or {}
 
-    initial_ids = set(retrieval.get("initial_candidate_ids") or [])
-    rerank_ids = set(retrieval.get("rerank_candidate_ids") or [])
-    selected_ids = set(retrieval.get("selected_ld_ids") or [])
+    retriever = retrieval.get("retriever") or {}
+    pretruncate_ordered = [
+        item.get("ld_id")
+        for item in (retriever.get("rrf_pool") or [])
+        if item.get("ld_id") is not None
+    ]
+    initial_ordered = list(retrieval.get("initial_candidate_ids") or [])
+    rerank_ordered = list(retrieval.get("rerank_candidate_ids") or [])
+    selected_ordered = list(retrieval.get("selected_ld_ids") or [])
 
+    pretruncate_ids = set(pretruncate_ordered)
+    initial_ids = set(initial_ordered)
+    rerank_ids = set(rerank_ordered)
+    selected_ids = set(selected_ordered)
+
+    acceptable_in_pretruncate = sorted(acceptable & pretruncate_ids)
     acceptable_in_initial = sorted(acceptable & initial_ids)
     acceptable_in_rerank = sorted(acceptable & rerank_ids)
     acceptable_selected = sorted(acceptable & selected_ids)
 
+    best_pretruncate_rank = next(
+        (
+            int(item.get("rank"))
+            for item in (retriever.get("rrf_pool") or [])
+            if item.get("ld_id") in acceptable and item.get("rank") is not None
+        ),
+        None,
+    )
+    best_initial_rank = _rank_of_any(initial_ordered, acceptable)
+    best_rerank_rank = _rank_of_any(rerank_ordered, acceptable)
+
     reason = str(result.reason or "")
+    failure_substage = None
+    filter_failure_fields = _filter_failure_fields(acceptable, retrieval)
+
     if verdict == "PASS":
         failure_stage = "SUCCESS"
+        failure_substage = "SUCCESS"
     elif result.status not in {"MATCHED", "NOT_FOUND"}:
         failure_stage = "PIPELINE"
+        failure_substage = "PIPELINE"
     elif reason.startswith("QUERY_REJECTED"):
         failure_stage = "QUERY_REJECTED"
+        failure_substage = "QUERY_REJECTED"
     elif not retrieval:
         failure_stage = "RETRIEVAL_NOT_RUN"
+        failure_substage = "RETRIEVAL_NOT_RUN"
     elif not acceptable_in_initial:
         failure_stage = "RETRIEVAL_MISS"
+        failure_substage = (
+            "RRF_TRUNCATION"
+            if acceptable_in_pretruncate
+            else "MODALITY_POOL_MISS"
+        )
     elif not acceptable_in_rerank:
         failure_stage = "FILTER_DROP"
+        failure_substage = (
+            "HARD_FILTER:" + ",".join(filter_failure_fields)
+            if filter_failure_fields
+            else "HARD_FILTER:unknown"
+        )
     else:
         failure_stage = "RERANK_SELECTION"
+        failure_substage = "RERANK_NOT_SELECTED"
 
     if web.get("accepted") and retrieval.get("web_enrichment_applied"):
         extraction_status = "technical_query_built"
@@ -291,7 +465,14 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
 
     pre = interpretation.get("pre_enrichment_interpretation") or {}
     return {
+        "verdict": verdict,
         "failure_stage": failure_stage,
+        "failure_substage": failure_substage,
+        "acceptable_in_pretruncate_pool": acceptable_in_pretruncate,
+        "best_acceptable_pretruncate_rank": best_pretruncate_rank,
+        "best_acceptable_initial_rank": best_initial_rank,
+        "best_acceptable_rerank_rank": best_rerank_rank,
+        "filter_failure_fields": filter_failure_fields,
         "web": {
             "attempted": bool(web.get("attempted")),
             "accepted": bool(web.get("accepted")),
@@ -349,7 +530,18 @@ def main() -> int:
     )
     parser.add_argument(
         "--output",
-        default=str(ROOT / "data" / "competitor_analog_hit_any_eval.json"),
+        default=str(ROOT / ".tmp" / "competitor_analog_hit_any_eval.json"),
+        help=(
+            "Full GOLD-bearing evaluation trace. Keep this under .tmp and do "
+            "not commit it."
+        ),
+    )
+    parser.add_argument(
+        "--public-trace-output",
+        help=(
+            "Optional DEV-safe trace path suitable for GitHub. Contains stage "
+            "labels and matcher diagnostics but never acceptable/GOLD LD ids."
+        ),
     )
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--limit", type=int, default=None, help="Evaluate the first N grouped cases.")
@@ -396,16 +588,21 @@ def main() -> int:
 
     products = load_products_from_csv(args.csv)
     settings = Settings()
+    # Benchmark runs always capture the full retrieval funnel. This changes
+    # diagnostics only; search/ranking behavior is identical.
+    settings.match_trace_detailed_enabled = True
     results = _run_queries(products, settings, [case["query"] for case in cases], args.workers)
 
     rows = []
     verdicts = Counter()
     failure_stages = Counter()
+    failure_substages = Counter()
     web_statuses = Counter()
     extraction_statuses = Counter()
     retrieval_strategies = Counter()
     bucket_totals = Counter()
     bucket_pass = Counter()
+    acceptable_in_pretruncate_count = 0
     acceptable_in_initial_count = 0
     acceptable_in_rerank_count = 0
 
@@ -430,6 +627,7 @@ def main() -> int:
 
         diagnostics = _diagnostics(case, result, verdict)
         failure_stages[diagnostics["failure_stage"]] += 1
+        failure_substages[diagnostics["failure_substage"]] += 1
         web_key = (
             "accepted"
             if diagnostics["web"]["accepted"]
@@ -441,6 +639,8 @@ def main() -> int:
         extraction_statuses[diagnostics["extraction"]["status"]] += 1
         strategy = diagnostics["extraction"].get("strategy") or "unknown"
         retrieval_strategies[strategy] += 1
+        if diagnostics["acceptable_in_pretruncate_pool"]:
+            acceptable_in_pretruncate_count += 1
         if diagnostics["acceptable_in_initial_retrieval"]:
             acceptable_in_initial_count += 1
         if diagnostics["acceptable_in_rerank_candidates"]:
@@ -469,9 +669,14 @@ def main() -> int:
         "fail_not_found": verdicts["FAIL_NOT_FOUND"],
         "fail_pipeline": verdicts["FAIL_PIPELINE"],
         "failure_stages": dict(failure_stages),
+        "failure_substages": dict(failure_substages),
         "web_statuses": dict(web_statuses),
         "extraction_statuses": dict(extraction_statuses),
         "retrieval_strategies": dict(retrieval_strategies),
+        "acceptable_in_pretruncate_pool": acceptable_in_pretruncate_count,
+        "acceptable_in_pretruncate_pool_rate": (
+            acceptable_in_pretruncate_count / total if total else None
+        ),
         "acceptable_in_initial_retrieval": acceptable_in_initial_count,
         "acceptable_in_initial_retrieval_rate": (
             acceptable_in_initial_count / total if total else None
@@ -502,9 +707,72 @@ def main() -> int:
     }
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    output.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    if args.public_trace_output:
+        public_payload = {
+            "schema_version": 1,
+            "artifact_type": "dev_stage_trace",
+            "contains_gold_ids": False,
+            "contains_benchmark_labels": True,
+            "warning": (
+                "DEV-only diagnostic artifact. Never generate/commit this for "
+                "the final unseen holdout."
+            ),
+            "dataset_source": dataset_source,
+            "git_head": _git_head(),
+            "sample": args.sample,
+            "seed": args.seed,
+            "workers": args.workers,
+            "settings": {
+                "decoder_enabled": settings.competitor_decoder_baseline_enabled,
+                "web_enabled": settings.web_search_enabled,
+                "hybrid_dense_limit": settings.hybrid_dense_limit,
+                "hybrid_bm25_limit": settings.hybrid_bm25_limit,
+                "hybrid_rerank_limit": settings.hybrid_rerank_limit,
+            },
+            "summary": {
+                "evaluated_queries": summary["evaluated_queries"],
+                "hit_any_rate": summary["hit_any_rate"],
+                "failure_stages": summary["failure_stages"],
+                "failure_substages": summary["failure_substages"],
+                "retrieval_strategies": summary["retrieval_strategies"],
+                "acceptable_in_pretruncate_pool_rate": summary[
+                    "acceptable_in_pretruncate_pool_rate"
+                ],
+                "acceptable_in_initial_retrieval_rate": summary[
+                    "acceptable_in_initial_retrieval_rate"
+                ],
+                "acceptable_in_rerank_candidates_rate": summary[
+                    "acceptable_in_rerank_candidates_rate"
+                ],
+            },
+            "cases": [
+                _public_case_trace(case, result, diagnostics)
+                for case, result, diagnostics in (
+                    (
+                        case,
+                        result,
+                        row["diagnostics"],
+                    )
+                    for case, result, row in zip(cases, results, rows, strict=True)
+                )
+            ],
+        }
+        _assert_public_trace_has_no_gold(public_payload)
+        public_output = Path(args.public_trace_output)
+        public_output.parent.mkdir(parents=True, exist_ok=True)
+        public_output.write_text(
+            json.dumps(public_payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"public trace saved: {public_output}")
+
     print(json.dumps(summary, ensure_ascii=False, indent=2))
-    print(f"saved: {output}")
+    print(f"full GOLD trace saved: {output}")
     return 0
 
 

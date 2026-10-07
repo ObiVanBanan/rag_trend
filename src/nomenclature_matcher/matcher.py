@@ -11,6 +11,7 @@ from .query_constraints import (
     canonical_material,
     canonical_product_type,
     evaluate_product,
+    product_snapshot,
 )
 from .query_signals import (
     explicit_dn_from_query,
@@ -134,7 +135,11 @@ class NomenclatureMatcher:
     def _second_chance_candidates(
         self,
         constraints: dict,
-    ) -> tuple[list[SearchCandidate], list[tuple[int, SearchCandidate]]] | None:
+    ) -> tuple[
+        list[SearchCandidate],
+        list[tuple[int, SearchCandidate]],
+        dict | None,
+    ] | None:
         """Retrieve again in catalog vocabulary without relaxing hard constraints."""
         if self.hybrid_retriever is None:
             return None
@@ -143,16 +148,30 @@ class NomenclatureMatcher:
             rendered_query = build_constraint_rendered_query(parsed_constraints)
             if rendered_query is None:
                 return None
-            fresh_candidates = self.hybrid_retriever.search(
-                rendered_query,
-                self.settings.hybrid_rerank_limit,
-            )
+
+            retriever_debug = None
+            if (
+                getattr(self.settings, "match_trace_detailed_enabled", False)
+                and hasattr(self.hybrid_retriever, "search_with_trace")
+            ):
+                fresh_candidates, retriever_debug = (
+                    self.hybrid_retriever.search_with_trace(
+                        rendered_query,
+                        self.settings.hybrid_rerank_limit,
+                    )
+                )
+            else:
+                fresh_candidates = self.hybrid_retriever.search(
+                    rendered_query,
+                    self.settings.hybrid_rerank_limit,
+                )
+
             if not fresh_candidates:
                 return None
             indexed_candidates = self._eligible_candidates(fresh_candidates, constraints)
             if not indexed_candidates:
                 return None
-            return fresh_candidates, indexed_candidates
+            return fresh_candidates, indexed_candidates, retriever_debug
         except Exception:
             # Strictly additive fallback: any failure preserves the original
             # HARD_CONSTRAINT_FILTER NOT_FOUND behavior.
@@ -223,6 +242,34 @@ class NomenclatureMatcher:
                     }
                     for candidate in candidate_pool
                 ]
+                if getattr(self.settings, "match_trace_detailed_enabled", False):
+                    parsed_trace_constraints = (
+                        QueryConstraints.model_validate(constraints)
+                        if constraints is not None
+                        else None
+                    )
+                    retrieval_trace["initial_candidate_snapshots"] = [
+                        {
+                            "input_rank": index,
+                            "dense_rank": candidate.dense_rank,
+                            "bm25_rank": candidate.bm25_rank,
+                            "rrf_score": candidate.rrf_score,
+                            "retrieval_sources": list(candidate.retrieval_sources),
+                            "product": product_snapshot(
+                                self._candidate_as_product(candidate),
+                                parsed_trace_constraints,
+                            ),
+                            "matches_hard_constraints": (
+                                evaluate_product(
+                                    self._candidate_as_product(candidate),
+                                    parsed_trace_constraints,
+                                ).matches
+                                if parsed_trace_constraints is not None
+                                else None
+                            ),
+                        }
+                        for index, candidate in enumerate(candidate_pool, 1)
+                    ]
 
         if constraints is not None:
             indexed_candidates = self._eligible_candidates(candidate_pool, constraints)
@@ -248,7 +295,7 @@ class NomenclatureMatcher:
                         reason="HARD_CONSTRAINT_FILTER: no retrieved candidate satisfies all QUERY_CONSTRAINTS",
                         query_interpretation=query_interpretation,
                     )
-                candidate_pool, indexed_candidates = second_chance
+                candidate_pool, indexed_candidates, second_chance_debug = second_chance
                 if retrieval_trace is not None:
                     retrieval_trace["second_chance_used"] = True
                     retrieval_trace["second_chance_candidate_ids"] = [
@@ -257,6 +304,10 @@ class NomenclatureMatcher:
                     retrieval_trace["eligible_candidate_ids_after_second_chance"] = [
                         candidate.ld_id for _, candidate in indexed_candidates
                     ]
+                    if second_chance_debug is not None:
+                        retrieval_trace["second_chance_retriever"] = (
+                            second_chance_debug
+                        )
             elif retrieval_trace is not None:
                 retrieval_trace["second_chance_used"] = False
 
@@ -308,8 +359,18 @@ class NomenclatureMatcher:
         best = selected_candidates[0] if selected_candidates else None
         if retrieval_trace is not None:
             retrieval_trace["reranker_status"] = rerank_result.status
+            retrieval_trace["reranker_reason"] = rerank_result.reason
             retrieval_trace["selected_ld_ids"] = [
                 candidate.ld_id for candidate in selected_candidates
+            ]
+            retrieval_trace["reranker_selected"] = [
+                {
+                    "candidate_id": selected_item.candidate_id,
+                    "ld_id": selected_item.ld_id,
+                    "confidence": selected_item.llm_confidence,
+                    "reason": selected_item.reason,
+                }
+                for selected_item in selected
             ]
             if rerank_result.status == "MATCHED" and selected_candidates:
                 retrieval_trace["failure_stage"] = None
@@ -564,10 +625,17 @@ class NomenclatureMatcher:
             raise ValueError("Hybrid retriever is not configured")
 
         if self.query_interpreter is not None:
-            # Existing manufacturer decoders are the stronger source of truth
-            # for MARSHAL/ALSO nomenclature. Resolver v1 is strictly additive:
-            # it only runs when no deterministic decoder covers the query.
-            source_decode = decode_competitor_query(query)
+            # Legacy decoder is an opt-in benchmark control only. Production
+            # resolver-v2 runs without manufacturer-specific decoder logic.
+            source_decode = (
+                decode_competitor_query(query)
+                if getattr(
+                    self.settings,
+                    "competitor_decoder_baseline_enabled",
+                    False,
+                )
+                else None
+            )
             competitor_resolution = None
             resolver_context = None
             if self.competitor_resolver is not None and source_decode is None:
@@ -604,6 +672,20 @@ class NomenclatureMatcher:
 
             if should_enrich:
                 _, competitor_context, lookup_debug = self._lookup_competitor(query)
+                if (
+                    competitor_context is not None
+                    and self.competitor_resolver is not None
+                    and not self.competitor_resolver.web_context_is_exact(
+                        query,
+                        lookup_debug,
+                    )
+                ):
+                    competitor_context = None
+                    if lookup_debug is not None:
+                        lookup_debug["resolver_identity_gate"] = "rejected"
+                        lookup_debug["resolver_identity_reason"] = (
+                            "exact_product_anchor_not_found_in_fetched_pages"
+                        )
                 if competitor_context is not None:
                     try:
                         enriched_interpretation = self._interpret_query(
@@ -681,11 +763,8 @@ class NomenclatureMatcher:
 
             normalized_query = self._normalize_query(interpretation.normalized_query) or query
 
-            # A catalog-backed competitor decoder is stronger than free-text
-            # identity tokens. Search LD directly by canonical technical facts.
-            # Web may still enrich unknown fields, but cannot replace decoded
-            # DN/PN/connection/material/bore facts because the interpreter
-            # reapplies the source decoder after every LLM pass.
+            # Search LD by canonical technical facts once resolver (or the
+            # optional benchmark decoder) has resolved the source product.
             if (
                 competitor_resolution is not None
                 and competitor_resolution.resolved
@@ -751,11 +830,22 @@ class NomenclatureMatcher:
                 "web_enrichment_applied": enriched_interpretation is not None,
             }
 
-            candidates = self.hybrid_retriever.search(
-                retrieval_query,
-                self.settings.hybrid_rerank_limit,
-                canonical_query=canonical_query,
+            detailed_trace = bool(
+                getattr(self.settings, "match_trace_detailed_enabled", False)
             )
+            if detailed_trace and hasattr(self.hybrid_retriever, "search_with_trace"):
+                candidates, retriever_debug = self.hybrid_retriever.search_with_trace(
+                    retrieval_query,
+                    self.settings.hybrid_rerank_limit,
+                    canonical_query=canonical_query,
+                )
+                interpretation_payload["retrieval_trace"]["retriever"] = retriever_debug
+            else:
+                candidates = self.hybrid_retriever.search(
+                    retrieval_query,
+                    self.settings.hybrid_rerank_limit,
+                    canonical_query=canonical_query,
+                )
             log_match_trace(
                 "retrieval_completed",
                 enabled=bool(getattr(self.settings, "match_trace_enabled", True)),

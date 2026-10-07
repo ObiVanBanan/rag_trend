@@ -250,10 +250,13 @@ class DeepSeekQueryInterpreter:
                 "competitor_resolver:" + ",".join(sorted(resolver_attributes)),
             )
 
-        # Manufacturer nomenclature is source data, not model inference. Apply
-        # catalog-backed MARSHAL/ALSO decoding after the LLM response so web/LLM
-        # guesses cannot overwrite deterministic DN/PN/connection facts.
-        decoded = decode_competitor_query(query)
+        # Legacy manufacturer decoding is retained only as an explicit
+        # benchmark control. Resolver-only production keeps this disabled.
+        decoded = (
+            decode_competitor_query(query)
+            if getattr(self.settings, "competitor_decoder_baseline_enabled", False)
+            else None
+        )
         if decoded is not None:
             for field, value in decoded.attributes.items():
                 if value is not None:
@@ -335,10 +338,8 @@ class DeepSeekQueryInterpreter:
                 "поиск разрешён deterministic eligibility gate."
             )
 
-        # For decoded competitor models, remove competitor identity from the
-        # retrieval text entirely. The matcher should search LD by canonical
-        # technical attributes, while the original query remains available in
-        # the trace for audit.
+        # Once either the resolver or the optional baseline decoder has a
+        # technical profile, remove competitor identity from retrieval text.
         if (
             (decoded is not None or resolver_attributes)
             and constraints.get("catalog_scope") != "out_of_scope"

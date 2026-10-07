@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     db_pool_max_size: int = 5
     db_connect_timeout_seconds: float = 10
     match_trace_enabled: bool = True
+    match_trace_detailed_enabled: bool = False
 
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_alias: str = "steel_products_active"
@@ -47,7 +48,7 @@ class Settings(BaseSettings):
     query_interpreter_enabled: bool = True
     query_interpreter_system_prompt_path: str = "src/nomenclature_matcher/prompts/query_interpreter_system.md"
 
-    web_search_enabled: bool = True
+    web_search_enabled: bool = False
     web_search_mcp_command: str = "uvx"
     web_search_mcp_package: str = "duckduckgo-mcp-server[browser]"
     web_search_max_results: int = 6
@@ -61,6 +62,7 @@ class Settings(BaseSettings):
     web_search_circuit_breaker_cooldown_seconds: float = 300
 
     competitor_resolver_enabled: bool = True
+    competitor_decoder_baseline_enabled: bool = False
     competitor_kb_path: str = ".rag_tender/competitor_kb.sqlite3"
     competitor_catalog_registry_path: str = "data/competitor_catalogs/sources.json"
 

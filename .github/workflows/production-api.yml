@@ -16,6 +16,8 @@ on:
       - "src/nomenclature_matcher/competitor_resolver.py"
       - "src/nomenclature_matcher/observability.py"
       - "src/nomenclature_matcher/matcher.py"
+      - "src/nomenclature_matcher/hybrid_retriever.py"
+      - "scripts/eval_competitor_analogs.py"
       - "src/nomenclature_matcher/bm25_store.py"
       - "src/nomenclature_matcher/documents.py"
       - "src/nomenclature_matcher/web_search_mcp.py"
@@ -26,6 +28,8 @@ on:
       - "tests/test_competitor_decoding.py"
       - "tests/test_competitor_resolver.py"
       - "tests/test_competitor_resolver_integration.py"
+      - "tests/test_eval_competitor_trace.py"
+      - "tests/test_query_signals_exact_identity.py"
       - "data/competitor_catalogs/**"
       - "Dockerfile"
       - "docker-compose.yml"
@@ -58,6 +62,8 @@ jobs:
           tests/test_competitor_decoding.py
           tests/test_competitor_resolver.py
           tests/test_competitor_resolver_integration.py
+          tests/test_eval_competitor_trace.py
+          tests/test_query_signals_exact_identity.py
           tests/test_query_canonicalization.py
           tests/test_web_search_mcp.py
           tests/test_bm25_technical_normalization.py

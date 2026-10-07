@@ -11,6 +11,11 @@ _TECH_NOTATION = re.compile(
 _MIXED_MODEL = re.compile(r"(?i)(?<![a-zа-я0-9])[a-zа-я0-9][a-zа-я0-9._/-]{3,}(?![a-zа-я0-9])")
 _BRAND_NUMBER = re.compile(r"(?i)\b([a-z]{2,20})\s+([0-9]{2,4})\b")
 _LONG_NUMBER = re.compile(r"(?<!\d)\d{5,}(?!\d)")
+_EXACT_COMPOSITE_MODEL = re.compile(
+    r"(?i)(?<![a-zа-я0-9])"
+    r"([a-zа-я0-9]+(?:[.\-/][a-zа-я0-9()]+){1,})"
+    r"(?![a-zа-я0-9])"
+)
 _INCH_TO_DN = {
     "1/4": 8,
     "3/8": 10,
@@ -45,6 +50,8 @@ def product_identity_anchors(query: str) -> list[str]:
 
     def add(value: str) -> None:
         compact = re.sub(r"[^a-zа-я0-9]+", "", value, flags=re.IGNORECASE)
+        if re.match(r"^(?:dn|pn|du|dy|ру)\d", compact, re.IGNORECASE):
+            return
         if len(compact) >= 4 and compact not in anchors:
             anchors.append(compact)
 
@@ -59,6 +66,40 @@ def product_identity_anchors(query: str) -> list[str]:
         add(f"{match.group(1)}{match.group(2)}")
 
     for match in _LONG_NUMBER.finditer(cleaned):
+        add(match.group(0))
+
+    return sorted(anchors, key=len, reverse=True)
+
+
+def exact_product_identity_anchors(query: str) -> list[str]:
+    """Return anchors specific enough to identify one product variant/article.
+
+    Family-only tokens such as 11с67п are intentionally excluded. Exact
+    composite designations (for example 2ЦП.01.0.025.100, КШ.ФП.GAS.200.25-02,
+    VT.245) and long numeric/prefixed articles are retained.
+    """
+    text = normalize_query_text(query)
+    anchors: list[str] = []
+
+    def add(value: str) -> None:
+        compact = re.sub(r"[^a-zа-я0-9]+", "", value, flags=re.IGNORECASE)
+        if re.match(r"^(?:dn|pn|du|dy|ру)\d", compact, re.IGNORECASE):
+            return
+        if len(compact) >= 4 and compact not in anchors:
+            anchors.append(compact)
+
+    for match in _EXACT_COMPOSITE_MODEL.finditer(text):
+        token = match.group(1)
+        if re.search(r"[a-zа-я]", token, re.IGNORECASE) and re.search(r"\d", token):
+            add(token)
+
+    for match in re.finditer(
+        r"(?i)(?<![a-zа-я0-9])(?:[a-zа-я]{1,5}[-\s]?)?\d{5,}(?![a-zа-я0-9])",
+        text,
+    ):
+        add(match.group(0))
+
+    for match in _LONG_NUMBER.finditer(text):
         add(match.group(0))
 
     return sorted(anchors, key=len, reverse=True)

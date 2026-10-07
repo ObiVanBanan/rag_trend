@@ -16,6 +16,7 @@ def settings():
         deepseek_model="deepseek-v4-flash",
         deepseek_timeout_seconds=20,
         match_trace_enabled=False,
+        competitor_decoder_baseline_enabled=True,
     )
 
 
