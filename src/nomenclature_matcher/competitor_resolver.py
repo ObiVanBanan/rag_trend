@@ -335,6 +335,96 @@ class CatalogRegistry:
                 return float(item["pn_min_mpa"])
         return None
 
+    @staticmethod
+    def _extract_designation_value(
+        groups: dict[str, str | None],
+        spec: dict[str, Any],
+    ) -> Any:
+        group = str(spec.get("group") or "")
+        raw = groups.get(group)
+        if raw is None:
+            return spec.get("default")
+
+        value = str(raw)
+        regex_map = spec.get("regex_map") or []
+        if regex_map:
+            for rule in regex_map:
+                if re.search(str(rule.get("regex") or ""), value, re.IGNORECASE):
+                    return rule.get("value")
+            return spec.get("default")
+
+        mapping = spec.get("map")
+        if isinstance(mapping, dict):
+            return mapping.get(value, mapping.get(value.upper(), spec.get("default")))
+
+        kind = spec.get("type")
+        if kind == "int":
+            return int(value)
+        if kind == "float_div":
+            return float(value.replace(",", ".")) / float(spec.get("divisor", 1))
+        if kind == "compact":
+            return _compact(value)
+        return value
+
+    def _resolve_designation_schema(
+        self,
+        query: str,
+        anchors: set[str],
+    ) -> CompetitorResolution | None:
+        manufacturer = self.manufacturer_for_query(query)
+        if manufacturer is None:
+            return None
+
+        for schema in self.payload.get("designation_schemas", []):
+            if str(schema.get("manufacturer") or "").casefold() != manufacturer.casefold():
+                continue
+
+            pattern = re.compile(str(schema.get("query_regex") or ""), re.IGNORECASE)
+            match = pattern.search(query)
+            if match is None:
+                continue
+
+            groups = match.groupdict()
+            identity_group = str(schema.get("identity_group") or "model")
+            identity_raw = groups.get(identity_group)
+            if identity_raw is None:
+                continue
+            identity_anchor = _compact(identity_raw)
+            if identity_anchor not in anchors:
+                continue
+
+            values: dict[str, Any] = dict(schema.get("fixed_facts") or {})
+            for field, spec in (schema.get("field_extractors") or {}).items():
+                if field not in FACT_FIELDS or not isinstance(spec, dict):
+                    continue
+                values[field] = self._extract_designation_value(groups, spec)
+
+            for rule in schema.get("query_fact_rules", []):
+                if re.search(str(rule.get("regex") or ""), query, re.IGNORECASE):
+                    for field, value in (rule.get("facts") or {}).items():
+                        if field in FACT_FIELDS:
+                            values[field] = value
+
+            source = self._source(schema)
+            source["evidence_text"] = (
+                f"Catalog designation schema {manufacturer}; exact model "
+                f"{identity_raw}; extracted groups={groups}."
+            )
+            facts = self._facts_from_values(values, source)
+            aliases = (identity_anchor, f"{manufacturer} {identity_anchor}")
+            return CompetitorResolution(
+                status="CATALOG_DESIGNATION_RESOLVED",
+                identity_key=f"{manufacturer.casefold()}:{identity_anchor}",
+                identity_anchor=identity_anchor,
+                identity_level="EXACT_PRODUCT",
+                manufacturer=manufacturer,
+                article=str(identity_raw),
+                aliases=aliases,
+                facts=facts,
+            )
+
+        return None
+
     def _resolve_catalog_schema(
         self,
         query: str,
@@ -411,6 +501,11 @@ class CatalogRegistry:
         curated = self._resolve_curated_product(query, anchors)
         if curated is not None:
             return curated
+
+        designation = self._resolve_designation_schema(query, anchors)
+        if designation is not None:
+            return designation
+
         return self._resolve_catalog_schema(query, anchors)
 
 
