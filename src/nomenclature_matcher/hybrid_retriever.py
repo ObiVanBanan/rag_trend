@@ -128,6 +128,11 @@ class HybridRetriever:
     def _retrieval_hit(candidate: SearchCandidate) -> dict:
         return {
             "ld_id": candidate.ld_id,
+            "name": candidate.name,
+            "article": candidate.article,
+            "dn": candidate.dn,
+            "pn": candidate.pn,
+            "joining_type": candidate.joining_type,
             "dense_rank": candidate.dense_rank,
             "dense_score": candidate.dense_score,
             "bm25_rank": candidate.bm25_rank,
