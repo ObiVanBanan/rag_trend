@@ -393,7 +393,14 @@ def _diagnostics(case: dict, result, verdict: str) -> dict:
     acceptable_in_rerank = sorted(acceptable & rerank_ids)
     acceptable_selected = sorted(acceptable & selected_ids)
 
-    best_pretruncate_rank = _rank_of_any(pretruncate_ordered, acceptable)
+    best_pretruncate_rank = next(
+        (
+            int(item.get("rank"))
+            for item in (retriever.get("rrf_pool") or [])
+            if item.get("ld_id") in acceptable and item.get("rank") is not None
+        ),
+        None,
+    )
     best_initial_rank = _rank_of_any(initial_ordered, acceptable)
     best_rerank_rank = _rank_of_any(rerank_ordered, acceptable)
 
