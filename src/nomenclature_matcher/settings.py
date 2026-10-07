@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     db_pool_max_size: int = 5
     db_connect_timeout_seconds: float = 10
     match_trace_enabled: bool = True
+    match_trace_detailed_enabled: bool = False
 
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection_alias: str = "steel_products_active"
