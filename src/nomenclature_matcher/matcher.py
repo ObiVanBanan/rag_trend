@@ -11,6 +11,7 @@ from .query_constraints import (
     canonical_material,
     canonical_product_type,
     evaluate_product,
+    product_snapshot,
 )
 from .query_signals import (
     explicit_dn_from_query,
@@ -223,6 +224,34 @@ class NomenclatureMatcher:
                     }
                     for candidate in candidate_pool
                 ]
+                if getattr(self.settings, "match_trace_detailed_enabled", False):
+                    parsed_trace_constraints = (
+                        QueryConstraints.model_validate(constraints)
+                        if constraints is not None
+                        else None
+                    )
+                    retrieval_trace["initial_candidate_snapshots"] = [
+                        {
+                            "input_rank": index,
+                            "dense_rank": candidate.dense_rank,
+                            "bm25_rank": candidate.bm25_rank,
+                            "rrf_score": candidate.rrf_score,
+                            "retrieval_sources": list(candidate.retrieval_sources),
+                            "product": product_snapshot(
+                                self._candidate_as_product(candidate),
+                                parsed_trace_constraints,
+                            ),
+                            "matches_hard_constraints": (
+                                evaluate_product(
+                                    self._candidate_as_product(candidate),
+                                    parsed_trace_constraints,
+                                ).matches
+                                if parsed_trace_constraints is not None
+                                else None
+                            ),
+                        }
+                        for index, candidate in enumerate(candidate_pool, 1)
+                    ]
 
         if constraints is not None:
             indexed_candidates = self._eligible_candidates(candidate_pool, constraints)
@@ -308,8 +337,18 @@ class NomenclatureMatcher:
         best = selected_candidates[0] if selected_candidates else None
         if retrieval_trace is not None:
             retrieval_trace["reranker_status"] = rerank_result.status
+            retrieval_trace["reranker_reason"] = rerank_result.reason
             retrieval_trace["selected_ld_ids"] = [
                 candidate.ld_id for candidate in selected_candidates
+            ]
+            retrieval_trace["reranker_selected"] = [
+                {
+                    "candidate_id": selected_item.candidate_id,
+                    "ld_id": selected_item.ld_id,
+                    "confidence": selected_item.llm_confidence,
+                    "reason": selected_item.reason,
+                }
+                for selected_item in selected
             ]
             if rerank_result.status == "MATCHED" and selected_candidates:
                 retrieval_trace["failure_stage"] = None
@@ -769,11 +808,22 @@ class NomenclatureMatcher:
                 "web_enrichment_applied": enriched_interpretation is not None,
             }
 
-            candidates = self.hybrid_retriever.search(
-                retrieval_query,
-                self.settings.hybrid_rerank_limit,
-                canonical_query=canonical_query,
+            detailed_trace = bool(
+                getattr(self.settings, "match_trace_detailed_enabled", False)
             )
+            if detailed_trace and hasattr(self.hybrid_retriever, "search_with_trace"):
+                candidates, retriever_debug = self.hybrid_retriever.search_with_trace(
+                    retrieval_query,
+                    self.settings.hybrid_rerank_limit,
+                    canonical_query=canonical_query,
+                )
+                interpretation_payload["retrieval_trace"]["retriever"] = retriever_debug
+            else:
+                candidates = self.hybrid_retriever.search(
+                    retrieval_query,
+                    self.settings.hybrid_rerank_limit,
+                    canonical_query=canonical_query,
+                )
             log_match_trace(
                 "retrieval_completed",
                 enabled=bool(getattr(self.settings, "match_trace_enabled", True)),
