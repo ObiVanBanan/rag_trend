@@ -109,7 +109,7 @@ def test_old_v1_family_collapsed_row_is_ignored(tmp_path):
                 "MARSHAL",
                 "11с67п",
                 '["11с67п"]',
-                '{"dn":{"value":100,"status":"VERIFIED","sources":[]}}',
+                '{"dn":{"value":999,"status":"VERIFIED","sources":[]}}',
             ),
         )
 
@@ -118,8 +118,11 @@ def test_old_v1_family_collapsed_row_is_ignored(tmp_path):
         "Кран шаровой MARSHAL 11с67п GAS PRO 2ЦП.01.0.025.100"
     )
 
-    assert result.status == "MISS"
-    assert result.resolved is False
+    assert result.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert result.resolved is True
+    assert result.identity_key == "marshal:2цп010025100"
+    assert result.attributes()["dn"] == 100
+    assert result.attributes()["dn"] != 999
 
 
 def test_web_learning_uses_full_variant_identity_not_family(tmp_path):
