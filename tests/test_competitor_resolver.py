@@ -233,3 +233,79 @@ def test_unverified_web_result_is_not_saved(tmp_path):
 
     assert learned is None
     assert resolver.resolve("ACME XZ-101").status == "MISS"
+
+
+
+def test_marshal_designation_schema_resolves_exact_variant(tmp_path):
+    resolver = CompetitorResolver(settings(tmp_path))
+
+    reduced = resolver.resolve(
+        "Кран шаровой MARSHAL 11с67п GAS PRO 2ЦП.01.1.016.050/040"
+    )
+    assert reduced.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert reduced.identity_level == "EXACT_PRODUCT"
+    assert reduced.identity_anchor == "2цп011016050040"
+    assert reduced.attributes()["dn"] == 50
+    assert reduced.attributes()["pn_min_mpa"] == 1.6
+    assert reduced.attributes()["joining_type"] == "welded"
+    assert reduced.attributes()["bore_type"] == "reduced"
+    assert reduced.attributes()["body_material_grade"] == "09Г2С"
+    assert reduced.attributes()["control"] == "manual"
+    assert reduced.attributes()["working_medium"] == "газ"
+
+    full = resolver.resolve(
+        "Кран шаровой MARSHAL 11с67п ЦП.00.3.025.100"
+    )
+    assert full.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert full.attributes()["dn"] == 100
+    assert full.attributes()["pn_min_mpa"] == 2.5
+    assert full.attributes()["joining_type"] == "welded"
+    assert full.attributes()["bore_type"] == "full"
+    assert full.attributes()["body_material_grade"] == "20"
+    assert full.attributes()["control"] == "gearbox"
+
+
+def test_marshal_ambiguous_combined_family_does_not_invent_joining(tmp_path):
+    resolver = CompetitorResolver(settings(tmp_path))
+
+    result = resolver.resolve(
+        "Кран шаровой MARSHAL 11с67п 2ЦПФ.00.1.016.050"
+    )
+
+    assert result.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert result.attributes()["dn"] == 50
+    assert result.attributes().get("joining_type") is None
+
+
+def test_also_designation_schema_resolves_official_model_structure(tmp_path):
+    resolver = CompetitorResolver(settings(tmp_path))
+
+    flanged = resolver.resolve("Кран шаровой ALSO КШ.Ф.080.16-01")
+    assert flanged.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert flanged.identity_level == "EXACT_PRODUCT"
+    assert flanged.attributes()["dn"] == 80
+    assert flanged.attributes()["pn_min_mpa"] == 1.6
+    assert flanged.attributes()["joining_type"] == "flanged"
+    assert flanged.attributes()["bore_type"] == "reduced"
+    assert flanged.attributes()["body_material_grade"] == "20"
+
+    gas_full = resolver.resolve("Кран шаровой ALSO КШ.ФП.GAS.200.25-02")
+    assert gas_full.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert gas_full.attributes()["dn"] == 200
+    assert gas_full.attributes()["pn_min_mpa"] == 2.5
+    assert gas_full.attributes()["joining_type"] == "flanged"
+    assert gas_full.attributes()["bore_type"] == "full"
+    assert gas_full.attributes()["body_material_grade"] == "09Г2С"
+    assert gas_full.attributes()["working_medium"] == "газ"
+    assert gas_full.attributes()["valve_type"] == "gas"
+
+
+def test_also_unknown_connection_code_keeps_joining_unknown(tmp_path):
+    resolver = CompetitorResolver(settings(tmp_path))
+
+    result = resolver.resolve("Кран шаровой ALSO КШ.КПА.100.16-01")
+
+    assert result.status == "CATALOG_DESIGNATION_RESOLVED"
+    assert result.attributes()["dn"] == 100
+    assert result.attributes()["pn_min_mpa"] == 1.6
+    assert result.attributes().get("joining_type") is None
