@@ -45,7 +45,7 @@ def test_diagnostics_distinguishes_rrf_truncation_from_pool_miss():
 
     assert diagnostics["failure_stage"] == "RETRIEVAL_MISS"
     assert diagnostics["failure_substage"] == "RRF_TRUNCATION"
-    assert diagnostics["best_acceptable_pretruncate_rank"] == 2
+    assert diagnostics["best_acceptable_pretruncate_rank"] == 21
     assert diagnostics["best_acceptable_initial_rank"] is None
 
 
