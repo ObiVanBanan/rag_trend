@@ -99,17 +99,97 @@ class HybridRetriever:
             for index, hit in enumerate(hits, 1)
         ]
 
-    def search(self, query: str, limit: int | None = None, canonical_query: str | None = None) -> list[SearchCandidate]:
-        limit = limit or self.settings.hybrid_rerank_limit
+    def _ranked_pool(
+        self,
+        query: str,
+        canonical_query: str | None,
+    ) -> tuple[list[SearchCandidate], list[SearchCandidate], list[SearchCandidate]]:
         dense_candidates = self._search_dense_variants(
             query,
             canonical_query,
             self.settings.hybrid_dense_limit,
         )
-        bm25_candidates = self._search_modality_variants(self.search_bm25, query, canonical_query, self.settings.hybrid_bm25_limit)
+        bm25_candidates = self._search_modality_variants(
+            self.search_bm25,
+            query,
+            canonical_query,
+            self.settings.hybrid_bm25_limit,
+        )
         merged = self._merge_candidates(dense_candidates, bm25_candidates)
         self._apply_rrf(merged)
-        return sorted(merged.values(), key=lambda candidate: candidate.rrf_score or 0.0, reverse=True)[:limit]
+        ranked = sorted(
+            merged.values(),
+            key=lambda candidate: candidate.rrf_score or 0.0,
+            reverse=True,
+        )
+        return ranked, dense_candidates, bm25_candidates
+
+    @staticmethod
+    def _retrieval_hit(candidate: SearchCandidate) -> dict:
+        return {
+            "ld_id": candidate.ld_id,
+            "dense_rank": candidate.dense_rank,
+            "dense_score": candidate.dense_score,
+            "bm25_rank": candidate.bm25_rank,
+            "bm25_score": candidate.bm25_score,
+            "rrf_score": candidate.rrf_score,
+            "retrieval_sources": list(candidate.retrieval_sources),
+        }
+
+    def search(
+        self,
+        query: str,
+        limit: int | None = None,
+        canonical_query: str | None = None,
+    ) -> list[SearchCandidate]:
+        limit = limit or self.settings.hybrid_rerank_limit
+        ranked, _, _ = self._ranked_pool(query, canonical_query)
+        return ranked[:limit]
+
+    def search_with_trace(
+        self,
+        query: str,
+        limit: int | None = None,
+        canonical_query: str | None = None,
+    ) -> tuple[list[SearchCandidate], dict]:
+        """Run the normal search once and expose the pre-truncation ranking.
+
+        The returned candidate list is identical to `search()`. The trace is
+        diagnostic-only and contains no benchmark/GOLD information.
+        """
+        limit = limit or self.settings.hybrid_rerank_limit
+        ranked, dense_candidates, bm25_candidates = self._ranked_pool(
+            query,
+            canonical_query,
+        )
+        trace = {
+            "dense_limit": self.settings.hybrid_dense_limit,
+            "bm25_limit": self.settings.hybrid_bm25_limit,
+            "final_limit": limit,
+            "dense_hits": [
+                self._retrieval_hit(candidate)
+                for candidate in sorted(
+                    dense_candidates,
+                    key=lambda item: item.dense_rank or 10**9,
+                )
+            ],
+            "bm25_hits": [
+                self._retrieval_hit(candidate)
+                for candidate in sorted(
+                    bm25_candidates,
+                    key=lambda item: item.bm25_rank or 10**9,
+                )
+            ],
+            "rrf_pool_size": len(ranked),
+            "rrf_pool": [
+                {
+                    "rank": rank,
+                    **self._retrieval_hit(candidate),
+                }
+                for rank, candidate in enumerate(ranked, 1)
+            ],
+        }
+        return ranked[:limit], trace
 
     def _search_modality_variants(self, search_fn, query: str, canonical_query: str | None, limit: int) -> list[SearchCandidate]:
         candidates = search_fn(query, limit)
