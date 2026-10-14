@@ -161,7 +161,7 @@ def explicit_technical_signal_count(query: str) -> int:
     if re.search(r"(?:\bpn\b|\bру\b)\s*[-:]?\s*\d|\bansi\s*\d", text):
         score += 1
     if re.search(
-        r"фланц|межфланц|резьб|муфт|привар|свар|компресс|обжим|"
+        r"фланц|межфланц|резьб|муфт|штуцер|привар|свар|компресс|обжим|"
         r"(?:вр|вн\.?|внутр\.?)\s*[/\-–—]\s*(?:нр|нар\.?|наруж\.?)|"
         r"(?:нр|нар\.?|наруж\.?)\s*[/\-–—]\s*(?:вр|вн\.?|внутр\.?)|\bф\s*/\s*ф\b",
         text,
@@ -217,6 +217,11 @@ def explicit_joining_type_from_query(query: str) -> str | None:
     "цельносварной фланцевый" remains flanged.
     """
     text = normalize_query_text(query)
+    # LD distinguishes штуцерное from муфтовое резьбовое and separately
+    # labels one-sided "приварное/штуцерное". Do not infer compatibility
+    # from merely having threads on a fitting.
+    if "штуцер" in text:
+        return "welded_nipple" if re.search(r"привар|сварка", text) else "nipple"
     if explicit_thread_type_from_query(query) is not None:
         return "threaded"
     if re.search(r"межфланц", text):
@@ -241,11 +246,11 @@ def explicit_working_medium_from_query(query: str) -> str | None:
     text = normalize_query_text(query)
     matches: list[str] = []
     for pattern, value in (
-        (r"\bвода\b", "вода"),
-        (r"\bпар\b", "пар"),
-        (r"\bгаз\b", "газ"),
-        (r"\bмасло\b", "масло"),
-        (r"\bгликол\b", "гликол"),
+        (r"\bвод(?:а|ы|у|е|ой)\b", "вода"),
+        (r"\bпар(?:а|у|ом)?\b", "пар"),
+        (r"\bгаз(?:а|у|ом)?\b", "газ"),
+        (r"\bмасл(?:о|а|у|ом)\b", "масло"),
+        (r"\bгликол(?:ь|я|ю|ем)?\b", "гликол"),
     ):
         if re.search(pattern, text):
             matches.append(value)

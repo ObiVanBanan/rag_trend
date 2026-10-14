@@ -50,7 +50,7 @@
     "product_type": "ball_valve|butterfly_valve|gate_valve|check_valve|filter|flange|actuator|gearbox|repair_kit|accessory|other|null",
     "dn": 25,
     "pn_min_mpa": 1.6,
-    "joining_type": "flanged|wafer|threaded|welded|compression|other|null",
+    "joining_type": "flanged|wafer|threaded|welded|compression|nipple|welded_nipple|other|null",
     "thread_type": "female_female|male_female|male_male|null",
     "working_medium": "вода|null",
     "valve_type": "standard|underground|regulating|gas|cryogenic|other|null",
@@ -90,6 +90,7 @@
 - если для конкретного товара с ANSI/ASME Class надёжный источник прямо даёт допустимое/эквивалентное давление в bar или MPa, можно использовать это значение как `pn_min_mpa`, но в comment сохраняй формулировку вида `Class 1500, источник указывает около 25 МПа`, а НЕ `PN25`;
 - если надёжной числовой привязки Class к MPa/bar нет или она зависит от материала/температуры и это не разрешено источником, оставляй pn_min_mpa=null и сохраняй Class в normalized_query как технический признак;
 - фл. -> фланцевый; межфланцевый не заменяй на фланцевый;
+- штуцерное/штуцерный -> joining_type=nipple; приварное/штуцерное, приварка/штуцер -> joining_type=welded_nipple (так в каталоге LD). НЕ превращай эти исполнения в threaded или welded: присоединение должно совпадать точно;
 - ВР/ВР, ВР/НР, НР/НР, вн.-вн., вн/нар, нар/вн сохраняй как признак ориентации резьбы;
 - для трубной арматуры нормализуй стандартные дюймовые размеры в DN: 1/2"=DN15, 3/4"=DN20, 1"=DN25, 1 1/4"=DN32, 1 1/2"=DN40, 2"=DN50, 2 1/2"=DN65, 3"=DN80, 4"=DN100;
 - если дюймовый размер относится не к условному проходу изделия, не выдумывай DN;

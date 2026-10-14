@@ -42,6 +42,7 @@ _DIAGNOSTIC_CONSTRAINT_FIELDS = (
 _MATCH_REASON_CODES = (
     "MATCHED",
     "HARD_CONSTRAINT_FILTER",
+    "INSUFFICIENT_PARAMETERS",
     "QUERY_REJECTED",
     "QUERY_INTERPRET_FAILED",
     "RERANK_FAILED",
@@ -117,6 +118,8 @@ def classify_match_reason(status: str, reason: str | None) -> str:
         return "MATCHED"
     text = str(reason or "").strip()
     upper = text.upper()
+    if "INSUFFICIENT_PARAMETERS" in upper:
+        return "INSUFFICIENT_PARAMETERS"
     if "HARD_CONSTRAINT_FILTER" in upper:
         return "HARD_CONSTRAINT_FILTER"
     if upper.startswith("QUERY_REJECTED"):

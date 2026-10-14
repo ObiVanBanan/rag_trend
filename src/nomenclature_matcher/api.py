@@ -28,6 +28,7 @@ from .observability import (
     set_request_id,
 )
 from .production import ProductionRuntime, build_production_runtime, match_products
+from .public_auth import RequestLimiter, valid_basic_auth
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +47,14 @@ class MatchRequest(BaseModel):
 
 class ProductMatch(BaseModel):
     input: str
-    status: Literal["MATCHED", "NOT_FOUND", "ERROR"]
+    status: Literal["MATCHED", "NOT_FOUND", "INSUFFICIENT_PARAMETERS", "ERROR"]
     matched_name: str | None = None
     matched_article: str | None = None
     score: float | None = None
     confidence: float | None = None
     error_code: str | None = None
+    missing_fields: list[str] | None = None
+    reason: str | None = None
 
 
 class MatchResponse(BaseModel):
@@ -85,8 +88,43 @@ def create_app(runtime_factory: RuntimeFactory | None = None) -> FastAPI:
         lifespan=lifespan,
     )
 
+    limiter = RequestLimiter()
+
     @app.middleware("http")
     async def request_context_middleware(request: Request, call_next):
+        # Health probes stay reachable; production fails closed without credentials.
+        settings = request.app.state.runtime.settings
+        password = str(getattr(settings, "public_demo_password", "") or "")
+        username = str(getattr(settings, "public_demo_username", "demo") or "demo")
+        production = getattr(settings, "app_env", "development") == "production"
+        stat_page = request.url.path in {"/demo/stats", "/v1/demo/stats"}
+        admin_username = str(getattr(settings, "public_demo_admin_username", "ld-admin") or "ld-admin")
+        admin_password = str(getattr(settings, "public_demo_admin_password", "") or "")
+        if request.url.path not in {"/health/live", "/health/ready"}:
+            if production and not password:
+                return JSONResponse(status_code=503, content={"detail": "Demo authentication is not configured"})
+            is_demo = bool(password) and valid_basic_auth(
+                request.headers.get("authorization"), username=username, password=password
+            )
+            is_admin = bool(admin_password) and valid_basic_auth(
+                request.headers.get("authorization"), username=admin_username, password=admin_password
+            )
+            if stat_page and not is_admin:
+                return JSONResponse(
+                    status_code=401, content={"detail": "Admin authentication required"},
+                    headers={"WWW-Authenticate": 'Basic realm="LD Tender Admin"'},
+                )
+            if password and not (is_demo or is_admin):
+                return JSONResponse(
+                    status_code=401, content={"detail": "Authentication required"},
+                    headers={"WWW-Authenticate": 'Basic realm="LD Tender Demo"'},
+                )
+            if request.method == "POST" and request.url.path.startswith("/v1/") and (production or password):
+                if not limiter.allow(int(getattr(settings, "public_demo_rpm", 60))):
+                    return JSONResponse(
+                        status_code=429, content={"detail": "Too many requests"},
+                        headers={"Retry-After": "60"},
+                    )
         request_id = resolve_request_id(request.headers.get("X-Request-ID"))
         request.state.request_id = request_id
         token = set_request_id(request_id)
@@ -136,7 +174,7 @@ def create_app(runtime_factory: RuntimeFactory | None = None) -> FastAPI:
     @app.post("/v1/match", response_model=MatchResponse)
     def match(payload: MatchRequest, request: Request):
         runtime: ProductionRuntime = request.app.state.runtime
-        if len(payload.products) > runtime.settings.api_max_batch_size:
+        if len(payload.products) > min(runtime.settings.api_max_batch_size, int(getattr(runtime.settings, 'public_demo_max_batch_size', 10))):
             raise HTTPException(
                 status_code=413,
                 detail=(
@@ -190,7 +228,7 @@ def create_app(runtime_factory: RuntimeFactory | None = None) -> FastAPI:
                 trace_enabled=trace_enabled,
             )
             not_found_count = sum(
-                item.status == "NOT_FOUND" for item in response.results
+                item.status in {"NOT_FOUND", "INSUFFICIENT_PARAMETERS"} for item in response.results
             )
             error_count = sum(item.status == "ERROR" for item in response.results)
             log_match_trace(
@@ -263,6 +301,8 @@ def create_app(runtime_factory: RuntimeFactory | None = None) -> FastAPI:
             )
             return JSONResponse(status_code=500, content=response_payload)
 
+    from .business_demo import router as business_demo_router
+    app.include_router(business_demo_router)
     return app
 
 

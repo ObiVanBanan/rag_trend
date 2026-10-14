@@ -9,6 +9,8 @@ from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 from .competitor_decoding import decode_competitor_query
 from .query_canonicalization import build_constraint_rendered_query
+from .product_safety import flange_spec_from_query
+from .flange_geometry import expected_bore_for_pe_stub
 from .query_constraints import QueryConstraints
 from .query_signals import (
     explicit_dn_from_query,
@@ -307,6 +309,44 @@ class DeepSeekQueryInterpreter:
         explicit_medium = explicit_working_medium_from_query(query)
         if explicit_medium is not None:
             constraints["working_medium"] = explicit_medium
+
+        # PE is the material of the stub, not the flange. Keep both explicit
+        # diameters instead of treating them as conflicting single-DN values.
+        flange = flange_spec_from_query(query)
+        if flange is not None:
+            constraints.update(
+                product_type="flange",
+                dn=flange.dn,
+                stub_dn=flange.stub_dn,
+                flange_kind=flange.kind,
+                body_material=flange.body_material,
+                body_material_grade=flange.body_material_grade,
+                joining_type=None,
+                catalog_scope="in_scope",
+                ambiguous=False,
+            )
+            if flange.pn_min_mpa is not None:
+                constraints["pn_min_mpa"] = flange.pn_min_mpa
+            if flange.kind == "pe_stub":
+                # Catalogue titles describe nominal flange DN and its real
+                # internal opening, not the mating PE pipe OD. Generate a
+                # second retrieval phrasing without weakening hard filters.
+                bore_mm = expected_bore_for_pe_stub(flange.dn, flange.stub_dn)
+                payload["normalized_query"] = (
+                    f"фланец ПНД стальной Ду{flange.dn} "
+                    f"внутр. {bore_mm} мм"
+                    if bore_mm is not None else
+                    f"фланец стальной под втулку ПНД Ду{flange.dn} "
+                    f"под втулку Ду{flange.stub_dn}"
+                )
+            else:
+                payload["normalized_query"] = (
+                    f"фланец плоский приварной ст{flange.body_material_grade or ''} "
+                    f"Ду{flange.dn} Ру{int(flange.pn_min_mpa * 10) if flange.pn_min_mpa else ''}"
+                )
+        if "11б27п" in query.casefold():
+            # A competitor's family designation is not the LD model number.
+            constraints["valve_designation"] = None
 
         service_query = self._looks_like_service_query(query)
         score = self._specificity_score(constraints)

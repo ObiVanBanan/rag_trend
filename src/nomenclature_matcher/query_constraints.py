@@ -10,6 +10,8 @@ from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from .models import LDProduct
+from .product_safety import flange_spec_from_query, thread_size_from_text
+from .flange_geometry import expected_bore_for_pe_stub, pe_stub_pipe_od_from_bore
 
 
 DEFAULT_QUERY_CONSTRAINTS_PROMPT = (
@@ -26,11 +28,14 @@ class QueryConstraints(BaseModel):
     pn_min_mpa: float | None = None
     joining_type: str | None = None
     thread_type: str | None = None
+    thread_size: str | None = None
     working_medium: str | None = None
     valve_type: str | None = None
     valve_designation: str | None = None
     body_material: str | None = None
     body_material_grade: str | None = None
+    flange_kind: str | None = None
+    stub_dn: int | None = None
     bore_type: str | None = None
     control: str | None = None
     catalog_scope: str = "uncertain"
@@ -42,6 +47,13 @@ class QueryConstraints(BaseModel):
     def _validate_dn(cls, value: int | None) -> int | None:
         if value is not None and value <= 0:
             raise ValueError("dn must be positive")
+        return value
+
+    @field_validator("stub_dn")
+    @classmethod
+    def _validate_stub_dn(cls, value: int | None) -> int | None:
+        if value is not None and value <= 0:
+            raise ValueError("stub_dn must be positive")
         return value
 
     @field_validator("pn_min_mpa")
@@ -150,6 +162,118 @@ def _first_number(value: Any) -> float | None:
     return float(match.group(0).replace(",", "."))
 
 
+def candidate_flange_kind(product: LDProduct) -> str | None:
+    if candidate_product_type(product) != "flange":
+        return None
+    name = _norm(product.name)
+    spec = flange_spec_from_query(name)
+    if spec is not None:
+        return spec.kind
+
+    # The LD catalogue uses "Фланец ПНД 1-080х16 ... внутр.108 мм"
+    # and "Тип продукта: Фланец для ПНД труб", not "под втулку Ду90".
+    # Never infer the flange material from "ПНД" here: PND refers to
+    # the mating pipe and candidate_material() checks steel separately.
+    types = _property_values(product, "Тип продукта", "Тип продукта AI")
+    if any(re.search(r"фланец\s+для\s+(?:пнд|пэ|полиэтиленов\w*)\s+труб", _norm(t))
+           for t in types):
+        return "pe_stub"
+    if (re.search(r"\bфланец\s+пнд\b", name) or
+            re.search(r"\bфланец\b.*\bдля\s+(?:пнд|пэ|полиэтиленов\w*)\s+труб", name)):
+        return "pe_stub"
+
+    if ("плоск" in name and "привар" in name) or (
+        "33259" in name and re.search(r"(?:^|[-\s])01(?:[-\s]|$)", name)
+    ):
+        return "flat_welded"
+    return None
+
+
+def candidate_flange_bore_mm(product: LDProduct) -> int | None:
+    """Extract the actual flange inner opening from the LD product text.
+
+    Bore Ø108 is NOT the pipe OD Ø90. Keep the two measurements separate.
+    Do not treat nominal DN, PN, or the article's numeric suffix as bore.
+    """
+    bores = []
+    for value in _property_values(
+        product, "Внутренний диаметр", "Внутренний диаметр, мм",
+        "Внутр. диаметр", "Внутр. диаметр, мм",
+        "Диаметр внутренний", "Диаметр внутреннего отверстия",
+        "Внутренний Ø",
+    ):
+        number = _first_number(value)
+        if number is not None and number.is_integer():
+            bores.append(int(number))
+    match = re.search(
+        r"(?<![a-zа-я0-9])(?:внутр\.?|вн\.?)\s*"
+        r"(?:(?:диаметр|диам\.?|[dд])\s*)?"
+        r"(?:[øØ⌀]\s*)?(\d{2,4})\s*(?:мм)?(?!\d)",
+        _norm(product.name),
+    )
+    if match:
+        bores.append(int(match.group(1)))
+    # "Диаметр отверстия" may be a BOLT hole, never a flange bore.
+    # If title and technical property disagree, do not invent a dimension.
+    return bores[0] if bores and len(set(bores)) == 1 else None
+
+
+def candidate_stub_dn(product: LDProduct) -> int | None:
+    if candidate_flange_kind(product) != "pe_stub":
+        return None
+    explicit_sizes = []
+    for value in _property_values(
+        product, "Диаметр втулки", "Диаметр втулки ПНД",
+        "Диаметр трубы ПНД", "Наружный диаметр трубы ПНД", "DN втулки",
+    ):
+        number = _first_number(value)
+        if number is not None:
+            explicit_sizes.append(int(round(number)))
+    spec = flange_spec_from_query(product.name)
+    if spec is not None and spec.kind == "pe_stub" and spec.stub_dn is not None:
+        explicit_sizes.append(spec.stub_dn)
+
+    # Specific "для трубы Дн110" notation is a PE pipe OD, not steel DN.
+    explicit_pipe = re.search(
+        r"для\s+(?:пэ|пнд)\s+труб\w*.*?"
+        r"(?:для\s+труб\w*\s*)?(?:дн|dn|д)\s*[-:]?\s*(\d{2,4})\b",
+        _norm(product.name),
+    )
+    if explicit_pipe:
+        explicit_sizes.append(int(explicit_pipe.group(1)))
+
+    # Never accept internally inconsistent catalogue data.
+    if len(set(explicit_sizes)) > 1:
+        return None
+    dn = candidate_flange_dn(product)
+    bore = candidate_flange_bore_mm(product)
+    if explicit_sizes:
+        pipe_od = explicit_sizes[0]
+        expected = expected_bore_for_pe_stub(dn, pipe_od)
+        if expected is not None and bore is not None and bore != expected:
+            return None
+        return pipe_od
+
+    # Only a *verified* unique nominal DN/OD/bore triple is admissible.
+    # Unknown bores and any conflict must remain non-match, not guessed.
+    return pe_stub_pipe_od_from_bore(dn, bore)
+
+
+def candidate_flange_dn(product: LDProduct) -> int | None:
+    spec = flange_spec_from_query(product.name)
+    if spec is not None and spec.dn is not None:
+        return spec.dn
+    return candidate_dn(product)
+
+
+def candidate_thread_size(product: LDProduct) -> str | None:
+    for value in _property_values(product, "Размер резьбы", "Резьба", "Присоединительная резьба"):
+        result = thread_size_from_text("G " + value)
+        if result is not None:
+            return result
+    return thread_size_from_text(product.name)
+
+
 def candidate_dn(product: LDProduct) -> int | None:
     values = [product.dn, *_property_values(product, "Номинальный диаметр, DN", "DN")]
     for value in values:
@@ -209,6 +333,13 @@ def canonical_joining_type(text: Any) -> str | None:
     value = _norm(text)
     if not value:
         return None
+    # LD catalogue distinguishes "Штуцерное" (КШЦШ) from
+    # "Приварное/штуцерное" (КШЦК). Neither is ordinary threaded
+    # or welded-end. Check the hybrid form *before* generic weld words.
+    if "штуцер" in value:
+        if "привар" in value or "сварка" in value:
+            return "welded_nipple"
+        return "nipple"
     if "межфлан" in value:
         return "wafer"
     if "компресс" in value or "обжим" in value:
@@ -277,6 +408,16 @@ def canonical_material(text: Any) -> str | None:
 
 
 def candidate_material(product: LDProduct) -> str | None:
+    if candidate_product_type(product) == "flange":
+        for value in [*_property_values(product, "Материал", "Материал корпуса"), product.name]:
+            normalized = _norm(value)
+            if "нерж" in normalized or "нержав" in normalized:
+                return "stainless_steel"
+            if "сталь" in normalized or "стальной" in normalized or re.search(
+                r"(?<![a-zа-я0-9])ст\.?\s*(?:20л?|09г2с)(?![a-zа-я0-9])",
+                normalized,
+            ):
+                return "steel"
     for value in [*_property_values(product, "Материал корпуса"), product.name]:
         result = canonical_material(value)
         if result not in {None, "other"}:
@@ -286,6 +427,8 @@ def candidate_material(product: LDProduct) -> str | None:
 
 def candidate_material_text(product: LDProduct) -> str:
     values = _property_values(product, "Материал корпуса")
+    if candidate_product_type(product) == "flange":
+        return " ".join([*values, product.name])
     return " ".join(values) if values else product.name
 
 
@@ -382,8 +525,20 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
     if actual_type != constraints.product_type:
         return MatchDecision(False, checks)
 
+    if constraints.flange_kind is not None:
+        actual_kind = candidate_flange_kind(product)
+        checks["flange_kind"] = f"{actual_kind} == {constraints.flange_kind}"
+        if actual_kind != constraints.flange_kind:
+            return MatchDecision(False, checks)
+
+    if constraints.stub_dn is not None:
+        actual_stub_dn = candidate_stub_dn(product)
+        checks["stub_dn"] = f"{actual_stub_dn} == {constraints.stub_dn}"
+        if actual_stub_dn != constraints.stub_dn:
+            return MatchDecision(False, checks)
+
     if constraints.dn is not None:
-        actual_dn = candidate_dn(product)
+        actual_dn = candidate_flange_dn(product) if constraints.flange_kind else candidate_dn(product)
         checks["dn"] = f"{actual_dn} == {constraints.dn}"
         if actual_dn != constraints.dn:
             return MatchDecision(False, checks)
@@ -404,6 +559,12 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
         actual_thread = candidate_thread_type(product)
         checks["thread_type"] = f"{actual_thread} == {constraints.thread_type}"
         if actual_thread != constraints.thread_type:
+            return MatchDecision(False, checks)
+
+    if constraints.thread_size is not None:
+        actual_size = candidate_thread_size(product)
+        checks["thread_size"] = f"{actual_size} == {constraints.thread_size}"
+        if actual_size != constraints.thread_size:
             return MatchDecision(False, checks)
 
     if constraints.working_medium is not None:
@@ -434,7 +595,12 @@ def evaluate_product(product: LDProduct, constraints: QueryConstraints) -> Match
     if constraints.body_material_grade is not None:
         expected_grade = _norm(constraints.body_material_grade)
         actual_material_text = candidate_material_text(product)
-        grade_ok = _exact_token_match(actual_material_text, expected_grade)
+        grade_ok = _exact_token_match(actual_material_text, expected_grade) or bool(
+            re.search(
+                rf"(?<![a-zа-я0-9])ст\.?\s*{re.escape(expected_grade)}(?![a-zа-я0-9])",
+                _norm(actual_material_text),
+            )
+        )
         checks["body_material_grade"] = f"exact {expected_grade}: {grade_ok}"
         if not grade_ok:
             return MatchDecision(False, checks)
@@ -469,6 +635,10 @@ def product_snapshot(product: LDProduct, constraints: QueryConstraints | None = 
         "pn_mpa": candidate_pn_mpa(product),
         "joining_type": candidate_joining_type(product),
         "thread_type": candidate_thread_type(product),
+        "thread_size": candidate_thread_size(product),
+        "flange_kind": candidate_flange_kind(product),
+        "stub_dn": candidate_stub_dn(product),
+        "flange_bore_mm": candidate_flange_bore_mm(product) if candidate_flange_kind(product) == "pe_stub" else None,
         "product_type": candidate_product_type(product),
         "valve_type": candidate_valve_type(product),
         "body_material": candidate_material(product),
@@ -513,7 +683,10 @@ def technical_compatibility(
             checks[field] = f"mismatch:{actual!r}!={expected!r}"
 
     compare("product_type", constraints.product_type, candidate_product_type(product))
-    compare("dn", constraints.dn, candidate_dn(product))
+    compare(
+        "dn", constraints.dn,
+        candidate_flange_dn(product) if constraints.flange_kind else candidate_dn(product),
+    )
     compare(
         "pn_min_mpa",
         constraints.pn_min_mpa,
@@ -522,6 +695,9 @@ def technical_compatibility(
     )
     compare("joining_type", constraints.joining_type, candidate_joining_type(product))
     compare("thread_type", constraints.thread_type, candidate_thread_type(product))
+    compare("thread_size", constraints.thread_size, candidate_thread_size(product))
+    compare("flange_kind", constraints.flange_kind, candidate_flange_kind(product))
+    compare("stub_dn", constraints.stub_dn, candidate_stub_dn(product))
 
     if constraints.working_medium is not None:
         media = _medium_values(product)

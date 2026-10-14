@@ -1,0 +1,1458 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#181818">
+  <meta name="description" content="Подбор аналогов промышленной номенклатуры из каталога LD.">
+  <title>Подбор аналогов — LD</title>
+  <style>
+    :root {
+      font-family: "Segoe UI", Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      color: #20201e;
+      background: #f7f7f5;
+      --ink: #20201e;
+      --muted: #74736e;
+      --line: #e6e6e0;
+      --brand: #ffcd00;
+      --surface: #ffffff;
+      --soft: #f7f7f5;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-width: 320px; }
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: progress; opacity: .58; }
+    button:focus-visible, textarea:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible {
+      outline: 3px solid #b89716;
+      outline-offset: 3px;
+    }
+    a { color: inherit; }
+    .top { background: #191919; color: white; height: 78px; }
+    .top-inner { max-width: 1260px; margin: auto; padding: 0 32px; height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: inline-flex; align-items: center; gap: 13px; text-decoration: none; min-width: 0; }
+    .brand-mark { width: 48px; height: 48px; display: grid; place-items: center; background: var(--brand); color: #141414; border-radius: 11px; font-weight: 950; font-size: 24px; letter-spacing: -2px; flex: 0 0 auto; }
+    .brand-words { display: flex; flex-direction: column; gap: 3px; }
+    .brand-name { font-size: 17px; font-weight: 800; letter-spacing: -.4px; line-height: 1.05; }
+    .brand-caption { font-size: 10px; font-weight: 600; letter-spacing: 1.55px; color: #bcbcb7; }
+    .nav { display: flex; align-items: center; gap: 10px; }
+    .nav-link { display: inline-flex; align-items: center; text-decoration: none; color: #d0d0cd; font-size: 13px; background: none; border: 0; border-radius: 9px; padding: 10px 15px; font-weight: 650; }
+    .nav-link.active { color: #181818; background: var(--brand); }
+    .nav-link:hover:not(.active) { background: #30302e; color: white; }
+    .nav-link .counter { color: #e9e4d0; background: #3a3a38; border-radius: 5px; padding: 2px 6px; margin-left: 6px; font-size: 11px; }
+    main { max-width: 1260px; margin: 0 auto; padding: 0 32px 72px; }
+    .hero { padding: 58px 0 32px; display: flex; gap: 24px; align-items: end; justify-content: space-between; }
+    .eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 850; color: #847500; margin-bottom: 14px; }
+    h1 { font-size: clamp(30px, 4.4vw, 49px); line-height: 1.11; letter-spacing: -1.7px; margin: 0; font-weight: 790; }
+    h1 .accent { position: relative; z-index: 1; white-space: nowrap; }
+    h1 .accent::after { content: ""; height: .24em; background: var(--brand); position: absolute; left: -2px; right: -2px; bottom: 2px; z-index: -1; }
+    .hero p { color: #73736e; line-height: 1.65; max-width: 635px; font-size: 15px; margin: 17px 0 0; }
+    .hero-note { font-size: 12px; color: #575751; max-width: 228px; line-height: 1.6; border-left: 3px solid var(--brand); padding: 5px 0 5px 15px; margin-bottom: 5px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: stretch; }
+    .surface { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .entry { padding: 26px 28px 24px; box-shadow: 0 10px 28px rgba(16,16,15,.025); }
+    .entry-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+    h2 { font-size: 19px; letter-spacing: -.35px; margin: 0; }
+    .section-number { font-size: 11px; color: #a1a19a; font-weight: 850; letter-spacing: 1px; }
+    .entry-top .subnote { font-size: 12px; color: var(--muted); }
+    .input-area { position: relative; }
+    textarea {
+      min-height: 198px; width: 100%; resize: vertical; border: 1px solid #deded7;
+      border-radius: 11px; padding: 18px 18px 32px; color: #252520;
+      background: #fdfdfb; font-size: 14px; line-height: 1.95; outline: none;
+      transition: border-color .15s;
+    }
+    textarea::placeholder { color: #a09f99; }
+    textarea:focus { border-color: #a69957; box-shadow: 0 0 0 3px #ffcd001a; }
+    .input-hint { position: absolute; bottom: 13px; right: 15px; color: #96958f; font-size: 11px; pointer-events: none; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 15px; }
+    .action-left { display: flex; flex-wrap: wrap; gap: 9px; }
+    .secondary { display: inline-flex; gap: 8px; align-items: center; border: 1px solid #deded6; background: white; border-radius: 9px; padding: 11px 14px; font-size: 12px; font-weight: 720; color: #484842; }
+    .secondary:hover { background: #fbfaf2; border-color: #c5be9b; }
+    .secondary svg, .primary svg { flex: none; }
+    .primary { display: inline-flex; align-items: center; justify-content: center; gap: 11px; border: none; background: var(--brand); color: #181818; border-radius: 10px; padding: 14px 22px; min-height: 47px; font-weight: 800; font-size: 13px; transition: background .15s, transform .15s; }
+    .primary:hover:not(:disabled) { background: #f0c100; transform: translateY(-1px); }
+    .entry-hint { margin: 15px 0 0; font-size: 12px; color: #85847f; line-height: 1.5; }
+    .inline-error { display: none; padding: 12px 15px; border: 1px solid #e9c8c8; color: #943c35; background: #fff8f7; border-radius: 9px; font-size: 13px; margin-top: 14px; }
+    .aside { padding: 27px 24px; background: #252521; color: white; border-color: #252521; display: flex; flex-direction: column; justify-content: space-between; min-height: 330px; position: relative; overflow: hidden; }
+    .aside::after { content: ""; position: absolute; width: 190px; height: 190px; border: 36px solid rgba(255,205,0,.08); border-radius: 50%; right: -120px; bottom: -113px; pointer-events: none; }
+    .aside .eyebrow { color: #ffd92a; font-size: 10px; }
+    .aside h2 { font-size: 25px; line-height: 1.25; max-width: 195px; letter-spacing: -.6px; margin: 0 0 17px; }
+    .aside p { font-size: 12px; line-height: 1.75; color: #c2c2b9; margin: 0; }
+    .aside-divider { width: 40px; height: 3px; background: var(--brand); margin: 24px 0 16px; }
+    .aside-footer { font-size: 11px; color: #a8a89e; line-height: 1.7; }
+    .examples { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 19px 0 7px; }
+    .examples-label { font-size: 12px; color: #7c7c74; margin-right: 7px; font-weight: 700; }
+    .sample { background: #fff; border: 1px solid var(--line); color: #53534c; font-size: 12px; border-radius: 24px; padding: 9px 13px; }
+    .sample:hover { border-color: #bdaa41; background: #fffdf2; }
+    .results-section { margin-top: 45px; scroll-margin-top: 32px; }
+    .results-titlebar { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; margin-bottom: 17px; }
+    .results-titlebar .eyebrow { margin-bottom: 8px; }
+    .results-titlebar .muted { color: var(--muted); font-size: 12px; }
+    .empty { border: 1px dashed #d5d5ce; background: #fbfbf9; padding: 61px 20px; border-radius: 15px; text-align: center; }
+    .empty-icon { width: 54px; height: 54px; border: 1px solid #e4e4dc; background: white; display: grid; place-items: center; border-radius: 14px; margin: 0 auto 18px; }
+    .empty strong { font-size: 16px; display: block; margin-bottom: 8px; }
+    .empty p { color: #898980; max-width: 380px; font-size: 13px; line-height: 1.6; margin: auto; }
+    .results-list { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: white; }
+    .results-header { display: grid; grid-template-columns: minmax(0, 1.17fr) minmax(0, 1fr) 145px 120px; padding: 15px 22px; gap: 20px; background: #f3f3ef; color: #85857e; font-size: 10px; font-weight: 850; letter-spacing: 1px; text-transform: uppercase; }
+    .result-row { border-top: 1px solid #ecece7; }
+    .result-row:first-of-type { border-top: none; }
+    .result-grid { display: grid; grid-template-columns: minmax(0, 1.17fr) minmax(0, 1fr) 145px 120px; gap: 20px; padding: 23px 22px; align-items: start; }
+    .result-row:hover > .result-grid { background: #fffefa; }
+    .query-name { font-size: 13px; color: #55564f; line-height: 1.65; overflow-wrap: anywhere; }
+    .row-num { display: inline-block; min-width: 24px; color: #a2a29b; font-size: 11px; font-weight: 700; }
+    .result-name { font-size: 13px; line-height: 1.5; font-weight: 780; overflow-wrap: anywhere; }
+    .result-name.missing { font-weight: 500; color: #8c8b84; }
+    .article-code { color: #686960; font-size: 12px; overflow-wrap: anywhere; font-weight: 650; }
+    .status { font-size: 11px; font-weight: 770; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; width: max-content; max-width: 100%; }
+    .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .status.MATCHED { color: #267351; background: #e8f4ec; }
+    .status.NOT_FOUND, .status.INSUFFICIENT_PARAMETERS { color: #956520; background: #fff4da; }
+    .status.ERROR { color: #a44742; background: #ffeded; }
+    .open-detail { border: none; padding: 9px 0 0; background: transparent; color: #776007; font-size: 12px; font-weight: 750; display: flex; align-items: center; gap: 5px; }
+    .open-detail:hover { color: #2b260f; }
+    .open-detail svg { transition: transform .2s; }
+    .result-row.expanded .open-detail svg { transform: rotate(180deg); }
+    .detail-panel { display: none; margin: 0 22px 20px; padding: 23px; border: 1px solid #ebe9dd; background: #fafaf6; border-radius: 12px; }
+    .result-row.expanded .detail-panel { display: block; }
+    .detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .detail-heading h3 { font-size: 14px; margin: 0; }
+    .detail-copy { color: #66665e; font-size: 12px; line-height: 1.7; margin: 0 0 18px; }
+    .detail-alert { padding: 11px 13px; background: #fff5de; border-left: 3px solid #d49a2e; margin-bottom: 16px; color: #76551f; font-size: 12px; line-height: 1.65; }
+    .detail-ok { background: #eef6ed; border-left-color: #83aa78; color: #385b32; }
+    .detail-block { margin-top: 20px; }
+    .detail-block h4 { font-size: 12px; margin: 0 0 11px; color: #3d3d37; }
+    .comparison { width: 100%; border-collapse: collapse; font-size: 12px; background: white; border: 1px solid var(--line); }
+    .comparison th, .comparison td { text-align: left; padding: 11px 12px; border-bottom: 1px solid #efefe9; vertical-align: top; overflow-wrap: anywhere; }
+    .comparison th { background: #f5f5f1; color: #777870; font-size: 11px; font-weight: 700; }
+    .match-check { color: #22744d; font-weight: 750; }
+    .mismatch-check { color: #ac3f3b; font-weight: 750; }
+    .unknown-check { color: #8d712b; font-weight: 750; }
+    .token-list { display: flex; gap: 8px; flex-wrap: wrap; }
+    .token { font-size: 12px; padding: 7px 10px; background: white; border: 1px solid #e4e4dc; border-radius: 7px; color: #57574f; }
+    .token strong { color: #2c2c27; }
+    .candidates { margin-top: 18px; padding: 0; }
+    .candidates summary { font-weight: 740; cursor: pointer; color: #5f551d; font-size: 12px; padding: 10px 0; }
+    .candidate { background: white; border: 1px solid var(--line); border-radius: 9px; padding: 13px 15px; margin-top: 10px; }
+    .candidate b { display: block; font-size: 12px; line-height: 1.6; }
+    .candidate p { margin: 5px 0 0; font-size: 11px; color: #77776f; }
+    .subtle { color: #77776f; font-size: 11px; line-height: 1.7; }
+    footer { max-width: 1260px; margin: auto; padding: 0 32px 35px; display: flex; align-items: center; justify-content: space-between; gap: 18px; color: #96958c; font-size: 11px; line-height: 1.6; }
+    .history-shade { position: fixed; inset: 0; background: #10100e9c; opacity: 0; pointer-events: none; transition: opacity .22s; z-index: 10; }
+    .history-pane { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: #fff; box-shadow: -18px 0 65px #0002; z-index: 11; transform: translateX(105%); transition: transform .22s; padding: 28px; display: flex; flex-direction: column; }
+    body.history-visible .history-shade { opacity: 1; pointer-events: auto; }
+    body.history-visible .history-pane { transform: translateX(0); }
+    .history-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .history-head h2 { font-size: 23px; }
+    .icon-btn { border: 1px solid var(--line); width: 35px; height: 35px; border-radius: 8px; background: white; font-size: 20px; }
+    .history-list { margin-top: 23px; overflow-y: auto; flex: 1; }
+    .history-item { display: block; width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 16px; background: white; text-align: left; margin-bottom: 10px; }
+    .history-item:hover { border-color: #bdad52; background: #fffef7; }
+    .history-item time { display: block; color: #88877e; font-size: 11px; margin-bottom: 7px; }
+    .history-item strong { font-size: 13px; line-height: 1.5; display: block; max-height: 2.95em; overflow: hidden; }
+    .history-item .subtle { margin-top: 7px; display: block; }
+    .history-clear { margin-top: 12px; align-self: start; color: #996347; font-size: 12px; text-decoration: underline; background: none; border: 0; padding: 6px 0; }
+    .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+    .spinner { width: 15px; height: 15px; display: inline-block; border-radius: 50%; border: 2px solid #1d1d1d35; border-top-color: #151515; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .review-actions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+    .review-actions button{padding:10px 13px;border:1px solid #deddd3;border-radius:8px;background:#fff;font-size:12px;font-weight:750;}
+    .review-actions button:hover{border-color:#a89228;background:#fffbee;}
+    .review-actions .review-accept{background:#ffcd00;border-color:#ffcd00;color:#20201e;}
+    .review-actions .review-reject{color:#aa4b38;}
+    .user-status{background:#fff2cb;color:#7b5d15;padding:8px 11px;margin:10px 0;display:inline-flex;border-radius:7px;font-size:12px;font-weight:750;}
+    .editor{margin:16px 0 20px;background:#fff;border:1px solid #e5e2d4;border-radius:10px;padding:16px;}
+    .editor summary{cursor:pointer;font-weight:800;color:#66551b;font-size:13px;}
+    .editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:16px 0;}
+    .editor-field{display:flex;flex-direction:column;gap:6px;min-width:0;}
+    .editor-field label{font-size:11px;color:#68665b;font-weight:750;}
+    .editor-field select,.editor-field input{width:100%;min-width:0;background:#fdfdfb;border:1px solid #deddd4;border-radius:7px;padding:10px;color:#252522;font-size:12px;}
+    .editor-hint{font-size:11px;color:#817e6d;line-height:1.7;margin-top:0;}
+    .review-error{color:#a13c35;font-size:12px;line-height:1.5;min-height:12px;}
+    .candidate-actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:10px;}
+    .candidate-actions button{background:#fff8dd;color:#61500e;border:1px solid #e7d16f;border-radius:7px;padding:8px 10px;font-weight:800;font-size:11px;}
+    .tray{display:flex;align-items:center;gap:11px;padding:8px 12px;background:#fff;border:1px solid #e5e3d9;border-radius:12px;}
+    .tray-icon{width:45px;height:42px;display:block;}
+    .tray strong{font-size:19px;display:block;line-height:1.15;}
+    .tray small{display:block;font-size:10px;color:#878379;margin-top:3px;}
+    .tray .tray-approved{color:#665819;font-size:11px;font-weight:650;}
+    @media(max-width:760px){.editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.tray{padding:6px 8px;}}
+    @media(max-width:430px){.editor-grid{grid-template-columns:1fr;}}
+    @media (max-width: 1050px) {
+      .workspace { grid-template-columns: minmax(0,1fr) 240px; }
+      .result-grid, .results-header { grid-template-columns: minmax(0, 1.15fr) minmax(0,1fr) 116px 110px; gap: 13px; }
+      .aside h2 { font-size: 22px; }
+    }
+    @media (max-width: 760px) {
+      .top-inner, main, footer { padding-left: 18px; padding-right: 18px; }
+      .top { height: 69px; }
+      .brand-mark { width: 42px; height: 42px; }
+      .brand-caption { font-size: 9px; letter-spacing: .9px; }
+      .hero { padding-top: 39px; }
+      .hero-note { display: none; }
+      .workspace { grid-template-columns: 1fr; }
+      .aside { min-height: auto; padding: 22px; }
+      .aside h2 { max-width: none; font-size: 19px; }
+      .aside-divider { display: none; }
+      .aside-footer { margin-top: 12px; }
+      .result-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; padding: 20px; }
+      .results-header { display: none; }
+      .status-cell { grid-column: 1 / -1; }
+      .article-code { font-size: 12px; }
+      .detail-panel { margin: 0 12px 13px; padding: 15px; }
+      .comparison { font-size: 11px; }
+      .comparison td, .comparison th { padding: 8px 7px; }
+    }
+    @media (max-width: 460px) {
+      .brand-name { font-size: 14px; }
+      .nav-link { padding: 9px 11px; }
+      .nav-link.active { display: none; }
+      .hero { padding-top: 30px; }
+      h1 { letter-spacing: -.9px; }
+      .entry { padding: 21px 16px; }
+      .entry-top { align-items: start; }
+      .entry-top .subnote { display: none; }
+      .actions, .action-left { width: 100%; }
+      .primary { width: 100%; }
+      .result-grid { grid-template-columns: 1fr; }
+      .status-cell { grid-column: 1; }
+      .detail-panel { overflow-x: auto; }
+      .comparison { min-width: 450px; }
+      footer { flex-direction: column; align-items: start; }
+    }
+
+    [hidden]{display:none!important}
+    .ld-append-panel{padding:23px 27px;margin:0 0 18px;background:white;box-shadow:0 14px 35px #1111110a;border-top:3px solid #ffcd00;}
+    .ld-append-panel .eyebrow{margin-bottom:9px}
+    .ld-append-panel .ld-section-head h3{font-size:21px;margin:0}
+    .ld-append-label{display:block;font-weight:780;font-size:12px;margin:19px 0 9px}
+    .ld-append-query{display:block;width:100%;padding:14px;border:1px solid #deded5;border-radius:9px;background:#fcfcfa;font-size:13px}
+    .ld-append-query:focus,.ld-append-fields select:focus,.ld-append-fields input:focus{outline:2px solid #e6c248;outline-offset:1px}
+    .ld-append-fields-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:21px}
+    .ld-append-fields-head h4{font-size:14px;margin:0}
+    .ld-append-fields{grid-template-columns:repeat(4,minmax(0,1fr));margin:13px 0 19px}
+    .ld-append-fields .editor-field select,.ld-append-fields .editor-field input{background:#fcfcfa}
+    .ld-append-actions{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+    #append-message{line-height:1.6}
+    .ld-append-status-error{color:#a34138!important}
+    @media(max-width:1000px){.ld-append-fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:650px){.ld-append-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ld-append-panel{padding:17px}}
+    @media(max-width:410px){.ld-append-fields{grid-template-columns:1fr}}
+    /* LD v2: reference-inspired results-first engineering workspace. */
+    .top {height:74px;border-bottom:3px solid #ffcd00;}
+    .top-inner,main,footer{max-width:1490px;}
+    .brand-mark{background:#ffcd00;border-radius:4px;font-style:italic;transform:skew(-6deg);}
+    .brand-name{font-size:19px;}
+    .hero{padding:34px 0 22px;}
+    .hero h1{font-size:clamp(28px,3.2vw,40px);letter-spacing:-1.25px;}
+    .hero p{margin-top:11px;}
+    .workspace{grid-template-columns:minmax(0,1fr) 240px;}
+    .entry{padding:21px 25px;}
+    .entry textarea{min-height:158px;}
+    .aside{min-height:275px;}
+    .aside h2{font-size:22px;}
+    .results-section{margin-top:28px;}
+    .results-list{box-shadow:0 10px 38px #14141408;}
+    .results-header,.result-grid{grid-template-columns:minmax(190px,1.1fr) minmax(190px,1.2fr) minmax(120px,.65fr) 175px;}
+    .result-grid{padding:19px 22px;align-items:center;}
+    .result-row.expanded>.result-grid{background:#fffbea;box-shadow:inset 4px 0 #ffcd00;}
+    .result-row.expanded .detail-panel{display:block;}
+    .detail-panel.ld-review-panel{margin:0;padding:24px 22px;background:#f8f8f5;border:0;border-top:1px solid #e9e8dc;border-radius:0;}
+    .ld-review-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(255px,305px);gap:18px;align-items:start;}
+    .ld-review-content{min-width:0;}
+    .ld-parameter-side{background:#fff;border:1px solid #e9e9e0;border-radius:13px;padding:20px;box-shadow:0 4px 26px #25252509;}
+    .ld-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:13px;}
+    .ld-section-head h3,.ld-section-head h4{margin:0;font-size:17px;letter-spacing:-.3px;}
+    .ld-section-head h4{font-size:17px;}
+    .ld-kicker{font-size:10px;font-weight:850;letter-spacing:1.4px;color:#968020;}
+    .ld-recommendation{background:white;border:1px solid #eadc9f;border-radius:13px;overflow:hidden;}
+    .ld-recommendation-label{display:block;padding:12px 17px;background:#fff8dd;color:#65520c;font-size:10px;letter-spacing:1.2px;font-weight:900;}
+    .ld-product-hero{display:grid;grid-template-columns:185px minmax(0,1fr);align-items:center;gap:19px;padding:21px;}
+    .ld-product-visual{background:#f5f5f2;border-radius:12px;min-height:160px;display:grid;place-items:center;}
+    .ld-product-visual svg{width:100%;max-width:170px;height:135px;filter:drop-shadow(0 7px 6px #1112);}
+    .ld-product-summary h3{margin:0 0 8px;font-size:17px;font-weight:800;line-height:1.4;letter-spacing:-.4px;}
+    .ld-article-large{font-size:12px;color:#5f605c;overflow-wrap:anywhere;margin:0 0 13px;}
+    .ld-specs{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0;}
+    .ld-spec-chip{background:#f4f4ef;border:1px solid #e9e8e0;border-radius:6px;padding:7px 9px;font-size:11px;color:#494a45;}
+    .ld-product-reason{font-size:11px;line-height:1.7;color:#79766a;margin:11px 0;}
+    .ld-catalogue-link{display:inline-block;border-bottom:1px solid #dbb300;color:#5b4c05;font-size:12px;font-weight:800;margin-top:3px;}
+    .ld-inline-compare{margin:11px 0;background:white;border:1px solid #e8e8df;border-radius:9px;padding:12px 15px;}
+    .ld-inline-compare summary{cursor:pointer;color:#4e4d46;font-weight:800;font-size:12px;}
+    .ld-inline-compare table{margin-top:10px;}
+    .ld-unmatched{padding:23px 25px;background:#fffaf1;border:1px solid #e9dbb9;border-radius:12px;}
+    .ld-unmatched h3{margin:0 0 9px;font-size:17px;}
+    .ld-unmatched p{color:#756c57;font-size:12px;line-height:1.7;margin:5px 0;}
+    .ld-missing-line{font-weight:780;color:#725414!important;}
+    .ld-review-buttons{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:13px 0 24px;}
+    .ld-review-buttons .primary,.ld-review-buttons .secondary{min-height:39px;padding:9px 15px;}
+    .history-open-snapshot{display:block;color:#756212;font-weight:800;font-size:11px;margin-top:10px;}
+    .history-item strong{font-size:13px;}
+    .history-item .subtle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ld-archive-note{font-size:11px;color:#a16e28;}
+    .ld-top-ten{padding:20px 19px;background:#fff;border-radius:12px;border:1px solid #e8e8e3;}
+    .ld-top-ten>.subtle{display:block;margin-bottom:14px;}
+    .ld-candidate-scroll{overflow-x:auto;border:1px solid #ecece7;border-radius:9px;}
+    .ld-candidate-table{width:100%;border-collapse:collapse;min-width:800px;text-align:left;font-size:11px;}
+    .ld-candidate-table th{background:#f6f6f2;padding:12px 9px;color:#8b8981;font-size:10px;white-space:nowrap;}
+    .ld-candidate-table td{padding:13px 9px;border-top:1px solid #eeeeea;vertical-align:middle;overflow-wrap:anywhere;}
+    .ld-candidate-table td:first-child{font-weight:800;color:#aaa79d;}
+    .ld-candidate-table td strong{font-size:12px;font-weight:780;display:block;min-width:180px;margin-bottom:5px;}
+    .ld-candidate-table tr.ld-ai-choice{background:#fffefa;}
+    .ld-candidate-table tr.ld-current-choice{background:#fff9dd;}
+    .ld-ai-tag{display:inline-block;margin-top:6px;padding:4px 6px;border-radius:4px;background:#ffedac;font-size:10px;font-weight:800;color:#77621c;}
+    .ld-verdict{font-size:10px;border-radius:5px;padding:6px 7px;font-weight:750;white-space:nowrap;}
+    .ld-verdict.verified{color:#257451;background:#eaf5eb;}
+    .ld-verdict.review{color:#936818;background:#fff4d6;}
+    .ld-verdict.unsafe{color:#a34342;background:#fff0ef;}
+    .ld-select-product{padding:10px 13px;background:#ffcd00;border:0;border-radius:7px;font-size:11px;font-weight:850;white-space:nowrap;color:#28251a;}
+    .ld-select-product:hover:not(:disabled){background:#efbd00;}
+    .ld-select-product:disabled{background:#f1f0eb;color:#96958a;cursor:not-allowed;}
+    .ld-no-candidates{padding:25px;text-align:center;background:#f9f9f5;color:#8c8a7b;font-size:12px;}
+    .ld-side-intro{margin:0 0 15px;}
+    .ld-side-intro h3{font-size:19px;line-height:1.25;letter-spacing:-.4px;margin:5px 0;}
+    .ld-parameter-side .editor{border:0;padding:0;margin:0;background:transparent;}
+    .ld-parameter-side .editor summary{display:none;}
+    .ld-parameter-side .editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:8px 0 16px;}
+    .ld-parameter-side .editor-field select,.ld-parameter-side .editor-field input{background:#fcfcfa;}
+    .ld-parameter-side .editor .primary{width:100%;font-size:12px;min-height:42px;}
+    .ld-original-query{background:#f6f6f2;border-radius:8px;margin-top:21px;padding:15px;}
+    .ld-original-query strong{display:block;font-size:11px;margin-bottom:7px;}
+    .ld-original-query p{font-size:12px;color:#707067;line-height:1.55;margin:5px 0;overflow-wrap:anywhere;}
+    .ld-archive-parameters{padding:10px;font-size:12px;}
+    .ld-archive-parameters p{padding:6px 0;border-bottom:1px solid #ecece7;}
+    @media(max-width:1050px){
+      .ld-review-layout{grid-template-columns:1fr;}
+      .ld-parameter-side{grid-row:1;}
+      .ld-parameter-side .editor-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+    }
+    @media(max-width:760px){
+      .ld-product-hero{grid-template-columns:135px minmax(0,1fr);padding:14px;}
+      .ld-product-visual{min-height:120px;}.ld-product-visual svg{height:115px;}
+    }
+    @media(max-width:550px){
+      .ld-product-hero{grid-template-columns:1fr;}
+      .ld-product-visual{min-height:140px;}
+      .ld-parameter-side .editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .ld-review-panel{padding:12px!important;}
+      .ld-top-ten{padding:13px;}
+    }
+
+    /* Reference alignment: compact LD workspace and table-first results. */
+    body{background:#f7f8f9;color:#17191c;}
+    .top{height:52px;border-bottom:0;background:#1c2229;}
+    .top-inner,main,footer{max-width:1450px;}
+    .top-inner{padding:0 28px;}
+    .brand-mark{width:48px;height:38px;background:transparent;color:#ffcd00;border-radius:0;font-size:34px;}
+    .brand-name{font-size:12px;letter-spacing:0;text-transform:uppercase;}
+    .brand-name span{display:none;}
+    .brand-caption{font-size:9px;letter-spacing:.3px;color:#fff;}
+    .nav-link{color:#e2e5e9;padding:16px 12px;border-radius:0;font-size:12px;}
+    .nav-link.active{background:transparent;color:#ffcd00;border-bottom:3px solid #ffcd00;}
+    main{padding:0 28px 50px;}
+    .hero{padding:22px 5px 18px;align-items:center;}
+    .hero .eyebrow{display:none;}
+    .hero h1{font-size:28px;letter-spacing:-.7px;}
+    h1 .accent::after{display:none;}
+    .hero p{font-size:12px;line-height:1.5;margin-top:3px;max-width:800px;}
+    .hero-note{max-width:335px;margin:0;padding:10px 13px;border:0;border-radius:8px;background:#fff2c6;color:#665718;font-size:11px;line-height:1.45;}
+    .workspace{display:block;}
+    .aside{display:none;}
+    .entry{padding:14px 16px;border-radius:12px;box-shadow:0 8px 24px #1111;}
+    .entry-top{margin-bottom:8px;}
+    .entry-top h2{font-size:13px;}
+    .entry-top .subnote{display:none;}
+    .input-area label{font-size:11px;}
+    textarea{min-height:120px;padding:12px 14px 27px;border-radius:8px;font-size:12px;line-height:1.55;background:#fcfcfc;}
+    .actions{margin-top:9px;}
+    .secondary{padding:9px 12px;font-size:11px;border-radius:7px;}
+    .primary{padding:11px 17px;min-height:40px;border-radius:7px;font-size:12px;}
+    .entry-hint{margin-top:8px;font-size:10px;}
+    .examples{padding:9px 2px 0;}
+    .examples-label,.sample{font-size:10px;}
+    .sample{padding:6px 10px;}
+    .results-section{margin-top:22px;}
+    .results-titlebar{align-items:center;margin-bottom:10px;}
+    .results-titlebar .eyebrow{display:none;}
+    .results-titlebar h2{font-size:21px;}
+    .results-titlebar .muted{background:#edf2f6;border-radius:20px;padding:6px 10px;}
+    .tray{transform:scale(.88);transform-origin:right center;}
+    .results-list{border-radius:9px;}
+    .results-header,.result-grid{grid-template-columns:minmax(230px,1.1fr) minmax(250px,1.2fr) minmax(130px,.65fr) 150px;gap:12px;}
+    .results-header{padding:10px 15px;background:#f0f3f6;color:#505761;letter-spacing:0;text-transform:none;font-size:10px;}
+    .result-grid{padding:11px 15px;align-items:center;}
+    .query-name,.result-name{font-size:11px;line-height:1.4;}
+    .row-num{min-width:20px;color:#77818c;}
+    .status{border-radius:18px;padding:6px 10px;font-size:10px;}
+    .status::before{width:7px;height:7px;}
+    .open-detail{padding:2px 0;font-size:10px;color:#0753b7;}
+    .result-row.expanded>.result-grid{background:#fff8df;box-shadow:inset 3px 0 #ffcd00;}
+    .detail-panel.ld-review-panel{background:#fff;border-top-color:#f0d675;padding:15px;}
+    .ld-review-layout{grid-template-columns:minmax(0,1fr) minmax(250px,300px);gap:14px;}
+    .ld-parameter-side{border-radius:9px;padding:14px;}
+    .ld-recommendation{border-color:#eacb48;border-radius:9px;}
+    .ld-product-hero{grid-template-columns:150px minmax(0,1fr);padding:14px;gap:14px;}
+    .ld-product-visual{min-height:130px;}
+    .ld-product-visual svg{height:112px;}
+    .ld-top-ten{padding:14px;border-radius:9px;}
+    .ld-candidate-table td{padding:9px 7px;}
+    footer{padding:18px 28px 25px;font-size:10px;}
+    @media(max-width:760px){
+      main{padding-left:16px;padding-right:16px;}
+      .top-inner{padding:0 14px;}
+      .hero{padding:18px 2px 14px;}
+      .hero-note{display:none;}
+      .results-header{display:none;}
+      .result-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:12px;}
+      .status-cell{grid-column:1/-1;}
+      .ld-review-layout{grid-template-columns:1fr;}
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .history-shade, .history-pane, .primary, .open-detail svg { transition: none; }
+      .spinner { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <a class="brand" href="/demo" aria-label="LD, подбор аналогов">
+        <span class="brand-mark" aria-hidden="true">LD</span>
+        <span class="brand-words">
+          <span class="brand-name">LD <span style="color:#ffcd00">/</span> Подбор аналогов</span>
+          <span class="brand-caption">ШАРОВЫЕ КРАНЫ И АРМАТУРА</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Навигация">
+        <a href="/demo" class="nav-link active" aria-current="page">Подбор</a>
+        <a href="/demo/stats" class="nav-link">Статистика</a>
+        <button class="nav-link" id="history-open" type="button" aria-controls="history-pane" aria-expanded="false">История <span class="counter" id="history-count">0</span></button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <div class="eyebrow">ИНЖЕНЕРНЫЙ ПОИСК · КАТАЛОГ LD</div>
+        <h1 id="page-title">Найдём <span class="accent">аналог</span><br>для вашей номенклатуры</h1>
+        <p>Вставьте позиции из спецификации. Сервис сопоставит технические характеристики и предложит изделия LD с пояснением результата.</p>
+      </div>
+      <div class="hero-note">Вы видите результат первым.<br>Технические подробности — по запросу.</div>
+    </section>
+
+    <div class="workspace">
+      <section class="surface entry" aria-labelledby="input-title">
+        <div class="entry-top">
+          <h2 id="input-title">Номенклатура для подбора</h2>
+          <span class="subnote">01 / Ввод позиций</span>
+        </div>
+        <div class="input-area">
+          <label for="query" class="subtle">Каждая позиция — с новой строки</label>
+          <textarea id="query" aria-label="Номенклатура, одна позиция на строку" spellcheck="false" placeholder="Фланец стальной Ду80 под втулку ПНД Ду90&#10;Кран шаровый 11Б27П Ду20 Ру16&#10;Фланец плоский приварной, сталь 20, DN100, PN16"></textarea>
+          <div class="input-hint" id="input-count">0 позиций</div>
+        </div>
+        <div class="actions">
+          <div class="action-left">
+            <button id="upload" type="button" class="secondary" aria-describedby="upload-hint">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+              Загрузить CSV / TXT
+            </button>
+            <input type="file" id="file" class="file-input" accept=".csv,.tsv,.txt,text/csv,text/plain" aria-label="Загрузить CSV или текстовый файл">
+            <button id="clear-input" type="button" class="secondary">Очистить</button>
+          </div>
+          <button id="go" type="button" class="primary">
+            Найти аналоги
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+          </button>
+        </div>
+        <p class="entry-hint" id="upload-hint">До 10 позиций за запуск. Excel: скопируйте столбец и вставьте сюда. CSV / TXT читается в браузере. В историю записываются исходные строки и ответы LD (локально в браузере); её можно очистить.</p>
+        <div id="error" class="inline-error" role="alert" aria-live="assertive"></div>
+      </section>
+
+      <aside class="surface aside" aria-label="Как работает подбор">
+        <div>
+          <div class="eyebrow">КАК ЭТО РАБОТАЕТ</div>
+          <h2>От спецификации — к изделию LD.</h2>
+          <p>Мы выделяем параметры запроса, ищем изделия в каталоге и проверяем их характеристики перед рекомендацией.</p>
+          <div class="aside-divider"></div>
+        </div>
+        <div class="aside-footer">Не хватает параметров? Сервис подскажет, что необходимо уточнить, вместо случайного аналога.</div>
+      </aside>
+    </div>
+
+    <div class="examples" aria-label="Примеры запросов">
+      <span class="examples-label">Попробуйте:</span>
+      <button class="sample" type="button" data-q="Фланец стальной ду80мм. под втулку ПНД ду90мм.">Фланец ПНД DN80 / 90</button>
+      <button class="sample" type="button" data-q="Фланец стальной плоский приварной, марка стали 20, номинальное давление 1,6 МПа, номинальный диаметр 100 мм">Фланец сталь 20 DN100</button>
+      <button class="sample" type="button" data-q="Кран шаровый 11Б27П ДУ20 РУ16">Кран 11Б27П</button>
+    </div>
+
+    <section id="results-section" class="results-section" aria-labelledby="results-title">
+      <div class="results-titlebar">
+        <div>
+          <div class="eyebrow">02 / РЕЗУЛЬТАТ</div>
+          <h2 id="results-title">Результаты подбора</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end">
+          <button id="append-open" type="button" class="secondary" aria-expanded="false" aria-controls="append-panel" hidden>＋ Добавить позицию</button>
+          <div class="muted" id="results-summary" aria-live="polite">Пока нет результатов</div>
+          <div class="tray" role="status" aria-label="Лоток подобранных изделий">
+            <svg class="tray-icon" viewBox="0 0 58 50" fill="none" aria-hidden="true">
+              <path d="M7 26h44l-5 17H12L7 26Z" fill="#252525"/>
+              <path d="M10 26h38" stroke="#FFCD00" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="20" cy="17" r="10" stroke="#505050" stroke-width="5"/>
+              <circle cx="20" cy="17" r="3" fill="#252525"/>
+              <path d="M34 10h13v14H34z" fill="#92938E" stroke="#292929" stroke-width="2"/>
+              <path d="M38 8h13" stroke="#FFCD00" stroke-width="4" stroke-linecap="round"/>
+              <path d="M39 14h4m-6 5h8" stroke="#2B2B2B" stroke-width="2"/>
+            </svg>
+            <div><strong id="tray-count">0 / 0</strong><small>Найдено в каталоге</small><span class="tray-approved" id="tray-approved">0 подтверждено пользователем</span></div>
+          </div>
+        </div>
+      </div>
+      <section class="surface ld-append-panel" id="append-panel" aria-labelledby="append-title" hidden>
+        <div class="ld-section-head">
+          <div>
+            <div class="eyebrow">НОВАЯ ПОЗИЦИЯ · БЕЗ ПЕРЕРАСЧЁТА СПИСКА</div>
+            <h3 id="append-title">Добавить ещё один товар</h3>
+          </div>
+          <button id="append-close" class="icon-btn" type="button" aria-label="Закрыть добавление позиции">×</button>
+        </div>
+        <p class="subtle">Введите строку номенклатуры либо заполните технические характеристики ниже. Подбор запустится только для нового товара, остальные результаты и решения сохранятся.</p>
+        <label class="ld-append-label" for="append-query">Наименование / исходная строка <span class="subtle">(необязательно при заполненных характеристиках)</span></label>
+        <input id="append-query" class="ld-append-query" type="text" maxlength="2000" autocomplete="off" placeholder="Например, Кран шаровой штуцерный Ду20 Ру40">
+        <div class="ld-append-fields-head">
+          <h4>Технические характеристики</h4>
+          <span class="subtle">Указывайте только известные значения. PN — в МПа.</span>
+        </div>
+        <div id="append-fields" class="editor-grid ld-append-fields"></div>
+        <div class="ld-append-actions">
+          <button id="append-submit" class="primary" type="button">Найти и добавить товар <span aria-hidden="true">→</span></button>
+          <span id="append-message" class="subtle" role="status" aria-live="polite"></span>
+        </div>
+      </section>
+      <div id="results" aria-live="polite" aria-busy="false">
+        <div class="empty" id="empty-state">
+          <div class="empty-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7e784f" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/><path d="m14 16 1.4 1.4L18 14.8"/></svg>
+          </div>
+          <strong>Здесь появятся найденные аналоги</strong>
+          <p>Добавьте номенклатуру выше. Для каждого товара покажем результат, а техническое сравнение можно раскрыть отдельно.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>LD · Инструмент предварительного подбора промышленной номенклатуры.</span>
+    <span>Совместимость и условия применения проверяются перед закупкой.</span>
+  </footer>
+
+  <div id="history-shade" class="history-shade" aria-hidden="true"></div>
+  <aside id="history-pane" class="history-pane" role="dialog" aria-modal="true" aria-labelledby="history-title" aria-hidden="true" tabindex="-1" inert>
+    <div class="history-head">
+      <h2 id="history-title">История запросов</h2>
+      <button id="history-close" class="icon-btn" type="button" aria-label="Закрыть историю">×</button>
+    </div>
+    <p class="subtle">Сохраняется снимок каждого запуска: запросы, результаты LD, артикулы и действия. Историю можно просмотреть без нового подбора. Данные хранятся только в этом браузере.</p>
+    <div id="history-list" class="history-list"></div>
+    <button id="history-clear" type="button" class="history-clear">Очистить историю</button>
+  </aside>
+
+  <script>
+    "use strict";
+    const byId = id => document.getElementById(id);
+    const HISTORY_KEY = "ld-tender-demo-snapshots-v3";
+    const OLD_HISTORY_KEY = "ld-tender-demo-query-history-v2";
+    const HISTORY_LIMIT = 15;
+    const MAX_ITEMS = 10;
+    const MAX_SESSION_ITEMS = 100;
+    const MAX_ITEM_LENGTH = 2000;
+    let isBusy = false;
+    let returnFocus = null;
+    let activeReview = null;
+    let liveResults = [];
+    let rowStates = [];
+    let activeHistoryId = null;
+    let volatileHistory = [];
+    let historyStorageAvailable = true;
+
+    function el(tag, text, cls) {
+      const node = document.createElement(tag);
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      if (cls) node.className = cls;
+      return node;
+    }
+    function add(parent, ...children) { children.forEach(child => parent.append(child)); return parent; }
+    function iconChevron() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "14"); svg.setAttribute("height", "14");
+      svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor"); svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("aria-hidden", "true");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "m6 9 6 6 6-6"); svg.append(path); return svg;
+    }
+    function normalizeRows(input) {
+      return input.replace(/\r\n?/g, "\n").split("\n").map(s => s.trim()).filter(Boolean);
+    }
+    function readInput() { return normalizeRows(byId("query").value); }
+    function countLabel(count) { return count + " поз."; }
+    function refreshInputCount() { byId("input-count").textContent = countLabel(readInput().length); }
+    function showError(message) {
+      byId("error").textContent = message;
+      byId("error").style.display = message ? "block" : "none";
+    }
+
+    // Preserve business-facing match snapshots but NEVER review_token,
+    // score, provider errors, secrets, or hidden benchmark answers.
+    // Restored history is read-only; mutations require a fresh API session.
+    function historyCandidate(candidate) {
+      return {
+        ld_id:candidate.ld_id,name:candidate.name,article:candidate.article,
+        dn:candidate.dn,pn:candidate.pn,joining_type:candidate.joining_type,
+        url:candidate.url,reason:candidate.reason,selection:candidate.selection,
+        technical:candidate.technical||{},comparison:candidate.comparison||{rows:[]}
+      };
+    }
+    function historyResult(item) {
+      const options=(item.top_candidates||
+          [...(item.recommended||[]),...(item.other_candidates||[])]).slice(0,10);
+      return {
+        input:item.input,source_input:item.source_input,status:item.status,
+        message:item.message,missing_fields:item.missing_fields||[],
+        normalized_query:item.normalized_query,
+        corrected_query:item.corrected_query,
+        editable_constraints:item.editable_constraints||{},
+        parameters:item.parameters||[],
+        recommended:(item.recommended||[]).map(historyCandidate),
+        other_candidates:(item.other_candidates||[]).map(historyCandidate),
+        top_candidates:options.map(historyCandidate)
+      };
+    }
+    function readHistory() {
+      if (!historyStorageAvailable) return volatileHistory;
+      try {
+        const raw=localStorage.getItem(HISTORY_KEY);
+        const values=raw?JSON.parse(raw):[];
+        if (!Array.isArray(values))return [];
+        return values.filter(x=>x&&Array.isArray(x.products)&&Array.isArray(x.results)&&
+          x.products.length<=MAX_SESSION_ITEMS&&x.products.every(p=>typeof p==="string"&&p.length<=MAX_ITEM_LENGTH)&&
+          x.results.length===x.products.length).slice(0,HISTORY_LIMIT);
+      } catch {
+        historyStorageAvailable=false;
+        return volatileHistory;
+      }
+    }
+    function writeHistory(rows) {
+      const list=rows.slice(0,HISTORY_LIMIT);
+      volatileHistory=list;
+      // Browser localStorage quotas differ; retain newest complete runs
+      // rather than silently failing when multiple 10-row snapshots fill it.
+      try {
+        let remaining=list;
+        while (remaining.length) {
+          try {
+            localStorage.setItem(HISTORY_KEY,JSON.stringify(remaining));
+            historyStorageAvailable=true;break;
+          } catch (error) {
+            if (error && (error.name==="QuotaExceededError"||error.code===22)) {
+              remaining=remaining.slice(0,-1);
+            } else throw error;
+          }
+        }
+        if (!remaining.length) throw Error("QuotaExceededError");
+      } catch {
+        historyStorageAvailable=false;
+        showError("Историю не удалось сохранить в браузере. Она доступна только до закрытия этой вкладки. Проверьте настройки хранения данных.");
+      }
+      renderHistory();
+    }
+    function saveHistory(products,payload) {
+      if (!payload||!Array.isArray(payload.results))return;
+      const id="run-"+Date.now()+"-"+Math.random().toString(36).slice(2,9);
+      activeHistoryId=id;
+      const entry={
+        id,at:new Date().toISOString(),products:products.slice(),
+        results:payload.results.map(historyResult),
+        states:payload.results.map(()=>({revision:0,decision:"PENDING",selected_ld_id:null,edited:false}))
+      };
+      writeHistory([entry,...readHistory()]);
+    }
+    function updateHistorySnapshot() {
+      if (!activeHistoryId)return;
+      const history=readHistory();
+      const entry=history.find(x=>x.id===activeHistoryId);
+      if (!entry)return;
+      entry.products=liveResults.map(x=>x.source_input||x.input||"");
+      entry.results=liveResults.map(historyResult);
+      entry.states=rowStates.map(s=>({
+        revision:s.revision||0,
+        decision:s.decision||"PENDING",
+        selected_ld_id:s.selected_ld_id??null,
+        edited:!!s.edited
+      }));
+      entry.updated_at=new Date().toISOString();
+      writeHistory(history);
+    }
+    function restoreHistory(entry) {
+      byId("query").value=entry.products.join("\n");
+      refreshInputCount();showError("");closeHistory();
+      // Old sessions cannot be mutated without their original capability,
+      // intentionally never written to browser storage.
+      activeHistoryId=null;
+      renderResponse({results:entry.results,states:entry.states,request_id:entry.id},
+                     {archived:true});
+    }
+    function renderHistory() {
+      const stored=readHistory();
+      byId("history-count").textContent=String(stored.length);
+      const host=byId("history-list");
+      host.replaceChildren();
+      if (!historyStorageAvailable)
+        host.append(el("p","Браузер запрещает постоянное хранение. История будет потеряна при закрытии вкладки.","detail-alert"));
+      if (!stored.length) {
+        let legacy=[];
+        try {legacy=JSON.parse(localStorage.getItem(OLD_HISTORY_KEY)||"[]");} catch {}
+        const message=legacy.length
+          ?"В старой версии сохранялись только строки без ответов. Эти результаты восстановить из браузера нельзя. Запустите поиск заново — новые снимки будут сохранены полностью."
+          :"История пуста. После обработки здесь появятся все позиции вместе с найденными артикулами и статусами.";
+        host.append(el("p",message,"subtle"));
+        byId("history-clear").hidden=true;return;
+      }
+      byId("history-clear").hidden=false;
+      stored.forEach(entry=>{
+        const item=el("button",null,"history-item");
+        item.type="button";
+        const time=el("time");
+        const date=new Date(entry.at);
+        time.textContent=Number.isNaN(date.getTime())?"Недавний запуск":
+          date.toLocaleString("ru-RU",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+        const found=entry.results.filter(x=>x.status==="MATCHED").length;
+        const decisions=(entry.states||[]).filter(x=>x&&["ACCEPTED","SELECTED_OTHER"].includes(x.decision)).length;
+        add(item,time,
+          el("strong",entry.products.length+" позиций · найдено "+found+" · подтверждено "+decisions),
+          el("span",entry.products[0],"subtle"),
+          el("span","Открыть сохранённые ответы и артикулы →","history-open-snapshot"));
+        item.addEventListener("click",()=>restoreHistory(entry));
+        host.append(item);
+      });
+    }
+    function openHistory() {
+      returnFocus = document.activeElement;
+      renderHistory(); document.body.classList.add("history-visible");
+      byId("history-open").setAttribute("aria-expanded", "true");
+      byId("history-pane").removeAttribute("inert");
+      byId("history-pane").setAttribute("aria-hidden", "false");
+      byId("history-pane").focus();
+    }
+    function closeHistory() {
+      document.body.classList.remove("history-visible");
+      byId("history-open").setAttribute("aria-expanded", "false");
+      byId("history-pane").setAttribute("inert", "");
+      byId("history-pane").setAttribute("aria-hidden", "true");
+      if (returnFocus && returnFocus.isConnected) returnFocus.focus();
+    }
+    byId("history-open").addEventListener("click", openHistory);
+    byId("history-close").addEventListener("click", closeHistory);
+    byId("history-shade").addEventListener("click", closeHistory);
+    document.addEventListener("keydown", ev => {
+      if (ev.key === "Escape" && document.body.classList.contains("history-visible")) closeHistory();
+      if (ev.key === "Tab" && document.body.classList.contains("history-visible")) {
+        const first = byId("history-close"), last = byId("history-clear").hidden ?
+          byId("history-list").querySelector("button:last-child") || first : byId("history-clear");
+        if (ev.shiftKey && document.activeElement === first) { last.focus(); ev.preventDefault(); }
+        else if (!ev.shiftKey && document.activeElement === last) { first.focus(); ev.preventDefault(); }
+      }
+    });
+    byId("history-clear").addEventListener("click", () => {
+      if (!window.confirm("Удалить сохранённые запросы и все снимки ответов из этого браузера?")) return;
+      activeHistoryId=null;
+      writeHistory([]);
+    });
+
+    // CSV / TSV support. Excel columns may be pasted directly as plain text.
+    function parseRows(text, delimiter) {
+      const records = []; let row = [], cell = "", quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (c === '"') {
+          if (quoted && text[i + 1] === '"') { cell += '"'; i++; }
+          else quoted = !quoted;
+        } else if (c === delimiter && !quoted) { row.push(cell); cell = ""; }
+        else if ((c === "\n" || c === "\r") && !quoted) {
+          if (c === "\r" && text[i+1] === "\n") i++;
+          row.push(cell); records.push(row); row = []; cell = "";
+        } else { cell += c; }
+      }
+      if (cell || row.length) { row.push(cell); records.push(row); }
+      return records;
+    }
+    function rowsFromFile(text, filename) {
+      if (!/\.(csv|tsv)$/i.test(filename)) return normalizeRows(text);
+      const firstLine = text.split(/\r?\n/, 1)[0];
+      const delimiter = /\.tsv$/i.test(filename) ? "\t" :
+        ((firstLine.match(/;/g) || []).length >= (firstLine.match(/,/g) || []).length ? ";" : ",");
+      const rows = parseRows(text, delimiter);
+      const header = rows[0] || [];
+      const target = header.findIndex(v => /(?:наименование|номенклатура|строка сметы|позиция|товар|название|описание)/i.test(v));
+      const column = target >= 0 ? target : (header.length > 1 && /^(?:№|номер|id)$/i.test(header[0].trim()) ? 1 : 0);
+      return rows.slice(target >= 0 ? 1 : 0).map(r => String(r[column] || "").trim()).filter(Boolean);
+    }
+    byId("upload").addEventListener("click", () => byId("file").click());
+    byId("file").addEventListener("change", async ev => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      try {
+        if (!/\.(csv|tsv|txt)$/i.test(file.name)) throw Error("Поддерживаются только CSV, TSV и TXT. Из Excel скопируйте столбец в поле ввода.");
+        if (file.size > 1024 * 1024) throw Error("Файл слишком большой (максимум 1 МБ).");
+        const bytes = await file.arrayBuffer();
+        let decoded;
+        try { decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+        catch { decoded = new TextDecoder("windows-1251").decode(bytes); }
+        const products = rowsFromFile(decoded.replace(/^\uFEFF/, ""), file.name);
+        if (!products.length) throw Error("В файле не нашлось строк с номенклатурой.");
+        if (products.length > MAX_ITEMS) throw Error("В файле " + products.length + " позиций. Для демо выберите до " + MAX_ITEMS + " и повторите загрузку.");
+        if (products.some(s => s.length > MAX_ITEM_LENGTH)) throw Error("Одна из позиций длиннее 2000 символов.");
+        byId("query").value = products.join("\n"); refreshInputCount(); showError("");
+        byId("query").focus();
+      } catch (e) { showError(e.message || "Файл не удалось прочитать."); }
+      finally { ev.target.value = ""; }
+    });
+    byId("query").addEventListener("input", refreshInputCount);
+    byId("clear-input").addEventListener("click", () => {
+      byId("query").value = ""; refreshInputCount(); showError(""); byId("query").focus();
+    });
+    document.querySelectorAll(".sample").forEach(button => button.addEventListener("click", () => {
+      byId("query").value = button.dataset.q; refreshInputCount();
+      showError(""); byId("query").focus();
+    }));
+
+    const statusLabels = {
+      MATCHED: "Кандидат подобран",
+      NOT_FOUND: "Аналог не подтверждён",
+      INSUFFICIENT_PARAMETERS: "Нужно уточнение",
+      ERROR: "Ошибка подбора"
+    };
+    const missingLabels = {
+      dn: "Номинальный диаметр", pn: "Номинальное давление",
+      working_medium: "Рабочая среда", thread_type: "Тип резьбы",
+      thread_size: "Размер резьбы", stub_dn: "Размер ПНД-втулки",
+      body_material: "Материал корпуса", joining_type: "Присоединение",
+      control: "Управление", bore_type: "Тип прохода"
+    };
+    function tableFor(rows) {
+      const table = el("table", null, "comparison");
+      const head = el("thead"), tr = el("tr");
+      ["Параметр", "В запросе", "В каталоге LD", "Проверка"].forEach(label => tr.append(el("th", label)));
+      head.append(tr); table.append(head);
+      const body = el("tbody");
+      (rows || []).forEach(r => {
+        const item = el("tr");
+        const check = { MATCH: "Совпадает", MISMATCH: "Расхождение", UNKNOWN: "Не подтверждено" }[r.status] || "Не проверено";
+        const checkClass = r.status === "MATCH" ? "match-check" : r.status === "MISMATCH" ? "mismatch-check" : "unknown-check";
+        add(item, el("td", r.label + (r.strict ? " *" : "")), el("td", r.required),
+          el("td", r.catalog), el("td", check, checkClass)); body.append(item);
+      });
+      table.append(body); return table;
+    }
+    function displayCandidate(container, candidate, main,index) {
+      const shell = el("div", null, "candidate");
+      add(shell, el("b", candidate.name || "Без наименования"),
+        el("p", "Артикул LD: " + (candidate.article || "Не указан")));
+      if (main && candidate.reason) shell.append(el("p", "Пояснение выбора: " + candidate.reason));
+      const rows = candidate.comparison && candidate.comparison.rows || [];
+      if (rows.length) {
+        const details = el("details", null, "candidates");
+        details.append(el("summary", "Сравнить характеристики этого изделия"));
+        details.append(tableFor(rows));
+        shell.append(details);
+      }
+      if (index!==undefined && activeReview && candidate.ld_id!=null) {
+        const bar=el("div",null,"candidate-actions");
+        const choose=el("button","Выбрать этот LD","secondary");
+        choose.type="button";
+        choose.addEventListener("click",()=>userDecision(index,"SELECTED_OTHER",candidate.ld_id));
+        bar.append(el("span","Выбор другого кандидата требует технической проверки.","subtle"),choose);
+        shell.append(bar);
+      }
+      container.append(shell);
+    }
+    const editSchema = [
+      ["product_type","Тип изделия","select",["","ball_valve","flange","butterfly_valve","gate_valve","check_valve","filter"]],
+      ["dn","DN","number"],
+      ["pn_min_mpa","PN, МПа","number"],
+      ["flange_kind","Исполнение фланца","select",["","flat_welded","pe_stub"]],
+      ["stub_dn","Размер трубы ПНД (OD), мм","number"],
+      ["body_material","Материал","select",["","steel","stainless_steel","brass","cast_iron"]],
+      ["body_material_grade","Марка стали","text"],
+      ["joining_type","Присоединение","select",["","threaded","flanged","welded","wafer","compression","nipple","welded_nipple"]],
+      ["thread_type","Тип резьбы","select",["","female_female","male_female","male_male"]],
+      ["thread_size","Размер резьбы, G","text"],
+      ["working_medium","Рабочая среда","text"],
+      ["bore_type","Проход","select",["","full","reduced"]],
+      ["control","Управление","select",["","manual","gearbox","electric","pneumatic"]]
+    ];
+    const editNames = {
+      product_type:{ball_valve:"Шаровой кран",flange:"Фланец",butterfly_valve:"Дисковый затвор",gate_valve:"Задвижка",check_valve:"Обратный клапан",filter:"Фильтр"},
+      flange_kind:{flat_welded:"Плоский приварной",pe_stub:"Под втулку ПНД"},
+      body_material:{steel:"Сталь",stainless_steel:"Нержавеющая сталь",brass:"Латунь",cast_iron:"Чугун"},
+      joining_type:{threaded:"Резьбовое",flanged:"Фланцевое",welded:"Приварное",wafer:"Межфланцевое",compression:"Обжимное",nipple:"Штуцерное",welded_nipple:"Приварное / штуцерное"},
+      thread_type:{female_female:"ВР/ВР",male_female:"НР/ВР",male_male:"НР/НР"},
+      bore_type:{full:"Полнопроходной",reduced:"Стандартнопроходной"},
+      control:{manual:"Ручное",gearbox:"Редуктор",electric:"Электропривод",pneumatic:"Пневмопривод"}
+    };
+    function toggleAppend(open) {
+      const panel=byId("append-panel");
+      const canAppend=!!(activeReview&&activeReview.review_token)&&liveResults.length<MAX_SESSION_ITEMS;
+      panel.hidden=!open||!canAppend;
+      byId("append-open").setAttribute("aria-expanded",String(!panel.hidden));
+      if(!panel.hidden) {
+        if(!byId("append-fields").childElementCount)buildAppendFields();
+        byId("append-query").focus();
+        panel.scrollIntoView({behavior:"smooth",block:"center"});
+      }
+    }
+    function buildAppendFields() {
+      const host=byId("append-fields");
+      editSchema.forEach(([key,label,type,options])=>{
+        const wrapper=el("div",null,"editor-field");
+        const title=el("label",label);
+        let control;
+        if(type==="select") {
+          control=el("select");
+          options.forEach(value=>{
+            const option=el("option",value ? ((editNames[key]||{})[value]||value) : "Не указано");
+            option.value=value;control.append(option);
+          });
+        } else {
+          control=el("input");
+          control.type=type;control.placeholder="Не указано";
+          if(type==="number") {
+            control.min="0.01";control.max="2000";
+            control.step=key==="pn_min_mpa"?"0.1":"1";
+          } else control.maxLength=80;
+        }
+        control.id="append-field-"+key;
+        title.htmlFor=control.id;
+        add(wrapper,title,control);host.append(wrapper);
+      });
+    }
+    function setAppendMessage(message,error=false) {
+      const node=byId("append-message");
+      node.textContent=message;
+      node.classList.toggle("ld-append-status-error",error);
+    }
+    async function appendOne() {
+      if(isBusy)return;
+      if(!activeReview||!activeReview.review_token)
+        return setAppendMessage("Для добавления запустите подбор в текущей вкладке.",true);
+      if(liveResults.length>=MAX_SESSION_ITEMS)
+        return setAppendMessage("Достигнут лимит в 100 позиций в списке.",true);
+      const query=byId("append-query").value.trim();
+      const fields={};
+      editSchema.forEach(([key])=>{
+        const value=byId("append-field-"+key).value.trim();
+        if(value) fields[key]=value;
+      });
+      if(!query&&!Object.keys(fields).length)
+        return setAppendMessage("Введите наименование или хотя бы одну характеристику.",true);
+      if(!query&&!fields.product_type)
+        return setAppendMessage("При добавлении по характеристикам сначала укажите тип изделия.",true);
+      isBusy=true;
+      const button=byId("append-submit");
+      button.disabled=true;
+      setAppendMessage("Подбираем только новую позицию…");
+      try {
+        const data=await postReview("/v1/demo/append",{
+          request_id:activeReview.request_id,
+          review_token:activeReview.review_token,
+          expected_count:liveResults.length,
+          query,fields
+        });
+        if(data.item_index!==liveResults.length||!data.result)
+          throw Error("Ответ сервера не соответствует текущему списку. Обновите страницу.");
+        liveResults.push(data.result);
+        rowStates.push({revision:data.revision||0,decision:data.decision||"PENDING",
+                        selected_ld_id:null,edited:false});
+        const list=byId("results").querySelector(".results-list");
+        if(!list)throw Error("Таблица результатов не найдена.");
+        const row=renderRow(data.result,data.item_index);
+        list.append(row);
+        refreshTray();
+        updateHistorySnapshot();
+        byId("append-open").hidden=liveResults.length>=MAX_SESSION_ITEMS;
+        byId("append-query").value="";
+        byId("append-fields").querySelectorAll("input,select").forEach(node=>node.value="");
+        toggleAppend(false);
+        row.classList.add("expanded");
+        const toggle=row.querySelector(".open-detail");
+        toggle.setAttribute("aria-expanded","true");
+        toggle.firstChild.textContent="Свернуть";
+        row.scrollIntoView({behavior:"smooth",block:"center"});
+        setAppendMessage("");
+      }catch(error){
+        setAppendMessage(error.message||"Не удалось добавить позицию.",true);
+      }finally{
+        isBusy=false;
+        button.disabled=false;
+      }
+    }
+    byId("append-open").addEventListener("click",()=>{
+      toggleAppend(byId("append-panel").hidden);
+    });
+    byId("append-close").addEventListener("click",()=>toggleAppend(false));
+    byId("append-submit").addEventListener("click",appendOne);
+
+    function reviewHeaders(index) {
+      if (!activeReview || !activeReview.review_token) throw Error("Для действий запустите подбор повторно.");
+      return {
+        request_id:activeReview.request_id,
+        review_token:activeReview.review_token,
+        item_index:index,
+        revision:rowStates[index].revision
+      };
+    }
+    async function postReview(path,payload) {
+      const response=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      const result=await response.json().catch(()=>({}));
+      if (!response.ok) throw Error(
+        typeof result.detail==="string" ? result.detail :
+        response.status===429 ? "Превышен лимит запросов." : "Ошибка сервера ("+response.status+")");
+      return result;
+    }
+    function repaintReview(index) {
+      const previous=document.getElementById("detail-"+index);
+      const opened=previous && previous.parentElement.classList.contains("expanded");
+      const parent=previous && previous.parentElement;
+      if (parent) parent.replaceWith(renderRow(liveResults[index],index));
+      if (opened) {
+        const next=document.getElementById("detail-"+index);
+        next.parentElement.classList.add("expanded");
+        const toggle=next.parentElement.querySelector(".open-detail");
+        toggle.setAttribute("aria-expanded","true");
+        toggle.firstChild.textContent="Свернуть";
+      }
+      refreshTray();
+    }
+    function refreshTray() {
+      const found=liveResults.filter(x=>x.status==="MATCHED").length;
+      const chosen=rowStates.filter(s=>s && ["ACCEPTED","SELECTED_OTHER"].includes(s.decision)).length;
+      byId("tray-count").textContent=found+" / "+liveResults.length;
+      byId("tray-approved").textContent=chosen+" подтверждено пользователем";
+      byId("results-summary").textContent=countLabel(liveResults.length)+" · Предварительный подбор";
+    }
+    async function userDecision(index,action,ldId) {
+      try {
+        let payload={...reviewHeaders(index),action};
+        if (ldId!=null) payload.selected_ld_id=ldId;
+        let result;
+        try { result=await postReview("/v1/demo/decision",payload); }
+        catch(e) {
+          if (!/не все обязательные характеристики подтверждены/i.test(e.message)) throw e;
+          if (!window.confirm("Проверка не смогла подтвердить все обязательные характеристики. Вы лично проверили применимость изделия и принимаете ответственность за выбор?")) return;
+          result=await postReview("/v1/demo/decision",{...payload,acknowledge_unknown:true});
+        }
+        rowStates[index]={...rowStates[index],...result};
+        updateHistorySnapshot();
+        repaintReview(index);
+      } catch(e) { alert(e.message || "Не удалось сохранить выбор."); }
+    }
+    function fieldEditor(d,index) {
+      const details=el("details",null,"editor");
+      details.append(el("summary","Исправить извлечённые характеристики"));
+      details.append(el("p","После исправления технический поиск будет запущен заново. Все обязательные проверки останутся включены.","editor-hint"));
+      const grid=el("div",null,"editor-grid");
+      const inputs={};
+      const initial=d.editable_constraints || {};
+      editSchema.forEach(([key,label,type,options])=>{
+        const outer=el("div",null,"editor-field");
+        const name=el("label",label);
+        let input;
+        if (type==="select") {
+          input=el("select");
+          options.forEach(value=>{
+            const option=el("option",value ? ((editNames[key]||{})[value] || value) : "Не указано");
+            option.value=value;input.append(option);
+          });
+        } else {
+          input=el("input");
+          input.type=type;
+          if (type==="number") {
+            input.min="0.01"; input.max="2000";
+            input.step=key==="pn_min_mpa"?"0.1":"1";
+          }
+          input.placeholder="Не указано";
+        }
+        input.value=initial[key] == null ? "" : String(initial[key]);
+        input.id="edit-"+index+"-"+key;
+        name.htmlFor=input.id; inputs[key]=input;
+        add(outer,name,input);grid.append(outer);
+      });
+      details.append(grid);
+      const err=el("p","", "review-error");
+      const btn=el("button","Применить и подобрать заново","primary");
+      btn.type="button";
+      btn.addEventListener("click",async()=>{
+        const changes={};
+        for(const [key,input] of Object.entries(inputs)){
+          const value=input.value.trim();
+          const baseline=initial[key]==null ? "" : String(initial[key]);
+          if(value !== baseline) changes[key]=value==="" ? null : value;
+        }
+        if(!Object.keys(changes).length){err.textContent="Измените хотя бы одно значение.";return;}
+        btn.disabled=true;err.textContent="Идёт повторный подбор…";
+        try {
+          const result=await postReview("/v1/demo/correct",{...reviewHeaders(index),changes});
+          liveResults[index]=result.result;
+          rowStates[index]={...rowStates[index],revision:result.revision,decision:result.decision,edited:true,selected_ld_id:null};
+          updateHistorySnapshot();
+          repaintReview(index);
+        } catch(e) {err.textContent=e.message||"Ошибка повторного подбора.";}
+        finally {btn.disabled=false;}
+      });
+      details.append(btn,err);return details;
+    }
+    function choiceControls(detail,d,index) {
+      if (!activeReview || !activeReview.review_token) return;
+      const current=rowStates[index];
+      if (current && current.decision!=="PENDING") {
+        detail.append(el("div", ({
+          ACCEPTED:"Рекомендация принята пользователем",
+          SELECTED_OTHER:"Выбран другой товар LD",
+          REJECTED:"Результат отклонён"
+        })[current.decision]||current.decision,"user-status"));
+      }
+      const bar=el("div",null,"review-actions");
+      if(d.recommended && d.recommended.length) {
+        const accept=el("button","Принять рекомендацию","review-accept");
+        accept.addEventListener("click",()=>userDecision(index,"ACCEPTED"));
+        bar.append(accept);
+      }
+      const reject=el("button","Отклонить результат","review-reject");
+      reject.addEventListener("click",()=>userDecision(index,"REJECTED"));
+      bar.append(reject);
+      detail.append(bar,fieldEditor(d,index));
+    }
+    function productVisual(kind) {
+      const box=el("div",null,"ld-product-visual");
+      const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+      svg.setAttribute("viewBox","0 0 176 124");
+      svg.setAttribute("role","img");
+      svg.setAttribute("aria-label",kind==="flange"?"Схематичный фланец":"Схематичный шаровой кран");
+      const flange=kind==="flange";
+      const shapes=flange ? [
+        ["circle",{cx:88,cy:61,r:47,fill:"#b1b5b6",stroke:"#484d4d","stroke-width":8}],
+        ["circle",{cx:88,cy:61,r:23,fill:"#f4f3ee",stroke:"#626868","stroke-width":6}],
+        ...[[88,23],[88,99],[50,61],[126,61]].map(([cx,cy])=>["circle",{cx,cy,r:5,fill:"#f4f3ee"}])
+      ] : [
+        ["path",{d:"M18 43h36v43H18zM122 43h36v43h-36z",fill:"#a2a7a7",stroke:"#3a4141","stroke-width":5}],
+        ["rect",{x:48,y:35,width:80,height:58,rx:14,fill:"#60686a",stroke:"#313b3b","stroke-width":6}],
+        ["circle",{cx:88,cy:64,r:23,fill:"#9da6a5",stroke:"#394142","stroke-width":5}],
+        ["path",{d:"M88 38V17",stroke:"#292f2f","stroke-width":11}],
+        ["path",{d:"M88 15h49",stroke:"#ffcd00","stroke-width":12,"stroke-linecap":"round"}],
+        ["circle",{cx:88,cy:15,r:7,fill:"#353d3d"}]
+      ];
+      shapes.forEach(([type,attrs])=>{
+        const node=document.createElementNS("http://www.w3.org/2000/svg",type);
+        Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,String(value)));
+        svg.append(node);
+      });
+      box.append(svg);return box;
+    }
+    const techNames={
+      dn:"DN",pn_mpa:"PN, МПа",flange_kind:"Исполнение",
+      flange_bore_mm:"Внутренний Ø",stub_dn:"ПНД Ø",joining_type:"Присоединение",
+      body_material:"Материал",thread_type:"Резьба",working_medium:"Рабочая среда",
+      bore_type:"Тип прохода"
+    };
+    function techText(key,value) {
+      if(value===null || value===undefined || value==="")return "—";
+      if(Array.isArray(value))return value.length ? value.join(", ") : "—";
+      if(key==="body_material")return (editNames.body_material||{})[value]||value;
+      if(key==="joining_type")return (editNames.joining_type||{})[value]||value;
+      if(key==="flange_kind")return (editNames.flange_kind||{})[value]||value;
+      return String(value);
+    }
+    function selectedCandidate(d,index) {
+      const state=rowStates[index]||{};
+      const candidates=[...(d.recommended||[]),...(d.other_candidates||[])];
+      return state.decision==="SELECTED_OTHER"
+        ? candidates.find(c=>c.ld_id===state.selected_ld_id) || null
+        : (d.recommended||[])[0] || null;
+    }
+    function candidateVerdict(candidate) {
+      const rows=(candidate.comparison||{}).rows||[];
+      const critical=rows.filter(r=>r.strict);
+      if(critical.some(r=>r.status==="MISMATCH"))return ["Есть расхождения","unsafe"];
+      if(!critical.length||critical.some(r=>r.status!=="MATCH"))return ["Нужна проверка","review"];
+      return ["Проверено по данным","verified"];
+    }
+    function renderCandidateTable(d,index) {
+      const block=el("section",null,"ld-top-ten");
+      const top=el("div",null,"ld-section-head");
+      const list=(d.top_candidates||[...(d.recommended||[]),...(d.other_candidates||[])]).slice(0,10);
+      add(top,el("h4","Кандидаты из каталога LD"),el("span",
+        list.length+" "+(list.length===1?"товар":"товаров")+" · выбор вручную","subtle"));
+      block.append(top);
+      block.append(el("p","Ниже — реальные изделия, которые вернул поиск. При наличии 10 кандидатов показываем все десять; неподтверждённые позиции не считаются эквивалентами автоматически.","subtle"));
+      if(!list.length) {
+        block.append(el("div","По этому запросу поисковый этап не вернул кандидатов. Уточните параметры справа и попробуйте снова.","ld-no-candidates"));
+        return block;
+      }
+      const scroller=el("div",null,"ld-candidate-scroll");
+      const table=el("table",null,"ld-candidate-table");
+      const head=el("thead"),header=el("tr");
+      ["№","Изделие LD","DN","PN, МПа","Материал","Присоединение","Проверка","Действие"].forEach(t=>header.append(el("th",t)));
+      head.append(header);table.append(head);
+      const body=el("tbody");
+      list.forEach((c,rank)=>{
+        const row=el("tr");
+        const main=(d.recommended||[])[0];
+        const selected=selectedCandidate(d,index);
+        if(selected&&selected.ld_id===c.ld_id)row.classList.add("ld-current-choice");
+        if(main&&main.ld_id===c.ld_id)row.classList.add("ld-ai-choice");
+        const tech=c.technical||{};
+        const name=el("td");
+        name.append(el("strong",c.name||"Без наименования"));
+        name.append(el("div","Артикул: "+(c.article||"—"),"subtle"));
+        if(main&&main.ld_id===c.ld_id) name.append(el("span","Выбор системы","ld-ai-tag"));
+        const verdict=candidateVerdict(c);
+        const badge=el("span",verdict[0],"ld-verdict "+verdict[1]);
+        const action=el("td");
+        const button=el("button",selected&&selected.ld_id===c.ld_id?"Выбрано":"Выбрать","ld-select-product");
+        button.type="button";
+        button.disabled=!activeReview||!activeReview.review_token||
+          (!!selected&&selected.ld_id===c.ld_id);
+        if(verdict[1]==="unsafe") {
+          button.disabled=true;button.title="Нарушено обязательное техническое условие";
+          button.textContent="Недоступно";
+        } else if(activeReview&&activeReview.review_token) {
+          button.addEventListener("click",()=>{
+            const recommended=(d.recommended||[])[0];
+            userDecision(index,recommended&&recommended.ld_id===c.ld_id?"ACCEPTED":"SELECTED_OTHER",c.ld_id);
+          });
+        }
+        action.append(button);
+        add(row,el("td",String(rank+1).padStart(2,"0")),name,
+            el("td",techText("dn",tech.dn??c.dn)),
+            el("td",techText("pn_mpa",tech.pn_mpa??c.pn)),
+            el("td",techText("body_material",tech.body_material)),
+            el("td",techText("joining_type",tech.joining_type??c.joining_type)),
+            (()=>{const cell=el("td");cell.append(badge);return cell;})(),action);
+        body.append(row);
+      });
+      table.append(body);scroller.append(table);block.append(scroller);
+      return block;
+    }
+    function renderDetail(d,index) {
+      const detail=el("div",null,"detail-panel ld-review-panel");
+      const layout=el("div",null,"ld-review-layout");
+      const main=el("div",null,"ld-review-content");
+      const side=el("aside",null,"ld-parameter-side");
+      const candidate=selectedCandidate(d,index);
+      const state=rowStates[index]||{};
+      const topline=el("div",null,"ld-section-head");
+      add(topline,el("h3","Результат подбора аналога"),
+        el("span",state.decision==="SELECTED_OTHER"?"Выбор пользователя":"Инженерная проверка","ld-kicker"));
+      main.append(topline);
+      if(candidate) {
+        const hero=el("div",null,"ld-recommendation");
+        const label=el("span",state.decision==="SELECTED_OTHER"?"ВЫБРАНО ПОЛЬЗОВАТЕЛЕМ":"РЕКОМЕНДУЕТ LD","ld-recommendation-label");
+        hero.append(label);
+        const row=el("div",null,"ld-product-hero");
+        row.append(productVisual((d.editable_constraints||{}).product_type));
+        const info=el("div",null,"ld-product-summary");
+        info.append(el("h3",candidate.name||"Изделие LD"));
+        info.append(el("p","Артикул: "+(candidate.article||"—"),"ld-article-large"));
+        const specs=el("div",null,"ld-specs");
+        const tech=candidate.technical||{};
+        for(const field of ["dn","pn_mpa","body_material","joining_type","flange_kind"]) {
+          if(tech[field]!=null)specs.append(el("span",techNames[field]+": "+techText(field,tech[field]),"ld-spec-chip"));
+        }
+        info.append(specs);
+        const verdict=candidateVerdict(candidate);
+        info.append(el("p",verdict[0]+". "+(candidate.reason||"Окончательную применимость проверяет инженер."),"ld-product-reason"));
+        if(candidate.url) {
+          const link=el("a","Открыть в каталоге LD ↗","ld-catalogue-link");
+          link.href=candidate.url;link.target="_blank";link.rel="noopener noreferrer";info.append(link);
+        }
+        row.append(info);hero.append(row);main.append(hero);
+        if(candidate.comparison && candidate.comparison.rows && candidate.comparison.rows.length) {
+          const compare=el("details",null,"ld-inline-compare");
+          compare.append(el("summary","Сравнение технических характеристик"));
+          compare.append(tableFor(candidate.comparison.rows));
+          main.append(compare);
+        }
+      } else {
+        const notice=el("div",null,"ld-unmatched");
+        add(notice,el("h3",d.status==="INSUFFICIENT_PARAMETERS"?"Не хватает технических данных":"Рекомендация не подтверждена"),
+          el("p",d.message||"Подтверждённый аналог не найден."));
+        const missing=(d.missing_fields||[]).map(x=>missingLabels[x]||x);
+        if(missing.length)notice.append(el("p","Уточнить: "+missing.join(", "),"ld-missing-line"));
+        main.append(notice);
+      }
+      const actionBar=el("div",null,"ld-review-buttons");
+      if(activeReview&&activeReview.review_token) {
+        if(d.recommended&&d.recommended.length) {
+          const accept=el("button","Принять рекомендацию","primary");
+          accept.type="button";accept.addEventListener("click",()=>userDecision(index,"ACCEPTED"));
+          actionBar.append(accept);
+        }
+        const reject=el("button","Отклонить результат","secondary");
+        reject.type="button";reject.addEventListener("click",()=>userDecision(index,"REJECTED"));
+        actionBar.append(reject);
+      }
+      if(state.decision!=="PENDING") {
+        actionBar.append(el("span",({
+          ACCEPTED:"✓ Принято пользователем",
+          SELECTED_OTHER:"✓ Другой товар выбран пользователем",
+          REJECTED:"Отклонено пользователем"
+        })[state.decision]||state.decision,"user-status"));
+      }
+      if(!activeReview||!activeReview.review_token)actionBar.append(
+        el("span","Снимок из истории · только просмотр. Для изменений запустите новый подбор.","ld-archive-note"));
+      main.append(actionBar);
+      main.append(renderCandidateTable(d,index));
+      const sideHead=el("div",null,"ld-side-intro");
+      sideHead.append(el("span","ПАРАМЕТРЫ ИЗ ЗАПРОСА","ld-kicker"));
+      sideHead.append(el("h3","Проверьте характеристики"));
+      sideHead.append(el("p","Если система ошиблась при извлечении параметра, измените его здесь и обновите подбор.","subtle"));
+      side.append(sideHead);
+      if(activeReview&&activeReview.review_token) {
+        const editor=fieldEditor(d,index);
+        editor.open=true;
+        side.append(editor);
+      } else if(d.parameters&&d.parameters.length) {
+        const values=el("div",null,"ld-archive-parameters");
+        d.parameters.forEach(p=>values.append(el("p",p.label+": "+p.value)));
+        side.append(values);
+      }
+      const original=el("div",null,"ld-original-query");
+      add(original,el("strong","Исходная позиция"),el("p",d.source_input||d.input||"—"));
+      if(d.corrected_query)original.append(el("p","После исправления: "+d.corrected_query,"subtle"));
+      side.append(original);
+      add(layout,main,side);detail.append(layout);
+      return detail;
+    }
+    function renderRow(d, index) {
+      const section = el("article", null, "result-row");
+      const grid = el("div", null, "result-grid");
+      const query = el("div", null, "query-name");
+      add(query, el("span", String(index + 1).padStart(2, "0"), "row-num"), el("span", d.input || "—"));
+      const state = rowStates[index] || {};
+      const choices = [...(d.recommended || []), ...(d.other_candidates || [])];
+      const manual = state.decision === "SELECTED_OTHER" ?
+        choices.find(c => c.ld_id === state.selected_ld_id) : null;
+      const main = state.decision==="REJECTED"?null:(manual || (d.recommended && d.recommended[0]));
+      const product = el("div");
+      product.append(el("div", main && main.name ? main.name : "Не выбран", "result-name" + (!main ? " missing" : "")));
+      if (manual) product.append(el("div","Выбрано пользователем вместо рекомендации системы","subtle"));
+      if (state.edited) product.append(el("div","Характеристики были исправлены пользователем","subtle"));
+      const article = el("div", main && main.article ? main.article : "—", "article-code");
+      const status = el("div", null, "status-cell");
+      status.append(el("span", statusLabels[d.status] || d.status, "status " + (statusLabels[d.status] ? d.status : "NOT_FOUND")));
+      if (state.decision === "REJECTED") status.append(el("span","Отклонено пользователем","user-status"));
+      if (state.decision === "ACCEPTED") status.append(el("span","Принято пользователем","user-status"));
+      if (state.decision === "SELECTED_OTHER") status.append(el("span","Выбран другой вариант","user-status"));
+      const toggle = el("button", null, "open-detail");
+      toggle.type = "button"; toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Подробнее о результате для позиции " + (index + 1));
+      const available=(d.top_candidates || [...(d.recommended||[]),...(d.other_candidates||[])]).length;
+      add(toggle, el("span", available>1?"Кандидаты ("+available+")":"Подробнее"), iconChevron());
+      status.append(toggle);
+      add(grid, query, product, article, status);
+      const detail = renderDetail(d,index);
+      detail.id = "detail-" + index;
+      toggle.setAttribute("aria-controls", detail.id);
+      toggle.addEventListener("click", () => {
+        const expanded = section.classList.toggle("expanded");
+        toggle.setAttribute("aria-expanded", String(expanded));
+        toggle.firstChild.textContent = expanded ? "Свернуть" : "Подробнее";
+      });
+      add(section, grid, detail); return section;
+    }
+    function renderResponse(payload,options={}) {
+      const results = Array.isArray(payload.results) ? payload.results : [];
+      activeReview=options.archived?null:{
+        request_id:payload.request_id,review_token:payload.review_token
+      };
+      liveResults=results;
+      rowStates=Array.isArray(payload.states)&&payload.states.length===results.length
+        ? payload.states.map(x=>({...x}))
+        : results.map(()=>({revision:0,decision:"PENDING",selected_ld_id:null,edited:false}));
+      const list = el("div", null, "results-list");
+      const header = el("div", null, "results-header");
+      ["Исходная номенклатура", "Предложенный аналог LD", "Артикул", "Статус"].forEach(s => header.append(el("span", s)));
+      list.append(header);
+      results.forEach((d, i) => list.append(renderRow(d, i)));
+      byId("results").replaceChildren(list);
+      toggleAppend(false);
+      byId("append-open").hidden=!activeReview||!activeReview.review_token||
+                                     results.length>=MAX_SESSION_ITEMS;
+      refreshTray();
+      // Make the selection workflow immediately discoverable; no second
+      // hidden accordion is needed to access available catalogue candidates.
+      if (!options.archived) {
+        const first=results.findIndex(x=>(x.top_candidates||x.other_candidates||[]).length);
+        if(first>=0) {
+          const toggle=byId("results").querySelectorAll(".open-detail")[first];
+          if(toggle)toggle.click();
+        }
+      }
+      byId("results-section").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    async function run() {
+      if (isBusy) return;
+      const products = readInput();
+      showError("");
+      if (!products.length) return showError("Введите хотя бы одну позицию для подбора.");
+      if (products.length > MAX_ITEMS) return showError("Максимум " + MAX_ITEMS + " позиций за один запуск. Уберите лишние строки.");
+      if (products.some(p => p.length > MAX_ITEM_LENGTH)) return showError("Одна из позиций превышает 2000 символов.");
+      isBusy = true;
+      const button = byId("go");
+      button.disabled = true;
+      button.replaceChildren(el("span", null, "spinner"), el("span", "Подбираем аналоги…"));
+      byId("results").setAttribute("aria-busy", "true");
+      try {
+        const response = await fetch("/v1/demo/match", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ products })
+        });
+        if (!response.ok) {
+          if (response.status === 413) throw Error("Превышен лимит позиций. Попробуйте меньший список.");
+          if (response.status === 429) throw Error("Слишком много запросов. Попробуйте чуть позже.");
+          if (response.status === 401) throw Error("Для доступа к демо требуется авторизация.");
+          throw Error("Сервис временно недоступен (HTTP " + response.status + ").");
+        }
+        const data = await response.json();
+        if (!Array.isArray(data.results)) throw Error("Получен некорректный ответ сервиса.");
+        renderResponse(data);
+        saveHistory(products,data);
+      } catch (error) {
+        showError(error.message || "Не удалось выполнить подбор.");
+      } finally {
+        isBusy = false;
+        byId("results").setAttribute("aria-busy", "false");
+        button.disabled = false;
+        button.replaceChildren(el("span", "Найти аналоги"), (() => {
+          const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          arrow.setAttribute("width", "16"); arrow.setAttribute("height", "16");
+          arrow.setAttribute("viewBox", "0 0 24 24"); arrow.setAttribute("fill", "none");
+          arrow.setAttribute("stroke", "currentColor"); arrow.setAttribute("stroke-width", "2");
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", "M4 12h15m-6-6 6 6-6 6"); arrow.append(path); return arrow;
+        })());
+      }
+    }
+    byId("go").addEventListener("click", run);
+    renderHistory();
+    refreshInputCount();
+  </script>
+</body>
+</html>

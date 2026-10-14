@@ -8,9 +8,35 @@ on:
   pull_request:
     paths:
       - "src/nomenclature_matcher/api.py"
+      - "src/nomenclature_matcher/business_demo.py"
+      - "src/nomenclature_matcher/business_demo.html"
+      - "tests/test_business_demo.py"
+      - "tests/test_business_demo_ui.py"
+      - "tests/test_demo_ui_browser.py"
+      - "tests/test_demo_feedback_features.py"
+      - "tests/test_demo_feedback_postgres.py"
+      - "tests/test_demo_append_item.py"
+      - "src/nomenclature_matcher/demo_feedback.py"
+      - "src/nomenclature_matcher/business_demo_stats.html"
+      - "tests/test_demo_recheck.py"
+      - "tests/test_export_demo20.py"
+      - "tests/test_demo_auth.py"
+      - "tests/test_demo_evidence.py"
+      - "src/nomenclature_matcher/public_auth.py"
+      - "src/nomenclature_matcher/settings.py"
+      - "scripts/export_demo20_cases.py"
+      - "scripts/demo_recheck.py"
       - "src/nomenclature_matcher/production.py"
       - "src/nomenclature_matcher/settings.py"
       - "src/nomenclature_matcher/query_signals.py"
+      - "src/nomenclature_matcher/query_canonicalization.py"
+      - "src/nomenclature_matcher/prompts/query_interpreter_system.md"
+      - "src/nomenclature_matcher/prompts/query_constraints_system.md"
+      - "tests/test_stutser_joining.py"
+      - "src/nomenclature_matcher/product_safety.py"
+      - "src/nomenclature_matcher/flange_geometry.py"
+      - "tests/test_pe_stub_geometry.py"
+      - "src/nomenclature_matcher/query_constraints.py"
       - "src/nomenclature_matcher/query_interpreter.py"
       - "src/nomenclature_matcher/competitor_decoding.py"
       - "src/nomenclature_matcher/competitor_resolver.py"
@@ -40,6 +66,22 @@ on:
 jobs:
   contract:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: demo_test
+          POSTGRES_PASSWORD: demo_test_password
+          POSTGRES_DB: demo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U demo_test -d demo_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DEMO_PG_DSN: postgresql://demo_test:demo_test_password@localhost:5432/demo_test
     steps:
       - uses: actions/checkout@v4
 
@@ -57,6 +99,16 @@ jobs:
         run: >-
           uv run python -m pytest -q
           tests/test_production_api.py
+          tests/test_business_demo.py
+          tests/test_business_demo_ui.py
+          tests/test_stutser_joining.py
+          tests/test_demo_feedback_features.py
+          tests/test_demo_feedback_postgres.py
+          tests/test_demo_append_item.py
+          tests/test_demo_recheck.py
+          tests/test_export_demo20.py
+          tests/test_demo_auth.py
+          tests/test_demo_evidence.py
           tests/test_observability.py
           tests/test_enrichment_pipeline.py
           tests/test_competitor_decoding.py
@@ -64,6 +116,9 @@ jobs:
           tests/test_competitor_resolver_integration.py
           tests/test_eval_competitor_trace.py
           tests/test_query_signals_exact_identity.py
+          tests/test_query_constraints.py
+          tests/test_product_safety.py
+          tests/test_pe_stub_geometry.py
           tests/test_query_canonicalization.py
           tests/test_web_search_mcp.py
           tests/test_bm25_technical_normalization.py
@@ -76,3 +131,25 @@ jobs:
 
       - name: Build API image
         run: docker build -t rag-tender-api:test .
+
+  ui-browser:
+    name: LD demo — Chromium reference & choice regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Playwright and pytest
+        run: python -m pip install pytest playwright
+      - name: Install browser
+        run: python -m playwright install --with-deps chromium
+      - name: Verify UI using real Chromium
+        run: python -m pytest -q tests/test_demo_ui_browser.py
+      - name: Upload rendered design screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ld-reference-ui-screenshots
+          path: test-artifacts/*.png
+          if-no-files-found: ignore

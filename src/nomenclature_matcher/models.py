@@ -78,7 +78,7 @@ class SelectedMatch:
 @dataclass
 class MatchResult:
     query: str
-    status: Literal["MATCHED", "NOT_FOUND", "RERANK_FAILED"]
+    status: Literal["MATCHED", "NOT_FOUND", "INSUFFICIENT_PARAMETERS", "RERANK_FAILED"]
     score: float | None = None
     ld_product: SearchCandidate | None = None
     candidates: list[SearchCandidate] = field(default_factory=list)

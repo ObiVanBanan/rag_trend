@@ -1,7 +1,7 @@
 # Overrides for the observability stack, so it can run side by side with the
 # rag_tender stack on the same host:
 #   - unique container names (rag-observability-*) instead of rag-tender-*
-#   - API published on 0.0.0.0:8002 (8000 is used by rag-tender-api)
+#   - API published on localhost:8002 (external HTTPS proxy required)
 #   - PostgreSQL published on 127.0.0.1:5436 (5432 is used by rag-tender-postgres)
 #   - Qdrant snapshots dir mounted rw (Qdrant needs to write snapshot temp files)
 #   - qdrant-init script passed as a single argv entry (Compose v5 shlex-split
@@ -40,7 +40,7 @@ services:
   api:
     container_name: !override rag-observability-api
     ports: !override
-      - "${API_PORT:-8002}:8000"
+      - "${OBS_API_PUBLISH_BIND:-127.0.0.1:8002}:8000"
     environment: !override
       APP_ENV: production
       QDRANT_URL: http://rag-observability-qdrant:6333

@@ -188,6 +188,8 @@ _JOINING_TYPE_RENDERED_TERMS = {
     "welded": "Приварное",
     "wafer": "Межфланцевое",
     "compression": "Компрессионное",
+    "nipple": "Штуцерное",
+    "welded_nipple": "Приварное/штуцерное",
 }
 _BODY_MATERIAL_RENDERED_TERMS = {
     "steel": "сталь",

@@ -84,7 +84,7 @@ services:
       COMPETITOR_CATALOG_REGISTRY_PATH: /app/data/competitor_catalogs/sources.json
       WEB_SEARCH_ENABLED: ${WEB_SEARCH_ENABLED:-false}
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PUBLISH_BIND:-127.0.0.1:8000}:8000"
     volumes:
       - ${PRODUCT_CSV_HOST_PATH:-./ld_products_full_nomenclature.csv}:/data/ld_products_full_nomenclature.csv:ro
       - competitor_kb:/app/.rag_tender

@@ -3,6 +3,12 @@ from time import perf_counter
 
 from .competitor_decoding import decode_competitor_query
 from .models import LDProduct, MatchResult, SearchCandidate, SelectedMatch
+from .product_safety import (
+    flange_spec_from_query,
+    missing_required_flange_fields,
+    missing_required_valve_fields,
+    thread_size_from_text,
+)
 from .query_canonicalization import build_constraint_rendered_query, canonicalize_retrieval_query
 from .query_constraints import (
     QueryConstraints,
@@ -672,13 +678,14 @@ class NomenclatureMatcher:
         else:
             product_type = explicit_product_type
 
-        material = canonical_material(query)
+        flange = flange_spec_from_query(query)
+        material = flange.body_material if flange else canonical_material(query)
         if material == "other":
             material = None
         bore = canonical_bore_type(query)
         control = canonical_control(query)
         designation = None
-        if pre.valve_designation:
+        if pre.valve_designation and "11б27п" not in query.casefold():
             query_compact = "".join(ch for ch in query.lower() if ch.isalnum())
             designation_compact = "".join(
                 ch for ch in str(pre.valve_designation).lower() if ch.isalnum()
@@ -699,15 +706,18 @@ class NomenclatureMatcher:
 
         return {
             "product_type": product_type,
-            "dn": explicit_dn_from_query(query),
-            "pn_min_mpa": explicit_pn_mpa_from_query(query),
-            "joining_type": explicit_joining_type_from_query(query),
+            "dn": flange.dn if flange else explicit_dn_from_query(query),
+            "pn_min_mpa": (flange.pn_min_mpa or explicit_pn_mpa_from_query(query)) if flange else explicit_pn_mpa_from_query(query),
+            "joining_type": None if flange else explicit_joining_type_from_query(query),
             "thread_type": explicit_thread_type_from_query(query),
+            "thread_size": thread_size_from_text(query) if "11б27п" in query.casefold() else None,
             "working_medium": explicit_working_medium_from_query(query),
             "valve_type": valve_type,
             "valve_designation": designation,
             "body_material": material,
-            "body_material_grade": None,
+            "flange_kind": flange.kind if flange else None,
+            "stub_dn": flange.stub_dn if flange else None,
+            "body_material_grade": flange.body_material_grade if flange else None,
             "bore_type": bore,
             "control": control,
             "catalog_scope": pre.catalog_scope,
@@ -719,6 +729,17 @@ class NomenclatureMatcher:
         query = self._normalize_query(query)
         if not query:
             return MatchResult(query=query, status="NOT_FOUND")
+        missing = [
+            *missing_required_valve_fields(query),
+            *missing_required_flange_fields(query),
+        ]
+        if missing:
+            return MatchResult(
+                query=query,
+                status="INSUFFICIENT_PARAMETERS",
+                reason="INSUFFICIENT_PARAMETERS: " + ", ".join(missing),
+                query_interpretation={"missing_fields": missing},
+            )
         if self.hybrid_retriever is None:
             raise ValueError("Hybrid retriever is not configured")
 

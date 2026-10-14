@@ -33,6 +33,7 @@ from .qdrant_store import QdrantStore
 from .query_interpreter import DeepSeekQueryInterpreter
 from .reranker import DeepSeekReranker
 from .settings import Settings
+from .demo_feedback import initialize_review_schema
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ class PostgresRequestHistory:
                 )
                 """
             )
+            initialize_review_schema(conn)
             conn.execute("DROP VIEW IF EXISTS rag_match_items")
             conn.execute(
                 """
@@ -335,6 +337,18 @@ def match_products(matcher: NomenclatureMatcher, products: list[str]) -> list[di
                         "confidence": confidence,
                         "error_code": None,
                     }
+                elif match.status == "INSUFFICIENT_PARAMETERS":
+                    item = {
+                        "input": product,
+                        "status": "INSUFFICIENT_PARAMETERS",
+                        "matched_name": None,
+                        "matched_article": None,
+                        "score": None,
+                        "confidence": None,
+                        "error_code": "INSUFFICIENT_PARAMETERS",
+                        "missing_fields": (match.query_interpretation or {}).get("missing_fields", []),
+                        "reason": match.reason,
+                    }
                 elif match.status == "RERANK_FAILED":
                     item = {
                         "input": product,
@@ -383,6 +397,12 @@ def match_products(matcher: NomenclatureMatcher, products: list[str]) -> list[di
                     f"(confidence={item['confidence']}, {duration * 1000:.0f} ms)"
                 )
                 severity = "INFO"
+            elif item["status"] == "INSUFFICIENT_PARAMETERS":
+                summary = (
+                    f"INSUFFICIENT_PARAMETERS — {', '.join(item['missing_fields'])} "
+                    f"({duration * 1000:.0f} ms)"
+                )
+                severity = "WARNING"
             elif item["status"] == "NOT_FOUND":
                 summary = f"NOT_FOUND — {reason_code} ({duration * 1000:.0f} ms)"
                 severity = "WARNING"

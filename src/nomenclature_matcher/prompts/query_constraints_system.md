@@ -8,7 +8,7 @@
   "product_type": "ball_valve|butterfly_valve|gate_valve|check_valve|filter|flange|actuator|gearbox|repair_kit|accessory|other",
   "dn": 100,
   "pn_min_mpa": 1.6,
-  "joining_type": "flanged|wafer|threaded|welded|compression|other|null",
+  "joining_type": "flanged|wafer|threaded|welded|compression|nipple|welded_nipple|other|null",
   "thread_type": "female_female|male_female|male_male|null",
   "working_medium": "вода|null",
   "valve_type": "standard|underground|regulating|gas|cryogenic|other|null",
@@ -32,6 +32,9 @@
    - резьбовой, муфтовый -> threaded
    - приварной, под приварку -> welded
    - компрессионный/обжимной -> compression
+   - штуцерный/штуцерное (LD КШЦШ) -> nipple
+   - приварное/штуцерное или приварка/штуцер (LD КШЦК) -> welded_nipple
+   - штуцерное, приварное/штуцерное и муфтовое резьбовое — РАЗНЫЕ исполнения. Не объединяй их даже при наличии резьбы на штуцере.
 4. thread_type заполняй только если направление резьбы явно известно:
    - ВР/ВР, внутренняя/внутренняя, муфта/муфта -> female_female
    - НР/ВР, наружная/внутренняя -> male_female

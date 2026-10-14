@@ -29,7 +29,7 @@ review = ["streamlit>=1.40"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-nomenclature_matcher = ["prompts/*.md"]
+nomenclature_matcher = ["prompts/*.md", "business_demo.html", "business_demo_stats.html"]
 
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
